@@ -111,12 +111,39 @@ export default function RealTimeMonitoringDashboard() {
 
       const data = await response.json()
 
-      if (data.success) {
-        setMetrics(data.data.metrics)
+      if (data.success && data.data) {
+        // Asegurar que todas las propiedades existan con valores por defecto
+        const metrics = data.data.metrics || {}
+        setMetrics({
+          performance: {
+            responseTime: metrics.performance?.responseTime ?? 0,
+            errorRate: metrics.performance?.errorRate ?? 0,
+            throughput: metrics.performance?.throughput ?? 0,
+            uptime: metrics.performance?.uptime ?? 0.99,
+          },
+          business: {
+            totalRevenue: metrics.business?.totalRevenue ?? 0,
+            ordersToday: metrics.business?.ordersToday ?? 0,
+            conversionRate: metrics.business?.conversionRate ?? 0,
+            activeUsers: metrics.business?.activeUsers ?? 0,
+          },
+          security: {
+            securityEvents: metrics.security?.securityEvents ?? 0,
+            blockedRequests: metrics.security?.blockedRequests ?? 0,
+            authFailures: metrics.security?.authFailures ?? 0,
+            riskLevel: metrics.security?.riskLevel ?? 'low',
+          },
+          infrastructure: {
+            circuitBreakerStatus: metrics.infrastructure?.circuitBreakerStatus ?? 'closed',
+            cacheHitRate: metrics.infrastructure?.cacheHitRate ?? 0,
+            databaseConnections: metrics.infrastructure?.databaseConnections ?? 0,
+            memoryUsage: metrics.infrastructure?.memoryUsage ?? 0,
+          },
+        })
         setAlerts(data.data.alerts || [])
         setTrends(prev => ({
           ...prev,
-          ...data.data.trends,
+          ...(data.data.trends || {}),
         }))
         setLastUpdate(new Date())
       } else {
@@ -193,7 +220,10 @@ export default function RealTimeMonitoringDashboard() {
   /**
    * Formatea números para display
    */
-  const formatNumber = (num: number, decimals: number = 0) => {
+  const formatNumber = (num: number | null | undefined, decimals: number = 0) => {
+    if (num === null || num === undefined || isNaN(num)) {
+      return '0'
+    }
     return new Intl.NumberFormat('es-AR', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
@@ -203,7 +233,13 @@ export default function RealTimeMonitoringDashboard() {
   /**
    * Formatea moneda
    */
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+      }).format(0)
+    }
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
@@ -321,7 +357,7 @@ export default function RealTimeMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  {formatNumber(metrics.performance.responseTime)}ms
+                  {formatNumber(metrics?.performance?.responseTime)}ms
                 </div>
                 <p className='text-xs text-muted-foreground'>Promedio últimos 5 minutos</p>
               </CardContent>
@@ -334,7 +370,7 @@ export default function RealTimeMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  {formatNumber(metrics.performance.errorRate * 100, 2)}%
+                  {formatNumber((metrics?.performance?.errorRate ?? 0) * 100, 2)}%
                 </div>
                 <p className='text-xs text-muted-foreground'>Errores por solicitud</p>
               </CardContent>
@@ -347,7 +383,7 @@ export default function RealTimeMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  {formatNumber(metrics.performance.throughput)}
+                  {formatNumber(metrics?.performance?.throughput)}
                 </div>
                 <p className='text-xs text-muted-foreground'>Requests por minuto</p>
               </CardContent>
@@ -360,7 +396,7 @@ export default function RealTimeMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  {formatNumber(metrics.performance.uptime * 100, 2)}%
+                  {formatNumber((metrics?.performance?.uptime ?? 0) * 100, 2)}%
                 </div>
                 <p className='text-xs text-muted-foreground'>Disponibilidad del sistema</p>
               </CardContent>
@@ -376,7 +412,7 @@ export default function RealTimeMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  {formatCurrency(metrics.business.totalRevenue)}
+                  {formatCurrency(metrics?.business?.totalRevenue)}
                 </div>
                 <p className='text-xs text-muted-foreground'>Ventas del día actual</p>
               </CardContent>
@@ -389,7 +425,7 @@ export default function RealTimeMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  {formatNumber(metrics.business.ordersToday)}
+                  {formatNumber(metrics?.business?.ordersToday)}
                 </div>
                 <p className='text-xs text-muted-foreground'>Pedidos completados</p>
               </CardContent>
@@ -402,7 +438,7 @@ export default function RealTimeMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  {formatNumber(metrics.business.conversionRate * 100, 1)}%
+                  {formatNumber((metrics?.business?.conversionRate ?? 0) * 100, 1)}%
                 </div>
                 <p className='text-xs text-muted-foreground'>Tasa de conversión</p>
               </CardContent>
@@ -415,7 +451,7 @@ export default function RealTimeMonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold'>
-                  {formatNumber(metrics.business.activeUsers)}
+                  {formatNumber(metrics?.business?.activeUsers)}
                 </div>
                 <p className='text-xs text-muted-foreground'>Últimos 15 minutos</p>
               </CardContent>
@@ -437,31 +473,31 @@ export default function RealTimeMonitoringDashboard() {
                   <span>Nivel de Riesgo</span>
                   <Badge
                     variant={
-                      metrics.security.riskLevel === 'low'
+                      (metrics?.security?.riskLevel ?? 'low') === 'low'
                         ? 'default'
-                        : metrics.security.riskLevel === 'medium'
+                        : (metrics?.security?.riskLevel ?? 'low') === 'medium'
                           ? 'secondary'
-                          : metrics.security.riskLevel === 'high'
+                          : (metrics?.security?.riskLevel ?? 'low') === 'high'
                             ? 'destructive'
                             : 'destructive'
                     }
                   >
-                    {metrics.security.riskLevel.toUpperCase()}
+                    {(metrics?.security?.riskLevel ?? 'low').toUpperCase()}
                   </Badge>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span>Eventos de Seguridad</span>
-                  <span className='font-bold'>{formatNumber(metrics.security.securityEvents)}</span>
+                  <span className='font-bold'>{formatNumber(metrics?.security?.securityEvents)}</span>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span>Requests Bloqueados</span>
                   <span className='font-bold'>
-                    {formatNumber(metrics.security.blockedRequests)}
+                    {formatNumber(metrics?.security?.blockedRequests)}
                   </span>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span>Fallos de Auth</span>
-                  <span className='font-bold'>{formatNumber(metrics.security.authFailures)}</span>
+                  <span className='font-bold'>{formatNumber(metrics?.security?.authFailures)}</span>
                 </div>
               </CardContent>
             </Card>
@@ -478,27 +514,27 @@ export default function RealTimeMonitoringDashboard() {
                 <div className='flex items-center justify-between'>
                   <span>Circuit Breaker</span>
                   <span
-                    className={`font-bold ${getStatusColor(metrics.infrastructure.circuitBreakerStatus)}`}
+                    className={`font-bold ${getStatusColor(metrics?.infrastructure?.circuitBreakerStatus ?? 'closed')}`}
                   >
-                    {metrics.infrastructure.circuitBreakerStatus.toUpperCase()}
+                    {(metrics?.infrastructure?.circuitBreakerStatus ?? 'closed').toUpperCase()}
                   </span>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span>Cache Hit Rate</span>
                   <span className='font-bold'>
-                    {formatNumber(metrics.infrastructure.cacheHitRate * 100, 1)}%
+                    {formatNumber((metrics?.infrastructure?.cacheHitRate ?? 0) * 100, 1)}%
                   </span>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span>DB Connections</span>
                   <span className='font-bold'>
-                    {formatNumber(metrics.infrastructure.databaseConnections)}
+                    {formatNumber(metrics?.infrastructure?.databaseConnections)}
                   </span>
                 </div>
                 <div className='flex items-center justify-between'>
                   <span>Memory Usage</span>
                   <span className='font-bold'>
-                    {formatNumber(metrics.infrastructure.memoryUsage * 100, 1)}%
+                    {formatNumber((metrics?.infrastructure?.memoryUsage ?? 0) * 100, 1)}%
                   </span>
                 </div>
               </CardContent>

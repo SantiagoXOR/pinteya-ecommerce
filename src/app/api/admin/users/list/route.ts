@@ -4,10 +4,11 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdminAuth } from '@/lib/auth/server-auth-guard'
-import { createClient } from '@/lib/integrations/supabase/server'
+import { checkAdminAuth } from '@/lib/auth/server-auth-guard'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
 
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 // =====================================================
 // TYPES
@@ -16,26 +17,16 @@ export const dynamic = 'force-dynamic'
 interface UserWithStats {
   id: string
   email: string
-  first_name: string
-  last_name: string
-  phone: string
+  first_name: string | null
+  last_name: string | null
+  phone?: string | null
   is_active: boolean
   created_at: string
   updated_at: string
   last_login: string | null
-  // Stats calculados
   total_orders: number
   total_spent: number
   last_order_date: string | null
-}
-
-interface PaginationParams {
-  page: number
-  limit: number
-  search?: string
-  status?: 'all' | 'active' | 'inactive'
-  sortBy?: 'created_at' | 'last_order' | 'total_spent' | 'total_orders'
-  sortOrder?: 'asc' | 'desc'
 }
 
 // =====================================================
@@ -44,25 +35,47 @@ interface PaginationParams {
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[API] Iniciando GET /api/admin/users/list')
+    
     // Verificar autenticación admin
-    await requireAdminAuth()
+    const authResult = await checkAdminAuth()
+    if (authResult.error) {
+      console.error('[API] Error de autenticación:', authResult.error)
+      return NextResponse.json(
+        {
+          success: false,
+          error: authResult.error,
+        },
+        { status: authResult.status }
+      )
+    }
+    console.log('[API] Autenticación exitosa')
+
+    // Validar supabaseAdmin
+    if (!supabaseAdmin) {
+      console.error('[API] supabaseAdmin no está disponible')
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Error de configuración del servidor: supabaseAdmin no inicializado',
+        },
+        { status: 500 }
+      )
+    }
+    console.log('[API] supabaseAdmin disponible')
 
     // Obtener parámetros de query
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const search = searchParams.get('search') || ''
-    const status = (searchParams.get('status') || 'all') as PaginationParams['status']
-    const sortBy = (searchParams.get('sortBy') || 'created_at') as PaginationParams['sortBy']
-    const sortOrder = (searchParams.get('sortOrder') || 'desc') as PaginationParams['sortOrder']
+    const status = searchParams.get('status') || 'all'
+    const sortBy = searchParams.get('sortBy') || 'created_at'
+    const sortOrder = searchParams.get('sortOrder') || 'desc'
 
-    const supabase = await createClient()
-
-    // =====================================================
-    // QUERY PRINCIPAL: Usuarios con estadísticas
-    // =====================================================
-
-    let query = supabase
+    // Construir query base (usando solo columnas que sabemos que existen)
+    console.log('[API] Construyendo query para user_profiles...')
+    let query = supabaseAdmin
       .from('user_profiles')
       .select(
         `
@@ -70,19 +83,19 @@ export async function GET(request: NextRequest) {
         email,
         first_name,
         last_name,
-        phone,
         is_active,
+        metadata,
         created_at,
-        updated_at,
-        last_login
+        updated_at
       `,
         { count: 'exact' }
       )
+    console.log('[API] Query construida')
 
     // Filtro de búsqueda
     if (search) {
       query = query.or(
-        `email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,phone.ilike.%${search}%`
+        `email.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%`
       )
     }
 
@@ -94,67 +107,88 @@ export async function GET(request: NextRequest) {
     }
 
     // Ordenamiento
-    const orderColumn = sortBy === 'created_at' ? 'created_at' : 'created_at'
-    query = query.order(orderColumn, { ascending: sortOrder === 'asc' })
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' })
 
     // Paginación
     const from = (page - 1) * limit
     const to = from + limit - 1
     query = query.range(from, to)
 
+    // Ejecutar query
     const { data: users, error: usersError, count } = await query
 
     if (usersError) {
-      console.error('Error fetching users:', usersError)
+      console.error('[API] Error en query de user_profiles:', {
+        message: usersError.message,
+        code: usersError.code,
+        details: usersError.details,
+        hint: usersError.hint,
+        query: 'user_profiles select',
+      })
+      
       return NextResponse.json(
         {
           success: false,
           error: 'Error al obtener usuarios',
           message: usersError.message,
+          code: usersError.code,
+          details: usersError.details,
+          hint: usersError.hint,
         },
         { status: 500 }
       )
     }
 
-    // =====================================================
-    // OBTENER ESTADÍSTICAS DE ÓRDENES POR USUARIO
-    // =====================================================
-
+    // Obtener estadísticas de órdenes (opcional, continuar sin stats si falla)
     const userIds = users?.map(u => u.id) || []
+    let orderStats: any[] | null = null
 
-    // Query para obtener stats de órdenes por usuario
-    const { data: orderStats, error: orderStatsError } = await supabase.rpc('get_user_order_stats', {
-      user_ids: userIds,
-    })
+    if (userIds.length > 0) {
+      try {
+        const { data, error: orderStatsError } = await supabaseAdmin.rpc('get_user_order_stats', {
+          user_ids: userIds,
+        })
 
-    if (orderStatsError) {
-      console.warn('Error fetching order stats:', orderStatsError)
-      // Continuar sin stats si falla
+        if (!orderStatsError && data) {
+          orderStats = data
+        }
+      } catch (rpcError) {
+        // Continuar sin stats si falla
+        console.warn('Error obteniendo stats de órdenes:', rpcError)
+      }
     }
 
-    // =====================================================
-    // COMBINAR DATOS
-    // =====================================================
-
-    const usersWithStats: UserWithStats[] = (users || []).map(user => {
+    // Combinar datos
+    const usersWithStats: UserWithStats[] = (users || []).map((user: any) => {
       const stats = orderStats?.find((s: any) => s.user_id === user.id) || {
         total_orders: 0,
         total_spent: 0,
         last_order_date: null,
       }
 
+      // Extraer phone de metadata si existe
+      const phone = user.metadata?.phone || user.metadata?.phone_number || null
+
+      // Extraer last_login de metadata si existe, o usar null
+      const lastLogin = user.metadata?.last_login || user.metadata?.last_login_at || null
+
       return {
-        ...user,
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        phone: phone,
+        is_active: user.is_active,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        last_login: lastLogin,
         total_orders: stats.total_orders || 0,
-        total_spent: parseFloat(stats.total_spent || '0'),
+        total_spent: parseFloat(String(stats.total_spent || '0')),
         last_order_date: stats.last_order_date || null,
       }
     })
 
-    // =====================================================
-    // RESPUESTA
-    // =====================================================
-
+    // Calcular paginación
     const totalPages = count ? Math.ceil(count / limit) : 0
 
     return NextResponse.json({
@@ -172,7 +206,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Unexpected error in /api/admin/users/list:', error)
+    console.error('Error in /api/admin/users/list:', error)
     return NextResponse.json(
       {
         success: false,
@@ -183,4 +217,3 @@ export async function GET(request: NextRequest) {
     )
   }
 }
-

@@ -120,24 +120,27 @@ class MonitoringStore {
 
   getState(): MonitoringState {
     const totalRenders = Array.from(this.metrics.values()).reduce(
-      (sum, metric) => sum + metric.renderCount,
+      (sum, metric) => sum + (metric?.renderCount ?? 0),
       0
     )
 
-    const averageRenderTime = Array.from(this.metrics.values()).reduce(
-      (sum, metric, _, arr) => sum + metric.averageRenderTime / arr.length,
-      0
-    )
+    const metricsArray = Array.from(this.metrics.values())
+    const averageRenderTime = metricsArray.length > 0
+      ? metricsArray.reduce(
+          (sum, metric) => sum + (metric?.averageRenderTime ?? 0),
+          0
+        ) / metricsArray.length
+      : 0
 
     return {
       isEnabled: true,
       metrics: new Map(this.metrics),
-      alerts: [...this.alerts],
+      alerts: [...(this.alerts || [])],
       globalStats: {
         totalComponents: this.metrics.size,
-        totalRenders,
-        averageRenderTime,
-        activeAlerts: this.alerts.filter(alert => !alert.resolved).length,
+        totalRenders: totalRenders || 0,
+        averageRenderTime: averageRenderTime || 0,
+        activeAlerts: (this.alerts || []).filter(alert => !alert?.resolved).length,
       },
     }
   }

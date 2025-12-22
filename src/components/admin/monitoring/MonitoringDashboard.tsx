@@ -174,7 +174,16 @@ const AlertItem: React.FC<AlertItemProps> = ({ alert, onResolve }) => {
   )
 }
 
-const ComponentMetricsTable: React.FC<{ metrics: Map<string, RenderMetrics> }> = ({ metrics }) => {
+const ComponentMetricsTable: React.FC<{ metrics: Map<string, RenderMetrics> | undefined }> = ({ metrics }) => {
+  if (!metrics) {
+    return (
+      <div className='text-center py-8 text-muted-foreground'>
+        <Activity className='h-12 w-12 mx-auto mb-4 opacity-50' />
+        <p>No hay métricas de componentes disponibles</p>
+      </div>
+    )
+  }
+
   const metricsArray = Array.from(metrics.entries())
 
   if (metricsArray.length === 0) {
@@ -188,46 +197,59 @@ const ComponentMetricsTable: React.FC<{ metrics: Map<string, RenderMetrics> }> =
 
   return (
     <div className='space-y-4'>
-      {metricsArray.map(([componentName, metric]) => (
-        <Card key={componentName}>
-          <CardHeader>
-            <CardTitle className='text-lg'>{componentName}</CardTitle>
-            <CardDescription>
-              Última actualización: {new Date(metric.timestamp).toLocaleString()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-              <div className='space-y-1'>
-                <p className='text-sm font-medium'>Renders</p>
-                <p className='text-2xl font-bold'>{metric.renderCount}</p>
-              </div>
-              <div className='space-y-1'>
-                <p className='text-sm font-medium'>Tiempo Promedio</p>
-                <p className='text-2xl font-bold'>{metric.averageRenderTime.toFixed(2)}ms</p>
-              </div>
-              <div className='space-y-1'>
-                <p className='text-sm font-medium'>Renders Lentos</p>
-                <p className='text-2xl font-bold text-orange-600'>{metric.slowRenders}</p>
-              </div>
-              <div className='space-y-1'>
-                <p className='text-sm font-medium'>Errores</p>
-                <p className='text-2xl font-bold text-red-600'>{metric.errorCount}</p>
-              </div>
-            </div>
+      {metricsArray.map(([componentName, metric]) => {
+        if (!metric) return null
+        
+        const safeMetric = {
+          renderCount: metric.renderCount ?? 0,
+          averageRenderTime: metric.averageRenderTime ?? 0,
+          slowRenders: metric.slowRenders ?? 0,
+          errorCount: metric.errorCount ?? 0,
+          memoryUsage: metric.memoryUsage,
+          timestamp: metric.timestamp ?? Date.now(),
+        }
 
-            {metric.memoryUsage && (
-              <div className='mt-4'>
-                <div className='flex justify-between text-sm mb-2'>
-                  <span>Uso de Memoria</span>
-                  <span>{metric.memoryUsage.toFixed(2)} MB</span>
+        return (
+          <Card key={componentName}>
+            <CardHeader>
+              <CardTitle className='text-lg'>{componentName}</CardTitle>
+              <CardDescription>
+                Última actualización: {new Date(safeMetric.timestamp).toLocaleString()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+                <div className='space-y-1'>
+                  <p className='text-sm font-medium'>Renders</p>
+                  <p className='text-2xl font-bold'>{safeMetric.renderCount}</p>
                 </div>
-                <Progress value={Math.min((metric.memoryUsage / 100) * 100, 100)} className='h-2' />
+                <div className='space-y-1'>
+                  <p className='text-sm font-medium'>Tiempo Promedio</p>
+                  <p className='text-2xl font-bold'>{(safeMetric.averageRenderTime || 0).toFixed(2)}ms</p>
+                </div>
+                <div className='space-y-1'>
+                  <p className='text-sm font-medium'>Renders Lentos</p>
+                  <p className='text-2xl font-bold text-orange-600'>{safeMetric.slowRenders}</p>
+                </div>
+                <div className='space-y-1'>
+                  <p className='text-sm font-medium'>Errores</p>
+                  <p className='text-2xl font-bold text-red-600'>{safeMetric.errorCount}</p>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+
+              {safeMetric.memoryUsage !== undefined && safeMetric.memoryUsage !== null && (
+                <div className='mt-4'>
+                  <div className='flex justify-between text-sm mb-2'>
+                    <span>Uso de Memoria</span>
+                    <span>{(safeMetric.memoryUsage || 0).toFixed(2)} MB</span>
+                  </div>
+                  <Progress value={Math.min(((safeMetric.memoryUsage || 0) / 100) * 100, 100)} className='h-2' />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
   )
 }
@@ -238,12 +260,20 @@ const ComponentMetricsTable: React.FC<{ metrics: Map<string, RenderMetrics> }> =
 
 export const MonitoringDashboard: React.FC = () => {
   const { toast } = useToast()
-  const { metrics, alerts, globalStats, clearAlerts, resolveAlert, exportData } =
-    useGlobalMonitoring()
+  const monitoringData = useGlobalMonitoring()
+  const { 
+    metrics = new Map(), 
+    alerts = [], 
+    globalStats, 
+    clearAlerts = () => {},
+    resolveAlert = () => {},
+    exportData = () => '{}'
+  } = monitoringData || {}
 
   // Integración con MonitoringProvider
   const { stats: proactiveStats, loading: proactiveLoading } = useMonitoringStats()
-  const { reportError } = useErrorReporting()
+  const errorReporting = useErrorReporting()
+  const reportError = errorReporting?.reportError || (() => Promise.resolve())
 
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [refreshInterval, setRefreshInterval] = useState(5000) // 5 segundos
@@ -266,7 +296,9 @@ export const MonitoringDashboard: React.FC = () => {
   const handleExportData = () => {
     try {
       const data = exportData()
-      const blob = new Blob([data], { type: 'application/json' })
+      // Asegurar que data sea un string válido
+      const jsonData = typeof data === 'string' ? data : JSON.stringify(data || {})
+      const blob = new Blob([jsonData], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -282,11 +314,15 @@ export const MonitoringDashboard: React.FC = () => {
       })
     } catch (error) {
       // Reportar error al sistema proactivo
-      reportError(error as Error, {
-        source: 'monitoring_dashboard_export',
-        severity: 'medium',
-        context: { action: 'export_data' },
-      })
+      if (reportError && error instanceof Error) {
+        reportError(error, {
+          source: 'monitoring_dashboard_export',
+          severity: 'medium',
+          context: { action: 'export_data' },
+        }).catch(() => {
+          // Ignorar errores de reporte
+        })
+      }
 
       toast({
         title: 'Error al Exportar',
@@ -312,11 +348,17 @@ export const MonitoringDashboard: React.FC = () => {
     })
   }
 
-  // Calcular métricas derivadas
-  const activeAlerts = alerts.filter(alert => !alert.resolved)
+  // Calcular métricas derivadas con valores por defecto
+  const safeGlobalStats = globalStats || {
+    totalComponents: 0,
+    totalRenders: 0,
+    averageRenderTime: 0,
+    activeAlerts: 0,
+  }
+  const activeAlerts = (alerts || []).filter(alert => !alert.resolved)
   const criticalAlerts = activeAlerts.filter(alert => alert.severity === 'critical')
-  const averageRenderTime = globalStats.averageRenderTime
-  const performanceScore = Math.max(0, 100 - averageRenderTime * 2 - criticalAlerts.length * 10)
+  const averageRenderTime = safeGlobalStats.averageRenderTime ?? 0
+  const performanceScore = Math.max(0, 100 - (averageRenderTime || 0) * 2 - criticalAlerts.length * 10)
 
   return (
     <div className='space-y-6'>
@@ -348,26 +390,26 @@ export const MonitoringDashboard: React.FC = () => {
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
         <MetricCard
           title='Componentes Activos'
-          value={globalStats.totalComponents}
+          value={safeGlobalStats.totalComponents ?? 0}
           description='Componentes siendo monitoreados'
           icon={<Activity className='h-4 w-4' />}
         />
         <MetricCard
           title='Total Renders'
-          value={globalStats.totalRenders.toLocaleString()}
+          value={(safeGlobalStats.totalRenders ?? 0).toLocaleString()}
           description='Renders totales registrados'
           icon={<RefreshCw className='h-4 w-4' />}
         />
         <MetricCard
           title='Tiempo Promedio'
-          value={`${averageRenderTime.toFixed(2)}ms`}
+          value={`${(averageRenderTime || 0).toFixed(2)}ms`}
           description='Tiempo promedio de renderizado'
           severity={averageRenderTime > 16 ? 'high' : averageRenderTime > 8 ? 'medium' : 'low'}
           icon={<Clock className='h-4 w-4' />}
         />
         <MetricCard
           title='Score de Performance'
-          value={`${performanceScore.toFixed(0)}%`}
+          value={`${(performanceScore || 0).toFixed(0)}%`}
           description='Puntuación general del sistema'
           severity={
             performanceScore < 50
@@ -395,12 +437,12 @@ export const MonitoringDashboard: React.FC = () => {
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
             <MetricCard
               title='Errores Detectados'
-              value={proactiveStats.totalErrors.toString()}
+              value={(proactiveStats?.totalErrors ?? 0).toString()}
               description='Errores capturados automáticamente'
               severity={
-                proactiveStats.totalErrors > 10
+                (proactiveStats?.totalErrors ?? 0) > 10
                   ? 'high'
-                  : proactiveStats.totalErrors > 5
+                  : (proactiveStats?.totalErrors ?? 0) > 5
                     ? 'medium'
                     : 'low'
               }
@@ -408,12 +450,12 @@ export const MonitoringDashboard: React.FC = () => {
             />
             <MetricCard
               title='Uptime del Sistema'
-              value={`${proactiveStats.uptime.toFixed(1)}%`}
+              value={`${((proactiveStats?.uptime ?? 0) || 0).toFixed(1)}%`}
               description='Disponibilidad del sistema'
               severity={
-                proactiveStats.uptime < 95
+                (proactiveStats?.uptime ?? 0) < 95
                   ? 'critical'
-                  : proactiveStats.uptime < 98
+                  : (proactiveStats?.uptime ?? 0) < 98
                     ? 'medium'
                     : 'low'
               }
@@ -421,12 +463,12 @@ export const MonitoringDashboard: React.FC = () => {
             />
             <MetricCard
               title='Tiempo de Respuesta'
-              value={`${proactiveStats.responseTime}ms`}
+              value={`${proactiveStats?.responseTime ?? 0}ms`}
               description='Tiempo promedio de respuesta'
               severity={
-                proactiveStats.responseTime > 1000
+                (proactiveStats?.responseTime ?? 0) > 1000
                   ? 'high'
-                  : proactiveStats.responseTime > 500
+                  : (proactiveStats?.responseTime ?? 0) > 500
                     ? 'medium'
                     : 'low'
               }
@@ -434,12 +476,12 @@ export const MonitoringDashboard: React.FC = () => {
             />
             <MetricCard
               title='Memoria Utilizada'
-              value={`${proactiveStats.memoryUsage}%`}
+              value={`${proactiveStats?.memoryUsage ?? 0}%`}
               description='Uso de memoria del sistema'
               severity={
-                proactiveStats.memoryUsage > 85
+                (proactiveStats?.memoryUsage ?? 0) > 85
                   ? 'critical'
-                  : proactiveStats.memoryUsage > 70
+                  : (proactiveStats?.memoryUsage ?? 0) > 70
                     ? 'high'
                     : 'low'
               }
@@ -488,13 +530,13 @@ export const MonitoringDashboard: React.FC = () => {
               <CardContent>
                 <div className='space-y-4'>
                   <div className='text-center'>
-                    <div className='text-4xl font-bold mb-2'>{performanceScore.toFixed(0)}%</div>
-                    <Progress value={performanceScore} className='h-3' />
+                    <div className='text-4xl font-bold mb-2'>{(performanceScore || 0).toFixed(0)}%</div>
+                    <Progress value={performanceScore || 0} className='h-3' />
                   </div>
                   <div className='grid grid-cols-2 gap-4 text-sm'>
                     <div>
                       <p className='font-medium'>Tiempo Promedio</p>
-                      <p className='text-muted-foreground'>{averageRenderTime.toFixed(2)}ms</p>
+                      <p className='text-muted-foreground'>{(averageRenderTime || 0).toFixed(2)}ms</p>
                     </div>
                     <div>
                       <p className='font-medium'>Alertas Críticas</p>

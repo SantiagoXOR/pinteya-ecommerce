@@ -2,7 +2,7 @@
 // PINTEYA E-COMMERCE - MERCADOPAGO METRICS HOOK
 // ===================================
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { logger, LogCategory } from '@/lib/enterprise/logger'
 
 // Tipos para métricas de MercadoPago
@@ -75,6 +75,17 @@ export function useMercadoPagoMetrics(options: UseMetricsOptions = {}): UseMetri
   const [error, setError] = useState<string | null>(null)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
+  // Usar refs para almacenar los callbacks y evitar recreaciones
+  const onErrorRef = useRef(onError)
+  const onAlertRef = useRef(onAlert)
+  
+  // Actualizar refs cuando cambien los callbacks (sin useEffect para evitar ciclos)
+  onErrorRef.current = onError
+  onAlertRef.current = onAlert
+
+  // Ref para controlar si ya se hizo la carga inicial
+  const hasInitialLoad = useRef(false)
+
   /**
    * Función para obtener métricas del servidor
    */
@@ -103,9 +114,9 @@ export function useMercadoPagoMetrics(options: UseMetricsOptions = {}): UseMetri
       setMetrics(data.data)
       setLastUpdate(new Date())
 
-      // Notificar alertas si hay callback
-      if (onAlert && data.data.alerts.length > 0) {
-        onAlert(data.data.alerts)
+      // Notificar alertas si hay callback (usando ref para evitar dependencias)
+      if (onAlertRef.current && data.data.alerts.length > 0) {
+        onAlertRef.current(data.data.alerts)
       }
 
       logger.info(LogCategory.API, 'MercadoPago metrics updated successfully')
@@ -115,14 +126,14 @@ export function useMercadoPagoMetrics(options: UseMetricsOptions = {}): UseMetri
 
       logger.error(LogCategory.API, 'Error fetching MercadoPago metrics', err as Error)
 
-      // Notificar error si hay callback
-      if (onError) {
-        onError(err as Error)
+      // Notificar error si hay callback (usando ref para evitar dependencias)
+      if (onErrorRef.current) {
+        onErrorRef.current(err as Error)
       }
     } finally {
       setIsLoading(false)
     }
-  }, [onError, onAlert])
+  }, []) // Sin dependencias para evitar recreaciones
 
   /**
    * Función para reiniciar métricas
@@ -159,11 +170,12 @@ export function useMercadoPagoMetrics(options: UseMetricsOptions = {}): UseMetri
 
       logger.error(LogCategory.API, 'Error resetting MercadoPago metrics', err as Error)
 
-      if (onError) {
-        onError(err as Error)
+      // Usar ref para evitar dependencias
+      if (onErrorRef.current) {
+        onErrorRef.current(err as Error)
       }
     }
-  }, [fetchMetrics, onError])
+  }, [fetchMetrics])
 
   /**
    * Función pública para refrescar métricas manualmente
@@ -172,10 +184,14 @@ export function useMercadoPagoMetrics(options: UseMetricsOptions = {}): UseMetri
     await fetchMetrics()
   }, [fetchMetrics])
 
-  // Efecto para carga inicial
+  // Efecto para carga inicial (solo una vez)
   useEffect(() => {
-    fetchMetrics()
-  }, [fetchMetrics])
+    if (!hasInitialLoad.current) {
+      hasInitialLoad.current = true
+      fetchMetrics()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Solo ejecutar una vez al montar
 
   // Efecto para auto-refresh
   useEffect(() => {
@@ -188,7 +204,8 @@ export function useMercadoPagoMetrics(options: UseMetricsOptions = {}): UseMetri
     }, refreshInterval)
 
     return () => clearInterval(interval)
-  }, [autoRefresh, refreshInterval, fetchMetrics])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRefresh, refreshInterval]) // No incluir fetchMetrics para evitar recreaciones
 
   // Efecto para limpiar error cuando se obtienen métricas exitosamente
   useEffect(() => {

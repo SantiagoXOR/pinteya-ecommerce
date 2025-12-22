@@ -37,13 +37,23 @@ export default function CustomersPage() {
     refreshCustomers,
   } = useCustomers()
 
+  // Calcular diferencia de nuevos usuarios (comparar con mes anterior)
+  const newUsers30d = stats?.new_users_30d || 0
+  const newUsersPrevious30d = stats?.new_users_previous_30d || 0
+  const newUsersChange = newUsers30d - newUsersPrevious30d
+  const newUsersChangeText = newUsersChange > 0 
+    ? `${newUsersChange} nuevos desde el mes pasado`
+    : newUsersChange < 0
+    ? `${Math.abs(newUsersChange)} menos que el mes pasado`
+    : 'Sin cambios desde el mes pasado'
+
   // Estadísticas dinámicas basadas en datos reales
   const customerStats = [
     {
       title: 'Total Clientes',
       value: loadingStats ? '...' : stats?.total_users?.toString() || '0',
-      change: `${stats?.new_users_30d || 0} nuevos`,
-      changeType: 'positive' as const,
+      change: newUsersChangeText,
+      changeType: newUsersChange >= 0 ? 'positive' as const : 'negative' as const,
       icon: Users,
     },
     {

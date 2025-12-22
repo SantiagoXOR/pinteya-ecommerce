@@ -7,9 +7,9 @@ import { useState, useEffect, useCallback } from 'react'
 export interface Customer {
   id: string
   email: string
-  first_name: string
-  last_name: string
-  phone: string
+  first_name: string | null
+  last_name: string | null
+  phone?: string | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -24,6 +24,7 @@ export interface CustomerStats {
   total_users: number
   active_users: number
   new_users_30d: number
+  new_users_previous_30d?: number
   inactive_users: number
   growth_rate: number
 }
@@ -103,7 +104,27 @@ export function useCustomers() {
       })
 
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
+        // Intentar obtener más información del error
+        let errorMessage = `Error ${response.status}: ${response.statusText}`
+        try {
+          const errorData = await response.json()
+          console.error('[useCustomers] Error del servidor:', errorData)
+          
+          // Construir mensaje de error detallado
+          errorMessage = errorData.error || errorData.message || errorMessage
+          if (errorData.code) {
+            errorMessage += ` (Código: ${errorData.code})`
+          }
+          if (errorData.details) {
+            errorMessage += ` - ${errorData.details}`
+          }
+          if (errorData.hint) {
+            errorMessage += ` - Hint: ${errorData.hint}`
+          }
+        } catch {
+          // Si no se puede parsear el JSON, usar el mensaje por defecto
+        }
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
