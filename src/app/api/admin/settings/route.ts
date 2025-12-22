@@ -399,9 +399,14 @@ async function updateSystemSettings(
     return
   }
 
+  if (!supabaseAdmin) {
+    throw new Error('Cliente de Supabase no disponible')
+  }
+
   // Actualizar configuraciones en la base de datos
   for (const setting of settingsToUpdate) {
-    const { error } = await supabaseAdmin.from('system_settings').upsert(
+    // Intentar con estructura nueva primero
+    let { error } = await supabaseAdmin.from('system_settings').upsert(
       {
         key: setting.key,
         value: setting.value,
@@ -414,12 +419,41 @@ async function updateSystemSettings(
       }
     )
 
-    if (error) {
+    // Si falla, puede ser estructura antigua, intentar con ella
+    if (error && error.message.includes('column') && error.message.includes('does not exist')) {
+      logger.log(
+        LogLevel.WARN,
+        LogCategory.API,
+        'Estructura antigua detectada en actualización, intentando migración automática',
+        { key: setting.key }
+      )
+      
+      // Intentar con estructura antigua
+      const { error: oldError } = await supabaseAdmin.from('system_settings').upsert(
+        {
+          setting_key: setting.key,
+          setting_value: setting.value,
+          description: setting.category,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'setting_key',
+        }
+      )
+
+      if (oldError) {
+        logger.log(LogLevel.ERROR, LogCategory.API, 'Error actualizando configuración (estructura antigua)', {
+          error: oldError,
+          key: setting.key,
+        })
+        throw new Error(`Error actualizando configuración ${setting.key}: ${oldError.message}`)
+      }
+    } else if (error) {
       logger.log(LogLevel.ERROR, LogCategory.API, 'Error actualizando configuración', {
         error,
         key: setting.key,
       })
-      throw new Error(`Error actualizando configuración ${setting.key}`)
+      throw new Error(`Error actualizando configuración ${setting.key}: ${error.message}`)
     }
   }
 
