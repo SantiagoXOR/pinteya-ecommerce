@@ -49,12 +49,16 @@ export function SettingsForm() {
     saveError,
     updateSettings, 
     resetToDefaults,
-    hasChanges 
   } = useSettings()
   
   const [activeTab, setActiveTab] = useState('general')
   const [localSettings, setLocalSettings] = useState<SystemSettings | null>(null)
   const [lastSaveSuccess, setLastSaveSuccess] = useState(false)
+  
+  // Calcular si hay cambios comparando localSettings con settings originales
+  const hasChanges = localSettings && settings 
+    ? JSON.stringify(localSettings) !== JSON.stringify(settings)
+    : false
 
   // Sincronizar settings locales cuando cambian los settings del hook
   useEffect(() => {
