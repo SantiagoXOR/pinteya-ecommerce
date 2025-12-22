@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Palette, X } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
-import { PAINT_COLORS } from '@/components/ui/advanced-color-picker'
+import { PAINT_COLORS, ColorOption } from '@/components/ui/advanced-color-picker'
 
 interface ColorPickerFieldProps {
   colorName?: string
@@ -24,6 +24,31 @@ export function ColorPickerField({
 }: ColorPickerFieldProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [customName, setCustomName] = useState(colorName || '')
+  const [allColors, setAllColors] = useState<ColorOption[]>(PAINT_COLORS) // Inicializar con predefinidos
+  const [isLoadingColors, setIsLoadingColors] = useState(false)
+
+  // Cargar colores desde la API (predefinidos + personalizados)
+  useEffect(() => {
+    const loadColors = async () => {
+      setIsLoadingColors(true)
+      try {
+        const response = await fetch('/api/admin/colors')
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            setAllColors(result.data)
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Error cargando colores personalizados, usando solo predefinidos:', error)
+        // Si falla, mantener los predefinidos
+      } finally {
+        setIsLoadingColors(false)
+      }
+    }
+
+    loadColors()
+  }, [])
 
   // Sincronizar customName cuando cambia colorName externamente
   useEffect(() => {
@@ -35,7 +60,7 @@ export function ColorPickerField({
     if (!colorName && !colorHex) return null
     
     // Buscar por nombre primero
-    const byName = PAINT_COLORS.find(
+    const byName = allColors.find(
       c => c.name.toLowerCase() === colorName.toLowerCase() || 
            c.displayName.toLowerCase() === colorName.toLowerCase()
     )
@@ -43,14 +68,14 @@ export function ColorPickerField({
 
     // Buscar por hex
     if (colorHex) {
-      const byHex = PAINT_COLORS.find(c => c.hex.toLowerCase() === colorHex.toLowerCase())
+      const byHex = allColors.find(c => c.hex.toLowerCase() === colorHex.toLowerCase())
       if (byHex) return byHex
     }
 
     return null
-  }, [colorName, colorHex])
+  }, [colorName, colorHex, allColors])
 
-  const handlePaletteColorSelect = (color: typeof PAINT_COLORS[0]) => {
+  const handlePaletteColorSelect = (color: ColorOption) => {
     onColorChange(color.displayName, color.hex)
     setCustomName(color.displayName)
     setIsPickerOpen(false)
@@ -59,7 +84,7 @@ export function ColorPickerField({
   const handleNameChange = (name: string) => {
     setCustomName(name)
     // Si hay un hex seleccionado, mantenerlo; si no, buscar en paleta
-    const color = PAINT_COLORS.find(
+    const color = allColors.find(
       c => c.name.toLowerCase() === name.toLowerCase() || 
            c.displayName.toLowerCase() === name.toLowerCase()
     )
@@ -72,7 +97,7 @@ export function ColorPickerField({
 
   const handleHexChange = (hex: string) => {
     // Buscar si el hex corresponde a un color conocido
-    const color = PAINT_COLORS.find(c => c.hex.toLowerCase() === hex.toLowerCase())
+    const color = allColors.find(c => c.hex.toLowerCase() === hex.toLowerCase())
     if (color) {
       onColorChange(color.displayName, color.hex)
       setCustomName(color.displayName)
@@ -155,11 +180,14 @@ export function ColorPickerField({
       {isPickerOpen && (
         <div className='mt-2 p-4 border border-gray-200 rounded-lg bg-white shadow-lg'>
           <div className='mb-2'>
-            <h4 className='text-sm font-medium text-gray-700 mb-2'>Seleccionar de paleta</h4>
+            <h4 className='text-sm font-medium text-gray-700 mb-2'>
+              Seleccionar de paleta
+              {isLoadingColors && <span className='ml-2 text-xs text-gray-500'>(cargando...)</span>}
+            </h4>
             <div className='grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 max-h-48 overflow-y-auto'>
-              {PAINT_COLORS.filter(c => c.isPopular).map((color, index) => (
+              {allColors.filter(c => c.isPopular).map((color, index) => (
                 <button
-                  key={`color-${color.hex}-${index}`}
+                  key={`color-${color.id || color.hex}-${index}`}
                   type='button'
                   onClick={() => handlePaletteColorSelect(color)}
                   className={cn(
@@ -173,6 +201,30 @@ export function ColorPickerField({
                 />
               ))}
             </div>
+            {allColors.filter(c => !c.isPopular).length > 0 && (
+              <details className='mt-2'>
+                <summary className='text-xs text-gray-500 hover:text-gray-700 cursor-pointer'>
+                  Ver todos los colores ({allColors.length})
+                </summary>
+                <div className='grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2 max-h-48 overflow-y-auto mt-2'>
+                  {allColors.map((color, index) => (
+                    <button
+                      key={`color-all-${color.id || color.hex}-${index}`}
+                      type='button'
+                      onClick={() => handlePaletteColorSelect(color)}
+                      className={cn(
+                        'relative w-8 h-8 rounded border-2 transition-all hover:scale-110',
+                        selectedColorOption?.id === color.id
+                          ? 'border-blaze-orange-500 ring-2 ring-blaze-orange-200'
+                          : 'border-gray-300 hover:border-gray-400'
+                      )}
+                      style={{ backgroundColor: color.hex }}
+                      title={color.displayName}
+                    />
+                  ))}
+                </div>
+              </details>
+            )}
             <button
               type='button'
               onClick={() => setIsPickerOpen(false)}

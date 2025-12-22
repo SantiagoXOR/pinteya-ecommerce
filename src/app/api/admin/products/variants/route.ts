@@ -330,6 +330,45 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
       console.log('📦 [POST Variant] Datos preparados para insertar:', JSON.stringify(insertData, null, 2))
 
+      // ✅ NUEVO: Guardar color en la paleta si no existe
+      if (insertData.color_name && insertData.color_hex) {
+        try {
+          const colorNameLower = insertData.color_name.toLowerCase().trim()
+          
+          // Verificar si el color ya existe en la paleta (case-insensitive)
+          const { data: existingColor } = await supabaseAdmin
+            .from('color_palette')
+            .select('id')
+            .ilike('name', colorNameLower)
+            .maybeSingle()
+
+          // Si no existe, guardarlo
+          if (!existingColor) {
+            const { error: colorError } = await supabaseAdmin
+              .from('color_palette')
+              .insert({
+                name: insertData.color_name.trim(),
+                display_name: insertData.color_name.trim(),
+                hex: insertData.color_hex.trim(),
+                category: 'Personalizado',
+                family: 'Personalizados',
+                is_popular: false,
+                description: `Color personalizado agregado automáticamente: ${insertData.color_name}`,
+              } as any)
+
+            if (colorError) {
+              console.warn(`⚠️ [POST Variant] No se pudo guardar color en paleta: ${colorError.message}`)
+              // No fallar la creación de la variante si falla el guardado del color
+            } else {
+              console.log(`✅ [POST Variant] Color "${insertData.color_name}" guardado en paleta automáticamente`)
+            }
+          }
+        } catch (error) {
+          console.warn(`⚠️ [POST Variant] Error al verificar/guardar color en paleta:`, error)
+          // No fallar la creación de la variante si falla el guardado del color
+        }
+      }
+
       // Crear variante
       const { data: variant, error: variantError } = await supabase
         .from('product_variants')
