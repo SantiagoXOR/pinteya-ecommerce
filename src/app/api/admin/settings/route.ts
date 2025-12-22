@@ -126,8 +126,8 @@ const DEFAULT_SETTINGS: SystemSettings = {
     payment_timeout: 15,
   },
   integrations: {
-    google_analytics_id: '',
-    facebook_pixel_id: '',
+    google_analytics_id: process.env.NEXT_PUBLIC_GA_ID || '',
+    facebook_pixel_id: process.env.NEXT_PUBLIC_META_PIXEL_ID || '',
   },
 }
 
