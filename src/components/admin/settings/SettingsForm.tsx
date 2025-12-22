@@ -10,7 +10,7 @@ import {
   CreditCard, 
   Bell, 
   Shield, 
-  Plug, 
+  Link, 
   Save, 
   RotateCcw, 
   Loader2,
@@ -40,7 +40,7 @@ const tabs: Tab[] = [
   { id: 'payments', label: 'Pagos', icon: CreditCard, component: PaymentsSettings },
   { id: 'notifications', label: 'Notificaciones', icon: Bell, component: NotificationsSettings },
   { id: 'security', label: 'Seguridad', icon: Shield, component: SecuritySettings },
-  { id: 'integrations', label: 'Integraciones', icon: Plug, component: IntegrationsSettings },
+  { id: 'integrations', label: 'Integraciones', icon: Link, component: IntegrationsSettings },
 ]
 
 export function SettingsForm() {

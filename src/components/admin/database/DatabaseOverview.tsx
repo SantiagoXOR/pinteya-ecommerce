@@ -1,7 +1,7 @@
 'use client'
 
 import { AdminCard } from '../ui/AdminCard'
-import { Database, Table, BarChart3, Activity } from '@/lib/optimized-imports'
+import { Database, Tablet, BarChart3, Activity } from '@/lib/optimized-imports'
 import { DatabaseStats } from '@/hooks/admin/useDatabase'
 
 interface DatabaseOverviewProps {
@@ -37,7 +37,7 @@ export function DatabaseOverview({ stats, loading }: DatabaseOverviewProps) {
             <p className='text-3xl font-bold text-gray-900'>{stats.totalTables}</p>
           </div>
           <div className='p-3 bg-blue-500 rounded-lg'>
-            <Table className='w-6 h-6 text-white' />
+            <Tablet className='w-6 h-6 text-white' />
           </div>
         </div>
       </AdminCard>

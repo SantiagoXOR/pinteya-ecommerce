@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { AdminCard } from '../ui/AdminCard'
-import { Table, Search, Database } from '@/lib/optimized-imports'
+import { Tablet, Search, Database } from '@/lib/optimized-imports'
 import { TableInfo } from '@/hooks/admin/useDatabase'
 
 interface TablesListProps {
@@ -85,7 +85,7 @@ export function TablesList({
                   >
                     <td className='py-3 px-4'>
                       <div className='flex items-center space-x-2'>
-                        <Table className='w-4 h-4 text-gray-400' />
+                        <Tablet className='w-4 h-4 text-gray-400' />
                         <span className='font-medium text-gray-900'>{table.name}</span>
                       </div>
                     </td>

@@ -4,7 +4,7 @@ import { AdminCard } from '../ui/AdminCard'
 import { Input } from '../ui/Input'
 import { Textarea } from '../ui/Textarea'
 import { SystemSettings } from '@/hooks/admin/useSettings'
-import { Globe, Mail, Phone, Clock, DollarSign, Languages, AlertTriangle } from '@/lib/optimized-imports'
+import { Globe, Mail, Phone, Clock, DollarSign, AlertTriangle } from '@/lib/optimized-imports'
 
 interface GeneralSettingsProps {
   settings: SystemSettings
@@ -101,7 +101,7 @@ export function GeneralSettings({ settings, onChange }: GeneralSettingsProps) {
             label='Idioma'
             value={settings.general.language}
             onChange={(e) => handleChange('language', e.target.value.toLowerCase())}
-            icon={Languages}
+            icon={Globe}
             placeholder='es'
             helperText='Código ISO 639-1 (ej: es, en, pt)'
             maxLength={2}
