@@ -279,19 +279,54 @@ async function validateAdminAuth() {
 
 async function getSystemSettings(): Promise<SystemSettings> {
   try {
-    const { data: settings, error } = await supabaseAdmin
+    if (!supabaseAdmin) {
+      logger.log(
+        LogLevel.WARN,
+        LogCategory.API,
+        'Cliente de Supabase no disponible, usando defaults',
+        {}
+      )
+      return DEFAULT_SETTINGS
+    }
+
+    // Intentar obtener con la estructura nueva primero
+    let { data: settings, error } = await supabaseAdmin
       .from('system_settings')
       .select('key, value, category')
       .order('category', { ascending: true })
 
+    // Si falla, puede ser porque la tabla todavía tiene estructura antigua
     if (error) {
       logger.log(
         LogLevel.WARN,
         LogCategory.API,
-        'Error obteniendo configuraciones, usando defaults',
-        { error }
+        'Error obteniendo configuraciones con estructura nueva, intentando estructura antigua',
+        { error: error.message }
       )
-      return DEFAULT_SETTINGS
+
+      // Intentar con estructura antigua como fallback
+      const { data: oldSettings, error: oldError } = await supabaseAdmin
+        .from('system_settings')
+        .select('setting_key, setting_value, description')
+        .order('setting_key', { ascending: true })
+
+      if (oldError || !oldSettings || oldSettings.length === 0) {
+        logger.log(
+          LogLevel.WARN,
+          LogCategory.API,
+          'Error obteniendo configuraciones, usando defaults',
+          { error: oldError?.message || 'No se encontraron configuraciones' }
+        )
+        return DEFAULT_SETTINGS
+      }
+
+      // Convertir estructura antigua a formato esperado
+      settings = oldSettings.map((old: any) => ({
+        key: old.setting_key,
+        value: old.setting_value,
+        category: 'general', // Por defecto, ya que la estructura antigua no tiene category
+      }))
+      error = null
     }
 
     if (!settings || settings.length === 0) {
@@ -303,7 +338,9 @@ async function getSystemSettings(): Promise<SystemSettings> {
     // Construir objeto de configuraciones desde la base de datos
     const result = JSON.parse(JSON.stringify(DEFAULT_SETTINGS)) // Deep copy
 
-    settings.forEach(setting => {
+    settings.forEach((setting: any) => {
+      if (!setting.key) return // Skip si no tiene key
+
       const keys = setting.key.split('.')
       let current = result
 
@@ -316,7 +353,8 @@ async function getSystemSettings(): Promise<SystemSettings> {
 
       const lastKey = keys[keys.length - 1]
       try {
-        current[lastKey] = JSON.parse(setting.value)
+        const parsedValue = typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value
+        current[lastKey] = parsedValue
       } catch {
         current[lastKey] = setting.value
       }
@@ -325,7 +363,7 @@ async function getSystemSettings(): Promise<SystemSettings> {
     return result
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error obteniendo configuraciones del sistema', {
-      error,
+      error: error instanceof Error ? error.message : String(error),
     })
     return DEFAULT_SETTINGS
   }
@@ -535,7 +573,11 @@ export async function GET(request: NextRequest) {
     addRateLimitHeaders(nextResponse, rateLimitResult)
     return nextResponse
   } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/settings', { error })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/settings', { 
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -543,13 +585,13 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 500,
       responseTime: Date.now() - startTime,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
     })
 
     const errorResponse: ApiResponse<null> = {
       data: null,
       success: false,
-      error: 'Error interno del servidor',
+      error: `Error interno del servidor: ${errorMessage}`,
     }
 
     return NextResponse.json(errorResponse, { status: 500 })
