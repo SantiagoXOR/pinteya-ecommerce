@@ -126,15 +126,44 @@ export async function getEnterpriseAuthContext(
     const testAdmin = getHeader(request, 'x-test-admin')
     const testEmail = getHeader(request, 'x-admin-email')
 
-    // Bypass para tests E2E (verificar que el email tenga rol admin en BD)
+    // Bypass para tests E2E - SOLO EN DESARROLLO/TEST Y CON VERIFICACIÓN DE SEGURIDAD
     if (testAdmin === 'true' && testEmail) {
-      console.log('[Enterprise Auth] Test mode - bypassing authentication')
+      // CRÍTICO: Solo permitir en desarrollo/test, nunca en producción
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('[Enterprise Auth] Intento de bypass de test en producción - BLOQUEADO')
+        return {
+          success: false,
+          error: 'Test bypass no permitido en producción',
+          code: 'PRODUCTION_BYPASS_BLOCKED',
+          status: 403,
+        }
+      }
+
+      // Lista blanca de emails permitidos para tests (solo emails con rol admin en BD)
+      const ALLOWED_TEST_ADMIN_EMAILS = [
+        'santiago@xor.com.ar',
+        'pinteya.app@gmail.com',
+        'pinturasmascolor@gmail.com',
+      ]
+
+      // Verificar que el email esté en la lista blanca
+      if (!ALLOWED_TEST_ADMIN_EMAILS.includes(testEmail)) {
+        console.warn(`[Enterprise Auth] Intento de bypass con email no autorizado: ${testEmail}`)
+        return {
+          success: false,
+          error: 'Email no autorizado para test bypass',
+          code: 'UNAUTHORIZED_TEST_EMAIL',
+          status: 403,
+        }
+      }
+
+      console.log(`[Enterprise Auth] Test mode - bypassing authentication para ${testEmail} (solo desarrollo/test)`)
       return {
         success: true,
         context: {
           userId: 'test-admin-user',
           sessionId: 'test-session',
-          email: testEmail || 'admin@test.dev',
+          email: testEmail,
           role: 'admin',
           permissions: [
             'admin_access',
