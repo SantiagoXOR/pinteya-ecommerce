@@ -56,22 +56,8 @@ export function PaymentsSettings({ settings, onChange }: PaymentsSettingsProps) 
       <AdminCard title='Métodos de Pago' description='Habilitar o deshabilitar métodos de pago disponibles'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <ToggleSwitch
-            label='Stripe'
-            description='Tarjetas de crédito y débito'
-            checked={settings.payments.stripe_enabled}
-            onChange={(checked) => handleChange('stripe_enabled', checked)}
-          />
-
-          <ToggleSwitch
-            label='PayPal'
-            description='Pagos a través de PayPal'
-            checked={settings.payments.paypal_enabled}
-            onChange={(checked) => handleChange('paypal_enabled', checked)}
-          />
-
-          <ToggleSwitch
             label='MercadoPago'
-            description='Método de pago principal'
+            description='Método de pago principal - Tarjetas de crédito, débito y más'
             checked={settings.payments.mercadopago_enabled}
             onChange={(checked) => handleChange('mercadopago_enabled', checked)}
           />
@@ -81,13 +67,6 @@ export function PaymentsSettings({ settings, onChange }: PaymentsSettingsProps) 
             description='Pago en efectivo al recibir'
             checked={settings.payments.cash_on_delivery}
             onChange={(checked) => handleChange('cash_on_delivery', checked)}
-          />
-
-          <ToggleSwitch
-            label='Transferencia Bancaria'
-            description='Transferencia o depósito bancario'
-            checked={settings.payments.bank_transfer}
-            onChange={(checked) => handleChange('bank_transfer', checked)}
           />
         </div>
       </AdminCard>

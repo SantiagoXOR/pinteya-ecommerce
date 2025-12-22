@@ -36,51 +36,20 @@ const SystemSettingsSchema = z.object({
 
   ecommerce: z
     .object({
-      tax_rate: z.number().min(0).max(100).optional(),
       shipping_cost: z.number().min(0).optional(),
       free_shipping_threshold: z.number().min(0).optional(),
       inventory_tracking: z.boolean().optional(),
       low_stock_threshold: z.number().min(0).optional(),
       allow_backorders: z.boolean().optional(),
-      auto_approve_reviews: z.boolean().optional(),
       max_cart_items: z.number().min(1).max(100).optional(),
-      session_timeout: z.number().min(5).max(1440).optional(), // minutos
     })
     .optional(),
 
   payments: z
     .object({
-      stripe_enabled: z.boolean().optional(),
-      paypal_enabled: z.boolean().optional(),
       mercadopago_enabled: z.boolean().optional(),
       cash_on_delivery: z.boolean().optional(),
-      bank_transfer: z.boolean().optional(),
       payment_timeout: z.number().min(5).max(60).optional(), // minutos
-    })
-    .optional(),
-
-  notifications: z
-    .object({
-      email_notifications: z.boolean().optional(),
-      sms_notifications: z.boolean().optional(),
-      push_notifications: z.boolean().optional(),
-      order_confirmation: z.boolean().optional(),
-      shipping_updates: z.boolean().optional(),
-      marketing_emails: z.boolean().optional(),
-      low_stock_alerts: z.boolean().optional(),
-      new_order_alerts: z.boolean().optional(),
-    })
-    .optional(),
-
-  security: z
-    .object({
-      two_factor_auth: z.boolean().optional(),
-      password_min_length: z.number().min(6).max(50).optional(),
-      session_duration: z.number().min(1).max(168).optional(), // horas
-      max_login_attempts: z.number().min(3).max(10).optional(),
-      lockout_duration: z.number().min(5).max(1440).optional(), // minutos
-      require_email_verification: z.boolean().optional(),
-      admin_ip_whitelist: z.array(z.string().ip()).optional(),
     })
     .optional(),
 
@@ -88,11 +57,6 @@ const SystemSettingsSchema = z.object({
     .object({
       google_analytics_id: z.string().optional(),
       facebook_pixel_id: z.string().optional(),
-      google_tag_manager_id: z.string().optional(),
-      mailchimp_api_key: z.string().optional(),
-      sendgrid_api_key: z.string().optional(),
-      cloudinary_cloud_name: z.string().optional(),
-      aws_s3_bucket: z.string().optional(),
     })
     .optional(),
 })
@@ -114,51 +78,21 @@ interface SystemSettings {
     maintenance_mode: boolean
   }
   ecommerce: {
-    tax_rate: number
     shipping_cost: number
     free_shipping_threshold: number
     inventory_tracking: boolean
     low_stock_threshold: number
     allow_backorders: boolean
-    auto_approve_reviews: boolean
     max_cart_items: number
-    session_timeout: number
   }
   payments: {
-    stripe_enabled: boolean
-    paypal_enabled: boolean
     mercadopago_enabled: boolean
     cash_on_delivery: boolean
-    bank_transfer: boolean
     payment_timeout: number
-  }
-  notifications: {
-    email_notifications: boolean
-    sms_notifications: boolean
-    push_notifications: boolean
-    order_confirmation: boolean
-    shipping_updates: boolean
-    marketing_emails: boolean
-    low_stock_alerts: boolean
-    new_order_alerts: boolean
-  }
-  security: {
-    two_factor_auth: boolean
-    password_min_length: number
-    session_duration: number
-    max_login_attempts: number
-    lockout_duration: number
-    require_email_verification: boolean
-    admin_ip_whitelist: string[]
   }
   integrations: {
     google_analytics_id: string
     facebook_pixel_id: string
-    google_tag_manager_id: string
-    mailchimp_api_key: string
-    sendgrid_api_key: string
-    cloudinary_cloud_name: string
-    aws_s3_bucket: string
   }
 }
 
@@ -170,7 +104,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
   general: {
     site_name: 'Pinteya E-Commerce',
     site_description: 'Tu tienda online de confianza',
-    site_url: 'https://localhost:3000',
+    site_url: process.env.NEXT_PUBLIC_APP_URL || 'https://localhost:3000',
     contact_email: 'contacto@pinteya.com',
     support_phone: '+54 11 1234-5678',
     timezone: 'America/Argentina/Buenos_Aires',
@@ -179,51 +113,21 @@ const DEFAULT_SETTINGS: SystemSettings = {
     maintenance_mode: false,
   },
   ecommerce: {
-    tax_rate: 21.0,
-    shipping_cost: 500.0,
-    free_shipping_threshold: 50000.0,
+    shipping_cost: 10000,
+    free_shipping_threshold: 50000,
     inventory_tracking: true,
     low_stock_threshold: 10,
     allow_backorders: false,
-    auto_approve_reviews: false,
-    max_cart_items: 50,
-    session_timeout: 30,
+    max_cart_items: 99,
   },
   payments: {
-    stripe_enabled: true,
-    paypal_enabled: false,
     mercadopago_enabled: true,
     cash_on_delivery: true,
-    bank_transfer: true,
     payment_timeout: 15,
-  },
-  notifications: {
-    email_notifications: true,
-    sms_notifications: false,
-    push_notifications: true,
-    order_confirmation: true,
-    shipping_updates: true,
-    marketing_emails: false,
-    low_stock_alerts: true,
-    new_order_alerts: true,
-  },
-  security: {
-    two_factor_auth: false,
-    password_min_length: 8,
-    session_duration: 24,
-    max_login_attempts: 5,
-    lockout_duration: 15,
-    require_email_verification: true,
-    admin_ip_whitelist: [],
   },
   integrations: {
     google_analytics_id: '',
     facebook_pixel_id: '',
-    google_tag_manager_id: '',
-    mailchimp_api_key: '',
-    sendgrid_api_key: '',
-    cloudinary_cloud_name: '',
-    aws_s3_bucket: '',
   },
 }
 
@@ -296,7 +200,6 @@ async function getSystemSettings(): Promise<SystemSettings> {
       .from('system_settings')
       .select('key, value, category')
       .order('category', { ascending: true })
-    
     console.log('[getSystemSettings] Resultado query estructura nueva:', { 
       hasData: !!settings, 
       dataLength: settings?.length, 
@@ -574,19 +477,24 @@ export async function GET(request: NextRequest) {
 
   try {
     // Rate limiting
+    const rateLimitConfig = {
+      windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
+      maxRequests: RATE_LIMIT_CONFIGS.admin.maxRequests,
+      message: RATE_LIMIT_CONFIGS.admin.message || 'Demasiadas solicitudes administrativas',
+      standardHeaders: true,
+      legacyHeaders: true,
+    }
     const rateLimitResult = await checkRateLimit(
       request,
-      {
-        windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
-        maxRequests: RATE_LIMIT_CONFIGS.admin.maxRequests,
-        message: RATE_LIMIT_CONFIGS.admin.message || 'Demasiadas solicitudes administrativas',
-      },
+      rateLimitConfig,
       'admin-settings'
     )
 
-    if (!rateLimitResult.success) {
-      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
-      addRateLimitHeaders(response, rateLimitResult)
+    if (!rateLimitResult.allowed) {
+      const response = NextResponse.json({ 
+        error: rateLimitResult.error || rateLimitConfig.message 
+      }, { status: 429 })
+      addRateLimitHeaders(response, rateLimitResult, rateLimitConfig)
       return response
     }
 
@@ -620,7 +528,7 @@ export async function GET(request: NextRequest) {
     }
 
     const nextResponse = NextResponse.json(response)
-    addRateLimitHeaders(nextResponse, rateLimitResult)
+    addRateLimitHeaders(nextResponse, rateLimitResult, rateLimitConfig)
     return nextResponse
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -669,19 +577,24 @@ export async function PUT(request: NextRequest) {
 
   try {
     // Rate limiting
+    const rateLimitConfig = {
+      windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
+      maxRequests: Math.floor(RATE_LIMIT_CONFIGS.admin.maxRequests / 2), // Más restrictivo para actualizaciones
+      message: 'Demasiadas actualizaciones de configuración',
+      standardHeaders: true,
+      legacyHeaders: true,
+    }
     const rateLimitResult = await checkRateLimit(
       request,
-      {
-        windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
-        maxRequests: Math.floor(RATE_LIMIT_CONFIGS.admin.maxRequests / 2), // Más restrictivo para actualizaciones
-        message: 'Demasiadas actualizaciones de configuración',
-      },
+      rateLimitConfig,
       'admin-settings-update'
     )
 
-    if (!rateLimitResult.success) {
-      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
-      addRateLimitHeaders(response, rateLimitResult)
+    if (!rateLimitResult.allowed) {
+      const response = NextResponse.json({ 
+        error: rateLimitResult.error || rateLimitConfig.message 
+      }, { status: 429 })
+      addRateLimitHeaders(response, rateLimitResult, rateLimitConfig)
       return response
     }
 
@@ -731,7 +644,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const nextResponse = NextResponse.json(response)
-    addRateLimitHeaders(nextResponse, rateLimitResult)
+    addRateLimitHeaders(nextResponse, rateLimitResult, rateLimitConfig)
     return nextResponse
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PUT /api/admin/settings', { error })
@@ -773,9 +686,11 @@ export async function POST(request: NextRequest) {
       'admin-settings-reset'
     )
 
-    if (!rateLimitResult.success) {
-      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
-      addRateLimitHeaders(response, rateLimitResult)
+    if (!rateLimitResult.allowed) {
+      const response = NextResponse.json({ 
+        error: rateLimitResult.error || rateLimitConfig.message 
+      }, { status: 429 })
+      addRateLimitHeaders(response, rateLimitResult, rateLimitConfig)
       return response
     }
 
@@ -812,7 +727,7 @@ export async function POST(request: NextRequest) {
     }
 
     const nextResponse = NextResponse.json(response)
-    addRateLimitHeaders(nextResponse, rateLimitResult)
+    addRateLimitHeaders(nextResponse, rateLimitResult, rateLimitConfig)
     return nextResponse
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/settings', { error })

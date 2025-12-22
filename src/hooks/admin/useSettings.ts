@@ -14,51 +14,21 @@ export interface SystemSettings {
     maintenance_mode: boolean
   }
   ecommerce: {
-    tax_rate: number
     shipping_cost: number
     free_shipping_threshold: number
     inventory_tracking: boolean
     low_stock_threshold: number
     allow_backorders: boolean
-    auto_approve_reviews: boolean
     max_cart_items: number
-    session_timeout: number
   }
   payments: {
-    stripe_enabled: boolean
-    paypal_enabled: boolean
     mercadopago_enabled: boolean
     cash_on_delivery: boolean
-    bank_transfer: boolean
     payment_timeout: number
-  }
-  notifications: {
-    email_notifications: boolean
-    sms_notifications: boolean
-    push_notifications: boolean
-    order_confirmation: boolean
-    shipping_updates: boolean
-    marketing_emails: boolean
-    low_stock_alerts: boolean
-    new_order_alerts: boolean
-  }
-  security: {
-    two_factor_auth: boolean
-    password_min_length: number
-    session_duration: number
-    max_login_attempts: number
-    lockout_duration: number
-    require_email_verification: boolean
-    admin_ip_whitelist: string[]
   }
   integrations: {
     google_analytics_id: string
     facebook_pixel_id: string
-    google_tag_manager_id: string
-    mailchimp_api_key: string
-    sendgrid_api_key: string
-    cloudinary_cloud_name: string
-    aws_s3_bucket: string
   }
 }
 

@@ -8,21 +8,19 @@ import {
   Settings, 
   Store, 
   CreditCard, 
-  Bell, 
-  Shield, 
   Link, 
   Save, 
   RotateCcw, 
   Loader2,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Users
 } from '@/lib/optimized-imports'
 import { GeneralSettings } from './GeneralSettings'
 import { EcommerceSettings } from './EcommerceSettings'
 import { PaymentsSettings } from './PaymentsSettings'
-import { NotificationsSettings } from './NotificationsSettings'
-import { SecuritySettings } from './SecuritySettings'
 import { IntegrationsSettings } from './IntegrationsSettings'
+import { UsersRolesSettings } from './UsersRolesSettings'
 
 interface Tab {
   id: string
@@ -38,8 +36,7 @@ const tabs: Tab[] = [
   { id: 'general', label: 'General', icon: Settings, component: GeneralSettings },
   { id: 'ecommerce', label: 'E-commerce', icon: Store, component: EcommerceSettings },
   { id: 'payments', label: 'Pagos', icon: CreditCard, component: PaymentsSettings },
-  { id: 'notifications', label: 'Notificaciones', icon: Bell, component: NotificationsSettings },
-  { id: 'security', label: 'Seguridad', icon: Shield, component: SecuritySettings },
+  { id: 'users', label: 'Usuarios y Roles', icon: Users, component: UsersRolesSettings },
   { id: 'integrations', label: 'Integraciones', icon: Link, component: IntegrationsSettings },
 ]
 
@@ -127,7 +124,7 @@ export function SettingsForm() {
     }
 
     // Confirmación para cambios críticos
-    const criticalChanges = ['maintenance_mode', 'two_factor_auth', 'admin_ip_whitelist']
+    const criticalChanges = ['maintenance_mode']
     const hasCriticalChange = Object.keys(updates).some(category => 
       criticalChanges.some(critical => 
         JSON.stringify(localSettings[category as keyof SystemSettings]).includes(critical)
