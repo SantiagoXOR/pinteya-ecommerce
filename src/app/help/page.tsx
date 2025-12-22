@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   HelpCircle,
@@ -24,6 +24,13 @@ import {
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
+
+interface PublicSettings {
+  contact_email: string
+  support_phone: string
+  site_name: string
+  site_url: string
+}
 
 interface FAQItem {
   id: string
@@ -89,6 +96,38 @@ const HelpPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('todos')
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
+  const [publicSettings, setPublicSettings] = useState<PublicSettings>({
+    contact_email: 'soporte@pinteya.com',
+    support_phone: '+54 351 XXX-XXXX',
+    site_name: 'Pinteya',
+    site_url: 'https://pinteya.com',
+  })
+
+  // Cargar configuraciones públicas
+  useEffect(() => {
+    const loadPublicSettings = async () => {
+      try {
+        const response = await fetch('/api/settings/public')
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            setPublicSettings(result.data)
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando configuraciones públicas:', error)
+        // Mantener valores por defecto en caso de error
+      }
+    }
+
+    loadPublicSettings()
+  }, [])
+
+  // Función para formatear el teléfono para el href tel:
+  const formatPhoneForTel = (phone: string) => {
+    // Remover espacios, guiones y otros caracteres, dejar solo números y +
+    return phone.replace(/[\s\-\(\)]/g, '')
+  }
 
   const filteredFAQs = faqData.filter(faq => {
     const matchesSearch =
@@ -276,10 +315,10 @@ const HelpPage = () => {
               <h3 className='text-xl font-semibold mb-2'>Teléfono</h3>
               <p className='text-gray-600 mb-4'>Llámanos para soporte inmediato</p>
               <a
-                href='tel:+543511234567'
+                href={`tel:${formatPhoneForTel(publicSettings.support_phone)}`}
                 className='bg-blaze-orange-600 text-white px-6 py-2 rounded-lg hover:bg-blaze-orange-700 transition-colors inline-block'
               >
-                +54 351 XXX-XXXX
+                {publicSettings.support_phone}
               </a>
             </motion.div>
 
@@ -293,7 +332,7 @@ const HelpPage = () => {
               <h3 className='text-xl font-semibold mb-2'>Email</h3>
               <p className='text-gray-600 mb-4'>Envíanos un mensaje detallado</p>
               <a
-                href='mailto:soporte@pinteya.com'
+                href={`mailto:${publicSettings.contact_email}`}
                 className='bg-blaze-orange-600 text-white px-6 py-2 rounded-lg hover:bg-blaze-orange-700 transition-colors inline-block'
               >
                 Enviar Email
