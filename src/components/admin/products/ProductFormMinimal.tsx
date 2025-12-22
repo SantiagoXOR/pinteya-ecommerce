@@ -37,10 +37,30 @@ const ProductSchema = z.object({
   
   // Precios & Stock
   // ✅ Hacer opcionales: si el producto tiene variantes, el precio y stock se definen en las variantes
-  price: z.number().min(0.01, 'El precio debe ser mayor a 0').optional().nullable(),
+  price: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined || val === 0) return null
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return isNaN(num) || num <= 0 ? null : num
+    },
+    z.union([
+      z.number().min(0.01, 'El precio debe ser mayor a 0'),
+      z.null(),
+    ]).optional().nullable()
+  ),
   discounted_price: z.number().min(0).optional().nullable(),
   discount_percent: z.number().min(0).max(100).optional().nullable(), // ✅ NUEVO: Porcentaje de descuento
-  stock: z.number().min(0, 'El stock debe ser mayor o igual a 0').optional().nullable(),
+  stock: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined) return null
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return isNaN(num) ? null : num
+    },
+    z.union([
+      z.number().min(0, 'El stock debe ser mayor o igual a 0'),
+      z.null(),
+    ]).optional().nullable()
+  ),
   
   // Imagen
   image_url: z
@@ -847,13 +867,20 @@ export function ProductFormMinimal({
                   type='number'
                   step='0.01'
                   {...register('price', { 
-                    valueAsNumber: true,
+                    valueAsNumber: false, // ✅ Cambiar a false para permitir strings vacíos
                     onChange: (e) => {
-                      const price = parseFloat(e.target.value) || 0
-                      const discountPercent = watch('discount_percent')
-                      if (discountPercent && discountPercent > 0 && discountPercent <= 100) {
-                        const discountedPrice = price * (1 - discountPercent / 100)
-                        setValue('discounted_price', Math.round(discountedPrice * 100) / 100, { shouldDirty: true })
+                      const value = e.target.value
+                      if (value === '' || value === null || value === undefined) {
+                        setValue('price', null, { shouldDirty: true })
+                        return
+                      }
+                      const price = parseFloat(value)
+                      if (!isNaN(price) && price > 0) {
+                        const discountPercent = watch('discount_percent')
+                        if (discountPercent && discountPercent > 0 && discountPercent <= 100) {
+                          const discountedPrice = price * (1 - discountPercent / 100)
+                          setValue('discounted_price', Math.round(discountedPrice * 100) / 100, { shouldDirty: true })
+                        }
                       }
                     }
                   })}
@@ -954,7 +981,15 @@ export function ProductFormMinimal({
               </label>
                 <input
                   type='number'
-                  {...register('stock', { valueAsNumber: true })}
+                  {...register('stock', { 
+                    valueAsNumber: false, // ✅ Cambiar a false para permitir strings vacíos
+                    onChange: (e) => {
+                      const value = e.target.value
+                      if (value === '' || value === null || value === undefined) {
+                        setValue('stock', null, { shouldDirty: true })
+                      }
+                    }
+                  })}
                   placeholder={newVariants.length > 0 ? 'Opcional' : '0'}
                   className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
                   placeholder='0'
