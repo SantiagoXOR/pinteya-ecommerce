@@ -421,7 +421,70 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         }
       }
 
-      // ✅ NUEVO: Guardar terminación en la paleta si no existe
+      // ✅ VALIDACIÓN: Asegurar que finish no exceda 100 caracteres (por si acaso)
+      if (insertData.finish && insertData.finish.length > 100) {
+        insertData.finish = insertData.finish.substring(0, 100)
+        console.warn(`⚠️ [POST Variant] Finish truncado a 100 caracteres: ${insertData.finish}`)
+      }
+
+      // ✅ DEBUG: Log del valor de finish antes de insertar
+      console.log(`🔍 [POST Variant] Insertando variante con finish:`, {
+        finish: insertData.finish,
+        finishLength: insertData.finish?.length,
+        finishType: typeof insertData.finish,
+        insertDataKeys: Object.keys(insertData),
+      })
+
+      // Crear variante
+      const { data: variant, error: variantError } = await supabase
+        .from('product_variants')
+        .insert(insertData)
+        .select()
+        .single()
+
+      if (variantError) {
+        securityLogger.logApiError(
+          securityLogger.context,
+          new Error(variantError.message),
+          {
+            endpoint: '/api/admin/products/variants',
+            operation: 'create_variant',
+            productId: body.product_id,
+          }
+        )
+
+        console.error('[API] Error creating variant:', variantError)
+        console.error('[API] Variant error details:', {
+          message: variantError.message,
+          code: variantError.code,
+          details: variantError.details,
+          hint: variantError.hint,
+        })
+        console.error('[API] Variant data being inserted:', JSON.stringify({
+          product_id: body.product_id,
+          aikon_id: body.aikon_id,
+          color_name: body.color_name,
+          color_hex: body.color_hex,
+          measure: body.measure,
+          finish: body.finish,
+          finishLength: body.finish?.length,
+          price_list: body.price_list,
+          price_sale: body.price_sale,
+          stock: body.stock,
+        }, null, 2))
+
+        return NextResponse.json(
+          {
+            success: false,
+            error: variantError.message || 'Error al crear variante',
+            data: null,
+            details: variantError.details || null,
+          },
+          { status: 500 }
+        )
+      }
+
+      // ✅ NUEVO: Guardar terminación en la paleta si no existe (DESPUÉS de crear la variante)
       if (insertData.finish) {
         try {
           const finishTrimmed = insertData.finish.trim()
@@ -460,47 +523,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
           console.warn(`⚠️ [POST Variant] Error al verificar/guardar terminación en paleta:`, error)
           // No fallar la creación de la variante si falla el guardado de la terminación
         }
-      }
-
-      // Crear variante
-      const { data: variant, error: variantError } = await supabase
-        .from('product_variants')
-        .insert(insertData)
-        .select()
-        .single()
-
-      if (variantError) {
-        securityLogger.logApiError(
-          securityLogger.context,
-          new Error(variantError.message),
-          {
-            endpoint: '/api/admin/products/variants',
-            operation: 'create_variant',
-            productId: body.product_id,
-          }
-        )
-
-        console.error('[API] Error creating variant:', variantError)
-        console.error('[API] Variant data:', JSON.stringify({
-          product_id: body.product_id,
-          aikon_id: body.aikon_id,
-          color_name: body.color_name,
-          measure: body.measure,
-          finish: body.finish,
-          price_list: body.price_list,
-          price_sale: body.price_sale,
-          stock: body.stock,
-        }, null, 2))
-
-        return NextResponse.json(
-          {
-            success: false,
-            error: variantError.message || 'Error al crear variante',
-            data: null,
-            details: variantError.details || null,
-          },
-          { status: 500 }
-        )
       }
 
       // Log de éxito - usando console.log para eventos informativos
