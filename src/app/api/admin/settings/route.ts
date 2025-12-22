@@ -280,6 +280,7 @@ async function validateAdminAuth() {
 async function getSystemSettings(): Promise<SystemSettings> {
   try {
     if (!supabaseAdmin) {
+      console.error('[getSystemSettings] Cliente de Supabase no disponible')
       logger.log(
         LogLevel.WARN,
         LogCategory.API,
@@ -289,26 +290,41 @@ async function getSystemSettings(): Promise<SystemSettings> {
       return DEFAULT_SETTINGS
     }
 
+    console.log('[getSystemSettings] Intentando obtener configuraciones con estructura nueva...')
     // Intentar obtener con la estructura nueva primero
     let { data: settings, error } = await supabaseAdmin
       .from('system_settings')
       .select('key, value, category')
       .order('category', { ascending: true })
+    
+    console.log('[getSystemSettings] Resultado query estructura nueva:', { 
+      hasData: !!settings, 
+      dataLength: settings?.length, 
+      error: error?.message 
+    })
 
     // Si falla, puede ser porque la tabla todavía tiene estructura antigua
     if (error) {
+      console.warn('[getSystemSettings] Error con estructura nueva, intentando antigua:', error.message)
       logger.log(
         LogLevel.WARN,
         LogCategory.API,
         'Error obteniendo configuraciones con estructura nueva, intentando estructura antigua',
-        { error: error.message }
+        { error: error.message, code: error.code, details: error.details }
       )
 
       // Intentar con estructura antigua como fallback
+      console.log('[getSystemSettings] Intentando con estructura antigua...')
       const { data: oldSettings, error: oldError } = await supabaseAdmin
         .from('system_settings')
         .select('setting_key, setting_value, description')
         .order('setting_key', { ascending: true })
+      
+      console.log('[getSystemSettings] Resultado query estructura antigua:', { 
+        hasData: !!oldSettings, 
+        dataLength: oldSettings?.length, 
+        error: oldError?.message 
+      })
 
       if (oldError || !oldSettings || oldSettings.length === 0) {
         logger.log(
@@ -608,19 +624,32 @@ export async function GET(request: NextRequest) {
     return nextResponse
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
+    // Log detallado para debugging
+    console.error('[API Admin Settings GET] Error completo:', {
+      message: errorMessage,
+      stack: errorStack,
+      error: error,
+    })
+    
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/settings', { 
       error: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined
+      stack: errorStack
     })
 
     // Registrar métricas de error
-    metricsCollector.recordApiCall({
-      endpoint: '/api/admin/settings',
-      method: 'GET',
-      statusCode: 500,
-      responseTime: Date.now() - startTime,
-      error: errorMessage,
-    })
+    try {
+      metricsCollector.recordApiCall({
+        endpoint: '/api/admin/settings',
+        method: 'GET',
+        statusCode: 500,
+        responseTime: Date.now() - startTime,
+        error: errorMessage,
+      })
+    } catch (metricsError) {
+      console.error('[API Admin Settings] Error registrando métricas:', metricsError)
+    }
 
     const errorResponse: ApiResponse<null> = {
       data: null,
