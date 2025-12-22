@@ -21,6 +21,7 @@ import {
   Truck,
   RefreshCw,
 } from '@/lib/optimized-imports'
+import { trackEvent } from '@/lib/google-analytics'
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
@@ -139,6 +140,14 @@ const HelpPage = () => {
 
   const toggleFAQ = (id: string) => {
     setExpandedFAQ(expandedFAQ === id ? null : id)
+  }
+
+  const handleChatClick = () => {
+    trackEvent('whatsapp_click', 'engagement', 'help_page_chat_button')
+    const whatsappNumber = '5493513411796' // Número oficial de Pinteya
+    const defaultMessage = 'Hola! Necesito ayuda con mi pedido'
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultMessage)}`
+    window.open(url, '_blank')
   }
 
   return (
@@ -300,7 +309,10 @@ const HelpPage = () => {
               <MessageCircle className='w-12 h-12 text-blaze-orange-600 mx-auto mb-4' />
               <h3 className='text-xl font-semibold mb-2'>Chat en Vivo</h3>
               <p className='text-gray-600 mb-4'>Chatea con nuestro equipo de soporte</p>
-              <button className='bg-blaze-orange-600 text-white px-6 py-2 rounded-lg hover:bg-blaze-orange-700 transition-colors'>
+              <button
+                onClick={handleChatClick}
+                className='bg-blaze-orange-600 text-white px-6 py-2 rounded-lg hover:bg-blaze-orange-700 transition-colors'
+              >
                 Iniciar Chat
               </button>
             </motion.div>
