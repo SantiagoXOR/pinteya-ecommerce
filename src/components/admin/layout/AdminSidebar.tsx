@@ -78,12 +78,16 @@ const sidebarItems: SidebarItem[] = [
     title: 'Configuración',
     href: '/admin/settings',
     icon: Settings,
-    badge: 'Beta',
+  },
+  {
+    title: 'Base de Datos',
+    href: '/admin/database',
+    icon: Database,
   },
   {
     title: 'Diagnósticos',
     href: '/admin/diagnostics',
-    icon: Database,
+    icon: Search,
   },
 ]
 

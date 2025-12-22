@@ -119,8 +119,7 @@ export function AdminPageClient() {
       href: '/admin/settings',
       icon: Settings,
       color: 'bg-gray-500',
-      stats: 'Solo lectura',
-      badge: 'Beta',
+      stats: 'Disponible',
     },
     {
       title: 'Base de Datos',
@@ -128,8 +127,7 @@ export function AdminPageClient() {
       href: '/admin/database',
       icon: Database,
       color: 'bg-orange-500',
-      stats: 'Próximamente',
-      disabled: true,
+      stats: 'Solo lectura',
     },
   ]
 
