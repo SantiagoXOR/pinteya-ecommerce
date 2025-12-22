@@ -37,9 +37,8 @@ async function validateAdminAuth(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Verificar rol de administrador usando el email
-  const adminEmails = ['santiago@xor.com.ar']
-  if (!adminEmails.includes(session.user.email || '')) {
+  // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+  if (session.user.role !== 'admin') {
     return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
   }
 

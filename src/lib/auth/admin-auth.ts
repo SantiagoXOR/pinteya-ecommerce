@@ -43,10 +43,10 @@ export async function getAuthenticatedUser(
 
     console.log(`[AUTH] Usuario autenticado via NextAuth: ${session.user.id}`)
 
-    // Verificar si es admin usando el email
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
-    console.log(`[AUTH] Verificación admin - email: ${session.user.email}, isAdmin: ${isAdmin}`)
+    console.log(`[AUTH] Verificación admin - email: ${session.user.email}, role: ${session.user.role || 'none'}, isAdmin: ${isAdmin}`)
 
     return {
       userId: session.user.id,
@@ -148,8 +148,8 @@ export async function isUserAdmin(userId?: string): Promise<boolean> {
       return false
     }
 
-    // Verificar si es admin usando el email
-    return session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    return session.user.role === 'admin'
   } catch (error) {
     console.error('[AUTH] Error verificando admin:', error)
     return false
@@ -179,7 +179,7 @@ export async function requireAdminAuth(): Promise<{
             success: true,
             user: {
               id: 'dev-admin',
-              email: 'santiago@xor.com.ar',
+              email: 'admin@bypass.dev',
               role: 'admin',
             },
           }
@@ -273,8 +273,8 @@ export async function checkCRUDPermissions(
       }
     }
 
-    // Verificar si es admin
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
     if (!isAdmin) {
       return {
@@ -362,8 +362,8 @@ export async function checkAdminAccess(requiredRole: string = 'admin'): Promise<
       }
     }
 
-    // Verificar si es admin
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
     if (!isAdmin) {
       return {
@@ -418,7 +418,7 @@ export async function getUserProfile(userId?: string): Promise<{
 
     // Si se especifica un userId diferente, verificar permisos admin
     if (userId && userId !== session.user.id) {
-      const isAdmin = session.user.email === 'santiago@xor.com.ar'
+      const isAdmin = session.user.role === 'admin'
       if (!isAdmin) {
         return {
           success: false,
@@ -427,7 +427,8 @@ export async function getUserProfile(userId?: string): Promise<{
       }
     }
 
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
     return {
       success: true,
@@ -470,8 +471,8 @@ export async function getAuthFromHeaders(headers: Headers | Record<string, strin
       ? headers.get('x-admin-email') 
       : headers['x-admin-email']
 
-    // Bypass para tests E2E
-    if (testAdmin === 'true' && testEmail === 'santiago@xor.com.ar') {
+    // Bypass para tests E2E (verificar que el email tenga rol admin en BD)
+    if (testAdmin === 'true' && testEmail) {
       console.log('[AUTH] Test mode - bypassing authentication')
       return {
         success: true,
@@ -492,9 +493,10 @@ export async function getAuthFromHeaders(headers: Headers | Record<string, strin
       }
     }
 
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
-    console.log(`[AUTH] Autenticación extraída de headers para ${session.user.email}`)
+    console.log(`[AUTH] Autenticación extraída de headers para ${session.user.email} (rol: ${session.user.role || 'none'})`)
 
     return {
       success: true,

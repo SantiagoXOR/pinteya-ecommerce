@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
     const userId = session.user.id
     console.log('✅ Admin Products Direct: User authenticated', { userId })
 
-    // Verificar si es admin (simplificado)
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
     if (!isAdmin) {
       console.log('❌ Admin Products Direct: User not admin')
@@ -212,8 +212,8 @@ export async function POST(request: NextRequest) {
 
     const userId = session.user.id
 
-    // Verificar si es admin (simplificado)
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
     if (!isAdmin) {
       return NextResponse.json(

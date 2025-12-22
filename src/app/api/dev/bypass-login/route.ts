@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  console.log('[DEV BYPASS] Creando sesión mock para santiago@xor.com.ar')
+  console.log('[DEV BYPASS] Creando sesión mock para admin bypass')
 
   // Redirigir directamente al admin
   // El middleware con BYPASS_AUTH=true permitirá el acceso

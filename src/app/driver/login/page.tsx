@@ -52,7 +52,7 @@ export default function DriverLoginPage() {
 
   // Drivers de prueba para desarrollo
   const testDrivers = [
-    { email: 'santiago@xor.com.ar', name: 'Santiago Martinez (Admin)' },
+    { email: 'admin@test.dev', name: 'Admin (Test)' },
     { email: 'carlos@pinteya.com', name: 'Carlos Rodríguez' },
     { email: 'maria@pinteya.com', name: 'María González' },
     { email: 'juan@pinteya.com', name: 'Juan Pérez' },

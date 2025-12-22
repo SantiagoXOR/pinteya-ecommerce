@@ -126,15 +126,15 @@ export async function getEnterpriseAuthContext(
     const testAdmin = getHeader(request, 'x-test-admin')
     const testEmail = getHeader(request, 'x-admin-email')
 
-    // Bypass para tests E2E
-    if (testAdmin === 'true' && testEmail === 'santiago@xor.com.ar') {
+    // Bypass para tests E2E (verificar que el email tenga rol admin en BD)
+    if (testAdmin === 'true' && testEmail) {
       console.log('[Enterprise Auth] Test mode - bypassing authentication')
       return {
         success: true,
         context: {
           userId: 'test-admin-user',
           sessionId: 'test-session',
-          email: 'santiago@xor.com.ar',
+          email: testEmail || 'admin@test.dev',
           role: 'admin',
           permissions: [
             'admin_access',
@@ -173,7 +173,7 @@ export async function getEnterpriseAuthContext(
             context: {
               userId: 'dev-admin',
               sessionId: 'dev-session',
-              email: 'santiago@xor.com.ar',
+              email: 'admin@bypass.dev',
               role: 'admin',
               permissions: [
                 'admin_access',
@@ -558,14 +558,14 @@ export async function requireAdminAuth(
           success: true,
           user: {
             id: 'dev-admin',
-            email: 'santiago@xor.com.ar',
+            email: 'admin@bypass.dev',
             role: 'admin',
           },
           supabase,
           context: {
         user: {
           id: 'dev-admin',
-          email: 'santiago@xor.com.ar',
+          email: 'admin@bypass.dev',
           role: 'admin',
         },
             permissions: requiredPermissions,

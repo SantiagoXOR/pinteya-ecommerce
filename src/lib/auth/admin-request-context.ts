@@ -4,7 +4,7 @@ import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger'
 import { existsSync } from 'fs'
 import path from 'path'
 
-const ADMIN_EMAIL = process.env.ADMIN_BYPASS_EMAIL || 'santiago@xor.com.ar'
+const ADMIN_BYPASS_EMAIL = process.env.ADMIN_BYPASS_EMAIL || 'admin@bypass.dev'
 const ADMIN_BYPASS_NAME = process.env.ADMIN_BYPASS_NAME || 'Dev Admin'
 
 type AdminRequestContextSuccess = {
@@ -71,14 +71,14 @@ export async function getAdminRequestContext(): Promise<AdminRequestContextResul
     if (bypassEnabled) {
       const envLocalPath = path.join(process.cwd(), '.env.local')
       if (existsSync(envLocalPath)) {
-        const actor = await resolveBypassActor(ADMIN_EMAIL)
+        const actor = await resolveBypassActor(ADMIN_BYPASS_EMAIL)
 
         return {
           success: true,
           context: {
             user: {
               id: actor.id ?? 'dev-admin',
-              email: ADMIN_EMAIL,
+              email: ADMIN_BYPASS_EMAIL,
               name: actor.name || ADMIN_BYPASS_NAME,
             },
             actorId: actor.id,
@@ -94,7 +94,8 @@ export async function getAdminRequestContext(): Promise<AdminRequestContextResul
       return { success: false, status: 401, error: 'Usuario no autenticado' }
     }
 
-    if (session.user.email !== ADMIN_EMAIL) {
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    if (session.user.role !== 'admin') {
       return {
         success: false,
         status: 403,

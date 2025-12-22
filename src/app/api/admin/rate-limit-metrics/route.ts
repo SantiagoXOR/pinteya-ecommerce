@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
   try {
     // Verificar autenticación de admin
     const session = await auth()
-    if (!session?.user?.email || session.user.email !== 'santiago@xor.com.ar') {
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Acceso no autorizado' }, { status: 403 })
     }
 
@@ -98,7 +99,8 @@ export async function DELETE(request: NextRequest) {
   try {
     // Verificar autenticación de admin
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email || session.user.email !== 'santiago@xor.com.ar') {
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Acceso no autorizado' }, { status: 403 })
     }
 

@@ -1,6 +1,6 @@
 /**
  * Página de Prueba de Protección Admin
- * Para verificar que solo santiago@xor.com.ar tenga acceso admin
+ * Para verificar que solo usuarios con rol 'admin' tengan acceso admin
  */
 
 'use client'
@@ -161,7 +161,7 @@ export default function TestAdminProtectionPage() {
             <div>
               <h1 className='text-2xl font-bold text-gray-900'>Test de Protección Admin</h1>
               <p className='text-gray-600'>
-                Verificar que solo santiago@xor.com.ar tenga acceso al panel administrativo
+                Verificar que solo usuarios con rol 'admin' tengan acceso al panel administrativo
               </p>
             </div>
           </div>
@@ -239,7 +239,7 @@ export default function TestAdminProtectionPage() {
           <h3 className='font-semibold text-blue-900 mb-2'>Instrucciones de Prueba</h3>
           <div className='text-blue-800 space-y-2'>
             <p>
-              <strong>Para usuario admin (santiago@xor.com.ar):</strong>
+              <strong>Para usuarios con rol 'admin':</strong>
               Todos los tests deben ser exitosos (verde).
             </p>
             <p>
