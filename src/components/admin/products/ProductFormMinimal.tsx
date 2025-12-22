@@ -36,10 +36,11 @@ const ProductSchema = z.object({
   terminaciones: z.array(z.string()).optional(),
   
   // Precios & Stock
-  price: z.number().min(0.01, 'El precio debe ser mayor a 0'),
+  // ✅ Hacer opcionales: si el producto tiene variantes, el precio y stock se definen en las variantes
+  price: z.number().min(0.01, 'El precio debe ser mayor a 0').optional().nullable(),
   discounted_price: z.number().min(0).optional().nullable(),
   discount_percent: z.number().min(0).max(100).optional().nullable(), // ✅ NUEVO: Porcentaje de descuento
-  stock: z.number().min(0, 'El stock debe ser mayor o igual a 0'),
+  stock: z.number().min(0, 'El stock debe ser mayor o igual a 0').optional().nullable(),
   
   // Imagen
   image_url: z
@@ -104,11 +105,17 @@ export function ProductFormMinimal({
   const openNewVariant = () => {
     // Prellenar con información básica del producto si está disponible
     const watchedData = form.watch()
+    // ✅ Si el producto tiene terminaciones, usar la primera; si no, dejar null
+    const terminaciones = watchedData.terminaciones && Array.isArray(watchedData.terminaciones) && watchedData.terminaciones.length > 0
+      ? watchedData.terminaciones
+      : []
+    const defaultFinish = terminaciones.length > 0 ? terminaciones[0] : null
+    
     setEditingVariant({
       color_name: '',
       color_hex: undefined,
       measure: '',
-      finish: 'Mate',
+      finish: defaultFinish, // ✅ null si no hay terminaciones disponibles
       price_list: watchedData.price || 0,
       price_sale: watchedData.discounted_price || undefined,
       stock: watchedData.stock || 0,
@@ -496,6 +503,26 @@ export function ProductFormMinimal({
 
   const handleFormSubmit = async (data: ProductFormData) => {
     try {
+      // ✅ VALIDACIÓN: Si no hay variantes, precio y stock son requeridos
+      if (newVariants.length === 0) {
+        if (!data.price || data.price <= 0) {
+          form.setError('price', {
+            type: 'manual',
+            message: 'El precio es requerido cuando el producto no tiene variantes',
+          })
+          notifications.showErrorMessage('El precio es requerido cuando el producto no tiene variantes')
+          return
+        }
+        if (data.stock === null || data.stock === undefined || data.stock < 0) {
+          form.setError('stock', {
+            type: 'manual',
+            message: 'El stock es requerido cuando el producto no tiene variantes',
+          })
+          notifications.showErrorMessage('El stock es requerido cuando el producto no tiene variantes')
+          return
+        }
+      }
+      
       notifications.showProcessingInfo(
         mode === 'create' ? 'Creando producto...' : 'Actualizando producto...'
       )
@@ -670,7 +697,7 @@ export function ProductFormMinimal({
     setEditingVariant({
       color_name: '',
       measure: '',
-      finish: 'Mate',
+      finish: null, // ✅ null en lugar de 'Mate' por defecto
       price_list: 0,
       price_sale: 0,
       stock: 0,
@@ -809,7 +836,10 @@ export function ProductFormMinimal({
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Precio *
+                Precio {newVariants.length === 0 ? '*' : ''}
+                {newVariants.length > 0 && (
+                  <span className='text-gray-500 font-normal ml-1'>(Opcional - Se define en las variantes)</span>
+                )}
               </label>
               <div className='relative'>
                 <span className='absolute left-3 top-2.5 text-gray-500'>$</span>
@@ -828,7 +858,7 @@ export function ProductFormMinimal({
                     }
                   })}
                   className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
-                  placeholder='0.00'
+                  placeholder={newVariants.length > 0 ? 'Opcional' : '0.00'}
                 />
               </div>
               {errors.price && <p className='text-red-600 text-sm mt-1'>{errors.price.message}</p>}
@@ -916,10 +946,16 @@ export function ProductFormMinimal({
             </div>
 
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>Stock *</label>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Stock {newVariants.length === 0 ? '*' : ''}
+                {newVariants.length > 0 && (
+                  <span className='text-gray-500 font-normal ml-1'>(Opcional - Se define en las variantes)</span>
+                )}
+              </label>
                 <input
                   type='number'
                   {...register('stock', { valueAsNumber: true })}
+                  placeholder={newVariants.length > 0 ? 'Opcional' : '0'}
                   className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
                   placeholder='0'
                 />
@@ -1254,7 +1290,7 @@ export function ProductFormMinimal({
                   color_name: variant.color_name || '',
                   color_hex: variant.color_hex || undefined,
                   measure: variant.measure || '',
-                  finish: variant.finish || 'Mate',
+                  finish: variant.finish || null, // ✅ null en lugar de 'Mate' por defecto
                   price_list: variant.price_list || 0,
                   price_sale: variant.price_sale || undefined,
                   stock: variant.stock || 0,
@@ -1628,14 +1664,22 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Terminación
+                  {(!productData?.terminaciones || !Array.isArray(productData.terminaciones) || productData.terminaciones.length === 0) && (
+                    <span className='text-gray-500 font-normal ml-1'>(Opcional - Este producto no requiere terminación)</span>
+                  )}
                 </label>
                 <FinishSelectorSingle
                   value={formData.finish || ''}
                   onChange={(finish) => {
-                    setFormData({ ...formData, finish })
+                    // ✅ Permitir null/undefined cuando se limpia el campo
+                    setFormData({ ...formData, finish: finish && finish.trim() !== '' ? finish : null })
                     if (errors.finish) setErrors({ ...errors, finish: '' })
                   }}
-                  placeholder='Ej: Mate, Metálico, Brillante'
+                  placeholder={
+                    (!productData?.terminaciones || !Array.isArray(productData.terminaciones) || productData.terminaciones.length === 0)
+                      ? 'Opcional - Dejar vacío si no aplica'
+                      : 'Ej: Mate, Metálico, Brillante'
+                  }
                   error={errors.finish}
                   availableFinishes={productData?.terminaciones && Array.isArray(productData.terminaciones) ? productData.terminaciones : []}
                 />

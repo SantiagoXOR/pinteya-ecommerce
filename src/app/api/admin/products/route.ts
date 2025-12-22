@@ -643,7 +643,8 @@ const postHandlerSimple = async (request: NextRequest) => {
     console.log('📝 Request body:', JSON.stringify(body, null, 2))
 
     // Validación básica de campos requeridos
-    const requiredFields = ['name', 'price']
+    // ✅ price es opcional si el producto tiene variantes (el precio se define en las variantes)
+    const requiredFields = ['name']
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(
@@ -655,6 +656,10 @@ const postHandlerSimple = async (request: NextRequest) => {
         )
       }
     }
+    
+    // ✅ Validar que si no hay variantes, entonces price es requerido
+    // (Las variantes se crean después de crear el producto, así que no podemos verificar aquí)
+    // Por ahora, permitimos que price sea opcional y se valida en el frontend
 
     // Normalizar category_ids: soportar tanto category_id como category_ids para retrocompatibilidad
     let categoryIds: number[] = []
@@ -695,14 +700,19 @@ const postHandlerSimple = async (request: NextRequest) => {
     }
 
     // Mapear datos del frontend al formato de base de datos
+    // ✅ price y stock son opcionales si el producto tiene variantes
     const productData = {
       name: body.name,
       description: body.description || '',
-      price: parseFloat(body.price),
+      price: body.price !== undefined && body.price !== null && body.price !== '' 
+        ? parseFloat(String(body.price)) 
+        : null, // ✅ Permitir null si no se proporciona
       discounted_price: body.discounted_price !== undefined && body.discounted_price !== null 
         ? parseFloat(String(body.discounted_price)) 
         : (body.compare_price ? parseFloat(String(body.compare_price)) : null),
-      stock: parseInt(String(body.stock)) || 0,
+      stock: body.stock !== undefined && body.stock !== null && body.stock !== '' 
+        ? parseInt(String(body.stock)) 
+        : null, // ✅ Permitir null si no se proporciona
       category_id: categoryIds.length > 0 ? categoryIds[0] : null, // Mantener category_id para retrocompatibilidad
       is_active: body.is_active !== undefined 
         ? Boolean(body.is_active) 

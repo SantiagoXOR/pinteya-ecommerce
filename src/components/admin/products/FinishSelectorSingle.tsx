@@ -5,8 +5,8 @@ import { X, Plus, ChevronDown } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface FinishSelectorSingleProps {
-  value?: string
-  onChange: (finish: string) => void
+  value?: string | null
+  onChange: (finish: string | null) => void
   placeholder?: string
   className?: string
   error?: string
@@ -82,7 +82,7 @@ export function FinishSelectorSingle({
   }
 
   const handleClearFinish = () => {
-    onChange('')
+    onChange(null) // ✅ Cambiar a null en lugar de string vacío
     setCustomFinish('')
   }
 
