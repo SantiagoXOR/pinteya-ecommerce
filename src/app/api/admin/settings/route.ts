@@ -676,13 +676,16 @@ export async function POST(request: NextRequest) {
 
   try {
     // Rate limiting más restrictivo para reset
+    const rateLimitConfig = {
+      windowMs: 60 * 60 * 1000, // 1 hora
+      maxRequests: 3, // Máximo 3 resets por hora
+      message: 'Demasiados intentos de restablecimiento',
+      standardHeaders: true,
+      legacyHeaders: true,
+    }
     const rateLimitResult = await checkRateLimit(
       request,
-      {
-        windowMs: 60 * 60 * 1000, // 1 hora
-        maxRequests: 3, // Máximo 3 resets por hora
-        message: 'Demasiados intentos de restablecimiento',
-      },
+      rateLimitConfig,
       'admin-settings-reset'
     )
 
