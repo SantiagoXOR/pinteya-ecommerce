@@ -330,95 +330,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
       console.log('📦 [POST Variant] Datos preparados para insertar:', JSON.stringify(insertData, null, 2))
 
-      // ✅ NUEVO: Guardar color en la paleta si no existe
-      if (insertData.color_name && insertData.color_hex) {
-        try {
-          const colorNameLower = insertData.color_name.toLowerCase().trim()
-          
-          // Verificar si el color ya existe en la paleta (case-insensitive)
-          const { data: existingColor } = await supabaseAdmin
-            .from('color_palette')
-            .select('id')
-            .ilike('name', colorNameLower)
-            .maybeSingle()
-
-          // Si no existe, guardarlo
-          if (!existingColor) {
-            const { error: colorError } = await supabaseAdmin
-              .from('color_palette')
-              .insert({
-                name: insertData.color_name.trim(),
-                display_name: insertData.color_name.trim(),
-                hex: insertData.color_hex.trim(),
-                category: 'Personalizado',
-                family: 'Personalizados',
-                is_popular: false,
-                description: `Color personalizado agregado automáticamente: ${insertData.color_name}`,
-              } as any)
-
-            if (colorError) {
-              console.warn(`⚠️ [POST Variant] No se pudo guardar color en paleta: ${colorError.message}`)
-              // No fallar la creación de la variante si falla el guardado del color
-            } else {
-              console.log(`✅ [POST Variant] Color "${insertData.color_name}" guardado en paleta automáticamente`)
-            }
-          }
-        } catch (error) {
-          console.warn(`⚠️ [POST Variant] Error al verificar/guardar color en paleta:`, error)
-          // No fallar la creación de la variante si falla el guardado del color
-        }
-      }
-
-      // ✅ NUEVO: Guardar medida en la paleta si no existe
-      if (insertData.measure) {
-        try {
-          const measureTrimmed = insertData.measure.trim()
-          const measureLower = measureTrimmed.toLowerCase()
-          
-          // Extraer tipo de unidad de la medida
-          const unitTypeMatch = measureTrimmed.match(/(L|KG|CC|ml|g|Nº|N°|N)/i)
-          const unitType = unitTypeMatch ? unitTypeMatch[1].toUpperCase() : null
-          
-          // Determinar categoría basada en el tipo de unidad
-          let category = 'Personalizado'
-          if (unitType === 'L' || unitType === 'ML' || unitType === 'CC') {
-            category = 'Volumen'
-          } else if (unitType === 'KG' || unitType === 'G') {
-            category = 'Peso'
-          } else if (unitType === 'Nº' || unitType === 'N°' || unitType === 'N') {
-            category = 'Unidad'
-          }
-          
-          // Verificar si la medida ya existe en la paleta (case-insensitive)
-          const { data: existingMeasure } = await supabaseAdmin
-            .from('measure_palette')
-            .select('id')
-            .ilike('measure', measureLower)
-            .maybeSingle()
-
-          // Si no existe, guardarla
-          if (!existingMeasure) {
-            const { error: measureError } = await supabaseAdmin
-              .from('measure_palette')
-              .insert({
-                measure: measureTrimmed,
-                category: category,
-                unit_type: unitType,
-                is_popular: false,
-                description: `Medida personalizada agregada automáticamente: ${measureTrimmed}`,
-              } as any)
-
-            if (measureError) {
-              console.warn(`⚠️ [POST Variant] No se pudo guardar medida en paleta: ${measureError.message}`)
-              // No fallar la creación de la variante si falla el guardado de la medida
-            } else {
-              console.log(`✅ [POST Variant] Medida "${measureTrimmed}" guardada en paleta automáticamente`)
-            }
-          }
-        } catch (error) {
-          console.warn(`⚠️ [POST Variant] Error al verificar/guardar medida en paleta:`, error)
-          // No fallar la creación de la variante si falla el guardado de la medida
-        }
+      // ✅ VALIDACIÓN: Asegurar que color_hex no exceda 7 caracteres (formato #RRGGBB)
+      if (insertData.color_hex && insertData.color_hex.length > 7) {
+        console.warn(`⚠️ [POST Variant] color_hex truncado de ${insertData.color_hex.length} a 7 caracteres: ${insertData.color_hex}`)
+        insertData.color_hex = insertData.color_hex.substring(0, 7)
       }
 
       // ✅ VALIDACIÓN: Asegurar que finish no exceda 100 caracteres (por si acaso)
@@ -482,6 +397,99 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
           },
           { status: 500 }
         )
+      }
+
+      // ✅ NUEVO: Guardar color en la paleta si no existe (DESPUÉS de crear la variante)
+      if (insertData.color_name && insertData.color_hex) {
+        try {
+          const colorNameLower = insertData.color_name.toLowerCase().trim()
+          
+          // Verificar si el color ya existe en la paleta (case-insensitive)
+          const { data: existingColor } = await supabaseAdmin
+            .from('color_palette')
+            .select('id')
+            .ilike('name', colorNameLower)
+            .maybeSingle()
+
+          // Si no existe, guardarlo
+          if (!existingColor) {
+            // ✅ VALIDACIÓN: Asegurar que hex no exceda 7 caracteres
+            const hexValue = insertData.color_hex.trim().substring(0, 7)
+            const { error: colorError } = await supabaseAdmin
+              .from('color_palette')
+              .insert({
+                name: insertData.color_name.trim(),
+                display_name: insertData.color_name.trim(),
+                hex: hexValue,
+                category: 'Personalizado',
+                family: 'Personalizados',
+                is_popular: false,
+                description: `Color personalizado agregado automáticamente: ${insertData.color_name}`,
+              } as any)
+
+            if (colorError) {
+              console.warn(`⚠️ [POST Variant] No se pudo guardar color en paleta: ${colorError.message}`)
+              // No fallar la creación de la variante si falla el guardado del color
+            } else {
+              console.log(`✅ [POST Variant] Color "${insertData.color_name}" guardado en paleta automáticamente`)
+            }
+          }
+        } catch (error) {
+          console.warn(`⚠️ [POST Variant] Error al verificar/guardar color en paleta:`, error)
+          // No fallar la creación de la variante si falla el guardado del color
+        }
+      }
+
+      // ✅ NUEVO: Guardar medida en la paleta si no existe (DESPUÉS de crear la variante)
+      if (insertData.measure) {
+        try {
+          const measureTrimmed = insertData.measure.trim()
+          const measureLower = measureTrimmed.toLowerCase()
+          
+          // Extraer tipo de unidad de la medida
+          const unitTypeMatch = measureTrimmed.match(/(L|KG|CC|ml|g|Nº|N°|N)/i)
+          const unitType = unitTypeMatch ? unitTypeMatch[1].toUpperCase() : null
+          
+          // Determinar categoría basada en el tipo de unidad
+          let category = 'Personalizado'
+          if (unitType === 'L' || unitType === 'ML' || unitType === 'CC') {
+            category = 'Volumen'
+          } else if (unitType === 'KG' || unitType === 'G') {
+            category = 'Peso'
+          } else if (unitType === 'Nº' || unitType === 'N°' || unitType === 'N') {
+            category = 'Unidad'
+          }
+          
+          // Verificar si la medida ya existe en la paleta (case-insensitive)
+          const { data: existingMeasure } = await supabaseAdmin
+            .from('measure_palette')
+            .select('id')
+            .ilike('measure', measureLower)
+            .maybeSingle()
+
+          // Si no existe, guardarla
+          if (!existingMeasure) {
+            const { error: measureError } = await supabaseAdmin
+              .from('measure_palette')
+              .insert({
+                measure: measureTrimmed,
+                category: category,
+                unit_type: unitType,
+                is_popular: false,
+                description: `Medida personalizada agregada automáticamente: ${measureTrimmed}`,
+              } as any)
+
+            if (measureError) {
+              console.warn(`⚠️ [POST Variant] No se pudo guardar medida en paleta: ${measureError.message}`)
+              // No fallar la creación de la variante si falla el guardado de la medida
+            } else {
+              console.log(`✅ [POST Variant] Medida "${measureTrimmed}" guardada en paleta automáticamente`)
+            }
+          }
+        } catch (error) {
+          console.warn(`⚠️ [POST Variant] Error al verificar/guardar medida en paleta:`, error)
+          // No fallar la creación de la variante si falla el guardado de la medida
+        }
       }
 
       // ✅ NUEVO: Guardar terminación en la paleta si no existe (DESPUÉS de crear la variante)
