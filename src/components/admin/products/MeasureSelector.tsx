@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Plus } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
@@ -11,7 +11,7 @@ interface MeasureSelectorProps {
   className?: string
 }
 
-// Medidas predefinidas comunes
+// Medidas predefinidas comunes (fallback)
 const PREDEFINED_MEASURES = [
   '1L',
   '2.5L',
@@ -44,9 +44,34 @@ export function MeasureSelector({
   const [isOpen, setIsOpen] = useState(false)
   const [customMeasure, setCustomMeasure] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [allMeasures, setAllMeasures] = useState<string[]>(PREDEFINED_MEASURES) // Inicializar con predefinidas
+  const [isLoadingMeasures, setIsLoadingMeasures] = useState(false)
+
+  // Cargar medidas desde la API (predefinidas + personalizadas)
+  useEffect(() => {
+    const loadMeasures = async () => {
+      setIsLoadingMeasures(true)
+      try {
+        const response = await fetch('/api/admin/measures')
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            setAllMeasures(result.data)
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Error cargando medidas personalizadas, usando solo predefinidas:', error)
+        // Si falla, mantener las predefinidas
+      } finally {
+        setIsLoadingMeasures(false)
+      }
+    }
+
+    loadMeasures()
+  }, [])
 
   const selectedMeasures = value || []
-  const availableMeasures = PREDEFINED_MEASURES.filter(
+  const availableMeasures = allMeasures.filter(
     m => !selectedMeasures.includes(m)
   )
 
@@ -69,8 +94,15 @@ export function MeasureSelector({
   }
 
   const handleCustomMeasure = () => {
-    if (customMeasure.trim() && !selectedMeasures.includes(customMeasure.trim())) {
-      handleAddMeasure(customMeasure.trim())
+    const measureToAdd = customMeasure.trim()
+    if (measureToAdd && !selectedMeasures.includes(measureToAdd)) {
+      handleAddMeasure(measureToAdd)
+      
+      // Si la medida no está en allMeasures, agregarla localmente
+      if (!allMeasures.includes(measureToAdd)) {
+        setAllMeasures([...allMeasures, measureToAdd])
+      }
+      
       setCustomMeasure('')
     }
   }
@@ -130,10 +162,13 @@ export function MeasureSelector({
               />
             </div>
 
-            {/* Predefined Measures */}
+            {/* Available Measures */}
             {filteredMeasures.length > 0 && (
               <div className='max-h-48 overflow-y-auto p-2'>
-                <div className='text-xs text-gray-500 mb-2 px-2'>Medidas predefinidas:</div>
+                <div className='text-xs text-gray-500 mb-2 px-2'>
+                  Medidas disponibles:
+                  {isLoadingMeasures && <span className='ml-2'>(cargando...)</span>}
+                </div>
                 <div className='grid grid-cols-2 gap-1'>
                   {filteredMeasures.map((measure, index) => (
                     <button

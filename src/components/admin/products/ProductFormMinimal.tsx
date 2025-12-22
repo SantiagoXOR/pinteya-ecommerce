@@ -101,14 +101,16 @@ export function ProductFormMinimal({
   const [newVariants, setNewVariants] = useState<VariantFormData[]>([])
 
   const openNewVariant = () => {
+    // Prellenar con información básica del producto si está disponible
+    const watchedData = form.watch()
     setEditingVariant({
       color_name: '',
       color_hex: undefined,
       measure: '',
       finish: 'Mate',
-      price_list: 0,
-      price_sale: 0,
-      stock: 0,
+      price_list: watchedData.price || 0,
+      price_sale: watchedData.discounted_price || undefined,
+      stock: watchedData.stock || 0,
       aikon_id: '',
       is_active: true,
       is_default: false,
@@ -953,13 +955,130 @@ export function ProductFormMinimal({
               )}
             </div>
           ) : (
-            // Modo creación: solo VariantBuilder (las variantes se crearán después de guardar el producto)
-            <VariantBuilder
-              variants={newVariants}
-              onChange={setNewVariants}
-              measures={watchedData.medida || []}
-              terminaciones={watchedData.terminaciones || []}
-            />
+            // Modo creación: mostrar tabla y usar modal (igual que en modo edición)
+            <div className='space-y-4'>
+              {/* Tabla de variantes */}
+              {newVariants.length > 0 ? (
+                <div className='border border-gray-200 rounded-lg overflow-hidden'>
+                  <div className='overflow-x-auto'>
+                    <table className='min-w-full divide-y divide-gray-200'>
+                      <thead className='bg-gray-50'>
+                        <tr>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Imagen
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Color
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Capacidad
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Terminación
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Precio
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Stock
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Código Aikon
+                          </th>
+                          <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                            Acciones
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className='bg-white divide-y divide-gray-200'>
+                        {newVariants.map((variant: VariantFormData, index: number) => (
+                          <tr key={index} className='hover:bg-gray-50'>
+                            <td className='px-4 py-3'>
+                              {variant.image_url ? (
+                                <div className='relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200'>
+                                  <Image
+                                    src={variant.image_url}
+                                    alt={`${variant.color_name || 'Variante'} ${variant.measure || ''}`}
+                                    fill
+                                    className='object-cover'
+                                    unoptimized
+                                  />
+                                </div>
+                              ) : (
+                                <div className='w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center'>
+                                  <span className='text-xs text-gray-400'>Sin imagen</span>
+                                </div>
+                              )}
+                            </td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>{variant.color_name || '-'}</td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>{variant.measure || '-'}</td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>{variant.finish || '-'}</td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>
+                              ${variant.price_sale?.toLocaleString('es-AR') || variant.price_list?.toLocaleString('es-AR') || '0'}
+                            </td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>{variant.stock || 0}</td>
+                            <td className='px-4 py-3 text-sm text-gray-500 font-mono'>
+                              {variant.aikon_id || '-'}
+                            </td>
+                            <td className='px-4 py-3 text-right space-x-2'>
+                              {variant.is_default && (
+                                <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 mr-2'>
+                                  Predeterminada
+                                </span>
+                              )}
+                              <button
+                                type='button'
+                                onClick={() => {
+                                  setEditingVariant({
+                                    ...variant,
+                                    id: index, // Usar índice temporal para identificar
+                                  } as any)
+                                  setShowVariantModal(true)
+                                }}
+                                className='inline-flex items-center p-1 text-blue-600 hover:text-blue-800'
+                              >
+                                <Edit className='w-4 h-4' />
+                              </button>
+                              <button
+                                type='button'
+                                onClick={() => {
+                                  const updated = newVariants.filter((_, i) => i !== index)
+                                  // Si se elimina la predeterminada, quitar el flag de todas
+                                  if (variant.is_default) {
+                                    updated.forEach(v => { v.is_default = false })
+                                  }
+                                  setNewVariants(updated)
+                                }}
+                                className='inline-flex items-center p-1 text-red-600 hover:text-red-800'
+                              >
+                                <Trash2 className='w-4 h-4' />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div className='text-center py-8 text-gray-500 text-sm border border-dashed border-gray-300 rounded-lg'>
+                  <p>No hay variantes agregadas.</p>
+                  <p className='mt-1'>Agrega variantes para ofrecer diferentes opciones de color, medida y precio.</p>
+                </div>
+              )}
+
+              {/* Botón para agregar nueva variante */}
+              <div className='flex justify-end'>
+                <button
+                  type='button'
+                  onClick={openNewVariant}
+                  className='inline-flex items-center px-4 py-2 bg-blaze-orange-600 text-white rounded-lg hover:bg-blaze-orange-700 transition-colors'
+                >
+                  <Plus className='w-4 h-4 mr-2' />
+                  Agregar Nueva Variante
+                </button>
+              </div>
+            </div>
           )}
         </AdminCard>
 
@@ -1033,20 +1152,67 @@ export function ProductFormMinimal({
           }}
           onSave={async (variant) => {
             try {
-              if (variant.id) {
-                // Editar existente
-                await updateVariantMutation.mutateAsync({ id: variant.id, ...variant })
+              if (mode === 'create' || !productId) {
+                // Modo creación: agregar a newVariants
+                const variantData: VariantFormData = {
+                  color_name: variant.color_name || '',
+                  color_hex: variant.color_hex || undefined,
+                  measure: variant.measure || '',
+                  finish: variant.finish || 'Mate',
+                  price_list: variant.price_list || 0,
+                  price_sale: variant.price_sale || undefined,
+                  stock: variant.stock || 0,
+                  aikon_id: variant.aikon_id || '',
+                  image_url: variant.image_url || undefined,
+                  is_active: variant.is_active !== false,
+                  is_default: variant.is_default || false,
+                }
+
+                // Verificar si es edición (usando id temporal como índice)
+                if (variant.id !== undefined && typeof variant.id === 'number' && variant.id >= 0 && variant.id < newVariants.length) {
+                  // Editar variante existente en newVariants (usando índice)
+                  const index = variant.id
+                  const updated = [...newVariants]
+                  
+                  // Si se marca como predeterminada, quitar el flag de las demás
+                  if (variant.is_default) {
+                    updated.forEach((v, i) => {
+                      if (i !== index) v.is_default = false
+                    })
+                  }
+                  
+                  updated[index] = variantData
+                  setNewVariants(updated)
+                } else {
+                  // Agregar nueva variante
+                  // Si se marca como predeterminada, quitar el flag de las demás
+                  if (variant.is_default) {
+                    const updated = newVariants.map(v => ({ ...v, is_default: false }))
+                    setNewVariants([...updated, variantData])
+                  } else {
+                    setNewVariants([...newVariants, variantData])
+                  }
+                }
+                
+                setShowVariantModal(false)
+                setEditingVariant(null)
               } else {
-                // Crear nueva
-                await createVariantMutation.mutateAsync(variant)
+                // Modo edición: crear/actualizar en BD
+                if (variant.id) {
+                  // Editar existente
+                  await updateVariantMutation.mutateAsync({ id: variant.id, ...variant })
+                } else {
+                  // Crear nueva
+                  await createVariantMutation.mutateAsync(variant)
+                }
+                
+                // ✅ El cache ya se actualizó en onSuccess con los datos del backend
+                // Solo invalidar otras queries relacionadas para asegurar consistencia
+                await queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
+                
+                setShowVariantModal(false)
+                setEditingVariant(null)
               }
-              
-              // ✅ El cache ya se actualizó en onSuccess con los datos del backend
-              // Solo invalidar otras queries relacionadas para asegurar consistencia
-              await queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
-              
-              setShowVariantModal(false)
-              setEditingVariant(null)
             } catch (error) {
               // Error ya manejado en las mutaciones
               console.error('Error guardando variante:', error)

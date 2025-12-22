@@ -369,6 +369,58 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         }
       }
 
+      // ✅ NUEVO: Guardar medida en la paleta si no existe
+      if (insertData.measure) {
+        try {
+          const measureTrimmed = insertData.measure.trim()
+          const measureLower = measureTrimmed.toLowerCase()
+          
+          // Extraer tipo de unidad de la medida
+          const unitTypeMatch = measureTrimmed.match(/(L|KG|CC|ml|g|Nº|N°|N)/i)
+          const unitType = unitTypeMatch ? unitTypeMatch[1].toUpperCase() : null
+          
+          // Determinar categoría basada en el tipo de unidad
+          let category = 'Personalizado'
+          if (unitType === 'L' || unitType === 'ML' || unitType === 'CC') {
+            category = 'Volumen'
+          } else if (unitType === 'KG' || unitType === 'G') {
+            category = 'Peso'
+          } else if (unitType === 'Nº' || unitType === 'N°' || unitType === 'N') {
+            category = 'Unidad'
+          }
+          
+          // Verificar si la medida ya existe en la paleta (case-insensitive)
+          const { data: existingMeasure } = await supabaseAdmin
+            .from('measure_palette')
+            .select('id')
+            .ilike('measure', measureLower)
+            .maybeSingle()
+
+          // Si no existe, guardarla
+          if (!existingMeasure) {
+            const { error: measureError } = await supabaseAdmin
+              .from('measure_palette')
+              .insert({
+                measure: measureTrimmed,
+                category: category,
+                unit_type: unitType,
+                is_popular: false,
+                description: `Medida personalizada agregada automáticamente: ${measureTrimmed}`,
+              } as any)
+
+            if (measureError) {
+              console.warn(`⚠️ [POST Variant] No se pudo guardar medida en paleta: ${measureError.message}`)
+              // No fallar la creación de la variante si falla el guardado de la medida
+            } else {
+              console.log(`✅ [POST Variant] Medida "${measureTrimmed}" guardada en paleta automáticamente`)
+            }
+          }
+        } catch (error) {
+          console.warn(`⚠️ [POST Variant] Error al verificar/guardar medida en paleta:`, error)
+          // No fallar la creación de la variante si falla el guardado de la medida
+        }
+      }
+
       // Crear variante
       const { data: variant, error: variantError } = await supabase
         .from('product_variants')
