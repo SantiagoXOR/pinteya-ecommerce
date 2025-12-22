@@ -1,7 +1,7 @@
 'use client'
 
 import { AdminCard } from '../ui/AdminCard'
-import { Table, X, Database, Key } from '@/lib/optimized-imports'
+import { Tablet, X, Database, Key } from '@/lib/optimized-imports'
 import { TableDetails as TableDetailsType } from '@/hooks/admin/useDatabase'
 
 interface TableDetailsProps {
