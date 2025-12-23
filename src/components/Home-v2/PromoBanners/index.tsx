@@ -117,13 +117,13 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                   <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient} z-20`}></div>
                   
                   {/* Content - Súper compacto */}
-                  <div className='relative h-full flex items-center justify-between px-2 md:px-3 z-30'>
+                  <div className='relative h-full flex items-center justify-between px-2 md:px-3 z-30' style={{ opacity: banner.id === 2 ? 0.85 : 1 }}>
                     {/* Left Content */}
                     <div className='flex items-center gap-1.5 md:gap-2'>
                       {/* Badge destacado - Solo para banner Flash Days */}
                       {banner.id === 1 ? (
                         <div className={`inline-flex items-center justify-center ${banner.badgeColor} px-2.5 py-1 md:px-3 md:py-1.5 rounded-full font-black text-xs md:text-base shadow-xl ring-2 ring-yellow-300 ring-opacity-70 transform hover:scale-105 transition-transform duration-200`}>
-                          <span className='whitespace-nowrap'>{banner.badge}</span>
+                          <span className='whitespace-nowrap' style={{ color: 'rgba(235, 99, 19, 1)' }}>{banner.badge}</span>
                         </div>
                       ) : (
                         <div className={`inline-flex items-center ${banner.badgeColor} text-white px-1.5 py-0.5 rounded-full font-bold text-[10px] md:text-xs shadow-sm`}>
@@ -132,14 +132,14 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                       )}
                       
                       {/* Text Content - Solo título */}
-                      <h2 className='text-sm md:text-lg font-black text-white leading-none'>
+                      <h2 className='text-sm md:text-lg font-medium text-white leading-none' style={{ letterSpacing: (banner.id === 1 || banner.id === 2) ? '3px' : 'normal' }}>
                         {banner.title}
                       </h2>
                     </div>
 
                     {/* CTA Button - Flecha mini en círculo */}
                     <div className={`flex items-center justify-center ${banner.id === 1 ? 'bg-yellow-400 hover:bg-yellow-300' : 'bg-white hover:bg-gray-100'} text-gray-900 w-7 h-7 md:w-9 md:h-9 rounded-full transition-all shadow-sm hover:shadow-md hover:scale-110`}>
-                      <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} />
+                      <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} style={{ color: banner.id === 1 ? 'rgba(235, 99, 19, 1)' : 'rgba(17, 24, 39, 1)' }} />
                     </div>
                   </div>
                 </div>

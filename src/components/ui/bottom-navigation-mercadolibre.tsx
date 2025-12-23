@@ -145,12 +145,17 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
       <nav
         ref={ref}
         className={cn(
-          'fixed left-0 right-0 z-bottom-nav bg-white border-t border-gray-200 shadow-lg',
+          'fixed left-0 right-0 z-bottom-nav border-t shadow-lg',
           'safe-area-bottom', // Para dispositivos con notch - usa bottom: env(safe-area-inset-bottom)
           className
         )}
         style={{
           bottom: 'env(safe-area-inset-bottom, 0px)',
+          borderRadius: '24px 24px 0px 0px',
+          background: 'linear-gradient(90deg, rgba(189, 189, 189, 0.7) 0%, rgba(255, 255, 255, 1) 100%)',
+          borderTopColor: 'var(--glass-bg-strong)',
+          boxShadow: '0px 0px 0px 0px rgba(0, 0, 0, 0), 0px 10px 15px -3px rgba(0, 0, 0, 0.1), inset 0px 4px 6px 0px rgba(0, 0, 0, 0.15)',
+          backdropFilter: 'blur(1px)',
         }}
         {...props}
       >
@@ -207,6 +212,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               ? 'bg-blaze-orange-50 border-2 border-blaze-orange-200 shadow-sm'
                               : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
                           )}
+                          style={{ marginTop: '-4px' }}
                         >
                           <Icon
                             className={cn(
@@ -226,13 +232,20 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                         {showBadge && (
                           <span
                             className={cn(
-                              'absolute -top-2.5 left-1/2 transform -translate-x-1/2 text-white text-[10px] font-bold',
-                              'rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1.5',
-                              'shadow-lg border-2 border-white ring-2 ring-blaze-orange-100 z-10',
-                              item.badge && item.badge > 0
-                                ? 'bg-blaze-orange-600'
-                                : 'bg-gray-400'
+                              'absolute rounded-full min-w-[20px] h-[20px]',
+                              'flex items-center justify-center shadow-lg ring-2 ring-blaze-orange-100 z-10'
                             )}
+                            style={{
+                              borderWidth: '0px',
+                              backgroundColor: 'rgba(235, 99, 19, 1)',
+                              color: 'rgba(250, 204, 21, 1)',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              paddingLeft: '0px',
+                              paddingRight: '0px',
+                              left: '27px',
+                              top: '-12px',
+                            }}
                           >
                             {item.badge && item.badge > 99 ? '99+' : item.badge}
                           </span>

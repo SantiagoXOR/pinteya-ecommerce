@@ -1,6 +1,6 @@
-import HomeV2 from '@/components/Home-v2'
+import HomeV3 from '@/components/Home-v3'
 import { Metadata } from 'next'
-import '@/styles/home-v2-animations.css'
+import '@/styles/home-v3-glassmorphism.css'
 
 export const metadata: Metadata = {
   title: 'Pinteya - Tu Pinturería Online | Envío Gratis +$50.000',
@@ -40,5 +40,5 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 export default function HomePage() {
-  return <HomeV2 />
+  return <HomeV3 />
 }
