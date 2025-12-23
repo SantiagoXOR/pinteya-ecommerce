@@ -53,7 +53,7 @@ export const ProductCardActions = React.memo(function ProductCardActions({
         ) : stock === 0 ? (
           <AlertCircle className='w-4 h-4 md:w-5 md:h-5 text-gray-500' />
         ) : cartAddCount > 0 ? (
-          <span className='font-bold text-sm md:text-base text-[#EA5A17]'>
+          <span className='font-bold text-xs sm:text-sm md:text-base text-[#EA5A17]'>
             +{cartAddCount}
           </span>
         ) : (

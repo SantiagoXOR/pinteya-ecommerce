@@ -699,6 +699,38 @@ const config: Config = {
             display: 'none',
           },
         },
+        // ⚡ PERFORMANCE: Utilidades de transición compuestas (solo transform y opacity)
+        // Estas animaciones usan GPU y no causan reflow/repaint
+        '.transition-composite': {
+          'transition-property': 'transform, opacity',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '300ms',
+          'will-change': 'transform, opacity',
+        },
+        '.transition-composite-fast': {
+          'transition-property': 'transform, opacity',
+          'transition-timing-function': 'ease-out',
+          'transition-duration': '150ms',
+          'will-change': 'transform, opacity',
+        },
+        '.transition-composite-slow': {
+          'transition-property': 'transform, opacity',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '500ms',
+          'will-change': 'transform, opacity',
+        },
+        '.transition-transform-only': {
+          'transition-property': 'transform',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '300ms',
+          'will-change': 'transform',
+        },
+        '.transition-opacity-only': {
+          'transition-property': 'opacity',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '300ms',
+          'will-change': 'opacity',
+        },
       })
     },
   ],

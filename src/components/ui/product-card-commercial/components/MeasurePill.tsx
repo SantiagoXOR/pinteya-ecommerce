@@ -36,28 +36,50 @@ export const MeasurePill = React.memo(function MeasurePill({
     return 'text-gray-900'
   }, [])
 
+  // Estilos base sin animaciones no compuestas
+  const baseStyle = React.useMemo(() => ({
+    backgroundColor: isSelected ? '#ffffff' : '#f9fafb',
+    borderWidth: isSelected ? '1.5px' : '1px',
+    borderColor: isSelected ? '#EA5A17' : 'rgba(229, 231, 235, 1)',
+    borderStyle: 'solid',
+    backdropFilter: isSelected ? 'blur(8px)' : 'blur(4px)',
+    WebkitBackdropFilter: isSelected ? 'blur(8px)' : 'blur(4px)',
+  }), [isSelected])
+
+  // Box-shadow estático (no animado) - solo cambia opacity del pseudo-elemento
+  const shadowOpacity = isSelected ? 1 : 0.6
+
   return (
     <button
       type='button'
       onClick={handleClick}
       className={cn(
-        'relative py-0.5 flex-shrink-0 rounded-full transition-all flex items-center gap-1 h-[18px]',
-        'transform-gpu will-change-transform',
+        'relative py-0.5 flex-shrink-0 rounded-full flex items-center gap-1 h-[18px]',
+        'transform-gpu',
         isSelected 
-          ? 'bg-white pl-1.5 pr-2 scale-105 shadow-md' 
-          : 'bg-gray-50 border border-gray-200 px-1.5 hover:scale-[1.02]'
+          ? 'pl-1.5 pr-2' 
+          : 'px-1.5',
+        // Solo transiciones compuestas
+        'transition-transform duration-200 ease-out'
       )}
       style={{
-        ...(isSelected ? { borderWidth: '1.5px', borderColor: '#EA5A17', borderStyle: 'solid' } : {}),
-        backdropFilter: isSelected ? 'blur(8px)' : 'blur(4px)',
-        WebkitBackdropFilter: isSelected ? 'blur(8px)' : 'blur(4px)',
-        boxShadow: isSelected 
-          ? '0 2px 8px rgba(234, 90, 23, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
-          : '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+        ...baseStyle,
+        transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+        willChange: 'transform',
       }}
     >
+      {/* Pseudo-elemento para box-shadow con opacity animada */}
+      <span
+        className="absolute inset-0 rounded-full pointer-events-none transition-opacity duration-200 ease-out"
+        style={{
+          boxShadow: isSelected 
+            ? '0 2px 8px rgba(234, 90, 23, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+            : '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+          opacity: shadowOpacity,
+        }}
+      />
       <span className={cn(
-        'font-bold leading-none whitespace-nowrap text-[8px]',
+        'relative z-10 font-bold leading-none whitespace-nowrap text-[8px]',
         textColor
       )}>
         {number}{displayUnit ? ` ${displayUnit}` : ''}
@@ -65,7 +87,7 @@ export const MeasurePill = React.memo(function MeasurePill({
       
       {/* Checkmark de selección - alineado al centro del texto */}
       {isSelected && (
-        <Check className={cn('w-2.5 h-2.5 flex-shrink-0', textColor)} strokeWidth={3} />
+        <Check className={cn('relative z-10 w-2.5 h-2.5 flex-shrink-0', textColor)} strokeWidth={3} />
       )}
     </button>
   )

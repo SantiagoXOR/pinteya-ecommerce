@@ -147,7 +147,7 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                 {/* Sección de Colores */}
                 {colors.length > 0 && onColorSelect && (
                   <div>
-                    <h3 className='text-sm font-semibold text-gray-700 mb-2'>Color</h3>
+                    <h3 className='text-xs sm:text-sm font-semibold text-gray-700 mb-2'>Color</h3>
                     <div className='grid grid-cols-4 md:grid-cols-5 gap-3'>
                       {colors.map((colorData) => {
                         const darker = darkenHex(colorData.hex, 0.35)
@@ -183,7 +183,7 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                 
                 {/* Sección de Medidas */}
                 <div>
-                  <h3 className='text-sm font-semibold text-gray-700 mb-2'>Medida</h3>
+                  <h3 className='text-xs sm:text-sm font-semibold text-gray-700 mb-2'>Medida</h3>
                   <div className='grid grid-cols-4 md:grid-cols-5 gap-2'>
                     {measures.map((measure) => {
                       const { number } = parseMeasure(measure)
@@ -196,14 +196,14 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                             onMeasureSelect(measure)
                           }}
                           className={cn(
-                            'h-12 md:h-14 rounded-lg text-sm md:text-base font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center',
+                            'h-10 sm:h-12 md:h-14 rounded-lg text-xs sm:text-sm md:text-base font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center',
                             selectedMeasure === measure
                               ? 'bg-[#facc15] text-[#EA5A17] border-2 border-[#facc15] shadow-sm'
                               : 'bg-white text-gray-600 border-2 border-gray-300 hover:border-[#EA5A17]'
                           )}
                         >
                           <span className='font-bold'>{number}</span>
-                          <span className='text-xs ml-0.5 font-normal'>{commonUnit}</span>
+                          <span className='text-[10px] sm:text-xs ml-0.5 font-normal'>{commonUnit}</span>
                         </button>
                       )
                     })}

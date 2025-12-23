@@ -243,7 +243,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         ref={ref}
         className={cn(
           'relative flex flex-col w-full cursor-pointer',
-          'min-h-[340px] sm:min-h-[360px] md:h-[450px] lg:h-[500px]',
+          'min-h-[280px] sm:min-h-[320px] md:h-[450px] lg:h-[500px]',
           'glass-card-3d glass-accelerated',
           'overflow-hidden',
           'rounded-xl md:rounded-[1.5rem]',
@@ -255,20 +255,19 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         data-finish-source={badges.resolvedFinishSource}
         style={{
           transformOrigin: 'center',
-          transition: state.isHovered 
-            ? 'transform 0.3s ease, box-shadow 0.3s ease' 
-            : 'transform 0.2s ease, box-shadow 0.2s ease',
+          // Solo transición compuesta en transform
+          transition: 'transform 0.3s ease-out',
           transform: state.isHovered 
             ? 'perspective(1000px) rotateX(2deg) translateY(-4px)' 
             : 'perspective(1000px) rotateX(0deg)',
-          boxShadow: state.isHovered 
-            ? '0 12px 48px rgba(0, 0, 0, 0.2), 0 6px 16px rgba(0, 0, 0, 0.12)' 
-            : '0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08)',
+          // Box-shadow base estático (no animado)
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08)',
           // Fondo blanco sólido para todo el card
           backgroundColor: '#ffffff',
           backdropFilter: 'blur(30px)',
           WebkitBackdropFilter: 'blur(30px)',
           border: '1px solid rgba(255, 255, 255, 0.15)',
+          willChange: 'transform',
         }}
         onMouseEnter={() => {
           state.setIsHovered(true)
@@ -281,6 +280,15 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         onClick={handleCardClick}
         {...props}
       >
+        {/* Pseudo-elemento para box-shadow con opacity animada (compositable) */}
+        <span
+          className="absolute inset-0 rounded-xl md:rounded-[1.5rem] pointer-events-none transition-opacity duration-300 ease-out"
+          style={{
+            boxShadow: '0 12px 48px rgba(0, 0, 0, 0.2), 0 6px 16px rgba(0, 0, 0, 0.12)',
+            opacity: state.isHovered ? 1 : 0,
+            zIndex: -1,
+          }}
+        />
         {/* Icono de envío gratis */}
         {shouldShowFreeShipping && (
           <div className='absolute right-2 md:right-3 top-2 md:top-2.5 z-30 pointer-events-none select-none flex items-center'>
@@ -289,7 +297,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
               alt='Envío gratis'
               width={36}
               height={36}
-              className='h-7 sm:h-8 md:h-9 w-auto object-contain drop-shadow'
+              className='h-6 sm:h-7 md:h-8 w-auto object-contain drop-shadow'
               priority
               unoptimized
             />
@@ -299,7 +307,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         {/* Badge "Nuevo" */}
         {isNew && (
           <span
-            className='absolute top-12 md:top-14 right-2 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-40 shadow'
+            className='absolute top-10 md:top-14 right-2 md:right-3 text-[10px] sm:text-xs font-bold px-1 py-0.5 md:px-2 md:py-1 rounded z-40 shadow'
             style={{ backgroundColor: '#FFD600', color: '#EA5A17' }}
           >
             Nuevo
@@ -308,7 +316,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
 
         {/* Imagen del producto - Mejor posicionada y más grande con fondo blanco */}
         <div 
-          className='relative flex-[1.8] w-full min-h-[180px] sm:min-h-[200px] md:min-h-[55%] flex items-center justify-center overflow-hidden rounded-t-xl md:rounded-t-[1.5rem]'
+          className='relative flex-[1.8] w-full min-h-[150px] sm:min-h-[180px] md:min-h-[55%] flex items-center justify-center overflow-hidden rounded-t-xl md:rounded-t-[1.5rem]'
           style={{
             backgroundColor: '#ffffff',
           }}

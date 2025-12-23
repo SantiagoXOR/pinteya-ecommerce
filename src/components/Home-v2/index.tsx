@@ -235,46 +235,66 @@ const LazyBestSeller = React.memo(() => {
 LazyBestSeller.displayName = 'LazyBestSeller'
 
 const HomeV2 = () => {
-  // Scroll depth tracking - Optimizado con requestAnimationFrame para evitar re-renders
+  // Scroll depth tracking - Optimizado con IntersectionObserver (más eficiente que scroll events)
   useEffect(() => {
-    let maxDepth = 0
-    const trackingThresholds = [25, 50, 75, 100]
-    const trackedDepths = new Set<number>()
-    let ticking = false
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const windowHeight = window.innerHeight
-          const documentHeight = document.documentElement.scrollHeight
-          const scrollTop = window.scrollY
-
-          const scrollPercentage = Math.round(
-            ((scrollTop + windowHeight) / documentHeight) * 100
-          )
-
-          if (scrollPercentage > maxDepth) {
-            maxDepth = scrollPercentage
-          }
-
-          // Trackear cada threshold una sola vez
-          trackingThresholds.forEach(threshold => {
-            if (scrollPercentage >= threshold && !trackedDepths.has(threshold)) {
-              trackedDepths.add(threshold)
-              trackScrollDepth(threshold, window.location.pathname)
-            }
-          })
-
-          ticking = false
-        })
-        ticking = true
-      }
+    // Guardar SSR/hidratación: evitar acceder a window/document en servidor
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    const trackingThresholds = [25, 50, 75, 100]
+    const trackedDepths = new Set<number>()
+    const pathname = window.location.pathname
 
+    // Crear elementos marcadores para cada threshold usando IntersectionObserver
+    const markers: HTMLElement[] = []
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const threshold = parseInt(entry.target.getAttribute('data-threshold') || '0', 10)
+            if (threshold > 0 && !trackedDepths.has(threshold)) {
+              trackedDepths.add(threshold)
+              trackScrollDepth(threshold, pathname)
+            }
+          }
+        })
+      },
+      {
+        // Usar rootMargin para detectar cuando el usuario alcanza cada porcentaje
+        rootMargin: '0px',
+        threshold: 0.1,
+      }
+    )
+
+    // Crear marcadores invisibles en el DOM para cada threshold
+    const documentHeight = document.documentElement.scrollHeight
+    const windowHeight = window.innerHeight
+    // Evitar valores negativos o cero para evitar posiciones inválidas
+    const scrollableHeight = Math.max(documentHeight - windowHeight, 1)
+
+    trackingThresholds.forEach((threshold) => {
+      const marker = document.createElement('div')
+      marker.setAttribute('data-threshold', threshold.toString())
+      marker.style.position = 'absolute'
+      marker.style.top = `${(threshold / 100) * scrollableHeight}px`
+      marker.style.height = '1px'
+      marker.style.width = '1px'
+      marker.style.pointerEvents = 'none'
+      marker.style.visibility = 'hidden'
+      document.body.appendChild(marker)
+      markers.push(marker)
+      observer.observe(marker)
+    })
+
+    // Cleanup
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      observer.disconnect()
+      markers.forEach((marker) => {
+        if (marker.parentNode) {
+          marker.parentNode.removeChild(marker)
+        }
+      })
     }
   }, [])
 
