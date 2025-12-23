@@ -8,7 +8,7 @@ import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShippi
 import { StockIndicator } from './stock-indicator'
 import { ShippingInfo } from './shipping-info'
 
-const cardVariants = cva('rounded-card bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-all duration-200', {
+const cardVariants = cva('rounded-card bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-transform duration-200 ease-out', {
   variants: {
     variant: {
       default: 'border border-gray-200 dark:border-gray-700 shadow-1',
@@ -24,8 +24,9 @@ const cardVariants = cva('rounded-card bg-white dark:bg-gray-900 text-gray-900 d
     },
     hover: {
       none: '',
-      lift: 'hover:shadow-2 hover:-translate-y-1',
-      glow: 'hover:shadow-2 hover:border-primary/20',
+      // Solo transform para hover (compositable)
+      lift: 'hover:-translate-y-1',
+      glow: 'hover:border-primary/20',
       scale: 'hover:scale-[1.02]',
     },
   },
@@ -177,9 +178,9 @@ const ProductCard = React.memo(
           ref={ref}
           className={cn(
             // Mobile-first: diseño compacto para 2 columnas
-            'bg-white rounded-xl shadow-sm p-2 w-full flex flex-col relative',
+            'bg-white rounded-xl shadow-sm p-1.5 sm:p-2 w-full flex flex-col relative',
             // Mobile: altura compacta
-            'h-[280px] sm:h-[320px]',
+            'h-[240px] sm:h-[280px]',
             // Tablet y desktop: altura completa
             'md:h-[400px] lg:h-[450px]',
             'md:rounded-2xl md:max-w-[300px]',
@@ -199,7 +200,7 @@ const ProductCard = React.memo(
           )}
 
           {/* Imagen del producto - Mejorada con degradado y responsive */}
-          <div className='relative flex justify-center items-center mb-2 md:mb-3 mt-1 px-2 flex-1 overflow-hidden rounded-t-xl'>
+          <div className='relative flex justify-center items-center mb-1.5 sm:mb-2 md:mb-3 mt-0.5 sm:mt-1 px-1.5 sm:px-2 flex-1 overflow-hidden rounded-t-xl'>
             {image ? (
               <img
                 src={image}
@@ -236,7 +237,7 @@ const ProductCard = React.memo(
           </div>
 
           {/* Sección de información del producto - Integrada con degradado y responsive */}
-          <div className='flex flex-col mb-1 flex-shrink-0 -mt-2 md:-mt-3 p-2 md:p-0'>
+          <div className='flex flex-col mb-0.5 sm:mb-1 flex-shrink-0 -mt-1.5 sm:-mt-2 md:-mt-3 p-1.5 sm:p-2 md:p-0'>
             {/* Badge de promoción (excluir envío gratis) - Responsive */}
             <div className='mb-0.5 w-full flex-shrink-0'>
               {badge && badge !== 'Envío gratis' && (
@@ -276,7 +277,7 @@ const ProductCard = React.memo(
           </div>
 
           {/* Sección de precios - Altura fija y responsive */}
-          <div className='w-full overflow-hidden mb-1 flex-shrink-0 px-2 md:px-0'>
+          <div className='w-full overflow-hidden mb-0.5 sm:mb-1 flex-shrink-0 px-1.5 sm:px-2 md:px-0'>
             {useNewComponents ? (
               <div
                 className='h-full w-full overflow-hidden flex flex-col'
@@ -298,7 +299,7 @@ const ProductCard = React.memo(
               >
                 <div className='flex items-center gap-2 w-full'>
                   <span
-                    className='font-bold text-xl sm:text-2xl leading-tight truncate'
+                    className='font-bold text-lg sm:text-xl leading-tight truncate'
                     style={{ color: '#EA5A17' }}
                   >
                     ${price?.toLocaleString('es-AR') || '0'}
@@ -307,13 +308,13 @@ const ProductCard = React.memo(
                   {/* Badge de descuento inline con el precio */}
                   {discount && (
                     <div
-                      className='inline-flex flex-col items-center justify-center px-1.5 py-0.5 rounded shadow-sm'
+                      className='inline-flex flex-col items-center justify-center px-1 py-0.5 rounded shadow-sm'
                       style={{ backgroundColor: '#EA5A17' }}
                     >
-                      <span className='font-extrabold text-[10px] sm:text-[11px] text-white leading-none'>
+                      <span className='font-extrabold text-[9px] sm:text-[10px] text-white leading-none'>
                         {discount}
                       </span>
-                      <span className='uppercase text-[7px] sm:text-[8px] font-semibold text-white leading-none -mt-[1px]'>
+                      <span className='uppercase text-[6px] sm:text-[7px] font-semibold text-white leading-none -mt-[1px]'>
                         OFF
                       </span>
                     </div>

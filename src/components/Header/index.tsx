@@ -222,8 +222,8 @@ const Header = () => {
           <ScrollingBanner />
         </div>
         {/* Header principal - Con expansión de búsqueda al hacer click */}
-        <div className='max-w-[1200px] mx-auto px-3 sm:px-4 py-2 sm:py-2.5'>
-          <div className='flex items-center gap-3 sm:gap-4 min-h-[52px]'>
+        <div className='max-w-[1200px] mx-auto px-3 sm:px-4 py-1.5 sm:py-2'>
+          <div className='flex items-center gap-2 sm:gap-3 min-h-[48px] sm:min-h-[52px]'>
             {/* 1. Logo - Ocultar cuando search está expandido */}
             <Link 
               href='/' 
@@ -236,7 +236,7 @@ const Header = () => {
               <HeaderLogo
                 isMobile={false}
                 className={`
-                  w-20 sm:w-28 md:w-36 h-auto transition-all duration-300 ease-out
+                  w-16 sm:w-24 md:w-32 h-auto transition-all duration-300 ease-out
                   hover:scale-110 cursor-pointer
                   ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
                 `}
@@ -253,7 +253,7 @@ const Header = () => {
                     <MemoizedSearchAutocomplete
                       ref={expandedSearchRef}
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
                       style={{
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}
@@ -289,7 +289,7 @@ const Header = () => {
                   >
                     <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
                       style={{
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}

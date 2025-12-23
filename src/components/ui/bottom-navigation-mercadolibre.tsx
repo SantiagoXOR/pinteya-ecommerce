@@ -159,7 +159,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         }}
         {...props}
       >
-        <div className='flex items-center justify-around max-w-md mx-auto w-full h-16'>
+        <div className='flex items-center justify-around max-w-md mx-auto w-full h-14 sm:h-16'>
           {navItems.map((item) => {
             const Icon = item.icon
             const isItemActive = item.active
@@ -194,7 +194,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                     onTouchStart={() => item.id === 'cart' && setIsCartPressed(true)}
                     onTouchEnd={() => item.id === 'cart' && setTimeout(() => setIsCartPressed(false), 200)}
                     className={cn(
-                      'flex flex-col items-center justify-center w-full py-2 transition-all duration-200',
+                      'flex flex-col items-center justify-center w-full py-1.5 sm:py-2 transition-all duration-200',
                       'focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:ring-offset-2 rounded-lg',
                       'active:scale-95'
                     )}
@@ -202,10 +202,10 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                   >
                     {/* Contenedor del icono con fondo circular mejorado para el carrito */}
                     {item.id === 'cart' && (
-                      <div className='relative mb-1 h-7 flex items-center justify-center'>
+                      <div className='relative mb-1 h-6 sm:h-7 flex items-center justify-center'>
                         <div
                           className={cn(
-                            'w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200',
+                            'w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-200',
                             isCartPressed
                               ? 'bg-blaze-orange-600 border-2 border-blaze-orange-700 shadow-md'
                               : hasBadge
@@ -216,7 +216,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                         >
                           <Icon
                             className={cn(
-                              'w-6 h-6 transition-colors duration-200',
+                              'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
                               isCartPressed
                                 ? 'text-white fill-white'
                                 : hasBadge
@@ -232,19 +232,19 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                         {showBadge && (
                           <span
                             className={cn(
-                              'absolute rounded-full min-w-[20px] h-[20px]',
+                              'absolute rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
                               'flex items-center justify-center shadow-lg ring-2 ring-blaze-orange-100 z-10'
                             )}
                             style={{
                               borderWidth: '0px',
                               backgroundColor: 'rgba(235, 99, 19, 1)',
                               color: 'rgba(250, 204, 21, 1)',
-                              fontSize: '14px',
+                              fontSize: '12px',
                               fontWeight: 500,
                               paddingLeft: '0px',
                               paddingRight: '0px',
-                              left: '27px',
-                              top: '-12px',
+                              left: '22px',
+                              top: '-10px',
                             }}
                           >
                             {item.badge && item.badge > 99 ? '99+' : item.badge}
@@ -255,10 +255,10 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
 
                     {/* Icono para botón de buscar */}
                     {item.id === 'search' && (
-                      <div className='mb-1 h-7 flex items-center justify-center'>
+                      <div className='mb-1 h-6 sm:h-7 flex items-center justify-center'>
                         <Icon
                           className={cn(
-                            'w-6 h-6 transition-colors duration-200',
+                            'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
                             'text-gray-600 hover:text-blaze-orange-600'
                           )}
                           strokeWidth={1.5}
@@ -268,10 +268,10 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
 
                     {/* Icono para botón de volver */}
                     {item.id === 'back' && (
-                      <div className='mb-1 h-7 flex items-center justify-center'>
+                      <div className='mb-1 h-6 sm:h-7 flex items-center justify-center'>
                         <Icon
                           className={cn(
-                            'w-6 h-6 transition-colors duration-200',
+                            'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
                             'text-gray-600 hover:text-blaze-orange-600'
                           )}
                           strokeWidth={1.5}
@@ -281,10 +281,10 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
 
                     {/* Icono para WhatsApp */}
                     {item.id === 'whatsapp' && (
-                      <div className='mb-1 h-7 flex items-center justify-center'>
+                      <div className='mb-1 h-6 sm:h-7 flex items-center justify-center'>
                         <Icon
                           className={cn(
-                            'w-6 h-6 transition-colors duration-200',
+                            'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
                             'text-green-600 hover:text-green-700'
                           )}
                           strokeWidth={1.5}
@@ -295,7 +295,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                     {/* Label */}
                     <span
                       className={cn(
-                        'text-xs font-medium transition-colors duration-200',
+                        'text-[10px] sm:text-xs font-medium transition-colors duration-200',
                         item.id === 'cart' && (hasBadge || isCartPressed)
                           ? 'text-blaze-orange-600'
                           : item.id === 'whatsapp'
@@ -312,7 +312,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex flex-col items-center justify-center w-full py-2 transition-all duration-200',
+                      'flex flex-col items-center justify-center w-full py-1.5 sm:py-2 transition-all duration-200',
                       'focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:ring-offset-2 rounded-lg'
                     )}
                     aria-label={item.label}
@@ -323,10 +323,10 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                     )}
 
                     {/* Icono */}
-                    <div className='mb-1 h-7 flex items-center justify-center'>
+                    <div className='mb-1 h-6 sm:h-7 flex items-center justify-center'>
                       <Icon
                         className={cn(
-                          'w-6 h-6 transition-colors duration-200',
+                          'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
                           isItemActive
                             ? 'text-blaze-orange-600 fill-blaze-orange-600'
                             : 'text-gray-600'
@@ -339,7 +339,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                     {/* Label */}
                     <span
                       className={cn(
-                        'text-xs font-medium transition-colors duration-200',
+                        'text-[10px] sm:text-xs font-medium transition-colors duration-200',
                         isItemActive
                           ? 'text-blaze-orange-600 font-semibold'
                           : 'text-gray-600'
