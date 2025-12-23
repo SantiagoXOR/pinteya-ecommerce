@@ -203,9 +203,9 @@ const Header = () => {
       <header
         className={`
         fixed left-0 right-0 w-full z-header
-        bg-blaze-orange-600 dark:bg-blaze-orange-700 rounded-b-3xl shadow-lg
+        rounded-b-3xl
         header-sticky-transition
-        ${isSticky ? 'shadow-2xl backdrop-blur-sm' : 'shadow-lg'}
+        ${isSticky ? 'glass-header-sticky' : 'glass-header'}
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
         max-w-full overflow-x-hidden overflow-y-visible
@@ -213,6 +213,8 @@ const Header = () => {
       `}
         style={{
           top: 'env(safe-area-inset-top, 0px)',
+          boxShadow: '0px 4px 16px 0px rgba(0, 0, 0, 0.15)',
+          backdropFilter: 'blur(2px)',
         }}
       >
         {/* ScrollingBanner integrado en la parte superior del header */}
@@ -246,12 +248,15 @@ const Header = () => {
               <div className='flex-1 animate-in fade-in zoom-in-95 duration-200'>
                 <div className='relative w-full'>
                   <div
-                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 dark:bg-gray-900 rounded-full'
+                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring glass-search-bar rounded-full'
                   >
                     <MemoizedSearchAutocomplete
                       ref={expandedSearchRef}
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:dark:border-gray-700 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:dark:!text-bright-sun-200 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:dark:focus:border-blaze-orange-500 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:dark:focus:ring-blaze-orange-500 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:dark:hover:border-blaze-orange-600 [&>div>div>input]:!bg-white [&>div>div>input]:dark:!bg-gray-900'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      style={{
+                        '--input-bg': 'rgba(255, 255, 255, 0.3)',
+                      } as React.CSSProperties & { '--input-bg'?: string }}
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}
@@ -280,11 +285,14 @@ const Header = () => {
               >
                 <div className='relative w-full'>
                   <div
-                    className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring bg-bright-sun-100 dark:bg-gray-900 rounded-full'
+                    className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring glass-search-bar rounded-full'
                   >
                     <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:dark:border-gray-700 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-3 [&>div>div>input]:sm:pr-4 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:dark:!text-bright-sun-200 [&>div>div>input]:text-xs [&>div>div>input]:sm:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:dark:focus:border-blaze-orange-500 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:dark:focus:ring-blaze-orange-500 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:dark:hover:border-blaze-orange-600 [&>div>div>input]:!bg-white [&>div>div>input]:dark:!bg-gray-900'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      style={{
+                        '--input-bg': 'rgba(255, 255, 255, 0.3)',
+                      } as React.CSSProperties & { '--input-bg'?: string }}
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}

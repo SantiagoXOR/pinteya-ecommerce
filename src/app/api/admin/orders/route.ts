@@ -20,14 +20,34 @@ import { metricsCollector } from '@/lib/enterprise/metrics'
 // ===================================
 
 const OrderFiltersSchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  limit: z.coerce.number().min(1).max(100).default(25),
+  page: z
+    .preprocess(
+      (val) => (val === null || val === undefined ? 1 : val),
+      z.coerce.number().min(1)
+    )
+    .default(1),
+  limit: z
+    .preprocess(
+      (val) => (val === null || val === undefined ? 25 : val),
+      z.coerce.number().min(1).max(100)
+    )
+    .default(25),
   status: z.string().optional().nullable(),
   date_from: z.string().optional().nullable(),
   date_to: z.string().optional().nullable(),
   search: z.string().optional().nullable(),
-  sort_by: z.enum(['created_at', 'total', 'id']).default('created_at'),
-  sort_order: z.enum(['asc', 'desc']).default('desc'),
+  sort_by: z
+    .preprocess(
+      (val) => (val === null || val === undefined ? 'created_at' : val),
+      z.enum(['created_at', 'total', 'id'])
+    )
+    .default('created_at'),
+  sort_order: z
+    .preprocess(
+      (val) => (val === null || val === undefined ? 'desc' : val),
+      z.enum(['asc', 'desc'])
+    )
+    .default('desc'),
 })
 
 const CreateOrderSchema = z.object({

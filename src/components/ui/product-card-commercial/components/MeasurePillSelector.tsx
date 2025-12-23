@@ -41,37 +41,98 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
     }
   }
 
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
+  const [canScrollRight, setCanScrollRight] = React.useState(false)
+
+  React.useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    const checkScroll = () => {
+      setCanScrollLeft(container.scrollLeft > 0)
+      setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 1)
+    }
+
+    checkScroll()
+    container.addEventListener('scroll', checkScroll, { passive: true })
+    window.addEventListener('resize', checkScroll, { passive: true })
+
+    return () => {
+      container.removeEventListener('scroll', checkScroll)
+      window.removeEventListener('resize', checkScroll)
+    }
+  }, [measures])
+
   return (
-    <div className='relative flex items-center justify-between gap-2 -mt-1 overflow-visible'>
-      <div className='relative flex-1 min-w-0 overflow-visible'>
+    <div className='relative w-full overflow-visible'>
+      {/* Gradiente izquierdo - indicador de scroll */}
+      {canScrollLeft && (
         <div 
-          className='flex items-center gap-1 overflow-x-auto overflow-y-visible scrollbar-hide scroll-smooth pt-1 pl-0 pr-16 pb-0' 
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overflowY: 'visible' }}
-        >
-          {measures.map((measure) => (
-            <MeasurePill
-              key={measure}
-              measure={measure}
-              isSelected={selectedMeasure === measure}
-              onSelect={onMeasureSelect}
-            />
-          ))}
-        </div>
+          className='absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none'
+          style={{
+            background: 'linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent)',
+          }}
+        />
+      )}
+      
+      {/* Contenedor de scroll full width - Sin scrollbar visible */}
+      <div 
+        ref={scrollContainerRef}
+        className='flex items-center overflow-x-auto overflow-y-visible scroll-smooth w-full scrollbar-hide' 
+        style={{ 
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+          gap: 'clamp(0.25rem, 1vw, 0.375rem)',
+          paddingTop: 'clamp(0.125rem, 0.5vw, 0.25rem)',
+          paddingBottom: 'clamp(0.125rem, 0.5vw, 0.25rem)',
+          paddingLeft: 'clamp(0.75rem, 2vw, 1rem)',
+          paddingRight: 'clamp(0.75rem, 2vw, 1rem)',
+        }}
+      >
+        {measures.map((measure) => (
+          <MeasurePill
+            key={measure}
+            measure={measure}
+            isSelected={selectedMeasure === measure}
+            onSelect={onMeasureSelect}
+          />
+        ))}
       </div>
 
-      {/* Botón ">" a la derecha (solo si hay selección) */}
+      {/* Gradiente derecho - indicador de scroll */}
+      {canScrollRight && (
+        <div 
+          className='absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none'
+          style={{
+            background: 'linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent)',
+          }}
+        />
+      )}
+
+      {/* Botón ">" a la derecha (solo si hay selección) - Posicionado absolutamente con estilo amarillo y blur - Altura igual a los pills */}
       {selectedMeasure && (colors.length > 1 || measures.length > 1) && (
-        <div className='flex items-center gap-1 flex-shrink-0 z-10'>
+        <div className='absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 flex-shrink-0 z-20 h-[18px] w-[18px] md:h-[20px] md:w-[20px]'>
+          {/* Blur amarillo detrás del botón - mismo estilo que el botón de carrito */}
+          <div 
+            className='absolute inset-0 rounded-full pointer-events-none'
+            style={{
+              background: 'radial-gradient(circle, rgba(250, 204, 21, 0.9) 0%, rgba(250, 204, 21, 0.7) 50%, rgba(250, 204, 21, 0.4) 100%)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)'
+            }}
+          />
           <Sheet open={showColorsSheet} onOpenChange={setShowColorsSheet}>
             <SheetTrigger asChild>
               <button
                 type='button'
                 onClick={(e) => e.stopPropagation()}
                 aria-label='Ver todas las opciones de color y medidas'
-                className='px-1 py-0.5 flex-shrink-0 text-[#EA5A17] hover:text-[#d14d0f] bg-transparent flex items-center justify-center transition-colors'
+                className='relative w-full h-full rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform bg-transparent'
                 title='Ver todas las opciones'
               >
-                <ChevronRight className='w-4 h-4 md:w-5 md:h-5' />
+                <ChevronRight className='w-2.5 h-2.5 md:w-3 md:h-3 text-[#EA5A17]' />
               </button>
             </SheetTrigger>
             <SheetContent 

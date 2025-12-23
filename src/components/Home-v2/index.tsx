@@ -286,17 +286,19 @@ const HomeV2 = () => {
       {/* NUEVO ORDEN OPTIMIZADO */}
 
       {/* 0. Hero Carousel - Primer elemento después del header */}
-      <div className='pt-3 sm:pt-4 md:pt-6'>
+      <div className='pt-1 sm:pt-2 md:pt-3'>
         <HeroCarousel />
       </div>
 
       {/* 1. Navegación rápida por categorías - Espaciado mínimo */}
-      <div className='mt-2 sm:mt-3'>
+      <div className='mt-1 sm:mt-1.5'>
         <CategoryTogglePillsWithSearch />
       </div>
 
       {/* 2. Ofertas Especiales (BestSeller) - Ahora con filtro de categorías */}
-      <LazyBestSeller />
+      <div className='mt-1 sm:mt-1.5'>
+        <LazyBestSeller />
+      </div>
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
       <div 

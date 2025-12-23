@@ -121,10 +121,10 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             </div>
             
             <div className='flex flex-col justify-center' style={{maxHeight: '3.5rem'}}>
-              <h2 className={`text-xl md:text-2xl font-bold ${categoryConfig.textColor || 'text-white'} leading-tight line-clamp-1`}>
+              <h2 className={`text-xl md:text-2xl font-medium ${categoryConfig.textColor || 'text-white'} leading-tight line-clamp-1`} style={freeShippingOnly ? { color: 'rgba(242, 122, 29, 1)' } : {}}>
                 {categoryConfig.title}
               </h2>
-              <p className='text-xs md:text-sm text-white/70 leading-tight line-clamp-1'>
+              <p className={`text-xs md:text-sm leading-tight line-clamp-1 ${freeShippingOnly ? 'text-white' : 'text-white/70'}`}>
                 {categoryConfig.subtitle}
               </p>
             </div>
@@ -155,7 +155,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {products.map((product, idx) => (
-              <div key={idx} className='min-w-[calc(50%-0.5rem)] md:min-w-[calc(25%-1.125rem)] flex-shrink-0'>
+              <div key={idx} className='w-[calc(50%-0.5rem)] md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] flex-shrink-0 flex flex-col'>
                 <ProductItem product={product} />
               </div>
             ))}

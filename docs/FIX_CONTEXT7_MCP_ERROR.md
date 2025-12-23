@@ -141,3 +141,5 @@ Si Context7 ofrece un servidor MCP remoto, puedes usar una configuración basada
 4. Contacta al soporte de Context7 o abre un issue en su repositorio
 
 
+
+

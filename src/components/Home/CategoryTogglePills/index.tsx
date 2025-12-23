@@ -272,7 +272,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return (
       <div
         ref={carouselRef}
-        className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto flex-nowrap py-1 px-3 sm:px-4 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+        className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto flex-nowrap py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full'
         onMouseDown={handleMouseDown}
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
@@ -319,27 +319,28 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                     flex items-center justify-center p-0
                     w-14 h-14 sm:w-16 sm:h-16 rounded-full
                     md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
+                    ${isSelected ? 'glass-category-pill-active' : 'glass-category-pill'}
                     ${
                       isSelected && useDynamicCarousel
-                        ? 'bg-bright-sun-400 hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600 shadow-lg'
+                        ? 'hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600'
                         : isSelected
-                        ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
-                        : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-900 border-gray-200 shadow-sm'
+                        ? 'hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
+                        : 'hover:shadow-lg text-gray-900'
                     }
                   `}
                 >
                 {category.image_url && (
                   <div className={`
                     flex items-center justify-center 
-                    w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8
+                    w-9 h-9 sm:w-10 sm:h-10 md:w-10 md:h-10
                     transition-transform duration-300 ease-out
                     ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
                   `}>
                     <Image
                       src={category.image_url}
                       alt=''
-                      width={32}
-                      height={32}
+                      width={40}
+                      height={40}
                       className='w-full h-full object-contain'
                     />
                   </div>
@@ -358,42 +359,41 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   }
 
   return (
-    <section className='bg-transparent sticky top-[92px] lg:top-[105px] z-40'>
+    <section className='bg-transparent sticky top-[92px] lg:top-[105px] z-40 py-0 w-full overflow-hidden'>
       <div className='relative w-full'>
         {/* Contenedor para los botones que se extiende hasta los bordes */}
-        <div className='absolute inset-0 pointer-events-none lg:pointer-events-auto'>
-          {/* Flecha izquierda - Estilo semicírculo Mercado Libre */}
+        <div className='absolute inset-0 pointer-events-none z-20'>
+          {/* Flecha izquierda - Más pequeño y en el borde izquierdo */}
           <button
             onClick={() => scroll('left')}
-            className='absolute -left-1 lg:left-0 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-end pr-0.5 md:pr-1 rounded-r-full border border-l-0 border-gray-200 pointer-events-auto top-2 sm:top-3 md:top-1/2 md:-translate-y-1/2'
+            className='absolute left-0 z-20 w-6 h-10 md:w-8 md:h-12 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-r-full border border-l-0 border-gray-200 pointer-events-auto -translate-y-1/2'
+            style={{ top: '32px' }}
             aria-label='Anterior'
           >
-            <ChevronLeft className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
+            <ChevronLeft className='w-3 h-3 md:w-4 md:h-4 text-gray-600' />
           </button>
 
-          {/* Flecha derecha - Estilo semicírculo Mercado Libre */}
+          {/* Flecha derecha - Más pequeño y en el borde derecho */}
           <button
             onClick={() => scroll('right')}
-            className='absolute -right-1 lg:right-0 z-10 w-7 h-12 md:w-10 md:h-16 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-start pl-0.5 md:pl-1 rounded-l-full border border-r-0 border-gray-200 pointer-events-auto top-2 sm:top-3 md:top-1/2 md:-translate-y-1/2'
+            className='absolute right-0 z-20 w-6 h-10 md:w-8 md:h-12 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-l-full border border-r-0 border-gray-200 pointer-events-auto -translate-y-1/2'
+            style={{ top: '32px' }}
             aria-label='Siguiente'
           >
-            <ChevronRight className='w-4 h-4 md:w-5 md:h-5 text-gray-600' />
+            <ChevronRight className='w-3 h-3 md:w-4 md:h-4 text-gray-600' />
           </button>
         </div>
 
+        {/* Pills de categorías - Full width sin padding para que se corte a los costados */}
         <div
-          className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 relative'
+          ref={carouselRef}
+          className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full'
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
           data-testid='category-pills-container'
         >
-          {/* Pills de categorías - Espaciado uniforme */}
-          <div
-            ref={carouselRef}
-            className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
-            onMouseDown={handleMouseDown}
-            onMouseLeave={handleMouseLeave}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
-          >
             {categories.map(category => {
               // Determinar si está seleccionada según el modo (contexto o props)
               const isSelected = useDynamicCarousel 
@@ -425,27 +425,28 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
                       flex items-center justify-center p-0
                       w-14 h-14 sm:w-16 sm:h-16 rounded-full
                       md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
+                      ${isSelected ? 'glass-category-pill-active' : 'glass-category-pill'}
                       ${
                         isSelected && useDynamicCarousel
-                          ? 'bg-bright-sun-400 hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600 shadow-lg'
+                          ? 'hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600'
                           : isSelected
-                          ? 'bg-[#eb6313] hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313] shadow-md'
-                          : 'bg-white hover:bg-gray-50 hover:shadow-lg text-gray-900 border-gray-200 shadow-sm'
+                          ? 'hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
+                          : 'hover:shadow-lg text-gray-900'
                       }
                     `}
                   >
                 {category.image_url && (
                   <div className={`
                     flex items-center justify-center 
-                    w-7 h-7 sm:w-8 sm:h-8 md:w-8 md:h-8
+                    w-9 h-9 sm:w-10 sm:h-10 md:w-10 md:h-10
                     transition-transform duration-300 ease-out
                     ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
                   `}>
                     <Image
                       src={category.image_url}
                       alt=''
-                      width={32}
-                      height={32}
+                      width={40}
+                      height={40}
                       className='w-full h-full object-contain'
                     />
                   </div>
@@ -459,7 +460,6 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
             </div>
               )
             })}
-        </div>
         </div>
       </div>
     </section>

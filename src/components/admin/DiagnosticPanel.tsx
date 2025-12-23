@@ -49,21 +49,24 @@ export function DiagnosticPanel() {
     try {
       // 1. Verificar API de órdenes
       try {
-        const ordersResponse = await fetch('/api/admin/orders?limit=1')
+        const ordersResponse = await fetch(
+          '/api/admin/orders?page=1&limit=1&sort_by=created_at&sort_order=desc'
+        )
         if (ordersResponse.ok) {
           const ordersData = await ordersResponse.json()
           diagnostics.push({
             name: 'API Órdenes',
             status: 'success',
-            message: `API responde correctamente. ${ordersData.data?.length || 0} órdenes encontradas`,
+            message: `API responde correctamente. ${ordersData.data?.orders?.length || 0} órdenes encontradas`,
             details: ordersData,
           })
         } else {
+          const errorText = await ordersResponse.text()
           diagnostics.push({
             name: 'API Órdenes',
             status: 'error',
             message: `Error ${ordersResponse.status}: ${ordersResponse.statusText}`,
-            details: await ordersResponse.text(),
+            details: errorText,
           })
         }
       } catch (error) {

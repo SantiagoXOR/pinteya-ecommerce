@@ -24,19 +24,20 @@ export const ProductCardImage = React.memo(function ProductCardImage({
   }, [productId])
 
   return (
-    <div className='relative w-full flex justify-center items-center rounded-t-xl mb-1 md:mb-2 flex-1 overflow-hidden'>
-      <div className='relative w-full h-full flex items-center justify-center p-2 md:p-3'>
+    <div className='relative w-full h-full flex justify-center items-center'>
+      <div className='relative w-full h-full flex items-center justify-center p-0.5 sm:p-1.5 md:p-5 card-image-depth'>
         {displaySrc && !imageError ? (
           <Image
             src={displaySrc}
             alt={title || 'Producto'}
             fill
-            className='object-contain z-0'
-            sizes="(max-width: 640px) 153px, (max-width: 1024px) 200px, 250px"
+            className='object-contain z-0 transition-transform duration-300 ease-out'
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             priority={false}
             loading="lazy"
             onError={onImageError}
             onLoad={handleLoad}
+            style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%' }}
           />
         ) : (
           <div className='flex items-center justify-center w-full h-full z-0 bg-gray-50'>

@@ -42,16 +42,16 @@ export const ProductCardContent = React.memo(function ProductCardContent({
   }, [title, isIncoloro])
   
   return (
-    <div className='relative z-20 text-left px-1.5 md:px-2 pt-1.5 md:pt-2 pb-0 flex-shrink-0'>
+    <div className='relative z-20 text-left pt-1.5 sm:pt-2 md:pt-2.5 pb-0 flex-shrink-0'>
       {/* Marca del producto */}
       {brand && (
-        <div className='text-[8px] md:text-[9px] uppercase text-gray-500 font-bold tracking-[0.1em] md:tracking-[0.12em] mb-0'>
+        <div className='text-[8px] md:text-[9px] uppercase text-gray-600 font-bold tracking-[0.1em] md:tracking-[0.12em] mb-0'>
           {brand.split('').join(' ')}
         </div>
       )}
 
       {/* Título del producto */}
-      <h3 className='font-medium text-gray-600 text-sm md:text-lg line-clamp-2 leading-[1.1] mb-1 -mt-1'>
+      <h3 className='font-semibold text-gray-800 text-sm md:text-lg line-clamp-2 leading-[1.1] mb-1 -mt-0.5'>
         {cleanedTitle}
       </h3>
 

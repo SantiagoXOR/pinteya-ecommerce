@@ -67,8 +67,20 @@ const PerformanceMonitor: React.FC = () => {
       setLoading(true)
       setError(null)
 
+      // Convertir timeWindow (ms) a timeframe string
+      let timeframe = '1h'
+      if (timeWindow <= 15 * 60 * 1000) {
+        timeframe = '15m'
+      } else if (timeWindow <= 60 * 60 * 1000) {
+        timeframe = '1h'
+      } else if (timeWindow <= 24 * 60 * 60 * 1000) {
+        timeframe = '24h'
+      } else {
+        timeframe = '7d'
+      }
+
       const response = await fetch(
-        `/api/admin/performance/metrics?timeWindow=${timeWindow}&health=true`,
+        `/api/admin/performance/metrics?timeframe=${timeframe}&health=true`,
         {
           method: 'GET',
           headers: {
@@ -323,7 +335,6 @@ const PerformanceMonitor: React.FC = () => {
             <Progress
               value={Math.min(metrics.errorRate * 100 * 20, 100)}
               className='mt-2'
-              // @ts-ignore
               indicatorClassName={metrics.errorRate > 0.05 ? 'bg-red-500' : 'bg-green-500'}
             />
             <p className='text-xs text-muted-foreground mt-1'>Target: &lt; 5%</p>

@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { useSearchOptimized } from '@/hooks/useSearchOptimized'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'
 import { useRecentSearches } from '@/hooks/useRecentSearches'
+import { useAnimatedPlaceholder } from '@/hooks/useAnimatedPlaceholder'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
 
 // ===================================
@@ -85,7 +86,7 @@ export const SearchAutocompleteIntegrated = React.memo(
   React.forwardRef<HTMLInputElement, SearchAutocompleteIntegratedProps>(
     (
       {
-        placeholder = 'Látex interior blanco 20lts, rodillos, pinceles...',
+        placeholder = 'Buscar productos...',
         className,
         disabled = false,
         autoFocus = false,
@@ -117,6 +118,12 @@ export const SearchAutocompleteIntegrated = React.memo(
       const [selectedIndex, setSelectedIndex] = useState(-1)
       const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
       const [mounted, setMounted] = useState(false)
+
+      // Hook para placeholder animado
+      const { placeholder: animatedPlaceholder, resetAnimation } = useAnimatedPlaceholder({
+        basePlaceholder: placeholder,
+        enabled: !inputValue.trim(), // Solo animar cuando no hay texto
+      })
 
       // Referencias
       const inputRef = useRef<HTMLInputElement>(null)
@@ -267,6 +274,7 @@ export const SearchAutocompleteIntegrated = React.memo(
           if (value.trim()) {
             searchWithDebounce(value)
             setIsOpen(true)
+            resetAnimation() // Detener animación cuando el usuario escribe
           } else {
             // Mantener el dropdown abierto para mostrar recientes/trending
             setIsOpen(true)
@@ -274,7 +282,7 @@ export const SearchAutocompleteIntegrated = React.memo(
 
           onSearch?.(value)
         },
-        [searchWithDebounce, onSearch]
+        [searchWithDebounce, onSearch, resetAnimation]
       )
 
       // Calcular posición del dropdown
@@ -292,8 +300,9 @@ export const SearchAutocompleteIntegrated = React.memo(
       const handleInputFocus = useCallback(() => {
         setIsOpen(true)
         updateDropdownPosition()
+        resetAnimation() // Detener animación al enfocar
         onFocus?.()
-      }, [onFocus, updateDropdownPosition])
+      }, [onFocus, updateDropdownPosition, resetAnimation])
 
       const handleInputBlur = useCallback(
         (e: React.FocusEvent) => {
@@ -495,7 +504,6 @@ export const SearchAutocompleteIntegrated = React.memo(
         <div ref={containerRef} className={cn('relative w-full', className)}>
           <form onSubmit={handleSubmit} id={formId || 'search-autocomplete-form'} className='relative'>
             <div className='relative'>
-              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500' />
               <input
                 {...props}
                 ref={combinedRef}
@@ -505,16 +513,25 @@ export const SearchAutocompleteIntegrated = React.memo(
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
                 onKeyDown={handleKeyDown}
-                placeholder={placeholder}
+                placeholder={animatedPlaceholder}
                 disabled={disabled}
                 className={cn(
-                  'w-full pl-10 pr-10 py-1.5 border border-gray-300 dark:border-gray-700 rounded-full',
-                  'focus:ring-2 focus:ring-orange-500 dark:focus:ring-blaze-orange-500 focus:border-orange-500 dark:focus:border-blaze-orange-500',
-                  'placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-200',
-                  'bg-white dark:bg-gray-900',
-                  'disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-400',
-                  'transition-colors duration-200'
+                  'w-full pl-4 pr-10 py-1.5 border border-white/35 rounded-full',
+                  'focus:ring-2 focus:ring-orange-500/50 dark:focus:ring-blaze-orange-500/50 focus:border-orange-500/50 dark:focus:border-blaze-orange-500/50',
+                  'placeholder-gray-600 placeholder:text-xs placeholder:font-normal dark:placeholder-gray-300 dark:placeholder:text-xs dark:placeholder:font-normal text-gray-600 dark:text-gray-300',
+                  'text-sm font-normal',
+                  'disabled:bg-gray-50/30 dark:disabled:bg-gray-900/30 disabled:text-gray-500 dark:disabled:text-gray-400',
+                  'transition-all duration-200',
+                  'focus:shadow-[0_4px_16px_rgba(0,0,0,0.15),0_2px_6px_rgba(0,0,0,0.1)]'
                 )}
+                style={{
+                  background: inputValue || isOpen 
+                    ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.75) 100%)'
+                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.65) 100%)',
+                  backdropFilter: inputValue || isOpen ? 'blur(24px)' : 'blur(20px)',
+                  WebkitBackdropFilter: inputValue || isOpen ? 'blur(24px)' : 'blur(20px)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05)',
+                }}
                 role='searchbox'
                 aria-expanded={isOpen}
                 aria-haspopup='listbox'
@@ -526,14 +543,37 @@ export const SearchAutocompleteIntegrated = React.memo(
                     : undefined
                 }
               />
+              
+              {/* Botón de búsqueda circular estilo product card */}
+              <button
+                type='submit'
+                className='absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-6 h-6 md:w-7 md:h-7'
+                aria-label='Buscar'
+              >
+                {/* Blur amarillo detrás del botón */}
+                <div 
+                  className='absolute inset-0 rounded-full pointer-events-none'
+                  style={{
+                    background: 'radial-gradient(circle, rgba(250, 204, 21, 0.9) 0%, rgba(250, 204, 21, 0.7) 50%, rgba(250, 204, 21, 0.4) 100%)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)'
+                  }}
+                />
+                
+                {/* Botón circular */}
+                <div className='relative w-full h-full rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform bg-transparent'>
+                  <Search className='w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-[#EA5A17]' />
+                </div>
+              </button>
+
               {showClearButton && inputValue && (
                 <button
                   type='button'
                   onClick={handleClear}
-                  className='absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors'
+                  className='absolute right-10 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors z-20'
                   aria-label='Clear search'
                 >
-                  <X className='w-4 h-4 text-gray-400 dark:text-gray-500' />
+                  <X className='w-3 h-3 md:w-4 md:h-4 text-gray-400 dark:text-gray-500' />
                 </button>
               )}
             </div>

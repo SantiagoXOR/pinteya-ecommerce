@@ -35,10 +35,10 @@ const NewArrival: React.FC = () => {
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
         {/* Header simplificado - Paleta Pinteya */}
         <div className='mb-4 sm:mb-6 flex items-center gap-3'>
-          <div className='w-10 h-10 rounded-full bg-gradient-to-br from-[#eb6313] to-[#f27a1d] flex items-center justify-center shadow-md'>
+          <div className='w-10 h-10 rounded-full flex items-center justify-center shadow-md' style={{ background: 'linear-gradient(135deg, rgba(235, 99, 19, 0.42) 0%, rgba(242, 122, 29, 1) 100%)' }}>
             <Sparkles className='w-5 h-5 text-white' />
           </div>
-          <h2 className='text-xl md:text-2xl font-bold text-white'>
+          <h2 className='text-xl md:text-2xl font-normal text-white' style={{ fontSize: '23px', letterSpacing: 'normal' }}>
             {sectionTitle}
           </h2>
         </div>

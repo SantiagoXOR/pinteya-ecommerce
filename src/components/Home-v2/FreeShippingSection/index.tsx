@@ -48,7 +48,7 @@ const FreeShippingSection = () => {
           <div className='animate-pulse mb-4'>
             <div className='h-8 bg-gray-200 rounded w-64'></div>
           </div>
-          <ProductSkeletonCarousel count={5} itemClassName='min-w-[250px]' />
+          <ProductSkeletonCarousel count={5} itemClassName='w-[calc(50%-0.5rem)] md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)]' />
         </div>
       </section>
     )
@@ -104,11 +104,11 @@ const FreeShippingSection = () => {
 
           <div
             ref={scrollRef}
-            className='flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4'
+            className='flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4'
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {freeShippingProducts.map((product, idx) => (
-              <div key={idx} className='min-w-[250px] flex-shrink-0'>
+              <div key={idx} className='w-[calc(50%-0.5rem)] md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] flex-shrink-0 flex flex-col'>
                 <ProductItem product={product} />
               </div>
             ))}

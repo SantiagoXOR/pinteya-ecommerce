@@ -242,10 +242,11 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       <div
         ref={ref}
         className={cn(
-          'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer',
-          'h-[300px] sm:h-[360px] md:h-[450px] lg:h-[500px]',
-          'md:rounded-2xl transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl',
-          'transform-gpu will-change-transform overflow-visible',
+          'relative flex flex-col w-full cursor-pointer',
+          'min-h-[340px] sm:min-h-[360px] md:h-[450px] lg:h-[500px]',
+          'glass-card-3d glass-accelerated',
+          'overflow-hidden',
+          'rounded-xl md:rounded-[1.5rem]',
           className
         )}
         data-testid='commercial-product-card'
@@ -254,9 +255,20 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         data-finish-source={badges.resolvedFinishSource}
         style={{
           transformOrigin: 'center',
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-          transform: state.isHovered ? 'scale(1.02)' : 'scale(1)',
-          boxShadow: state.isHovered ? '0 10px 25px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.1)',
+          transition: state.isHovered 
+            ? 'transform 0.3s ease, box-shadow 0.3s ease' 
+            : 'transform 0.2s ease, box-shadow 0.2s ease',
+          transform: state.isHovered 
+            ? 'perspective(1000px) rotateX(2deg) translateY(-4px)' 
+            : 'perspective(1000px) rotateX(0deg)',
+          boxShadow: state.isHovered 
+            ? '0 12px 48px rgba(0, 0, 0, 0.2), 0 6px 16px rgba(0, 0, 0, 0.12)' 
+            : '0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08)',
+          // Fondo blanco sólido para todo el card
+          backgroundColor: '#ffffff',
+          backdropFilter: 'blur(30px)',
+          WebkitBackdropFilter: 'blur(30px)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
         }}
         onMouseEnter={() => {
           state.setIsHovered(true)
@@ -294,30 +306,41 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
           </span>
         )}
 
-        {/* Imagen del producto */}
-        <ProductCardImage
-          image={image}
-          title={title}
-          productId={productId}
-          onImageError={state.handleImageError}
-          imageError={state.imageError}
-          currentImageSrc={state.currentImageSrc}
-        />
+        {/* Imagen del producto - Mejor posicionada y más grande con fondo blanco */}
+        <div 
+          className='relative flex-[1.8] w-full min-h-[180px] sm:min-h-[200px] md:min-h-[55%] flex items-center justify-center overflow-hidden rounded-t-xl md:rounded-t-[1.5rem]'
+          style={{
+            backgroundColor: '#ffffff',
+          }}
+        >
+          <ProductCardImage
+            image={image}
+            title={title}
+            productId={productId}
+            onImageError={state.handleImageError}
+            imageError={state.imageError}
+            currentImageSrc={state.currentImageSrc}
+          />
+        </div>
 
-        {/* Contenedor de información con blur blanco */}
-        <div className='relative -mt-2 md:-mt-3 rounded-b-xl md:rounded-b-2xl overflow-visible ml-2 md:ml-3'>
-          {/* Blur blanco detrás de toda la información */}
+        {/* Contenedor de información - Con fondo degradado invertido para sombra detrás de pills */}
+        <div className='relative z-10 w-full mt-auto overflow-hidden rounded-b-xl md:rounded-b-[1.5rem]'>
+          {/* Fondo degradado invertido: más oscuro abajo para sombra detrás de pills */}
           <div 
-            className='absolute inset-0 z-0 pointer-events-none rounded-b-xl md:rounded-b-2xl'
+            className='absolute inset-0 z-0 pointer-events-none overflow-hidden rounded-b-xl md:rounded-b-[1.5rem]'
             style={{
-              background: 'linear-gradient(to top, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 30%, rgba(255, 255, 255, 0.7) 60%, transparent 100%)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)'
+              background: 'linear-gradient(0deg, rgba(180, 180, 180, 0.8) 0%, rgba(200, 200, 200, 0.75) 10%, rgba(220, 220, 220, 0.7) 25%, rgba(240, 240, 240, 0.85) 50%, rgba(250, 250, 250, 0.9) 70%, rgba(255, 255, 255, 0.95) 85%, rgba(255, 255, 255, 0.98) 100%)',
+              backdropFilter: 'blur(40px)',
+              WebkitBackdropFilter: 'blur(40px)',
+              boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.15), 0 -2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              paddingBottom: '0.625rem',
+              bottom: 0,
+              willChange: 'transform',
             }}
           />
           
           {/* Contenido: marca, título, precios */}
-          <div className='relative z-10'>
+          <div className='relative z-10 px-3 sm:px-4 md:px-5 pt-1 pb-0.5'>
             <ProductCardContent
               brand={brand}
               title={title}
@@ -329,9 +352,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
             />
           </div>
 
-          {/* Selectores de color y medida */}
-          <div className='relative z-10 w-full mt-0.5 px-1.5 md:px-2 pb-1.5 overflow-visible'>
-            <div className='flex flex-col gap-0 overflow-visible'>
+          {/* Selectores de color y medida - Full width sin padding horizontal, con espacio extra abajo para que no se corten */}
+          <div className='relative z-10 w-full pb-3 md:pb-2 overflow-hidden'>
+            <div className='flex flex-col gap-0 overflow-hidden' style={{ marginBottom: '0' }}>
               {/* Selector de colores */}
               <ColorPillSelector
                 colors={colors.uniqueColors}
@@ -355,7 +378,7 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
                 isImpregnante={badges.isImpregnante}
               />
 
-              {/* Selector de finishes (terminaciones) - mostrar siempre que haya finishes */}
+              {/* Selector de finishes (terminaciones) */}
               {finishes.uniqueFinishes.length > 0 && (
                 <FinishPillSelector
                   finishes={finishes.uniqueFinishes}
