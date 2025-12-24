@@ -100,7 +100,7 @@
   }
 }
 
-/* Reducir animaciones si el usuario prefiere menos movimiento */
+/* ⚡ OPTIMIZACIÓN CRÍTICA: Reducir animaciones en móviles y dispositivos de bajo rendimiento */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -109,41 +109,89 @@
   }
 }
 
-/* ⚡ OPTIMIZACIÓN: Deshabilitar backdrop-filter en dispositivos de bajo rendimiento */
-/* Detecta dispositivos con poca memoria o CPU limitada */
+/* ⚡ OPTIMIZACIÓN: Deshabilitar animaciones y transiciones en móviles para eliminar lag */
 @media (max-width: 768px) {
-  /* En móviles, usar background sólido en lugar de blur para mejor rendimiento */
+  * {
+    /* Reducir drásticamente animaciones */
+    animation-duration: 0.1s !important;
+    transition-duration: 0.1s !important;
+    /* Deshabilitar animaciones complejas */
+    animation-timing-function: ease !important;
+    transition-timing-function: ease !important;
+  }
+  
+  /* Deshabilitar efectos hover en móviles */
+  .glass-card-3d:hover,
+  .glass-category-pill:hover {
+    transform: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+/* ⚡ OPTIMIZACIÓN CRÍTICA: Deshabilitar completamente glassmorphism en móviles */
+/* En móviles, usar estilos simples y sólidos para eliminar lag */
+@media (max-width: 768px) {
+  /* Deshabilitar todos los efectos costosos */
   .glass-card,
   .glass-pill,
   .glass-header,
   .glass-header-sticky,
   .glass-search-bar,
-  .glass-category-pill {
+  .glass-category-pill,
+  .glass-card-3d {
+    /* Eliminar backdrop-filter completamente */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    /* Usar background más opaco para compensar */
-    background: rgba(255, 255, 255, 0.95) !important;
+    /* Eliminar will-change y transform para reducir carga GPU */
+    will-change: auto !important;
+    transform: none !important;
+    /* Eliminar contain para reducir overhead */
+    contain: none !important;
+    /* Simplificar backgrounds - usar colores sólidos en lugar de gradientes */
+    background: rgba(255, 255, 255, 0.98) !important;
+    /* Reducir sombras complejas */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    /* Eliminar transiciones costosas */
+    transition: none !important;
   }
   
   .glass-header,
   .glass-header-sticky {
-    background: linear-gradient(
-      to right,
-      rgba(234, 90, 23, 0.98) 0%,
-      rgba(234, 90, 23, 0.95) 100%
-    ) !important;
+    /* Background sólido simple en lugar de gradiente */
+    background: rgba(234, 90, 23, 0.98) !important;
   }
   
   .glass-category-pill {
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
   }
   
   .glass-category-pill-active {
-    background: linear-gradient(
-      135deg,
-      rgba(234, 90, 23, 0.2) 0%,
-      rgba(255, 255, 255, 0.9) 100%
-    ) !important;
+    /* Background sólido con color de acento */
+    background: rgba(234, 90, 23, 0.15) !important;
+    border-color: rgba(234, 90, 23, 0.5) !important;
+  }
+  
+  .glass-search-bar {
+    background: rgba(255, 255, 255, 0.95) !important;
+  }
+  
+  .glass-search-bar:focus-within {
+    background: rgba(255, 255, 255, 1) !important;
+  }
+  
+  /* Deshabilitar efectos 3D y hover en móviles */
+  .glass-card-3d:hover {
+    transform: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .card-image-depth {
+    transform: none !important;
+  }
+  
+  .glass-card-3d:hover .card-image-depth {
+    transform: none !important;
   }
 }
 
@@ -154,9 +202,16 @@
   .glass-header,
   .glass-header-sticky,
   .glass-search-bar,
-  .glass-category-pill {
+  .glass-category-pill,
+  .glass-card-3d {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    transform: none !important;
+    contain: none !important;
+    transition: none !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   }
 }
 

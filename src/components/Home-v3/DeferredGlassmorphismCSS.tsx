@@ -5,44 +5,29 @@ import { useEffect } from 'react'
 /**
  * ⚡ OPTIMIZACIÓN: Componente para cargar CSS glassmorphism de forma diferida
  * 
- * El CSS se carga después del FCP para no bloquear el render inicial.
- * Esto mejora el PageSpeed Insights al reducir el render-blocking CSS.
+ * ⚠️ CRÍTICO: En móviles, NO cargar el CSS glassmorphism para evitar lag
+ * El CSS se carga solo en desktop después del FCP para no bloquear el render inicial.
  */
 export function DeferredGlassmorphismCSS() {
   useEffect(() => {
-    // Cargar CSS después del FCP (estimado en 1.5s)
-    // Usar requestIdleCallback para no bloquear el hilo principal
+    // ⚡ OPTIMIZACIÓN CRÍTICA: Detectar si es móvil y NO cargar CSS glassmorphism
+    const isMobile = window.innerWidth <= 768
+    const isLowPerformance = 
+      (navigator as any).deviceMemory && (navigator as any).deviceMemory < 4 ||
+      navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4 ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    
+    // ⚡ CRÍTICO: No cargar CSS glassmorphism en móviles o dispositivos de bajo rendimiento
+    if (isMobile || isLowPerformance) {
+      return // No cargar CSS en móviles para evitar lag
+    }
+    
+    // Solo cargar en desktop después del FCP
     const loadCSS = () => {
-      // Verificar si el CSS ya está cargado
-      const existingLink = document.querySelector('link[data-glassmorphism-css]')
-      if (existingLink) {
-        return
-      }
-
-      // Crear link element para CSS asíncrono usando técnica media="print"
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      // ⚡ NOTA: Next.js procesa los imports CSS, así que necesitamos importarlo dinámicamente
-      // Usamos un enfoque diferente: importar el módulo CSS y luego inyectarlo
-      link.setAttribute('data-glassmorphism-css', 'true')
-      link.media = 'print' // Inicialmente como print para carga asíncrona
-
-      // Cambiar a 'all' cuando se carga para aplicar estilos
-      link.onload = () => {
-        link.media = 'all'
-      }
-
-      // Manejar errores silenciosamente
-      link.onerror = () => {
-        // El CSS puede no estar disponible como archivo estático
-        // En ese caso, se cargará cuando Next.js procese el import
-      }
-
       // Importar el CSS dinámicamente después del FCP
       // Esto evita que el CSS bloquee el render inicial
       import('@/styles/home-v3-glassmorphism.css').catch(() => {
         // Si falla, el CSS puede no estar disponible
-        // En desarrollo, esto es normal si el archivo no existe
       })
     }
 
@@ -56,4 +41,3 @@ export function DeferredGlassmorphismCSS() {
 
   return null
 }
-

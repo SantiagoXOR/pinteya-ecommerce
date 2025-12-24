@@ -343,10 +343,24 @@ const HomeV3 = () => {
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo para aplicar optimizaciones adaptativas
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
+  const isMediumPerformance = performanceLevel === 'medium'
   
-  // Aplicar delays más largos en dispositivos de bajo rendimiento
-  const categoryToggleDelay = isLowPerformance ? 2000 : 0
-  const bestSellerDelay = isLowPerformance ? 3000 : 0
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Detectar si es móvil para deshabilitar efectos costosos
+  const [isMobile, setIsMobile] = React.useState(false)
+  
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  // Aplicar delays más largos en dispositivos de bajo/medio rendimiento o móviles
+  const shouldDelay = isLowPerformance || isMediumPerformance || isMobile
+  const categoryToggleDelay = shouldDelay ? 2000 : 0
+  const bestSellerDelay = shouldDelay ? 3000 : 0
   
   // Scroll depth tracking - Optimizado con requestAnimationFrame para evitar re-renders
   useEffect(() => {
@@ -393,8 +407,8 @@ const HomeV3 = () => {
 
   return (
     <CategoryFilterProvider>
-      {/* ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism de forma diferida (no bloqueante) */}
-      <DeferredGlassmorphismCSS />
+      {/* ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism solo en desktop (no en móviles para evitar lag) */}
+      {!isMobile && <DeferredGlassmorphismCSS />}
       <main className='min-h-screen'>
         {/* BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner */}
 
