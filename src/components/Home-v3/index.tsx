@@ -8,7 +8,9 @@ import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import type { PromoBannersProps } from '../Home-v2/PromoBanners'
 import { ProductSkeletonGrid, ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
-import '@/styles/home-v3-glassmorphism.css'
+// ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism de forma diferida (no bloqueante)
+// El CSS se importa pero se carga después del FCP usando DeferredGlassmorphismCSS
+import { DeferredGlassmorphismCSS } from './DeferredGlassmorphismCSS'
 // ✅ FIX CRÍTICO: Importar BestSeller directamente en lugar de dynamic para evitar problemas de carga
 import BestSeller from '../Home-v2/BestSeller/index'
 
@@ -60,6 +62,7 @@ const CombosSection = dynamic(() => import('../Home-v2/CombosSection/index'), {
 })
 
 const Testimonials = dynamic(() => import('../Home-v2/Testimonials/index'), {
+  ssr: false, // ⚡ OPTIMIZACIÓN: No SSR para componentes below-fold
   loading: () => (
     <div className='px-4'>
       <div className='h-8 w-40 bg-gray-200 rounded skeleton-pulse mb-4' />
@@ -71,8 +74,10 @@ const Testimonials = dynamic(() => import('../Home-v2/Testimonials/index'), {
     </div>
   ),
 })
-// Componentes below-fold con lazy loading
+// ⚡ OPTIMIZACIÓN: Componentes below-fold con lazy loading más agresivo
+// Usar ssr: false para componentes que no necesitan SSR
 const NewArrivals = dynamic(() => import('../Home-v2/NewArrivals/index'), {
+  ssr: false, // ⚡ OPTIMIZACIÓN: No SSR para componentes below-fold
   loading: () => (
     <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
@@ -158,9 +163,10 @@ const LazyPromoBanner = React.memo(({ bannerId }: { bannerId: number }) => {
 LazyPromoBanner.displayName = 'LazyPromoBanner'
 
 const LazyNewArrivals = React.memo(() => {
-  // NewArrivals es importante, cargar con más anticipación
+  // ⚡ OPTIMIZACIÓN: Reducir rootMargin de 400px a 300px para cargar más tarde
+  // Esto reduce el JavaScript inicial y mejora TBT
   const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '400px',
+    rootMargin: '300px',
     threshold: 0.01,
   })
 
@@ -177,8 +183,9 @@ const LazyNewArrivals = React.memo(() => {
 LazyNewArrivals.displayName = 'LazyNewArrivals'
 
 const LazyTrendingSearches = React.memo(() => {
+  // ⚡ OPTIMIZACIÓN: Reducir rootMargin de 200px a 150px para cargar más tarde
   const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '200px',
+    rootMargin: '150px',
     threshold: 0.01,
   })
 
@@ -195,8 +202,9 @@ const LazyTrendingSearches = React.memo(() => {
 LazyTrendingSearches.displayName = 'LazyTrendingSearches'
 
 const LazyTestimonials = React.memo(() => {
+  // ⚡ OPTIMIZACIÓN: Reducir rootMargin de 200px a 150px para cargar más tarde
   const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '200px',
+    rootMargin: '150px',
     threshold: 0.01,
   })
 
@@ -385,6 +393,8 @@ const HomeV3 = () => {
 
   return (
     <CategoryFilterProvider>
+      {/* ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism de forma diferida (no bloqueante) */}
+      <DeferredGlassmorphismCSS />
       <main className='min-h-screen'>
         {/* BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner */}
 

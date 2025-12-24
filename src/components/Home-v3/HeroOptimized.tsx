@@ -22,11 +22,18 @@ export default function HeroOptimized() {
   const [showCarousel, setShowCarousel] = useState(false)
 
   useEffect(() => {
-    // Cargar carousel después del FCP (estimado en 1.5s)
-    const timer = setTimeout(() => {
+    // ⚡ OPTIMIZACIÓN: Reducir delay de 1.5s a 800ms para mejorar LCP
+    // El carousel se carga después de que la imagen estática se haya renderizado
+    // Usar requestIdleCallback para no bloquear el hilo principal
+    const loadCarousel = () => {
       setShowCarousel(true)
-    }, 1500)
-    return () => clearTimeout(timer)
+    }
+    
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadCarousel, { timeout: 800 })
+    } else {
+      setTimeout(loadCarousel, 800)
+    }
   }, [])
 
   if (!showCarousel) {
@@ -48,7 +55,10 @@ export default function HeroOptimized() {
               fetchPriority="high"
               className="object-contain"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-              quality={85}
+              quality={80}
+              // ⚡ OPTIMIZACIÓN: Usar loading="eager" para asegurar carga inmediata
+              loading="eager"
+              // ⚡ OPTIMIZACIÓN: Preload de imagen ya está en layout.tsx
             />
           </div>
         </div>

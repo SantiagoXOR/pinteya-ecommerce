@@ -109,7 +109,59 @@
   }
 }
 
+/* ⚡ OPTIMIZACIÓN: Deshabilitar backdrop-filter en dispositivos de bajo rendimiento */
+/* Detecta dispositivos con poca memoria o CPU limitada */
+@media (max-width: 768px) {
+  /* En móviles, usar background sólido en lugar de blur para mejor rendimiento */
+  .glass-card,
+  .glass-pill,
+  .glass-header,
+  .glass-header-sticky,
+  .glass-search-bar,
+  .glass-category-pill {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    /* Usar background más opaco para compensar */
+    background: rgba(255, 255, 255, 0.95) !important;
+  }
+  
+  .glass-header,
+  .glass-header-sticky {
+    background: linear-gradient(
+      to right,
+      rgba(234, 90, 23, 0.98) 0%,
+      rgba(234, 90, 23, 0.95) 100%
+    ) !important;
+  }
+  
+  .glass-category-pill {
+    background: rgba(255, 255, 255, 0.95) !important;
+  }
+  
+  .glass-category-pill-active {
+    background: linear-gradient(
+      135deg,
+      rgba(234, 90, 23, 0.2) 0%,
+      rgba(255, 255, 255, 0.9) 100%
+    ) !important;
+  }
+}
+
+/* ⚡ OPTIMIZACIÓN: Detectar dispositivos con preferencia de bajo rendimiento */
+@media (prefers-reduced-motion: reduce), (prefers-contrast: high) {
+  .glass-card,
+  .glass-pill,
+  .glass-header,
+  .glass-header-sticky,
+  .glass-search-bar,
+  .glass-category-pill {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
 /* Clases utilitarias para glassmorphism */
+/* ⚡ OPTIMIZACIÓN: Usar contain y will-change para mejor rendimiento */
 .glass-card {
   background: linear-gradient(
     135deg,
@@ -117,10 +169,16 @@
     var(--glass-bg) 50%,
     var(--glass-bg-light) 100%
   );
+  /* ⚡ OPTIMIZACIÓN: Reducir blur en móviles y usar contain para aislar composición */
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   box-shadow: var(--card-shadow-md);
+  /* ⚡ PERFORMANCE: Aislar composición para mejor rendimiento */
+  contain: layout style paint;
+  /* ⚡ PERFORMANCE: Aceleración GPU solo cuando sea necesario */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .glass-card-3d {
@@ -141,10 +199,13 @@
     var(--glass-bg-medium) 0%,
     var(--glass-bg-light) 100%
   );
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  /* ⚡ OPTIMIZACIÓN: Reducir blur de 6px a 4px para mejor rendimiento */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   border: 1px solid var(--glass-border-light);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* ⚡ PERFORMANCE: Aislar composición */
+  contain: layout style paint;
 }
 
 .glass-pill-selected {
@@ -211,6 +272,7 @@
 }
 
 /* Glassmorphism para Header - Gradiente de sólido (izq) a blur (der) con blur más fuerte */
+/* ⚡ OPTIMIZACIÓN: Reducir blur de 40px a 20px para mejor rendimiento en móviles */
 .glass-header {
   background: linear-gradient(
     to right,
@@ -220,10 +282,12 @@
     rgba(234, 90, 23, 0.6) 80%,
     rgba(234, 90, 23, 0.5) 100%
   );
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+  /* ⚡ PERFORMANCE: Aislar composición del header */
+  contain: layout style paint;
 }
 
 .glass-header-sticky {
@@ -235,22 +299,26 @@
     rgba(234, 90, 23, 0.65) 80%,
     rgba(234, 90, 23, 0.55) 100%
   );
-  backdrop-filter: blur(45px);
-  -webkit-backdrop-filter: blur(45px);
+  /* ⚡ OPTIMIZACIÓN: Reducir blur de 45px a 24px para mejor rendimiento */
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+  contain: layout style paint;
 }
 
 /* Glassmorphism para Search Bar - Más transparente con más blur */
+/* ⚡ OPTIMIZACIÓN: Reducir blur de 20px a 12px para mejor rendimiento */
 .glass-search-bar {
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.7) 0%,
     rgba(255, 255, 255, 0.65) 100%
   );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05);
+  contain: layout style paint;
 }
 
 .glass-search-bar:focus-within {
@@ -259,13 +327,15 @@
     rgba(255, 255, 255, 0.8) 0%,
     rgba(255, 255, 255, 0.75) 100%
   );
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  /* ⚡ OPTIMIZACIÓN: Reducir blur de 24px a 16px */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
   border-color: rgba(255, 255, 255, 0.45);
 }
 
 /* Glassmorphism para Category Pills - Degradado invertido con 100% opacidad en centro */
+/* ⚡ OPTIMIZACIÓN: Reducir blur de 30px a 16px para mejor rendimiento */
 .glass-category-pill {
   background: radial-gradient(
     circle at 50% 50%,
@@ -275,8 +345,8 @@
     rgba(255, 255, 255, 0.75) 70%,
     rgba(255, 255, 255, 0.7) 85%
   );
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1.5px solid rgba(255, 255, 255, 0.6);
   border-image: none;
   box-shadow: 
@@ -285,6 +355,7 @@
     0 2px 8px rgba(0, 0, 0, 0.15), 
     0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  contain: layout style paint;
 }
 
 .glass-category-pill:hover {
@@ -296,8 +367,9 @@
     rgba(255, 255, 255, 0.65) 85%,
     rgba(255, 255, 255, 0.55) 100%
   );
-  backdrop-filter: blur(35px);
-  -webkit-backdrop-filter: blur(35px);
+  /* ⚡ OPTIMIZACIÓN: Reducir blur de 35px a 20px */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1.5px solid rgba(255, 255, 255, 0.7);
   box-shadow: 
     0 0 0 1px rgba(255, 255, 255, 0.4) inset,
@@ -316,8 +388,9 @@
     rgba(255, 255, 255, 0.65) 85%,
     rgba(255, 255, 255, 0.6) 100%
   );
-  backdrop-filter: blur(35px);
-  -webkit-backdrop-filter: blur(35px);
+  /* ⚡ OPTIMIZACIÓN: Reducir blur de 35px a 20px */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1.5px solid rgba(255, 255, 255, 0.8);
   box-shadow: 
     0 0 0 1px rgba(255, 255, 255, 0.5) inset,

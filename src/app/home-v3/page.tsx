@@ -1,6 +1,7 @@
 import HomeV3 from '@/components/Home-v3'
 import { Metadata } from 'next'
-import '@/styles/home-v3-glassmorphism.css'
+// ⚡ OPTIMIZACIÓN: CSS glassmorphism se carga de forma diferida en el componente HomeV3
+// Removido import bloqueante para mejorar PageSpeed Insights
 
 export const metadata: Metadata = {
   title: 'Pinteya - Home V3 Glassmorphism (Versión de Prueba) | Envío Gratis +$50.000',
@@ -32,5 +33,7 @@ export const metadata: Metadata = {
 export default function HomeV3Page() {
   return <HomeV3 />
 }
+
+
 
 

@@ -12,7 +12,8 @@ import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from './HelpCard'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
-const BestSeller: React.FC = () => {
+// ⚡ OPTIMIZACIÓN: Componente memoizado para evitar re-renders innecesarios
+const BestSeller: React.FC = React.memo(() => {
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para reducir productos iniciales
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
@@ -132,6 +133,8 @@ const BestSeller: React.FC = () => {
       </div>
     </section>
   )
-}
+})
+
+BestSeller.displayName = 'BestSeller'
 
 export default BestSeller
