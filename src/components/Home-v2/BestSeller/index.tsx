@@ -5,6 +5,7 @@ import ProductItem from '@/components/Common/ProductItem'
 import Link from 'next/link'
 import { useBestSellerProducts } from '@/hooks/useBestSellerProducts'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from '@/lib/optimized-imports'
@@ -12,28 +13,18 @@ import HelpCard from './HelpCard'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
 const BestSeller: React.FC = () => {
-  // ✅ LOG: Verificar que el componente se está montando
-  console.log('🟢 [BestSeller] COMPONENTE MONTÁNDOSE', {
-    timestamp: new Date().toISOString(),
-    isClient: typeof window !== 'undefined'
-  })
+  // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para reducir productos iniciales
+  const performanceLevel = useDevicePerformance()
+  const isLowPerformance = performanceLevel === 'low'
+  const initialProductCount = isLowPerformance ? 4 : 12 // Reducir a 4 en dispositivos de bajo rendimiento
 
   const { selectedCategory } = useCategoryFilter()
-
-  console.log('🟢 [BestSeller] selectedCategory:', selectedCategory)
 
   // Fetch productos según categoría seleccionada
   // Sin categoría: 10 productos específicos hardcodeados
   // Con categoría: Todos los productos de la categoría (limit 50)
   const { products, isLoading, error } = useBestSellerProducts({
     categorySlug: selectedCategory,
-  })
-
-  console.log('🟢 [BestSeller] Estado después de useBestSellerProducts', {
-    productsLength: Array.isArray(products) ? products.length : 'NO ARRAY',
-    isLoading,
-    hasError: !!error,
-    errorMessage: error || 'NO ERROR'
   })
 
   // Memoizar ordenamiento y filtrado de productos
@@ -45,9 +36,10 @@ const BestSeller: React.FC = () => {
     const inStock = sortedByPrice.filter(p => (p.stock ?? 0) > 0)
     const outOfStock = sortedByPrice.filter(p => (p.stock ?? 0) <= 0)
     
-    // Mostrar todos los productos (con stock primero)
-    return [...inStock, ...outOfStock]
-  }, [products])
+    // ⚡ OPTIMIZACIÓN: Limitar productos iniciales en dispositivos de bajo rendimiento
+    const allProducts = [...inStock, ...outOfStock]
+    return isLowPerformance ? allProducts.slice(0, initialProductCount) : allProducts
+  }, [products, isLowPerformance, initialProductCount])
 
   // Calcular si hay espacios vacíos en la última fila
   // Desktop: 4 cols, Tablet: 2 cols, Mobile: 2 cols
@@ -68,7 +60,6 @@ const BestSeller: React.FC = () => {
     // Si está cargando y no hay productos, iniciar timeout
     if (isLoading && !hasProducts) {
       const timeout = setTimeout(() => {
-        console.warn('⚠️ useBestSellerProducts: Timeout después de 6 segundos, ocultando skeletons')
         setShowTimeout(true)
       }, 6000) // 6 segundos - más agresivo
       
@@ -89,7 +80,8 @@ const BestSeller: React.FC = () => {
     return (
       <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
-          <ProductSkeletonGrid count={12} />
+          {/* ⚡ OPTIMIZACIÓN: Reducir skeletons en dispositivos de bajo rendimiento */}
+          <ProductSkeletonGrid count={initialProductCount} />
         </div>
       </section>
     )

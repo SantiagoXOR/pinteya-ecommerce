@@ -7,6 +7,8 @@ import { euclidCircularA } from './fonts'
 import './css/style.css'
 // ⚡ FIX Turbopack: Importar CSS manual de fuentes (next/font/local tiene bug con Turbopack)
 import './css/euclid-fonts-turbopack.css'
+// ⚡ OPTIMIZACIÓN: CSS para móviles de bajo rendimiento (prefers-reduced-motion, animaciones optimizadas)
+import '@/styles/mobile-performance.css'
 import { metadata as defaultMetadata } from './metadata'
 import type { Metadata } from 'next'
 
@@ -142,6 +144,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-modal{z-index:200}
           .z-toast{z-index:300}
           
+          /* ⚡ CRITICAL: @font-face Regular inline para eliminar dependencia del CSS externo */
+          /* Esto reduce la latencia de ruta crítica de 2,271 ms */
+          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
+          @font-face{font-family:'Euclid Circular A Fallback';ascent-override:93.26%;descent-override:24.99%;line-gap-override:0.00%;size-adjust:107.23%;src:local('Arial')}
+          
           /* ⚡ LEGIBILIDAD: Textos oscuros por defecto en contenedores blancos - EXCLUYENDO product cards */
           /* Aplicar color por defecto al contenedor (sin !important para que clases de color lo sobrescriban) */
           .bg-white:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]){color:#111827}
@@ -172,7 +179,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
         
         {/* ⚡ CRITICAL: Preload de imagen LCP del hero - POSICIONADO PRIMERO para máxima prioridad */}
-        {/* Esto elimina el retraso de 2,270ms en la carga de recursos */}
+        {/* Esto elimina el retraso de 1,570ms en la carga de recursos */}
         {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
         <link
           rel="preload"
@@ -180,6 +187,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="/images/hero/hero2/hero1.webp"
           fetchPriority="high"
           type="image/webp"
+          crossOrigin="anonymous"
         />
         {/* ⚡ AVIF para navegadores que lo soportan (mejor compresión) */}
         <link
@@ -188,118 +196,90 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="/images/hero/hero2/hero1.avif"
           fetchPriority="high"
           type="image/avif"
+          crossOrigin="anonymous"
         />
         
-        {/* ⚡ PERFORMANCE: next/font maneja el preload automáticamente */}
-        {/* Las fuentes se inlinean automáticamente en el CSS, eliminando el request bloqueante */}
+        {/* ⚡ CRITICAL: Preload de fuente Regular (crítica) - ANTES de otros recursos */}
+        {/* Esto reduce la latencia de ruta crítica de 2,271 ms */}
+        <link
+          rel="preload"
+          href="/fonts/EuclidCircularA-Regular.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+          fetchPriority="high"
+        />
+        
+        {/* ⚡ PERFORMANCE: Fuentes SemiBold y Bold se cargan diferidamente cuando se necesitan */}
+        {/* next/font maneja el preload automáticamente, pero agregamos preload explícito para Regular */}
         
         {/* ⚡ OPTIMIZACIÓN: Next.js con optimizeCss: true inlina CSS crítico automáticamente */}
+        {/* NOTA: No preloadamos CSS chunks con hash hardcodeado porque Next.js regenera el hash en cada build */}
+        {/* El script inline de NonBlockingCSS ya convierte los CSS a carga no bloqueante de manera dinámica */}
         {/* Los archivos CSS no críticos (hero-carousel, checkout-transition) se cargan diferidamente via DeferredCSS */}
         {/* NonBlockingCSS convierte los CSS generados por Next.js a carga no bloqueante */}
-        {/* Esto elimina ~1,010ms de render-blocking según Lighthouse */}
+        {/* Esto elimina ~1,200ms de render-blocking según Lighthouse */}
         
-        {/* ⚡ CRITICAL: Script inline para convertir CSS a no bloqueante ANTES de que React se hidrate */}
-        {/* ⚡ OPTIMIZACIÓN V2: Técnica mejorada con preload + onload para máxima efectividad */}
+        {/* ⚡ CRITICAL: Script inline mejorado - Ejecutar INMEDIATAMENTE después de CSS crítico */}
+        {/* ⚡ OPTIMIZACIÓN V3: Ejecución inmediata sin esperar DOMContentLoaded para máxima efectividad */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
             (function() {
-              // ⚡ TÉCNICA MEJORADA: Preload + onload para CSS no bloqueante
-              // Más efectiva que media="print" porque permite descargar en paralelo
+              // ⚡ EJECUCIÓN INMEDIATA: No esperar DOMContentLoaded
+              // Ejecutar inmediatamente para convertir CSS antes de que Next.js lo inserte
               function convertCSSToNonBlocking() {
-                const stylesheets = document.querySelectorAll('head link[rel="stylesheet"]');
+                const stylesheets = document.querySelectorAll('head link[rel="stylesheet"]:not([data-non-blocking])');
                 stylesheets.forEach(function(link) {
                   const href = link.getAttribute('href') || '';
-                  const isNextJSCSS = href.includes('_next/static/css') || href.includes('.css');
-                  
-                  // Solo procesar CSS de Next.js que no haya sido procesado
-                  if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
+                  if (href.includes('_next/static/css') || href.includes('.css')) {
                     link.setAttribute('data-non-blocking', 'true');
+                    if (link.sheet) return; // Ya cargado
                     
-                    // Si ya está cargado, no hacer nada
-                    if (link.sheet) return;
-                    
-                    // ⚡ TÉCNICA 1: Preload para descargar en paralelo sin bloquear
+                    // Preload + media="print" + onload
                     const preload = document.createElement('link');
                     preload.rel = 'preload';
                     preload.as = 'style';
                     preload.href = href;
                     document.head.insertBefore(preload, link);
                     
-                    // ⚡ TÉCNICA 2: Media="print" para carga no bloqueante
                     const originalMedia = link.media || 'all';
                     link.media = 'print';
                     
-                    // ⚡ TÉCNICA 3: onload para cambiar a 'all' cuando se carga
-                    const onLoadHandler = function() {
+                    link.onload = function() {
                       link.media = originalMedia;
-                      link.onload = null;
-                      link.onerror = null;
-                      // Remover preload después de cargar
-                      if (preload.parentNode) {
-                        preload.parentNode.removeChild(preload);
-                      }
+                      if (preload.parentNode) preload.parentNode.removeChild(preload);
                     };
                     
-                    const onErrorHandler = function() {
+                    link.onerror = function() {
                       link.media = originalMedia;
-                      link.onload = null;
-                      link.onerror = null;
-                      // Remover preload en caso de error
-                      if (preload.parentNode) {
-                        preload.parentNode.removeChild(preload);
-                      }
+                      if (preload.parentNode) preload.parentNode.removeChild(preload);
                     };
-                    
-                    link.onload = onLoadHandler;
-                    link.onerror = onErrorHandler;
                     
                     // Fallback después de 3 segundos
                     setTimeout(function() {
                       if (link.media === 'print') {
                         link.media = originalMedia;
-                        if (preload.parentNode) {
-                          preload.parentNode.removeChild(preload);
-                        }
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
                       }
                     }, 3000);
                   }
                 });
               }
               
-              // ⚡ CRITICAL: Ejecutar ANTES de que Next.js inserte CSS (inmediatamente)
+              // Ejecutar inmediatamente
+              convertCSSToNonBlocking();
+              
+              // También en DOMContentLoaded por si acaso
               if (document.readyState === 'loading') {
-                // Si el DOM aún se está cargando, usar DOMContentLoaded
                 document.addEventListener('DOMContentLoaded', convertCSSToNonBlocking);
-              } else {
-                // Si el DOM ya está listo, ejecutar inmediatamente
-                convertCSSToNonBlocking();
               }
               
-              // Ejecutar después de un pequeño delay para CSS que se carga después
-              setTimeout(convertCSSToNonBlocking, 10);
-              
-              // ⚡ CRITICAL: Observar cambios en el DOM con alta frecuencia
+              // MutationObserver para CSS dinámico
               if (typeof MutationObserver !== 'undefined') {
-                const observer = new MutationObserver(function(mutations) {
-                  // Solo procesar si hay nuevos links de stylesheet
-                  const hasNewStylesheet = Array.from(mutations).some(function(mutation) {
-                    return Array.from(mutation.addedNodes || []).some(function(node) {
-                      return node.nodeName === 'LINK' && 
-                             (node.getAttribute('rel') === 'stylesheet' || 
-                              node.getAttribute('rel') === 'preload');
-                    });
-                  });
-                  
-                  if (hasNewStylesheet) {
-                    convertCSSToNonBlocking();
-                  }
-                });
-                
-                observer.observe(document.head, { 
-                  childList: true, 
-                  subtree: false,
-                  attributes: false
+                new MutationObserver(convertCSSToNonBlocking).observe(document.head, {
+                  childList: true,
+                  subtree: false
                 });
               }
             })();

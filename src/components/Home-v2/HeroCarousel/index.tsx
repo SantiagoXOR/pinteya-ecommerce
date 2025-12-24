@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 
 interface HeroSlide {
   id: string
@@ -30,9 +31,21 @@ const heroSlides: HeroSlide[] = [
 ]
 
 const HeroCarousel = () => {
+  // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para deshabilitar auto-play en dispositivos de bajo rendimiento
+  const performanceLevel = useDevicePerformance()
+  const isLowPerformance = performanceLevel === 'low'
+  
   const [currentIndex, setCurrentIndex] = useState(1) // Empezar en la primera slide real
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  // ⚡ OPTIMIZACIÓN: Deshabilitar auto-play por defecto en dispositivos de bajo rendimiento
+  // Inicializar como false para ser seguro, luego actualizar cuando se detecte el nivel de rendimiento
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false)
+  
+  // ⚡ FIX: Actualizar isAutoPlaying cuando se detecte el nivel de rendimiento (asíncrono)
+  useEffect(() => {
+    // Solo habilitar auto-play si NO es dispositivo de bajo rendimiento
+    setIsAutoPlaying(!isLowPerformance)
+  }, [isLowPerformance])
 
   // Crear array extendido: [última, ...originales, primera]
   const extendedSlides = useMemo(() => [
@@ -46,22 +59,31 @@ const HeroCarousel = () => {
     setIsTransitioning(true)
     setCurrentIndex(index + 1) // +1 porque el primer slide real está en índice 1
     setIsAutoPlaying(false)
-    setTimeout(() => setIsAutoPlaying(true), 10000)
-  }, [])
+    // ⚡ FIX: Solo re-habilitar auto-play si NO es dispositivo de bajo rendimiento
+    if (!isLowPerformance) {
+      setTimeout(() => setIsAutoPlaying(true), 10000)
+    }
+  }, [isLowPerformance])
 
   const goToPrevious = useCallback(() => {
     setIsTransitioning(true)
     setCurrentIndex((prev) => prev - 1)
     setIsAutoPlaying(false)
-    setTimeout(() => setIsAutoPlaying(true), 10000)
-  }, [])
+    // ⚡ FIX: Solo re-habilitar auto-play si NO es dispositivo de bajo rendimiento
+    if (!isLowPerformance) {
+      setTimeout(() => setIsAutoPlaying(true), 10000)
+    }
+  }, [isLowPerformance])
 
   const goToNext = useCallback(() => {
     setIsTransitioning(true)
     setCurrentIndex((prev) => prev + 1)
     setIsAutoPlaying(false)
-    setTimeout(() => setIsAutoPlaying(true), 10000)
-  }, [])
+    // ⚡ FIX: Solo re-habilitar auto-play si NO es dispositivo de bajo rendimiento
+    if (!isLowPerformance) {
+      setTimeout(() => setIsAutoPlaying(true), 10000)
+    }
+  }, [isLowPerformance])
 
   // Auto-play cada 5 segundos
   useEffect(() => {
@@ -108,23 +130,31 @@ const HeroCarousel = () => {
             className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
-            {extendedSlides.map((slide, index) => (
-              <div
-                key={`${slide.id}-${index}`}
-                className="min-w-full h-full flex-shrink-0 relative"
-              >
-                <Image
-                  src={slide.image}
-                  alt={slide.alt}
-                  fill
-                  priority={index === 1} // La primera slide real está en índice 1
-                  fetchPriority={index === 1 ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority explícito para LCP
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-                  quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
-                />
-              </div>
-            ))}
+            {extendedSlides.map((slide, index) => {
+              // ⚡ OPTIMIZACIÓN: Solo la primera imagen real (índice 1) tiene priority
+              // Imágenes 2 y 3 (índices 2 y 0) se cargan lazy
+              const isFirstRealSlide = index === 1
+              const isClone = index === 0 || index === extendedSlides.length - 1
+              
+              return (
+                <div
+                  key={`${slide.id}-${index}`}
+                  className="min-w-full h-full flex-shrink-0 relative"
+                >
+                  <Image
+                    src={slide.image}
+                    alt={slide.alt}
+                    fill
+                    priority={isFirstRealSlide} // Solo primera slide real
+                    loading={isFirstRealSlide ? undefined : 'lazy'} // Lazy para slides 2 y 3
+                    fetchPriority={isFirstRealSlide ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority explícito para LCP
+                    className="object-contain"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                    quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
+                  />
+                </div>
+              )
+            })}
           </div>
 
           {/* Botones de navegación - Solo en desktop */}

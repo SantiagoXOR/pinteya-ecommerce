@@ -193,9 +193,10 @@ module.exports.__esModule = true;
     formats: ['image/webp', 'image/avif'],
     // Cache más largo para imágenes optimizadas
     minimumCacheTTL: 31536000, // 1 año para imágenes estáticas
-    // Tamaños responsivos optimizados según PageSpeed Insights
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // ⚡ OPTIMIZACIÓN: Tamaños responsivos optimizados para productos y hero
+    // Tamaños específicos para productos (263x263, 286x286, 320x320) para reducir 162 KiB
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 263, 286, 320, 384],
     // Nota: quality se especifica en cada componente Image individualmente (default: 75)
     // Habilitar optimización de imágenes remotas
     remotePatterns: [

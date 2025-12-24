@@ -32,9 +32,12 @@ export const ProductCardImage = React.memo(function ProductCardImage({
             alt={title || 'Producto'}
             fill
             className='object-contain z-0 transition-transform duration-300 ease-out'
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            // ⚡ OPTIMIZACIÓN: sizes más preciso para dimensiones reales de productos (263x263, 286x286)
+            // Esto reduce el tamaño de descarga al servir imágenes del tamaño correcto
+            sizes="(max-width: 640px) 263px, (max-width: 1024px) 286px, 320px"
             priority={false}
             loading="lazy"
+            quality={70} // ⚡ OPTIMIZACIÓN: 70 es suficiente para thumbnails (vs 75 default)
             onError={onImageError}
             onLoad={handleLoad}
             style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%' }}

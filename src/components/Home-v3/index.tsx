@@ -5,6 +5,7 @@ import React, { useEffect } from 'react'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import type { PromoBannersProps } from '../Home-v2/PromoBanners'
 import { ProductSkeletonGrid, ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
 import '@/styles/home-v3-glassmorphism.css'
@@ -12,19 +13,8 @@ import '@/styles/home-v3-glassmorphism.css'
 import BestSeller from '../Home-v2/BestSeller/index'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
-// ⚡ PERFORMANCE: Loading states para componentes críticos
-const HeroCarousel = dynamic(() => import('../Home-v2/HeroCarousel/index'), {
-  loading: () => (
-    <div className="relative w-full">
-      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
-        <div 
-          className="relative w-full overflow-hidden skeleton-loading"
-          style={{ aspectRatio: '2.77' }}
-        />
-      </div>
-    </div>
-  ),
-})
+// ⚡ PERFORMANCE: HeroOptimized renderiza imagen estática inicial y carga carousel después del FCP
+import HeroOptimized from './HeroOptimized'
 
 const CategoryTogglePillsWithSearch = dynamic(() => import('../Home-v2/CategoryTogglePillsWithSearch'), {
   loading: () => (
@@ -222,11 +212,56 @@ const LazyTestimonials = React.memo(() => {
 })
 LazyTestimonials.displayName = 'LazyTestimonials'
 
-const LazyBestSeller = React.memo(() => {
+const LazyBestSeller = React.memo(({ delay = 0 }: { delay?: number }) => {
+  // ⚡ FIX: Inicializar como true para SSR (asumiendo delay === 0 durante SSR)
+  // Esto asegura que el servidor y cliente rendericen lo mismo inicialmente
+  const [shouldRender, setShouldRender] = React.useState(true)
+  const [isHydrated, setIsHydrated] = React.useState(false)
+  const [hasRendered, setHasRendered] = React.useState(false)
+
+  // ⚡ FIX: Marcar como hidratado después del primer render del cliente
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  // ⚡ FIX: Marcar como renderizado cuando el contenido se muestra por primera vez
+  React.useEffect(() => {
+    if (shouldRender && !hasRendered) {
+      setHasRendered(true)
+    }
+  }, [shouldRender, hasRendered])
+
+  React.useEffect(() => {
+    // Solo procesar cambios de delay después de la hidratación para evitar mismatch
+    if (!isHydrated) return
+
+    // ⚡ FIX: Si el contenido ya se renderizó, NO cambiarlo a false aunque el delay cambie
+    // Esto previene que el contenido desaparezca después de la hidratación
+    if (hasRendered && shouldRender) return
+
+    if (delay > 0) {
+      // Si delay es > 0 y el contenido aún no se ha renderizado, mostrar skeleton primero
+      setShouldRender(false)
+      const timer = setTimeout(() => {
+        setShouldRender(true)
+      }, delay)
+      return () => clearTimeout(timer)
+    } else {
+      // Si delay es 0, renderizar inmediatamente
+      setShouldRender(true)
+    }
+  }, [delay, isHydrated, hasRendered, shouldRender])
+
+  if (!shouldRender) {
+    return (
+      <div className='mt-4 sm:mt-6 product-section'>
+        <ProductSkeletonGrid count={4} />
+      </div>
+    )
+  }
+
   // ✅ FIX CRÍTICO: BestSeller debe cargarse SIEMPRE, sin progressive loading
   // Renderizar inmediatamente sin esperar a ser visible
-  console.log('🔵 [LazyBestSeller] Renderizando - FORZANDO CARGA INMEDIATA')
-
   return (
     <div className='mt-4 sm:mt-6 product-section'>
       <BestSeller />
@@ -235,7 +270,76 @@ const LazyBestSeller = React.memo(() => {
 })
 LazyBestSeller.displayName = 'LazyBestSeller'
 
+// ⚡ OPTIMIZACIÓN: Componente para CategoryToggle con delay adaptativo
+const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
+  // ⚡ FIX: Inicializar como true para SSR (asumiendo delay === 0 durante SSR)
+  // Esto asegura que el servidor y cliente rendericen lo mismo inicialmente
+  const [shouldRender, setShouldRender] = React.useState(true)
+  const [isHydrated, setIsHydrated] = React.useState(false)
+  const [hasRendered, setHasRendered] = React.useState(false)
+
+  // ⚡ FIX: Marcar como hidratado después del primer render del cliente
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  // ⚡ FIX: Marcar como renderizado cuando el contenido se muestra por primera vez
+  React.useEffect(() => {
+    if (shouldRender && !hasRendered) {
+      setHasRendered(true)
+    }
+  }, [shouldRender, hasRendered])
+
+  React.useEffect(() => {
+    // Solo procesar cambios de delay después de la hidratación para evitar mismatch
+    if (!isHydrated) return
+
+    // ⚡ FIX: Si el contenido ya se renderizó, NO cambiarlo a false aunque el delay cambie
+    // Esto previene que el contenido desaparezca después de la hidratación
+    if (hasRendered && shouldRender) return
+
+    if (delay > 0) {
+      // Si delay es > 0 y el contenido aún no se ha renderizado, mostrar skeleton primero
+      setShouldRender(false)
+      const timer = setTimeout(() => {
+        setShouldRender(true)
+      }, delay)
+      return () => clearTimeout(timer)
+    } else {
+      // Si delay es 0, renderizar inmediatamente
+      setShouldRender(true)
+    }
+  }, [delay, isHydrated, hasRendered, shouldRender])
+
+  if (!shouldRender) {
+    return (
+      <div className='mt-2 sm:mt-3'>
+        <div className='flex gap-2 px-4 overflow-x-auto'>
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className='mt-2 sm:mt-3'>
+      <CategoryTogglePillsWithSearch />
+    </div>
+  )
+})
+DelayedCategoryToggle.displayName = 'DelayedCategoryToggle'
+
 const HomeV3 = () => {
+  // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo para aplicar optimizaciones adaptativas
+  const performanceLevel = useDevicePerformance()
+  const isLowPerformance = performanceLevel === 'low'
+  
+  // Aplicar delays más largos en dispositivos de bajo rendimiento
+  const categoryToggleDelay = isLowPerformance ? 2000 : 0
+  const bestSellerDelay = isLowPerformance ? 3000 : 0
+  
   // Scroll depth tracking - Optimizado con requestAnimationFrame para evitar re-renders
   useEffect(() => {
     let maxDepth = 0
@@ -286,18 +390,16 @@ const HomeV3 = () => {
 
       {/* NUEVO ORDEN OPTIMIZADO CON GLASSMORPHISM */}
 
-      {/* 0. Hero Carousel - Primer elemento después del header */}
+      {/* 0. Hero Optimized - Imagen estática inicial, carousel después del FCP */}
       <div className='pt-3 sm:pt-4 md:pt-6'>
-        <HeroCarousel />
+        <HeroOptimized />
       </div>
 
-      {/* 1. Navegación rápida por categorías - Espaciado mínimo */}
-      <div className='mt-2 sm:mt-3'>
-        <CategoryTogglePillsWithSearch />
-      </div>
+      {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
+      <DelayedCategoryToggle delay={categoryToggleDelay} />
 
-      {/* 2. Ofertas Especiales (BestSeller) - Ahora con filtro de categorías */}
-      <LazyBestSeller />
+      {/* 2. Ofertas Especiales (BestSeller) - Delay adaptativo para dispositivos de bajo rendimiento */}
+      <LazyBestSeller delay={bestSellerDelay} />
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
       <div 
@@ -370,5 +472,7 @@ const HomeV3 = () => {
 }
 
 export default HomeV3
+
+
 
 
