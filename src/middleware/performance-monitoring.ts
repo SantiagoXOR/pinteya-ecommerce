@@ -20,7 +20,13 @@ interface APIMetrics {
 
 // Cache para almacenar métricas temporalmente
 const metricsCache = new Map<string, APIMetrics>()
-const CACHE_TTL = 60000 // 1 minuto
+const CACHE_TTL = 300000 // 5 minutos (reducido de 1 minuto para mejor performance)
+
+// ⚡ OPTIMIZACIÓN: Sample rate para reducir overhead de tracking
+// Default: 10% de requests se trackean (configurable via env)
+const SAMPLE_RATE = parseFloat(
+  process.env.PERFORMANCE_MONITORING_SAMPLE_RATE || '0.1'
+)
 
 // Limpiar cache periódicamente
 setInterval(() => {
@@ -52,6 +58,15 @@ export function performanceMonitoringMiddleware(request: NextRequest) {
   // Capturar métricas después de la respuesta
   const responseTime = Date.now() - startTime
   const statusCode = response.status
+
+  // ⚡ OPTIMIZACIÓN: Muestreo probabilístico para reducir overhead
+  // Siempre trackear errores críticos (status >= 500) al 100%
+  const isCriticalError = statusCode >= 500
+  const shouldTrack = isCriticalError || Math.random() < SAMPLE_RATE
+
+  if (!shouldTrack) {
+    return response
+  }
 
   const metrics: APIMetrics = {
     method,

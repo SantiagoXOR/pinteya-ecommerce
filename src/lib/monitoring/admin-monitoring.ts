@@ -32,13 +32,27 @@ export interface SecurityAlert {
 const metricsCache = new Map<string, any>()
 const alertsCache: SecurityAlert[] = []
 
+// ⚡ OPTIMIZACIÓN: Buffer para batch processing de métricas
+const metricsBuffer: PerformanceMetric[] = []
+let flushTimer: NodeJS.Timeout | null = null
+const BATCH_SIZE = parseInt(process.env.ANALYTICS_BATCH_SIZE || '50', 10)
+const FLUSH_INTERVAL = parseInt(process.env.ANALYTICS_FLUSH_INTERVAL || '30000', 10) // 30 segundos
+
 /**
- * Registrar métrica de performance
+ * ⚡ OPTIMIZACIÓN: Flush de métricas en batch a la base de datos
  */
-export async function recordPerformanceMetric(metric: PerformanceMetric): Promise<void> {
+async function flushMetrics(): Promise<void> {
+  if (metricsBuffer.length === 0) {
+    return
+  }
+
+  // ⚡ FIX: Extraer y limpiar buffer ANTES de intentar insertar para evitar duplicados
+  const metricsToFlush = [...metricsBuffer]
+  metricsBuffer.length = 0 // Limpiar buffer inmediatamente
+
   try {
-    // Guardar en base de datos
-    await supabase.from('admin_performance_metrics').insert({
+    // Preparar datos para inserción batch
+    const metricsToInsert = metricsToFlush.map(metric => ({
       endpoint: metric.endpoint,
       method: metric.method,
       duration_ms: metric.duration,
@@ -46,9 +60,54 @@ export async function recordPerformanceMetric(metric: PerformanceMetric): Promis
       user_id: metric.userId,
       error_message: metric.error,
       timestamp: metric.timestamp,
-    })
+    }))
 
-    // Actualizar cache de métricas
+    // Inserción batch usando múltiples VALUES
+    const { error } = await supabase.from('admin_performance_metrics').insert(metricsToInsert)
+
+    if (error) {
+      console.error('Error flushing metrics batch:', error)
+      // ⚡ FIX: Re-agregar métricas originales al buffer para reintento (no duplicadas)
+      // Convertir de vuelta al formato PerformanceMetric
+      const metricsToRetry: PerformanceMetric[] = metricsToFlush.map(metric => ({
+        endpoint: metric.endpoint,
+        method: metric.method,
+        duration: metric.duration,
+        status: metric.status,
+        ...(metric.userId !== undefined && { userId: metric.userId }),
+        ...(metric.error !== undefined && { error: metric.error }),
+        timestamp: metric.timestamp,
+      }))
+      // Agregar al inicio del buffer para reintento prioritario
+      metricsBuffer.unshift(...metricsToRetry)
+    }
+    // Si no hay error, las métricas ya fueron insertadas y el buffer ya está limpio
+  } catch (error) {
+    console.error('Error in flushMetrics:', error)
+    // ⚡ FIX: En caso de excepción, también re-agregar métricas para reintento
+    const metricsToRetry: PerformanceMetric[] = metricsToFlush.map(metric => ({
+      endpoint: metric.endpoint,
+      method: metric.method,
+      duration: metric.duration,
+      status: metric.status,
+      ...(metric.userId !== undefined && { userId: metric.userId }),
+      ...(metric.error !== undefined && { error: metric.error }),
+      timestamp: metric.timestamp,
+    }))
+    metricsBuffer.unshift(...metricsToRetry)
+  }
+}
+
+/**
+ * Registrar métrica de performance
+ * ⚡ OPTIMIZACIÓN: Usa buffer en lugar de inserción inmediata
+ */
+export async function recordPerformanceMetric(metric: PerformanceMetric): Promise<void> {
+  try {
+    // Agregar al buffer en lugar de insertar inmediatamente
+    metricsBuffer.push(metric)
+
+    // Actualizar cache de métricas (sincrónico, no bloquea)
     const key = `${metric.endpoint}_${metric.method}`
     const cached = metricsCache.get(key) || { count: 0, totalDuration: 0, errors: 0 }
 
@@ -62,7 +121,21 @@ export async function recordPerformanceMetric(metric: PerformanceMetric): Promis
 
     metricsCache.set(key, cached)
 
-    // Verificar si necesita alerta
+    // Flush automático si el buffer alcanza el tamaño máximo
+    if (metricsBuffer.length >= BATCH_SIZE) {
+      await flushMetrics()
+    } else {
+      // Iniciar timer de flush si no existe
+      if (!flushTimer) {
+        flushTimer = setTimeout(() => {
+          flushMetrics().finally(() => {
+            flushTimer = null
+          })
+        }, FLUSH_INTERVAL)
+      }
+    }
+
+    // Verificar si necesita alerta (sincrónico para alertas críticas)
     if (metric.duration > 5000) {
       // Más de 5 segundos
       await createAlert({

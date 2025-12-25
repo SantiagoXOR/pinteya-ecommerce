@@ -51,6 +51,23 @@ class AnalyticsManager {
   private scrollTimeout: NodeJS.Timeout | null = null
   private scrollRAF: number | null = null
   private lastScrollY: number = 0
+  
+  // ⚡ FIX: inputTimeout como propiedad de clase para poder gestionarlo
+  private inputTimeout: NodeJS.Timeout | null = null
+  
+  // ⚡ FIX: Referencias a event listeners para poder removerlos
+  private clickHandler: ((event: MouseEvent) => void) | null = null
+  private scrollHandler: (() => void) | null = null
+  private inputHandler: ((event: Event) => void) | null = null
+  private focusHandler: ((event: FocusEvent) => void) | null = null
+  
+  // ⚡ OPTIMIZACIÓN: Throttling para clicks
+  private clickThrottleMap: Map<string, number> = new Map()
+  private readonly CLICK_THROTTLE_MS = 1000 // Máximo 1 click por segundo por elemento
+  
+  // ⚡ OPTIMIZACIÓN: Flag para deshabilitar scroll tracking en móviles
+  private readonly isMobile = typeof window !== 'undefined' && 
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
 
   constructor() {
     this.sessionId = this.generateSessionId()
@@ -92,6 +109,9 @@ class AnalyticsManager {
       return
     }
 
+    // ⚡ FIX: Limpiar listeners existentes si hay alguno antes de inicializar
+    this.cleanupListeners()
+
     try {
       // Esperar a que el DOM esté listo
       if (document.readyState === 'loading') {
@@ -107,43 +127,61 @@ class AnalyticsManager {
       // Track page views automáticamente (ahora que ya está inicializado)
       this.trackPageView()
 
-      // Track clicks globalmente
-      document.addEventListener('click', this.handleClick.bind(this))
+      // ⚡ FIX: Guardar referencia al handler para poder removerlo
+      // ⚡ OPTIMIZACIÓN: Delegación de eventos usando un solo listener
+      // Usar event delegation en lugar de listeners directos
+      this.clickHandler = this.handleClickDelegated.bind(this)
+      document.addEventListener('click', this.clickHandler, { passive: true })
 
-      // ⚡ PERFORMANCE: Track scroll events optimizado con passive: true y requestAnimationFrame
-      const handleScroll = () => {
-        // Cancelar RAF anterior si existe
-        if (this.scrollRAF !== null) {
-          cancelAnimationFrame(this.scrollRAF)
+      // ⚡ OPTIMIZACIÓN: Track scroll events solo si no es móvil y con debounce más agresivo
+      if (!this.isMobile) {
+        this.scrollHandler = () => {
+          // Cancelar RAF anterior si existe
+          if (this.scrollRAF !== null) {
+            cancelAnimationFrame(this.scrollRAF)
+          }
+
+          // Usar requestAnimationFrame para sincronizar con el render del navegador
+          this.scrollRAF = requestAnimationFrame(() => {
+            const currentScrollY = window.scrollY
+            
+            // Solo trackear si hay un cambio significativo (más de 50px) para reducir eventos
+            if (Math.abs(currentScrollY - this.lastScrollY) > 50) {
+              this.lastScrollY = currentScrollY
+              
+              // ⚡ OPTIMIZACIÓN: Debounce más agresivo (500ms en lugar de 250ms)
+              if (this.scrollTimeout) {
+                clearTimeout(this.scrollTimeout)
+              }
+              this.scrollTimeout = setTimeout(() => {
+                this.trackInteraction('scroll', 'page', window.scrollX, window.scrollY)
+              }, 500) // Aumentado a 500ms para reducir frecuencia
+            }
+            
+            this.scrollRAF = null
+          })
         }
 
-        // Usar requestAnimationFrame para sincronizar con el render del navegador
-        this.scrollRAF = requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          
-          // Solo trackear si hay un cambio significativo (más de 50px) para reducir eventos
-          if (Math.abs(currentScrollY - this.lastScrollY) > 50) {
-            this.lastScrollY = currentScrollY
-            
-            // Debounce adicional para reducir aún más los eventos
-            if (this.scrollTimeout) {
-              clearTimeout(this.scrollTimeout)
-            }
-            this.scrollTimeout = setTimeout(() => {
-              this.trackInteraction('scroll', 'page', window.scrollX, window.scrollY)
-            }, 250) // Aumentado a 250ms para reducir frecuencia
-          }
-          
-          this.scrollRAF = null
-        })
+        // ⚡ CRITICAL: Agregar passive: true para no bloquear el scroll
+        document.addEventListener('scroll', this.scrollHandler, { passive: true })
       }
 
-      // ⚡ CRITICAL: Agregar passive: true para no bloquear el scroll
-      document.addEventListener('scroll', handleScroll, { passive: true })
-
-      // Track form interactions
-      document.addEventListener('input', this.handleInput.bind(this))
-      document.addEventListener('focus', this.handleFocus.bind(this))
+      // ⚡ FIX: inputTimeout ahora es propiedad de clase, handler guardado
+      // Track form interactions con debounce
+      this.inputHandler = (event: Event) => {
+        if (this.inputTimeout) {
+          clearTimeout(this.inputTimeout)
+        }
+        this.inputTimeout = setTimeout(() => {
+          this.handleInput(event)
+        }, 300) // Debounce de 300ms para inputs
+      }
+      document.addEventListener('input', this.inputHandler, { passive: true })
+      
+      // ⚡ FIX: Guardar referencia al handler para poder removerlo
+      // Track focus events (menos frecuentes, no necesita debounce)
+      this.focusHandler = this.handleFocus.bind(this)
+      document.addEventListener('focus', this.focusHandler, { passive: true, capture: true })
     } catch (error) {
       console.warn('Error initializing analytics tracking:', error)
       // En caso de error, resetear el estado de inicialización
@@ -151,11 +189,33 @@ class AnalyticsManager {
     }
   }
 
-  private handleClick(event: MouseEvent): void {
+  // ⚡ OPTIMIZACIÓN: Delegación de eventos para clicks
+  private handleClickDelegated(event: MouseEvent): void {
     const target = event.target as HTMLElement
-    const elementInfo = this.getElementInfo(target)
+    if (!target) return
 
-    this.trackInteraction('click', elementInfo, event.clientX, event.clientY)
+    // ⚡ OPTIMIZACIÓN: Throttling por elemento (máximo 1 click por segundo)
+    const elementKey = this.getElementInfo(target)
+    const now = Date.now()
+    const lastClickTime = this.clickThrottleMap.get(elementKey) || 0
+    
+    if (now - lastClickTime < this.CLICK_THROTTLE_MS) {
+      return // Ignorar clicks muy frecuentes en el mismo elemento
+    }
+    
+    this.clickThrottleMap.set(elementKey, now)
+    
+    // Limpiar mapa de throttling periódicamente (mantener solo últimos 100 elementos)
+    if (this.clickThrottleMap.size > 100) {
+      const entries = Array.from(this.clickThrottleMap.entries())
+      entries.sort((a, b) => b[1] - a[1]) // Ordenar por timestamp
+      this.clickThrottleMap.clear()
+      entries.slice(0, 50).forEach(([key, time]) => {
+        this.clickThrottleMap.set(key, time)
+      })
+    }
+
+    this.trackInteraction('click', elementKey, event.clientX, event.clientY)
 
     // Track specific e-commerce events
     if (target.closest('[data-analytics="add-to-cart"]')) {
@@ -178,6 +238,11 @@ class AnalyticsManager {
         itemCount: target.getAttribute('data-item-count'),
       })
     }
+  }
+  
+  // Mantener método original para compatibilidad (deprecated)
+  private handleClick(event: MouseEvent): void {
+    this.handleClickDelegated(event)
   }
 
   private handleInput(event: Event): void {
@@ -239,13 +304,13 @@ class AnalyticsManager {
       event,
       category,
       action,
-      label,
-      value,
+      ...(label !== undefined && { label }),
+      ...(value !== undefined && { value }),
       sessionId: this.sessionId,
       timestamp: Date.now(),
       page: typeof window !== 'undefined' ? window.location.pathname : '',
       userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : '',
-      metadata,
+      ...(metadata !== undefined && { metadata }),
     }
 
     this.events.push(analyticsEvent)
@@ -449,10 +514,50 @@ class AnalyticsManager {
     return this.sessionId
   }
 
+  // ⚡ FIX: Método para limpiar todos los event listeners
+  private cleanupListeners(): void {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    // Remover click listener
+    if (this.clickHandler) {
+      document.removeEventListener('click', this.clickHandler)
+      this.clickHandler = null
+    }
+
+    // Remover scroll listener
+    if (this.scrollHandler) {
+      document.removeEventListener('scroll', this.scrollHandler)
+      this.scrollHandler = null
+    }
+
+    // Remover input listener
+    if (this.inputHandler) {
+      document.removeEventListener('input', this.inputHandler)
+      this.inputHandler = null
+    }
+
+    // Remover focus listener
+    if (this.focusHandler) {
+      document.removeEventListener('focus', this.focusHandler, { capture: true })
+      this.focusHandler = null
+    }
+
+    // Limpiar timeouts
+    if (this.inputTimeout) {
+      clearTimeout(this.inputTimeout)
+      this.inputTimeout = null
+    }
+  }
+
   public clearData(): void {
     this.events = []
     this.interactions = []
     this.eventQueue = []
+
+    // ⚡ FIX: Limpiar listeners al limpiar datos
+    this.cleanupListeners()
 
     // Limpiar timeouts y RAF
     if (this.queueTimeout) {

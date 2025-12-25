@@ -67,18 +67,18 @@ export interface MonitoringOptions {
 
 const DEFAULT_THRESHOLDS: PerformanceThresholds = {
   slowRenderThreshold: 16, // 16ms = 60fps
-  maxRenderCount: 60, // 60 renders per minute
+  maxRenderCount: 10, // ⚡ OPTIMIZACIÓN: 10 renders per minute (reducido de 60 para detección más temprana de render loops)
   memoryThreshold: 100, // 100MB
   errorThreshold: 5, // 5 errors per minute
 }
 
 const DEFAULT_OPTIONS: Required<Omit<MonitoringOptions, 'componentName'>> = {
-  enabled: process.env.NODE_ENV === 'development',
+  enabled: process.env.NODE_ENV === 'development', // ⚡ OPTIMIZACIÓN: Deshabilitado en producción por defecto
   thresholds: DEFAULT_THRESHOLDS,
   enableToasts: true,
   enableConsoleLogging: true,
   enableLocalStorage: true,
-  sampleRate: 1.0,
+  sampleRate: 0.05, // ⚡ OPTIMIZACIÓN: 5% de muestreo (reducido de 1.0 = 100%)
 }
 
 // ===================================
@@ -246,6 +246,10 @@ export function useRenderMonitoring(options: MonitoringOptions) {
   const slowRendersRef = useRef(0)
   const errorCountRef = useRef(0)
   const mountTimeRef = useRef(Date.now())
+  
+  // ⚡ OPTIMIZACIÓN: Throttling para análisis de performance
+  const lastAnalysisTimeRef = useRef(0)
+  const ANALYSIS_THROTTLE_MS = 1000 // Analizar máximo una vez por segundo
 
   // Estado local
   const [monitoringState, setMonitoringState] = useState<MonitoringState>(
@@ -259,15 +263,20 @@ export function useRenderMonitoring(options: MonitoringOptions) {
   const analyzePerformance = useCallback(
     (renderTime: number) => {
       const { componentName, thresholds } = opts
+      
+      // ⚡ FIX: Usar valores por defecto si thresholds no están definidos
+      const slowRenderThreshold = thresholds?.slowRenderThreshold ?? DEFAULT_THRESHOLDS.slowRenderThreshold
+      const maxRenderCount = thresholds?.maxRenderCount ?? DEFAULT_THRESHOLDS.maxRenderCount
+      const memoryThreshold = thresholds?.memoryThreshold ?? DEFAULT_THRESHOLDS.memoryThreshold
 
       // Detectar render lento
-      if (renderTime > thresholds.slowRenderThreshold) {
+      if (renderTime > slowRenderThreshold) {
         slowRendersRef.current++
 
         monitoringStore.addAlert({
           type: 'performance',
-          severity: renderTime > thresholds.slowRenderThreshold * 2 ? 'high' : 'medium',
-          message: `Render lento detectado: ${renderTime.toFixed(2)}ms (umbral: ${thresholds.slowRenderThreshold}ms)`,
+          severity: renderTime > slowRenderThreshold * 2 ? 'high' : 'medium',
+          message: `Render lento detectado: ${renderTime.toFixed(2)}ms (umbral: ${slowRenderThreshold}ms)`,
           componentName,
           metrics: { lastRenderTime: renderTime },
         })
@@ -284,11 +293,11 @@ export function useRenderMonitoring(options: MonitoringOptions) {
       const oneMinuteAgo = now - 60000
       const recentRenders = renderTimesRef.current.filter(time => time > oneMinuteAgo).length
 
-      if (recentRenders > thresholds.maxRenderCount) {
+      if (recentRenders > maxRenderCount) {
         monitoringStore.addAlert({
           type: 'render-loop',
           severity: 'critical',
-          message: `Posible render loop: ${recentRenders} renders en el último minuto (máximo: ${thresholds.maxRenderCount})`,
+          message: `Posible render loop: ${recentRenders} renders en el último minuto (máximo: ${maxRenderCount})`,
           componentName,
           metrics: { renderCount: recentRenders },
         })
@@ -304,11 +313,11 @@ export function useRenderMonitoring(options: MonitoringOptions) {
 
       // Detectar uso excesivo de memoria
       const memoryUsage = getMemoryUsage()
-      if (memoryUsage > thresholds.memoryThreshold) {
+      if (memoryUsage > memoryThreshold) {
         monitoringStore.addAlert({
           type: 'memory',
           severity: 'high',
-          message: `Uso de memoria elevado: ${memoryUsage.toFixed(2)}MB (umbral: ${thresholds.memoryThreshold}MB)`,
+          message: `Uso de memoria elevado: ${memoryUsage.toFixed(2)}MB (umbral: ${memoryThreshold}MB)`,
           componentName,
           metrics: { memoryUsage },
         })
@@ -337,12 +346,15 @@ export function useRenderMonitoring(options: MonitoringOptions) {
 
     // Calcular promedio de tiempo de render
     const recentTimes = renderTimesRef.current.slice(-10) // Últimos 10 renders
-    const averageRenderTime = recentTimes.reduce((sum, time, i, arr) => {
-      if (i === 0) {
-        return 0
-      }
-      return sum + (time - arr[i - 1]) / (arr.length - 1)
-    }, 0)
+    const averageRenderTime = recentTimes.length > 1
+      ? recentTimes.reduce((sum, time, i, arr) => {
+          if (i === 0) {
+            return 0
+          }
+          const diff = time - arr[i - 1]!
+          return sum + diff / (arr.length - 1)
+        }, 0)
+      : 0
 
     // Actualizar métricas
     const metrics: Partial<RenderMetrics> = {
@@ -357,8 +369,12 @@ export function useRenderMonitoring(options: MonitoringOptions) {
 
     monitoringStore.updateMetrics(opts.componentName, metrics)
 
-    // Analizar performance
-    analyzePerformance(renderTime)
+    // ⚡ OPTIMIZACIÓN: Analizar performance con throttling (máximo una vez por segundo)
+    const now = Date.now()
+    if (now - lastAnalysisTimeRef.current >= ANALYSIS_THROTTLE_MS) {
+      analyzePerformance(renderTime)
+      lastAnalysisTimeRef.current = now
+    }
 
     // Guardar en localStorage si está habilitado
     if (opts.enableLocalStorage) {

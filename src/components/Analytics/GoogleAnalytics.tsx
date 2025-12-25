@@ -24,28 +24,69 @@ const GoogleAnalytics: React.FC = () => {
   // ⚡ CRITICAL: Cargar analytics solo después de LCP y primera interacción del usuario
   // Esto evita que Google Tag Manager (153 KiB, 162 ms) bloquee la ruta crítica
   useEffect(() => {
+    let userActive = false
+    let idleTimer: NodeJS.Timeout | null = null
+    let loadTimeout: NodeJS.Timeout | null = null
+    let inactiveLoadTimeout: NodeJS.Timeout | null = null
+    const IDLE_THRESHOLD = 10000 // 10 segundos de inactividad
+
+    // ⚡ FIX: Guardar referencias a listeners para poder removerlos
+    const activityListeners: Array<{ event: string; handler: () => void }> = []
+    const interactionListeners: Array<{ event: string; handler: () => void }> = []
+    let loadHandler: (() => void) | null = null
+
+    // ⚡ OPTIMIZACIÓN: Detectar actividad del usuario
+    const markUserActive = () => {
+      userActive = true
+      if (idleTimer) {
+        clearTimeout(idleTimer)
+      }
+      // Resetear idle timer
+      idleTimer = setTimeout(() => {
+        userActive = false
+      }, IDLE_THRESHOLD)
+    }
+
     // Esperar a que el LCP se complete y el usuario interactúe
     const loadAfterLCP = () => {
       // Cargar después de LCP estimado (2.5s) o primera interacción
       const loadAnalytics = () => {
-        setShouldLoad(true)
+        // ⚡ OPTIMIZACIÓN: Solo cargar si usuario está activo o después de delay extendido
+        if (userActive) {
+          setShouldLoad(true)
+        } else {
+          // Si usuario está inactivo, esperar más tiempo
+          inactiveLoadTimeout = setTimeout(() => {
+            if (!userActive) {
+              setShouldLoad(true) // Cargar de todas formas después de delay extendido
+            }
+          }, 12000) // 12 segundos si usuario está inactivo
+        }
       }
 
-      // ⚡ OPTIMIZACIÓN: Cargar después de interacción del usuario (más agresivo)
-      // Esto asegura que el contenido principal se carga primero
-      const events = ['mousedown', 'touchstart', 'keydown', 'scroll', 'pointerdown']
-      const onInteraction = () => {
-        loadAnalytics()
-        // ⚡ NOTA: No es necesario removeEventListener porque once: true lo hace automáticamente
-      }
-
-      events.forEach(event => {
-        document.addEventListener(event, onInteraction, { passive: true, once: true })
+      // ⚡ OPTIMIZACIÓN: Detectar actividad del usuario (mouse movement, scroll, etc.)
+      const activityEvents = ['mousemove', 'mousedown', 'touchstart', 'keydown', 'scroll', 'pointerdown', 'pointermove']
+      activityEvents.forEach(event => {
+        document.addEventListener(event, markUserActive, { passive: true })
+        activityListeners.push({ event, handler: markUserActive })
       })
 
-      // ⚡ OPTIMIZACIÓN: Aumentar delay a 4 segundos para dar más tiempo al contenido principal
+      // ⚡ OPTIMIZACIÓN: Cargar después de interacción del usuario
+      const interactionEvents = ['mousedown', 'touchstart', 'keydown', 'scroll', 'pointerdown']
+      const onInteraction = () => {
+        markUserActive()
+        loadAnalytics()
+      }
+
+      interactionEvents.forEach(event => {
+        document.addEventListener(event, onInteraction, { passive: true, once: true })
+        interactionListeners.push({ event, handler: onInteraction })
+      })
+
+      // ⚡ OPTIMIZACIÓN: Aumentar delay a 8 segundos para dar más tiempo al contenido principal
       // Google Tag Manager es pesado (153 KiB), mejor cargarlo después de que todo esté listo
-      setTimeout(loadAnalytics, 4000) // 4 segundos después de carga inicial (vs 3s anterior)
+      loadTimeout = setTimeout(loadAnalytics, 8000) // 8 segundos después de carga inicial (aumentado de 4s)
+      loadHandler = loadAfterLCP
     }
 
     // Esperar a que el DOM esté listo
@@ -53,6 +94,36 @@ const GoogleAnalytics: React.FC = () => {
       loadAfterLCP()
     } else {
       window.addEventListener('load', loadAfterLCP, { once: true })
+      loadHandler = loadAfterLCP
+    }
+
+    // ⚡ FIX: Cleanup completo - remover todos los listeners
+    return () => {
+      // Limpiar timers
+      if (idleTimer) {
+        clearTimeout(idleTimer)
+      }
+      if (loadTimeout) {
+        clearTimeout(loadTimeout)
+      }
+      if (inactiveLoadTimeout) {
+        clearTimeout(inactiveLoadTimeout)
+      }
+
+      // Remover activity listeners
+      activityListeners.forEach(({ event, handler }) => {
+        document.removeEventListener(event, handler)
+      })
+
+      // Remover interaction listeners (aunque usan once: true, es mejor ser explícito)
+      interactionListeners.forEach(({ event, handler }) => {
+        document.removeEventListener(event, handler)
+      })
+
+      // Remover load handler si existe
+      if (loadHandler) {
+        window.removeEventListener('load', loadHandler)
+      }
     }
   }, [])
 

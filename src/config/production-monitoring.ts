@@ -92,6 +92,14 @@ export class ProductionMonitor {
   private config: ProductionMonitoringConfig
   private metricsBuffer: any[] = []
   private flushInterval: NodeJS.Timeout | null = null
+  
+  // ⚡ OPTIMIZACIÓN: Sample rate para reducir overhead
+  private readonly sampleRate = parseFloat(
+    process.env.PERFORMANCE_MONITORING_SAMPLE_RATE || '0.1'
+  )
+  
+  // ⚡ OPTIMIZACIÓN: Buffer size reducido
+  private readonly maxBufferSize = 30 // Reducido de 50
 
   constructor(config: ProductionMonitoringConfig = productionMonitoringConfig) {
     this.config = config
@@ -123,6 +131,11 @@ export class ProductionMonitor {
     category: string
     metadata?: Record<string, any>
   }) {
+    // ⚡ OPTIMIZACIÓN: Aplicar muestreo probabilístico
+    if (Math.random() >= this.sampleRate) {
+      return // No trackear esta métrica
+    }
+
     const enrichedMetric = {
       ...metric,
       timestamp: Date.now(),
@@ -138,6 +151,12 @@ export class ProductionMonitor {
 
   // Error tracking
   trackError(error: Error, context?: Record<string, any>) {
+    // ⚡ OPTIMIZACIÓN: Siempre trackear errores críticos, pero aplicar muestreo a errores menores
+    const isCritical = this.getErrorSeverity(error) === 'critical'
+    if (!isCritical && Math.random() >= this.sampleRate) {
+      return // No trackear errores no críticos si no pasa el muestreo
+    }
+
     const errorMetric = {
       name: 'error',
       message: error.message,
@@ -187,8 +206,8 @@ export class ProductionMonitor {
   private addMetric(metric: any) {
     this.metricsBuffer.push(metric)
 
-    // Flush if buffer is full
-    if (this.metricsBuffer.length >= 50) {
+    // ⚡ OPTIMIZACIÓN: Flush si buffer alcanza tamaño máximo reducido
+    if (this.metricsBuffer.length >= this.maxBufferSize) {
       this.flushMetrics()
     }
   }
@@ -215,9 +234,10 @@ export class ProductionMonitor {
   }
 
   private startAutoFlush() {
+    // ⚡ OPTIMIZACIÓN: Aumentar intervalo de flush a 60 segundos
     this.flushInterval = setInterval(() => {
       this.flushMetrics()
-    }, 30000) // 30 seconds
+    }, 60000) // 60 seconds (aumentado de 30s)
   }
 
   private getRating(name: string, value: number): 'good' | 'needs-improvement' | 'poor' {

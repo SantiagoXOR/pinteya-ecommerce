@@ -74,8 +74,14 @@ export class ProactiveMonitoringService {
       this.alertSystem = EnterpriseAlertSystem.getInstance()
       this.metricsCollector = EnterpriseMetricsCollector.getInstance()
     }
+    
+    // ⚡ OPTIMIZACIÓN: Deshabilitar por defecto en producción
+    // Solo habilitar si ENABLE_PROACTIVE_MONITORING=true explícitamente
+    const isProduction = process.env.NODE_ENV === 'production'
+    const enableMonitoring = process.env.ENABLE_PROACTIVE_MONITORING === 'true'
+    
     this.config = {
-      enabled: true,
+      enabled: enableMonitoring, // Por defecto false en producción, true en desarrollo
       checkInterval: 30, // 30 segundos
       errorThreshold: 5, // 5% error rate
       responseTimeThreshold: 2000, // 2 segundos
