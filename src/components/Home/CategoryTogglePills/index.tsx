@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback, useMemo, useContext } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo, useContext, startTransition } from 'react'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
 import { Button } from '@/components/ui/button'
@@ -33,7 +33,7 @@ interface CategoryPillItemProps {
   onMouseLeave: () => void
 }
 
-const CategoryPillItem = React.memo<CategoryPillItemProps>(({
+const CategoryPillItemBase: React.FC<CategoryPillItemProps> = ({
   category,
   isSelected,
   useDynamicCarousel,
@@ -104,12 +104,39 @@ const CategoryPillItem = React.memo<CategoryPillItemProps>(({
       <span className='text-[9px] font-medium text-center leading-[1.1] text-white max-w-[85px] line-clamp-1 md:hidden truncate'>{category.name}</span>
     </div>
   )
+}
+
+// ⚡ OPTIMIZACIÓN: Comparación personalizada para evitar re-renders innecesarios
+const CategoryPillItem = React.memo(CategoryPillItemBase, (prevProps, nextProps) => {
+  // Comparar propiedades primitivas
+  if (
+    prevProps.category.id !== nextProps.category.id ||
+    prevProps.category.slug !== nextProps.category.slug ||
+    prevProps.category.name !== nextProps.category.name ||
+    prevProps.category.image_url !== nextProps.category.image_url ||
+    prevProps.isSelected !== nextProps.isSelected ||
+    prevProps.useDynamicCarousel !== nextProps.useDynamicCarousel
+  ) {
+    return false
+  }
+
+  // Comparar funciones (referencias)
+  if (
+    prevProps.onToggle !== nextProps.onToggle ||
+    prevProps.onMouseEnter !== nextProps.onMouseEnter ||
+    prevProps.onMouseLeave !== nextProps.onMouseLeave
+  ) {
+    return false
+  }
+
+  // Si todas las comparaciones pasan, no re-renderizar
+  return true
 })
 
 CategoryPillItem.displayName = 'CategoryPillItem'
 
 // ⚡ OPTIMIZACIÓN: Memoizar el componente principal para evitar rerenders innecesarios
-const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = React.memo(({
+const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   onCategoryChange,
   selectedCategories,
   searchTerm,
@@ -117,6 +144,65 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = React.memo(({
   variant = 'default',
   useDynamicCarousel = false,
 }) => {
+  // ⚡ DEBUG: Log detallado de re-renders con análisis de props (solo en desarrollo)
+  const prevPropsRef = useRef<{
+    selectedCategories: string[]
+    searchTerm?: string
+    variant?: string
+    useDynamicCarousel?: boolean
+    onCategoryChange?: (categories: string[]) => void
+  } | null>(null)
+
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Solo loggear en desarrollo, pero no causar re-renders
+  if (process.env.NODE_ENV === 'development') {
+    useEffect(() => {
+      const prevProps = prevPropsRef.current
+      const currentProps = {
+        selectedCategories,
+        searchTerm,
+        variant,
+        useDynamicCarousel,
+        onCategoryChange,
+      }
+
+      // Analizar qué cambió
+      const changes: string[] = []
+      if (!prevProps) {
+        changes.push('INITIAL_RENDER')
+      } else {
+        if (JSON.stringify(prevProps.selectedCategories) !== JSON.stringify(selectedCategories)) {
+          changes.push('selectedCategories')
+        }
+        if (prevProps.searchTerm !== searchTerm) {
+          changes.push('searchTerm')
+        }
+        if (prevProps.variant !== variant) {
+          changes.push('variant')
+        }
+        if (prevProps.useDynamicCarousel !== useDynamicCarousel) {
+          changes.push('useDynamicCarousel')
+        }
+        if (prevProps.onCategoryChange !== onCategoryChange) {
+          changes.push('onCategoryChange')
+        }
+        if (changes.length === 0) {
+          changes.push('NO_PROPS_CHANGED - INTERNAL_STATE_UPDATE')
+        }
+      }
+
+      const stack = new Error().stack
+      console.log('🔄 CategoryTogglePills re-rendered', {
+        renderNumber: prevProps ? 'SUBSEQUENT' : 'INITIAL',
+        changes,
+        props: currentProps,
+        timestamp: Date.now(),
+        caller: stack?.split('\n')[2]?.trim() || 'unknown',
+      })
+
+      prevPropsRef.current = currentProps
+    })
+  }
+
   // ⚡ FIX: Los hooks deben llamarse siempre, no condicionalmente
   // Usar useContext directamente para evitar error si no hay provider
   const context = useContext(CategoryFilterContext)
@@ -125,17 +211,64 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = React.memo(({
   const selectedCategory = useDynamicCarousel && context ? context.selectedCategory : null
   const toggleCategory = useDynamicCarousel && context ? context.toggleCategory : undefined
 
-  // ⚡ OPTIMIZACIÓN: Memoizar baseFilters para evitar rerenders
-  const baseFilters = useMemo(() => ({
-    ...(searchTerm && { search: searchTerm }),
-    ...otherFilters,
-  }), [searchTerm, otherFilters])
+  // ⚡ OPTIMIZACIÓN: Estabilizar baseFilters comparando contenido, no solo referencia
+  const prevBaseFiltersRef = useRef<any>({})
+  const baseFilters = useMemo(() => {
+    const filters: any = {}
+    if (searchTerm) {
+      filters.search = searchTerm
+    }
+    // Solo incluir otherFilters si tiene propiedades
+    if (otherFilters && Object.keys(otherFilters).length > 0) {
+      Object.assign(filters, otherFilters)
+    }
+    
+    // Comparar contenido con el anterior
+    const filtersStr = JSON.stringify(filters)
+    const prevStr = JSON.stringify(prevBaseFiltersRef.current)
+    
+    if (filtersStr !== prevStr) {
+      prevBaseFiltersRef.current = filters
+      return filters
+    }
+    return prevBaseFiltersRef.current
+  }, [searchTerm, JSON.stringify(otherFilters)]) // Comparar contenido de otherFilters
 
-  const { categories, loading, error, stats } = useCategoriesWithDynamicCounts({
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Estabilizar categories y loading para evitar re-renders
+  const prevCategoriesRef = useRef<any[]>([])
+  const prevLoadingRef = useRef<boolean>(false)
+  
+  const { categories: rawCategories, loading: rawLoading, error, stats } = useCategoriesWithDynamicCounts({
     baseFilters,
     selectedCategories,
     enableDynamicCounts: false, // Deshabilitar conteos dinámicos para evitar errores de API
   })
+
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Solo actualizar categories si realmente cambió el contenido
+  const categories = useMemo(() => {
+    const categoriesStr = JSON.stringify(rawCategories)
+    const prevStr = JSON.stringify(prevCategoriesRef.current)
+    
+    if (categoriesStr !== prevStr) {
+      prevCategoriesRef.current = rawCategories
+      return rawCategories
+    }
+    return prevCategoriesRef.current
+  }, [rawCategories])
+
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Ignorar cambios en loading si las categorías ya están cargadas
+  const loading = useMemo(() => {
+    // Si las categorías ya están cargadas, siempre retornar false para evitar re-renders
+    if (categories.length > 0) {
+      return false
+    }
+    // Solo actualizar si realmente cambió
+    if (rawLoading !== prevLoadingRef.current) {
+      prevLoadingRef.current = rawLoading
+      return rawLoading
+    }
+    return prevLoadingRef.current
+  }, [rawLoading, categories.length])
 
   // Prefetch de productos al hacer hover sobre categorías
   const { handleMouseEnter: prefetchCategory, handleMouseLeave: stopPrefetchCategory } = usePrefetchOnHover({
@@ -460,8 +593,50 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = React.memo(({
       </div>
     </section>
   )
+}
+
+// ⚡ OPTIMIZACIÓN: Comparación personalizada para evitar re-renders innecesarios
+const CategoryTogglePillsMemoized = React.memo<CategoryTogglePillsProps>(CategoryTogglePills, (prevProps, nextProps) => {
+  // Comparar props primitivas
+  if (
+    prevProps.variant !== nextProps.variant ||
+    prevProps.useDynamicCarousel !== nextProps.useDynamicCarousel ||
+    prevProps.searchTerm !== nextProps.searchTerm
+  ) {
+    return false
+  }
+
+  // Comparar arrays de categorías seleccionadas
+  if (prevProps.selectedCategories.length !== nextProps.selectedCategories.length) {
+    return false
+  }
+  if (
+    !prevProps.selectedCategories.every((cat, idx) => cat === nextProps.selectedCategories[idx])
+  ) {
+    return false
+  }
+
+  // Comparar otherFilters (comparación superficial de claves)
+  const prevKeys = Object.keys(prevProps.otherFilters || {})
+  const nextKeys = Object.keys(nextProps.otherFilters || {})
+  if (prevKeys.length !== nextKeys.length) {
+    return false
+  }
+  for (const key of prevKeys) {
+    if (prevProps.otherFilters[key] !== nextProps.otherFilters[key]) {
+      return false
+    }
+  }
+
+  // Comparar función onCategoryChange (referencia)
+  if (prevProps.onCategoryChange !== nextProps.onCategoryChange) {
+    return false
+  }
+
+  // Si todas las comparaciones pasan, no re-renderizar
+  return true
 })
 
-CategoryTogglePills.displayName = 'CategoryTogglePills'
+CategoryTogglePillsMemoized.displayName = 'CategoryTogglePills'
 
-export default CategoryTogglePills
+export default CategoryTogglePillsMemoized

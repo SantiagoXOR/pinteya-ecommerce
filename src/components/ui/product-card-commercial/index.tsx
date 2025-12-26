@@ -12,6 +12,7 @@ import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { toast } from 'react-hot-toast'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { useScrollActive } from '@/hooks/useScrollActive'
 
 // Hooks personalizados
 import { useProductColors } from './hooks/useProductColors'
@@ -47,8 +48,10 @@ const ShopDetailModal = React.lazy(() =>
  * 
  * Usa hooks personalizados para separar lógica de negocio
  * y componentes memoizados para optimizar rendimiento.
+ * 
+ * ⚡ OPTIMIZACIÓN: Memoizado para evitar re-renders innecesarios
  */
-const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProductCardProps>(
+const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialProductCardProps>(
   (
     {
       className,
@@ -92,6 +95,9 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const performanceLevel = useDevicePerformance()
     const isLowPerformance = performanceLevel === 'low'
     const isMediumPerformance = performanceLevel === 'medium'
+    
+    // ⚡ OPTIMIZACIÓN: Detectar scroll activo para deshabilitar animaciones
+    const isScrolling = useScrollActive(150)
 
     // Hooks personalizados
     const colors = useProductColors({ variants, title, color })
@@ -244,6 +250,19 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
       [state]
     )
 
+    // ⚡ OPTIMIZACIÓN: Memoizar handlers de mouse para evitar re-renders
+    const handleMouseEnter = React.useCallback(() => {
+      if (!isScrolling) {
+        state.setIsHovered(true)
+        state.setShowQuickActions(true)
+      }
+    }, [isScrolling, state])
+
+    const handleMouseLeave = React.useCallback(() => {
+      state.setIsHovered(false)
+      state.setShowQuickActions(false)
+    }, [state])
+
     return (
       <div
         ref={ref}
@@ -261,37 +280,46 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         data-finish-source={badges.resolvedFinishSource}
         style={{
           transformOrigin: 'center',
-          // ⚡ OPTIMIZACIÓN: Reducir animaciones en dispositivos de bajo rendimiento
-          transition: isLowPerformance ? 'none' : 'transform 0.3s ease-out',
-          transform: (isLowPerformance || isMediumPerformance) 
-            ? (state.isHovered ? 'translateY(-2px)' : 'translateY(0)')
-            : (state.isHovered 
-              ? 'perspective(1000px) rotateX(2deg) translateY(-4px)' 
-              : 'perspective(1000px) rotateX(0deg)'),
-          // Box-shadow base estático (no animado)
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08)',
+          // ⚡ OPTIMIZACIÓN 1: Deshabilitar animaciones durante scroll activo
+          transition: (isScrolling || isLowPerformance) ? 'none' : 'transform 0.3s ease-out',
+          // ⚡ OPTIMIZACIÓN 2: Simplificar transform durante scroll
+          transform: (isScrolling || isLowPerformance || isMediumPerformance) 
+            ? (state.isHovered && !isScrolling ? 'translateY(-2px)' : 'translateY(0)')
+            : (state.isHovered && !isScrolling
+              ? 'perspective(500px) rotateX(1deg) translateY(-4px)' // ⚡ OPTIMIZACIÓN 7: Reducido de 1000px y 2deg
+              : 'perspective(500px) rotateX(0deg)'),
+          // ⚡ OPTIMIZACIÓN 5: Simplificar box-shadow durante scroll
+          boxShadow: isScrolling 
+            ? '0 2px 4px rgba(0, 0, 0, 0.1)' // Simple durante scroll
+            : '0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08)', // Completo cuando estático
           // Fondo blanco sólido para todo el card
           backgroundColor: '#ffffff',
-          // ⚡ OPTIMIZACIÓN: Reducir blur en dispositivos de bajo rendimiento
-          backdropFilter: isLowPerformance ? 'none' : 'blur(30px)',
-          WebkitBackdropFilter: isLowPerformance ? 'none' : 'blur(30px)',
+          // ⚡ OPTIMIZACIÓN 3: Reducir backdrop-filter durante scroll y en gama media/baja
+          backdropFilter: (isScrolling || isLowPerformance || isMediumPerformance) 
+            ? 'none' 
+            : 'blur(10px)', // ⚡ Reducido de 30px a 10px
+          WebkitBackdropFilter: (isScrolling || isLowPerformance || isMediumPerformance) 
+            ? 'none' 
+            : 'blur(10px)',
           border: '1px solid rgba(255, 255, 255, 0.15)',
-          willChange: isLowPerformance ? 'auto' : 'transform',
+          // ⚡ OPTIMIZACIÓN 4: will-change solo cuando hover y no scrolling
+          willChange: (isScrolling || isLowPerformance || !state.isHovered) ? 'auto' : 'transform',
+          // ⚡ OPTIMIZACIÓN 5: content-visibility para cards fuera del viewport
+          // Comentado temporalmente para evitar problemas con tests de Playwright
+          // Se puede habilitar cuando los tests se ajusten
+          // contentVisibility: 'auto',
+          // containIntrinsicSize: '280px 500px',
+          // ⚡ OPTIMIZACIÓN 10: Aislar layout y paint
+          contain: 'layout style paint',
         }}
-        onMouseEnter={() => {
-          state.setIsHovered(true)
-          state.setShowQuickActions(true)
-        }}
-        onMouseLeave={() => {
-          state.setIsHovered(false)
-          state.setShowQuickActions(false)
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onClick={handleCardClick}
         {...props}
       >
         {/* Pseudo-elemento para box-shadow con opacity animada (compositable) */}
-        {/* ⚡ OPTIMIZACIÓN: Ocultar en dispositivos de bajo rendimiento */}
-        {!isLowPerformance && (
+        {/* ⚡ OPTIMIZACIÓN: Ocultar durante scroll y en dispositivos de bajo rendimiento */}
+        {!isLowPerformance && !isScrolling && (
           <span
             className="absolute inset-0 rounded-xl md:rounded-[1.5rem] pointer-events-none transition-opacity duration-300 ease-out"
             style={{
@@ -510,9 +538,28 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
   }
 )
 
+CommercialProductCardBase.displayName = 'CommercialProductCardBase'
+
+// ⚡ OPTIMIZACIÓN: Memoizar el componente para evitar re-renders innecesarios
+// Solo re-renderiza si las props relevantes cambian
+const CommercialProductCard = React.memo(CommercialProductCardBase, (prevProps, nextProps) => {
+  // Comparación personalizada para evitar re-renders innecesarios
+  return (
+    prevProps.productId === nextProps.productId &&
+    prevProps.price === nextProps.price &&
+    prevProps.originalPrice === nextProps.originalPrice &&
+    prevProps.discount === nextProps.discount &&
+    prevProps.stock === nextProps.stock &&
+    prevProps.image === nextProps.image &&
+    prevProps.title === nextProps.title &&
+    prevProps.slug === nextProps.slug &&
+    prevProps.isNew === nextProps.isNew &&
+    prevProps.freeShipping === nextProps.freeShipping
+  )
+})
+
 CommercialProductCard.displayName = 'CommercialProductCard'
 
-// Re-exportar tipos para compatibilidad
 export { CommercialProductCard }
 export type { CommercialProductCardProps, ProductVariant, BadgeConfig }
 

@@ -1,6 +1,10 @@
 import HomeV3 from '@/components/Home-v3'
 import { Metadata } from 'next'
 import '@/styles/home-v3-glassmorphism.css'
+import { createClient } from '@/lib/integrations/supabase/server'
+import { Category } from '@/types/database'
+import { QueryClient, dehydrate, Hydrate } from '@tanstack/react-query'
+import { productQueryKeys } from '@/hooks/queries/productQueryKeys'
 
 export const metadata: Metadata = {
   title: 'Pinteya - Tu Pinturería Online | Envío Gratis +$50.000',
@@ -40,6 +44,52 @@ export const metadata: Metadata = {
 // ✅ Home-v3 configurado como ruta principal
 export const revalidate = 60
 
-export default function HomePage() {
-  return <HomeV3 />
+// ⚡ OPTIMIZACIÓN CRÍTICA: Pre-cargar categorías en el servidor para evitar re-renders
+async function getCategoriesServerSide(): Promise<Category[]> {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('display_order', { ascending: true })
+      .order('name', { ascending: true })
+      .limit(50) // Limitar para performance
+
+    if (error) {
+      console.error('Error obteniendo categorías en servidor:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error en getCategoriesServerSide:', error)
+    return []
+  }
+}
+
+export default async function HomePage() {
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Pre-cargar categorías en el servidor
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 10 * 60 * 1000, // 10 minutos
+        gcTime: 30 * 60 * 1000, // 30 minutos
+      },
+    },
+  })
+
+  // Pre-fetch categorías en el servidor
+  const categories = await getCategoriesServerSide()
+  
+  // Pre-popular el cache de React Query con las categorías
+  queryClient.setQueryData(
+    productQueryKeys.categoryListWithFilters({}),
+    categories
+  )
+
+  return (
+    <Hydrate state={dehydrate(queryClient)}>
+      <HomeV3 />
+    </Hydrate>
+  )
 }

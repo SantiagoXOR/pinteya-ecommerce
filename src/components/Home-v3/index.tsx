@@ -438,7 +438,17 @@ const HomeV3 = () => {
       </div>
 
       {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
-      <DelayedCategoryToggle delay={categoryToggleDelay} />
+      <React.Suspense
+        fallback={
+          <div className='flex gap-2 px-4 overflow-x-auto'>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
+            ))}
+          </div>
+        }
+      >
+        <DelayedCategoryToggle delay={categoryToggleDelay} />
+      </React.Suspense>
 
       {/* 2. Ofertas Especiales (BestSeller) - Delay adaptativo para dispositivos de bajo rendimiento */}
       <LazyBestSeller delay={bestSellerDelay} />

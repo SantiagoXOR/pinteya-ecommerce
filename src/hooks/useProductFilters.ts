@@ -2,7 +2,7 @@
 // HOOK: useProductFilters - Optimizado para Performance
 // ===================================
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ProductFilters } from '@/types/api'
 
@@ -77,32 +77,111 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
 
-  // Estado de filtros optimizado
-  const [filters, setFilters] = useState<ProductFilterState>(() => ({
-    ...DEFAULT_FILTERS,
-    sortBy: defaultSort,
-    limit: defaultLimit,
-  }))
+  // ⚡ OPTIMIZACIÓN: Usar ref para rastrear filtros anteriores y evitar actualizaciones innecesarias
+  const prevFiltersRef = useRef<ProductFilterState | null>(null)
+  const isInitialMount = useRef(true)
 
-  // Inicializar y sincronizar filtros desde URL
-  useEffect(() => {
+  // ⚡ OPTIMIZACIÓN: Memoizar valores de URL para evitar comparaciones innecesarias
+  const urlFiltersMemo = useMemo(() => {
     if (!syncWithUrl || !searchParams) {
+      return null
+    }
+
+    const categories = searchParams.get('categories')?.split(',').filter(Boolean) || []
+    const brands = searchParams.get('brands')?.split(',').filter(Boolean) || []
+    const priceMin = searchParams.get('priceMin') ? Number(searchParams.get('priceMin')) : undefined
+    const priceMax = searchParams.get('priceMax') ? Number(searchParams.get('priceMax')) : undefined
+    const search = searchParams.get('search') || ''
+    const sortBy = searchParams.get('sortBy') || defaultSort
+    const page = Number(searchParams.get('page')) || 1
+    const limit = Number(searchParams.get('limit')) || defaultLimit
+
+    return {
+      categories,
+      brands,
+      priceMin,
+      priceMax,
+      search,
+      sortBy,
+      page,
+      limit,
+    }
+  }, [
+    syncWithUrl,
+    searchParams?.toString(), // ⚡ OPTIMIZACIÓN: Usar toString() para detectar cualquier cambio
+    defaultSort,
+    defaultLimit,
+  ])
+
+  // ⚡ OPTIMIZACIÓN: Inicializar filtros desde URL en el estado inicial para evitar re-render
+  const [filters, setFilters] = useState<ProductFilterState>(() => {
+    // Inicializar directamente desde URL si está disponible
+    if (syncWithUrl && searchParams) {
+      const categories = searchParams.get('categories')?.split(',').filter(Boolean) || []
+      const brands = searchParams.get('brands')?.split(',').filter(Boolean) || []
+      const priceMin = searchParams.get('priceMin') ? Number(searchParams.get('priceMin')) : undefined
+      const priceMax = searchParams.get('priceMax') ? Number(searchParams.get('priceMax')) : undefined
+      const search = searchParams.get('search') || ''
+      const sortBy = searchParams.get('sortBy') || defaultSort
+      const page = Number(searchParams.get('page')) || 1
+      const limit = Number(searchParams.get('limit')) || defaultLimit
+
+      const urlFilters = {
+        categories,
+        brands,
+        priceMin,
+        priceMax,
+        search,
+        sortBy,
+        page,
+        limit,
+      }
+      prevFiltersRef.current = urlFilters
+      return urlFilters
+    }
+    return {
+      ...DEFAULT_FILTERS,
+      sortBy: defaultSort,
+      limit: defaultLimit,
+    }
+  })
+
+  // ⚡ OPTIMIZACIÓN CRÍTICA: NO sincronizar durante inicialización - ya está inicializado en useState
+  // Solo sincronizar cambios posteriores en la URL (navegación del usuario)
+  useEffect(() => {
+    // Marcar que ya pasó el montaje inicial
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return // NO hacer nada durante el montaje inicial
+    }
+
+    // Solo sincronizar si hay cambios en la URL después del montaje inicial
+    if (!urlFiltersMemo) {
       return
     }
 
-    const urlFilters: ProductFilterState = {
-      categories: searchParams.get('categories')?.split(',').filter(Boolean) || [],
-      brands: searchParams.get('brands')?.split(',').filter(Boolean) || [],
-      priceMin: searchParams.get('priceMin') ? Number(searchParams.get('priceMin')) : undefined,
-      priceMax: searchParams.get('priceMax') ? Number(searchParams.get('priceMax')) : undefined,
-      search: searchParams.get('search') || '',
-      sortBy: searchParams.get('sortBy') || defaultSort,
-      page: Number(searchParams.get('page')) || 1,
-      limit: Number(searchParams.get('limit')) || defaultLimit,
+    // ⚡ OPTIMIZACIÓN: Solo actualizar si realmente hay cambios
+    const prevFilters = prevFiltersRef.current
+    if (prevFilters) {
+      const hasChanges =
+        JSON.stringify(prevFilters.categories) !== JSON.stringify(urlFiltersMemo.categories) ||
+        JSON.stringify(prevFilters.brands) !== JSON.stringify(urlFiltersMemo.brands) ||
+        prevFilters.priceMin !== urlFiltersMemo.priceMin ||
+        prevFilters.priceMax !== urlFiltersMemo.priceMax ||
+        prevFilters.search !== urlFiltersMemo.search ||
+        prevFilters.sortBy !== urlFiltersMemo.sortBy ||
+        prevFilters.page !== urlFiltersMemo.page ||
+        prevFilters.limit !== urlFiltersMemo.limit
+
+      if (!hasChanges) {
+        return // No hay cambios, no actualizar
+      }
     }
 
-    setFilters(urlFilters)
-  }, [searchParams, syncWithUrl, defaultSort, defaultLimit]) // Actualizar cuando cambien los searchParams
+    // Solo actualizar si es necesario (después del montaje inicial)
+    setFilters(urlFiltersMemo)
+    prevFiltersRef.current = urlFiltersMemo
+  }, [urlFiltersMemo])
 
   // Función optimizada para actualizar URL
   const updateUrl = useCallback(
@@ -153,6 +232,12 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
     [syncWithUrl, router, defaultSort, defaultLimit]
   )
 
+  // ⚡ OPTIMIZACIÓN: Usar ref para onFiltersChange para evitar cambios en cada render
+  const onFiltersChangeRef = useRef(onFiltersChange)
+  useEffect(() => {
+    onFiltersChangeRef.current = onFiltersChange
+  }, [onFiltersChange])
+
   // Función optimizada para actualizar filtros
   const updateFilters = useCallback(
     (updates: Partial<ProductFilterState>) => {
@@ -167,13 +252,13 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
         // Actualizar URL de forma asíncrona
         setTimeout(() => updateUrl(newFilters), 0)
 
-        // Callback opcional
-        onFiltersChange?.(newFilters)
+        // Callback opcional usando ref para evitar dependencia
+        onFiltersChangeRef.current?.(newFilters)
 
         return newFilters
       })
     },
-    [updateUrl, onFiltersChange]
+    [updateUrl] // ⚡ OPTIMIZACIÓN: Remover onFiltersChange de dependencias
   )
 
   // Handlers memoizados para evitar re-renders
@@ -268,8 +353,31 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
     return count
   }, [filters])
 
-  return {
-    filters,
+  // ⚡ OPTIMIZACIÓN: Estabilizar filters comparando contenido, no solo referencia
+  const stableFiltersRef = useRef<ProductFilterState>(filters)
+  const stableFilters = useMemo(() => {
+    const filtersStr = JSON.stringify(filters)
+    const prevStr = JSON.stringify(stableFiltersRef.current)
+    
+    if (filtersStr !== prevStr) {
+      stableFiltersRef.current = filters
+      return filters
+    }
+    return stableFiltersRef.current
+  }, [
+    JSON.stringify(filters.categories),
+    JSON.stringify(filters.brands),
+    filters.priceMin,
+    filters.priceMax,
+    filters.search,
+    filters.sortBy,
+    filters.page,
+    filters.limit,
+  ])
+
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Estabilizar completamente el objeto de retorno usando refs
+  const returnValueRef = useRef({
+    filters: stableFilters,
     updateCategories,
     updateBrands,
     updatePriceRange,
@@ -282,5 +390,45 @@ export function useProductFilters(options: UseProductFiltersOptions = {}): UsePr
     hasActiveFilters,
     totalActiveFilters,
     isLoading,
+  })
+
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Solo actualizar el ref si realmente cambió algo importante
+  const prevFiltersStrRef = useRef(JSON.stringify(stableFilters))
+  const currentFiltersStr = JSON.stringify(stableFilters)
+  
+  if (currentFiltersStr !== prevFiltersStrRef.current) {
+    prevFiltersStrRef.current = currentFiltersStr
+    returnValueRef.current = {
+      filters: stableFilters,
+      updateCategories,
+      updateBrands,
+      updatePriceRange,
+      updateSearch,
+      updateSort,
+      updatePage,
+      updateLimit,
+      clearFilters,
+      applyFilters,
+      hasActiveFilters,
+      totalActiveFilters,
+      isLoading,
+    }
+  } else {
+    // Actualizar solo las funciones que pueden haber cambiado (aunque raramente)
+    returnValueRef.current.updateCategories = updateCategories
+    returnValueRef.current.updateBrands = updateBrands
+    returnValueRef.current.updatePriceRange = updatePriceRange
+    returnValueRef.current.updateSearch = updateSearch
+    returnValueRef.current.updateSort = updateSort
+    returnValueRef.current.updatePage = updatePage
+    returnValueRef.current.updateLimit = updateLimit
+    returnValueRef.current.clearFilters = clearFilters
+    returnValueRef.current.applyFilters = applyFilters
+    returnValueRef.current.hasActiveFilters = hasActiveFilters
+    returnValueRef.current.totalActiveFilters = totalActiveFilters
+    returnValueRef.current.isLoading = isLoading
   }
+
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Retornar siempre la misma referencia del objeto
+  return returnValueRef.current
 }

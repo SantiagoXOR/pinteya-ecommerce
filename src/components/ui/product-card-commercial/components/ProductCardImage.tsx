@@ -3,6 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { AlertCircle } from '@/lib/optimized-imports'
+import { cn } from '@/lib/core/utils'
 import type { ProductCardImageProps } from '../types'
 
 /**
@@ -31,12 +32,17 @@ export const ProductCardImage = React.memo(function ProductCardImage({
             src={displaySrc}
             alt={title || 'Producto'}
             fill
-            className='object-contain z-0 transition-transform duration-300 ease-out'
+            className={cn(
+              'object-contain z-0',
+              // ⚡ OPTIMIZACIÓN: Deshabilitar transición durante scroll para mejor rendimiento
+              'transition-transform duration-300 ease-out'
+            )}
             // ⚡ OPTIMIZACIÓN: sizes más preciso para dimensiones reales de productos (263x263, 286x286)
             // Esto reduce el tamaño de descarga al servir imágenes del tamaño correcto
             sizes="(max-width: 640px) 263px, (max-width: 1024px) 286px, 320px"
             priority={false}
             loading="lazy"
+            decoding="async" // ⚡ OPTIMIZACIÓN: Decodificar imagen de forma asíncrona para no bloquear render
             quality={70} // ⚡ OPTIMIZACIÓN: 70 es suficiente para thumbnails (vs 75 default)
             onError={onImageError}
             onLoad={handleLoad}

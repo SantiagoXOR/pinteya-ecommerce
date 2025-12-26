@@ -37,6 +37,11 @@ export const CategoryFilterProvider: React.FC<CategoryFilterProviderProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory)
 
+  // ⚡ OPTIMIZACIÓN: Estabilizar setSelectedCategory con useCallback
+  const stableSetSelectedCategory = useCallback((category: string | null) => {
+    setSelectedCategory(category)
+  }, [])
+
   // Memoizar configuración de la categoría activa
   const categoryConfig = useMemo(() => getCategoryConfig(selectedCategory), [selectedCategory])
 
@@ -48,15 +53,15 @@ export const CategoryFilterProvider: React.FC<CategoryFilterProviderProps> = ({
     })
   }, [])
 
-  // Memoizar el value del contexto para evitar re-renders innecesarios
+  // ⚡ OPTIMIZACIÓN: Memoizar el value del contexto para evitar re-renders innecesarios
   const value = useMemo(
     () => ({
       selectedCategory,
-      setSelectedCategory,
+      setSelectedCategory: stableSetSelectedCategory,
       categoryConfig,
       toggleCategory,
     }),
-    [selectedCategory, categoryConfig, toggleCategory]
+    [selectedCategory, stableSetSelectedCategory, categoryConfig, toggleCategory]
   )
 
   return (

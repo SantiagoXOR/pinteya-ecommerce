@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { useCategories } from './useCategories'
 import { CategoryFilters } from '@/types/api'
 import { useCategoryProductCounts, ProductFilters } from './useFilteredProducts'
@@ -34,14 +34,27 @@ export const useCategoriesWithDynamicCounts = ({
   selectedCategories = [],
   enableDynamicCounts = true,
 }: UseCategoriesWithDynamicCountsOptions = {}) => {
+  // ⚡ OPTIMIZACIÓN: Estabilizar baseFilters comparando contenido, no solo referencia
+  const prevBaseFiltersRef = useRef<any>({})
+  const stableBaseFilters = useMemo(() => {
+    const filtersStr = JSON.stringify(baseFilters)
+    const prevStr = JSON.stringify(prevBaseFiltersRef.current)
+    
+    if (filtersStr !== prevStr) {
+      prevBaseFiltersRef.current = baseFilters
+      return baseFilters
+    }
+    return prevBaseFiltersRef.current
+  }, [JSON.stringify(baseFilters)])
+
   // Extraer filtros de búsqueda para pasarlos a useCategories
   const categoryFilters = useMemo(() => {
     const filters: any = {}
-    if (baseFilters.search) {
-      filters.search = baseFilters.search
+    if (stableBaseFilters.search) {
+      filters.search = stableBaseFilters.search
     }
     return filters
-  }, [baseFilters.search])
+  }, [stableBaseFilters.search])
 
   // Obtener categorías base con filtros de búsqueda si existen
   const {
@@ -53,26 +66,57 @@ export const useCategoriesWithDynamicCounts = ({
     autoFetch: true,
   })
 
+  // ⚡ DEBUG: Log cuando las categorías cambian (solo en desarrollo)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📦 useCategoriesWithDynamicCounts - categories changed', {
+        count: baseCategories.length,
+        loading: categoriesLoading,
+        timestamp: Date.now(),
+      })
+    }
+  }, [baseCategories.length, categoriesLoading])
+
+  // ⚡ OPTIMIZACIÓN: Estabilizar baseCategories comparando contenido, no solo referencia
+  const prevCategoriesRef = useRef<Category[]>([])
+  const stableCategories = useMemo(() => {
+    // Comparar contenido de las categorías
+    if (
+      baseCategories.length !== prevCategoriesRef.current.length ||
+      baseCategories.some(
+        (cat, idx) =>
+          !prevCategoriesRef.current[idx] ||
+          cat.id !== prevCategoriesRef.current[idx].id ||
+          cat.slug !== prevCategoriesRef.current[idx].slug ||
+          cat.name !== prevCategoriesRef.current[idx].name
+      )
+    ) {
+      prevCategoriesRef.current = baseCategories
+      return baseCategories
+    }
+    return prevCategoriesRef.current
+  }, [baseCategories])
+
   // Extraer slugs de categorías para obtener conteos
   const categoryIds = useMemo(() => {
-    return baseCategories.map(cat => cat.slug).filter(Boolean)
-  }, [baseCategories])
+    return stableCategories.map(cat => cat.slug).filter(Boolean)
+  }, [stableCategories])
 
   // Obtener conteos dinámicos solo si está habilitado
   const {
     data: dynamicCounts,
     isLoading: countsLoading,
     error: countsError,
-  } = useCategoryProductCounts(enableDynamicCounts ? categoryIds : [], baseFilters)
+  } = useCategoryProductCounts(enableDynamicCounts ? categoryIds : [], stableBaseFilters)
 
   // Combinar categorías con conteos dinámicos
   const categoriesWithDynamicCounts = useMemo((): CategoryWithDynamicCount[] => {
     // Si no hay categorías base, retornar array vacío
-    if (baseCategories.length === 0) {
+    if (stableCategories.length === 0) {
       return []
     }
 
-    return baseCategories.map(category => {
+    return stableCategories.map(category => {
       const dynamicCount =
         enableDynamicCounts && dynamicCounts ? dynamicCounts[category.slug] : undefined
 
@@ -82,7 +126,12 @@ export const useCategoriesWithDynamicCounts = ({
         isLoading: enableDynamicCounts && countsLoading,
       }
     })
-  }, [baseCategories, dynamicCounts, enableDynamicCounts, countsLoading])
+  }, [stableCategories, dynamicCounts, enableDynamicCounts, countsLoading])
+
+  // ⚡ OPTIMIZACIÓN: Memoizar selectedCategories como Set para comparación más eficiente
+  const selectedCategoriesSet = useMemo(() => {
+    return new Set(selectedCategories)
+  }, [JSON.stringify(selectedCategories)]) // Comparar contenido del array
 
   // Filtrar categorías seleccionadas si es necesario
   const availableCategories = useMemo(() => {
@@ -93,9 +142,9 @@ export const useCategoriesWithDynamicCounts = ({
     // Mostrar todas las categorías, pero marcar las seleccionadas
     return categoriesWithDynamicCounts.map(category => ({
       ...category,
-      isSelected: selectedCategories.includes(category.slug),
+      isSelected: selectedCategoriesSet.has(category.slug),
     }))
-  }, [categoriesWithDynamicCounts, selectedCategories])
+  }, [categoriesWithDynamicCounts, selectedCategoriesSet])
 
   // Estados combinados
   const isLoading = categoriesLoading || (enableDynamicCounts && countsLoading)
@@ -118,20 +167,24 @@ export const useCategoriesWithDynamicCounts = ({
     }
   }, [availableCategories, selectedCategories])
 
-  return {
-    categories: availableCategories,
-    loading: isLoading,
-    error,
-    stats,
-    // Funciones de utilidad
-    getCategoryBySlug: (slug: string) => availableCategories.find(cat => cat.slug === slug),
-    getCategoryCount: (slug: string) =>
-      availableCategories.find(cat => cat.slug === slug)?.products_count || 0,
-    // Configuración
-    enableDynamicCounts,
-    baseFilters,
-    selectedCategories,
-  }
+  // ⚡ OPTIMIZACIÓN: Memoizar el objeto de retorno para evitar cambios en cada render
+  return useMemo(
+    () => ({
+      categories: availableCategories,
+      loading: isLoading,
+      error,
+      stats,
+      // Funciones de utilidad
+      getCategoryBySlug: (slug: string) => availableCategories.find(cat => cat.slug === slug),
+      getCategoryCount: (slug: string) =>
+        availableCategories.find(cat => cat.slug === slug)?.products_count || 0,
+      // Configuración
+      enableDynamicCounts,
+      baseFilters: stableBaseFilters,
+      selectedCategories,
+    }),
+    [availableCategories, isLoading, error, stats, enableDynamicCounts, baseFilters, selectedCategories]
+  )
 }
 
 // ===================================
