@@ -295,14 +295,19 @@ export const SearchAutocompleteIntegrated = React.memo(
         [searchWithDebounce, onSearch, resetAnimation]
       )
 
-      // Calcular posición del dropdown
+      // Calcular posición del dropdown - Optimizado con requestAnimationFrame
       const updateDropdownPosition = useCallback(() => {
         if (inputRef.current) {
-          const rect = inputRef.current.getBoundingClientRect()
-          setDropdownPosition({
-            top: rect.bottom + window.scrollY + 4,
-            left: rect.left + window.scrollX,
-            width: rect.width,
+          // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para evitar forced reflow
+          requestAnimationFrame(() => {
+            if (inputRef.current) {
+              const rect = inputRef.current.getBoundingClientRect()
+              setDropdownPosition({
+                top: rect.bottom + window.scrollY + 4,
+                left: rect.left + window.scrollX,
+                width: rect.width,
+              })
+            }
           })
         }
       }, [])

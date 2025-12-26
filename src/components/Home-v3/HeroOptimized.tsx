@@ -77,7 +77,8 @@ export default function HeroOptimized() {
             <Image
               src="/images/hero/hero2/hero1.webp"
               alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
-              fill
+              width={1200}
+              height={433}
               priority
               fetchPriority="high"
               className="object-contain"
@@ -85,6 +86,7 @@ export default function HeroOptimized() {
               quality={80}
               loading="eager"
               aria-hidden={showCarousel ? 'true' : 'false'}
+              style={{ width: '100%', height: 'auto', aspectRatio: '1200/433' }}
             />
           </div>
           

@@ -135,8 +135,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           /* Gradient backgrounds */
           .bg-gradient-hero{background:linear-gradient(135deg,#bd4811 0%,#000000 100%)}
           
-          /* Critical button styles */
-          .btn-primary{background:#eb6313;color:#fff;padding:1rem 2rem;border-radius:0.5rem;font-weight:600;transition:all 0.2s;border:2px solid #bd4811}
+          /* Critical button styles - Optimizado para GPU */
+          .btn-primary{background:#eb6313;color:#fff;padding:1rem 2rem;border-radius:0.5rem;font-weight:600;transition:background-color 0.2s ease,transform 0.2s ease;border:2px solid #bd4811}
           .btn-primary:hover{background:#bd4811;transform:scale(1.05);border-color:#ea5a17}
           
           /* Prevent layout shift */
@@ -148,9 +148,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-modal{z-index:200}
           .z-toast{z-index:300}
           
-          /* ⚡ CRITICAL: @font-face Regular inline para eliminar dependencia del CSS externo */
-          /* Esto reduce la latencia de ruta crítica de 2,271 ms */
+          /* ⚡ CRITICAL: @font-face inline completo para eliminar dependencia del CSS externo */
+          /* Esto reduce la latencia de ruta crítica de 2,124 ms */
           @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
+          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
+          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
           @font-face{font-family:'Euclid Circular A Fallback';ascent-override:93.26%;descent-override:24.99%;line-gap-override:0.00%;size-adjust:107.23%;src:local('Arial')}
           
           /* ⚡ LEGIBILIDAD: Textos oscuros por defecto en contenedores blancos - EXCLUYENDO product cards */
@@ -183,7 +185,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
         
         {/* ⚡ CRITICAL: Preload de imagen LCP del hero - POSICIONADO PRIMERO para máxima prioridad */}
-        {/* Esto elimina el retraso de 1,570ms en la carga de recursos */}
+        {/* Esto elimina el retraso de 1,480ms en la carga de recursos */}
         {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
         <link
           rel="preload"
@@ -193,18 +195,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="image/webp"
           crossOrigin="anonymous"
         />
-        {/* ⚡ AVIF para navegadores que lo soportan (mejor compresión) */}
-        <link
-          rel="preload"
-          as="image"
-          href="/images/hero/hero2/hero1.avif"
-          fetchPriority="high"
-          type="image/avif"
-          crossOrigin="anonymous"
-        />
         
-        {/* ⚡ CRITICAL: Preload de fuente Regular (crítica) - ANTES de otros recursos */}
-        {/* Esto reduce la latencia de ruta crítica de 2,271 ms */}
+        {/* ⚡ CRITICAL: Preload de fuentes críticas - ANTES de otros recursos */}
+        {/* Esto reduce la latencia de ruta crítica de 2,124 ms */}
         <link
           rel="preload"
           href="/fonts/EuclidCircularA-Regular.woff2"
@@ -213,9 +206,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
           fetchPriority="high"
         />
+        <link
+          rel="preload"
+          href="/fonts/EuclidCircularA-SemiBold.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+          fetchPriority="high"
+        />
         
-        {/* ⚡ PERFORMANCE: Fuentes SemiBold y Bold se cargan diferidamente cuando se necesitan */}
-        {/* next/font maneja el preload automáticamente, pero agregamos preload explícito para Regular */}
+        {/* ⚡ PERFORMANCE: Bold se carga diferidamente cuando se necesita */}
         
         {/* ⚡ OPTIMIZACIÓN: Next.js con optimizeCss: true inlina CSS crítico automáticamente */}
         {/* NOTA: No preloadamos CSS chunks con hash hardcodeado porque Next.js regenera el hash en cada build */}

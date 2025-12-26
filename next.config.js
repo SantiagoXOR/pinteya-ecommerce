@@ -128,6 +128,44 @@ const nextConfig = {
       config.resolve.modules.push('node_modules')
     }
     
+    // ⚡ OPTIMIZACIÓN: Code splitting mejorado para reducir código sin usar
+    if (!isServer && config.optimization) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          maxSize: 200000, // 200 KB máximo por chunk
+          minSize: 20000, // 20 KB mínimo
+          cacheGroups: {
+            ...config.optimization.splitChunks?.cacheGroups,
+            framework: {
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
+              name: 'framework',
+              priority: 40,
+              maxSize: 300000, // 300 KB máximo para framework
+              reuseExistingChunk: true,
+            },
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendor',
+              priority: 10,
+              maxSize: 200000, // 200 KB máximo
+              reuseExistingChunk: true,
+            },
+          },
+        },
+        // ⚡ OPTIMIZACIÓN: Tree shaking mejorado
+        usedExports: true,
+        sideEffects: false,
+        concatenateModules: true, // Scope hoisting
+        providedExports: true,
+        innerGraph: true,
+        removeAvailableModules: true,
+        removeEmptyChunks: true,
+        mergeDuplicateChunks: true,
+      }
+    }
+    
     // ⚡ FIX: Next.js puede requerir react/cache que no existe en React 18.3.1
     // Usamos un polyfill local en lugar de node_modules para mayor confiabilidad
     // Primero intentar crear el polyfill en node_modules (para compatibilidad)
@@ -340,6 +378,15 @@ module.exports.__esModule = true;
   // ✅ HEADERS OPTIMIZADOS para admin panel
   async headers() {
     return [
+      {
+        source: '/',
+        headers: [
+          {
+            key: 'Link',
+            value: '</fonts/EuclidCircularA-Regular.woff2>; rel="preload"; as="font"; type="font/woff2"; crossorigin="anonymous", </fonts/EuclidCircularA-SemiBold.woff2>; rel="preload"; as="font"; type="font/woff2"; crossorigin="anonymous", </images/hero/hero2/hero1.webp>; rel="preload"; as="image"; fetchpriority="high"',
+          },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [

@@ -31,7 +31,8 @@ export const ProductCardImage = React.memo(function ProductCardImage({
           <Image
             src={displaySrc}
             alt={title || 'Producto'}
-            fill
+            width={320}
+            height={320}
             className={cn(
               'object-contain z-0',
               // ⚡ OPTIMIZACIÓN: Deshabilitar transición durante scroll para mejor rendimiento
@@ -46,7 +47,7 @@ export const ProductCardImage = React.memo(function ProductCardImage({
             quality={70} // ⚡ OPTIMIZACIÓN: 70 es suficiente para thumbnails (vs 75 default)
             onError={onImageError}
             onLoad={handleLoad}
-            style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%' }}
+            style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1' }}
           />
         ) : (
           <div className='flex items-center justify-center w-full h-full z-0 bg-gray-50'>

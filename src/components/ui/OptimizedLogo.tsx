@@ -90,10 +90,20 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   const logoSrc = React.useMemo(() => logoProps.src, [logoProps.src])
   
   if (isSVG) {
+    // ⚡ OPTIMIZACIÓN CLS: Dimensiones explícitas según variante
+    const dimensions = {
+      desktop: { width: 150, height: 45 },
+      mobile: { width: 48, height: 48 },
+      hero: { width: 200, height: 80 },
+    }
+    const { width, height } = dimensions[variant]
+    
     return (
       <img
         src={logoSrc}
         alt={logoProps.alt || 'Pinteya Logo'}
+        width={width}
+        height={height}
         className={combinedClassName}
         onClick={onClick}
         data-testid={testId}
@@ -102,15 +112,8 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
         style={{
           willChange: 'transform',
           backfaceVisibility: 'hidden',
-          // ⚡ FIX: Asegurar que el logo sea visible con dimensiones apropiadas
-          // Usar height específico según la variante para garantizar visibilidad
-          height: variant === 'desktop' ? '40px' : variant === 'mobile' ? '48px' : '80px',
-          width: variant === 'desktop' ? 'auto' : variant === 'mobile' ? '48px' : 'auto',
-          maxHeight: logoProps.height ? `${logoProps.height}px` : 'none',
-          maxWidth: logoProps.width ? `${logoProps.width}px` : 'none',
           display: 'block', // ⚡ FIX: Evitar espacio extra debajo de la imagen
           objectFit: 'contain', // ⚡ FIX: Asegurar que el logo se ajuste correctamente
-          // ⚡ FIX: Asegurar visibilidad explícita
           visibility: 'visible',
           opacity: 1,
         }}
