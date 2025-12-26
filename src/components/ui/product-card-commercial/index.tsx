@@ -11,6 +11,7 @@ import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { toast } from 'react-hot-toast'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 
 // Hooks personalizados
 import { useProductColors } from './hooks/useProductColors'
@@ -86,6 +87,11 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
     const cartItems = useAppSelector(selectCartItems)
     const { trackCartAction } = useAnalytics()
     const config = useDesignSystemConfig()
+    
+    // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo
+    const performanceLevel = useDevicePerformance()
+    const isLowPerformance = performanceLevel === 'low'
+    const isMediumPerformance = performanceLevel === 'medium'
 
     // Hooks personalizados
     const colors = useProductColors({ variants, title, color })
@@ -255,19 +261,22 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         data-finish-source={badges.resolvedFinishSource}
         style={{
           transformOrigin: 'center',
-          // Solo transición compuesta en transform
-          transition: 'transform 0.3s ease-out',
-          transform: state.isHovered 
-            ? 'perspective(1000px) rotateX(2deg) translateY(-4px)' 
-            : 'perspective(1000px) rotateX(0deg)',
+          // ⚡ OPTIMIZACIÓN: Reducir animaciones en dispositivos de bajo rendimiento
+          transition: isLowPerformance ? 'none' : 'transform 0.3s ease-out',
+          transform: (isLowPerformance || isMediumPerformance) 
+            ? (state.isHovered ? 'translateY(-2px)' : 'translateY(0)')
+            : (state.isHovered 
+              ? 'perspective(1000px) rotateX(2deg) translateY(-4px)' 
+              : 'perspective(1000px) rotateX(0deg)'),
           // Box-shadow base estático (no animado)
           boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08)',
           // Fondo blanco sólido para todo el card
           backgroundColor: '#ffffff',
-          backdropFilter: 'blur(30px)',
-          WebkitBackdropFilter: 'blur(30px)',
+          // ⚡ OPTIMIZACIÓN: Reducir blur en dispositivos de bajo rendimiento
+          backdropFilter: isLowPerformance ? 'none' : 'blur(30px)',
+          WebkitBackdropFilter: isLowPerformance ? 'none' : 'blur(30px)',
           border: '1px solid rgba(255, 255, 255, 0.15)',
-          willChange: 'transform',
+          willChange: isLowPerformance ? 'auto' : 'transform',
         }}
         onMouseEnter={() => {
           state.setIsHovered(true)
@@ -281,14 +290,17 @@ const CommercialProductCard = React.forwardRef<HTMLDivElement, CommercialProduct
         {...props}
       >
         {/* Pseudo-elemento para box-shadow con opacity animada (compositable) */}
-        <span
-          className="absolute inset-0 rounded-xl md:rounded-[1.5rem] pointer-events-none transition-opacity duration-300 ease-out"
-          style={{
-            boxShadow: '0 12px 48px rgba(0, 0, 0, 0.2), 0 6px 16px rgba(0, 0, 0, 0.12)',
-            opacity: state.isHovered ? 1 : 0,
-            zIndex: -1,
-          }}
-        />
+        {/* ⚡ OPTIMIZACIÓN: Ocultar en dispositivos de bajo rendimiento */}
+        {!isLowPerformance && (
+          <span
+            className="absolute inset-0 rounded-xl md:rounded-[1.5rem] pointer-events-none transition-opacity duration-300 ease-out"
+            style={{
+              boxShadow: '0 12px 48px rgba(0, 0, 0, 0.2), 0 6px 16px rgba(0, 0, 0, 0.12)',
+              opacity: state.isHovered ? 1 : 0,
+              zIndex: -1,
+            }}
+          />
+        )}
         {/* Icono de envío gratis */}
         {shouldShowFreeShipping && (
           <div className='absolute right-2 md:right-3 top-2 md:top-2.5 z-30 pointer-events-none select-none flex items-center'>

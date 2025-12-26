@@ -111,6 +111,23 @@
 
 /* ⚡ OPTIMIZACIÓN: Deshabilitar animaciones y transiciones en móviles para eliminar lag */
 @media (max-width: 768px) {
+  /* ⚡ OPTIMIZACIÓN CRÍTICA: Reducir efectos costosos en product cards */
+  .glass-card-3d,
+  .glass-accelerated {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  /* ⚡ OPTIMIZACIÓN: Simplificar hover effects en product cards */
+  [data-testid="commercial-product-card"]:hover,
+  [data-testid="product-card"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  }
+  
   * {
     /* Reducir drásticamente animaciones */
     animation-duration: 0.1s !important;

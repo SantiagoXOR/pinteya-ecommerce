@@ -1,424 +1,122 @@
-<testsuites id="" name="" tests="29" failures="4" skipped="0" errors="0" time="403.64994800000005">
-<testsuite name="cyber-monday-popup.spec.ts" timestamp="2025-11-01T18:58:32.319Z" hostname="ui-public" tests="29" failures="4" skipped="0" time="387.427" errors="0">
-<testcase name="Cyber Monday Popup - Desktop › modal aparece después de 5 segundos" classname="cyber-monday-popup.spec.ts" time="13.024">
-</testcase>
-<testcase name="Cyber Monday Popup - Desktop › muestra diseño desktop (2 columnas)" classname="cyber-monday-popup.spec.ts" time="32.289">
-<system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-638db--diseño-desktop-2-columnas--ui-public\test-failed-1.png]]
+<testsuites id="" name="" tests="1" failures="1" skipped="0" errors="0" time="62.578981">
+<testsuite name="header-logo-performance.spec.ts" timestamp="2025-12-25T19:35:57.695Z" hostname="ui-public" tests="1" failures="1" skipped="0" time="19.189" errors="0">
+<testcase name="Header Logo Performance Test › should not reload logo repeatedly" classname="header-logo-performance.spec.ts" time="19.189">
+<failure message="header-logo-performance.spec.ts:4:7 should not reload logo repeatedly" type="FAILURE">
+<![CDATA[  [ui-public] › header-logo-performance.spec.ts:4:7 › Header Logo Performance Test › should not reload logo repeatedly 
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-638db--diseño-desktop-2-columnas--ui-public\video.webm]]
+    Error: expect(received).toBeLessThan(expected)
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-638db--diseño-desktop-2-columnas--ui-public\error-context.md]]
+    Expected: < 4
+    Received:   13
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-638db--diseño-desktop-2-columnas--ui-public-retry1\trace.zip]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Cyber Monday Popup - Desktop › badge Cyber Monday visible" classname="cyber-monday-popup.spec.ts" time="9.349">
-</testcase>
-<testcase name="Cyber Monday Popup - Desktop › 3 gift cards visibles" classname="cyber-monday-popup.spec.ts" time="19.698">
-<failure message="cyber-monday-popup.spec.ts:85:7 3 gift cards visibles" type="FAILURE">
-<![CDATA[  [ui-public] › cyber-monday-popup.spec.ts:85:7 › Cyber Monday Popup - Desktop › 3 gift cards visibles 
-
-    Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:
-        1) <p class="text-3xl md:text-4xl font-black mt-1">$75.000</p> aka getByText('$75.000', { exact: true })
-        2) <p class="text-white/80 text-sm mt-1">$75.000 cada una</p> aka getByText('$75.000 cada una')
-        3) <span class="text-sm font-medium">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')
-
-    Call log:
-      - Expect "toBeVisible" with timeout 5000ms
-      - waiting for getByText('$75.000')
-
-
-      89 |     // Verificar texto de gift card - usar .first() para evitar strict mode
-      90 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()
-    > 91 |     await expect(page.getByText('$75.000')).toBeVisible()
-         |                                             ^
-      92 |   })
-      93 |
-      94 |   test('formulario funcional', async ({ page }) => {
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:91:45
+       95 |     // The header logo should only be requested once (or at most 2 times for SSR/hydration)
+       96 |     // If it's being requested more than 3 times, that's a problem
+    >  97 |     expect(finalHeaderCount).toBeLessThan(4)
+          |                              ^
+       98 |     
+       99 |     // Additional requests after initial load should be ZERO for header logo
+      100 |     // (SSR + hydration = 2 requests max, any more indicates re-renders)
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\header-logo-performance.spec.ts:97:30
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\test-failed-1.png
+    ..\..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\video.webm
+    ..\..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\error-context.md
+    Error Context: ..\..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:
-        1) <p class="text-3xl md:text-4xl font-black mt-1">$75.000</p> aka getByText('$75.000', { exact: true })
-        2) <p class="text-white/80 text-sm mt-1">$75.000 cada una</p> aka getByText('$75.000 cada una')
-        3) <span class="text-sm font-medium">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')
+    Error: expect(received).toBeLessThan(expected)
 
-    Call log:
-      - Expect "toBeVisible" with timeout 5000ms
-      - waiting for getByText('$75.000')
+    Expected: < 4
+    Received:   12
 
-
-      89 |     // Verificar texto de gift card - usar .first() para evitar strict mode
-      90 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()
-    > 91 |     await expect(page.getByText('$75.000')).toBeVisible()
-         |                                             ^
-      92 |   })
-      93 |
-      94 |   test('formulario funcional', async ({ page }) => {
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:91:45
+       95 |     // The header logo should only be requested once (or at most 2 times for SSR/hydration)
+       96 |     // If it's being requested more than 3 times, that's a problem
+    >  97 |     expect(finalHeaderCount).toBeLessThan(4)
+          |                              ^
+       98 |     
+       99 |     // Additional requests after initial load should be ZERO for header logo
+      100 |     // (SSR + hydration = 2 requests max, any more indicates re-renders)
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\header-logo-performance.spec.ts:97:30
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\test-failed-1.png
+    ..\..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\video.webm
+    ..\..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\error-context.md
+    Error Context: ..\..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\trace.zip
+    ..\..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\test-failed-1.png]]
+<![CDATA[[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 1)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 2)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 3)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 4)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 5)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 6)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 7)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 8)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 9)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 10)
+[INITIAL] Logo requests after page load: 10
+[INITIAL] Header-specific logo requests: 10
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 11)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 12)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 13)
+[FINAL] Total logo requests (all components): 13
+[FINAL] Header logo requests: 13
+[FINAL] Additional header requests after initial load: 3
+[RENDERS] Total render logs captured: 0
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\video.webm]]
+[[ATTACHMENT|..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public\error-context.md]]
+[[ATTACHMENT|..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\video.webm]]
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\error-context.md]]
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 1)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 2)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 3)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 4)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 5)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 6)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 7)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 8)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 9)
+[INITIAL] Logo requests after page load: 9
+[INITIAL] Header-specific logo requests: 9
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 10)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 11)
+[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 12)
+[FINAL] Total logo requests (all components): 12
+[FINAL] Header logo requests: 12
+[FINAL] Additional header requests after initial load: 3
+[RENDERS] Total render logs captured: 0
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\error-context.md]]
+[[ATTACHMENT|..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\video.webm]]
 
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-67ea4-sktop-3-gift-cards-visibles-ui-public-retry1\trace.zip]]
+[[ATTACHMENT|..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\trace.zip]]
 ]]>
 </system-out>
-</testcase>
-<testcase name="Cyber Monday Popup - Desktop › formulario funcional" classname="cyber-monday-popup.spec.ts" time="8.576">
-</testcase>
-<testcase name="Cyber Monday Popup - Desktop › botón &quot;Participar por WhatsApp&quot; funciona" classname="cyber-monday-popup.spec.ts" time="9.257">
-</testcase>
-<testcase name="Cyber Monday Popup - Desktop › redirección a WhatsApp correcta" classname="cyber-monday-popup.spec.ts" time="10.088">
-</testcase>
-<testcase name="Cyber Monday Popup - Mobile › modal aparece después de 5 segundos en mobile" classname="cyber-monday-popup.spec.ts" time="9.066">
-</testcase>
-<testcase name="Cyber Monday Popup - Mobile › muestra diseño mobile (vertical)" classname="cyber-monday-popup.spec.ts" time="8.919">
-</testcase>
-<testcase name="Cyber Monday Popup - Mobile › scroll funciona si el contenido es largo" classname="cyber-monday-popup.spec.ts" time="8.21">
-</testcase>
-<testcase name="Cyber Monday Popup - Mobile › elementos táctiles son accesibles (44px min)" classname="cyber-monday-popup.spec.ts" time="20.037">
-<failure message="cyber-monday-popup.spec.ts:187:7 elementos táctiles son accesibles (44px min)" type="FAILURE">
-<![CDATA[  [ui-public] › cyber-monday-popup.spec.ts:187:7 › Cyber Monday Popup - Mobile › elementos táctiles son accesibles (44px min) 
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 40
-    Received:    36
-
-      204 |     expect(closeBox).not.toBeNull()
-      205 |     if (closeBox) {
-    > 206 |       expect(closeBox.height).toBeGreaterThanOrEqual(40)
-          |                               ^
-      207 |     }
-      208 |   })
-      209 |
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:206:31
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 40
-    Received:    36
-
-      204 |     expect(closeBox).not.toBeNull()
-      205 |     if (closeBox) {
-    > 206 |       expect(closeBox.height).toBeGreaterThanOrEqual(40)
-          |                               ^
-      207 |     }
-      208 |   })
-      209 |
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:206:31
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\video.webm]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public\error-context.md]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-3a502-es-son-accesibles-44px-min--ui-public-retry1\trace.zip]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Cyber Monday Popup - Mobile › formulario optimizado para mobile" classname="cyber-monday-popup.spec.ts" time="13.189">
-</testcase>
-<testcase name="Cyber Monday Popup - Validación de Formulario › no permite letras en el input" classname="cyber-monday-popup.spec.ts" time="7.9">
-</testcase>
-<testcase name="Cyber Monday Popup - Validación de Formulario › formatea número automáticamente" classname="cyber-monday-popup.spec.ts" time="12.815">
-</testcase>
-<testcase name="Cyber Monday Popup - Validación de Formulario › muestra error con número inválido" classname="cyber-monday-popup.spec.ts" time="7.654">
-</testcase>
-<testcase name="Cyber Monday Popup - Validación de Formulario › permite envío con número válido" classname="cyber-monday-popup.spec.ts" time="8.389">
-</testcase>
-<testcase name="Cyber Monday Popup - Interacciones › botón cerrar (X) funciona" classname="cyber-monday-popup.spec.ts" time="7.506">
-</testcase>
-<testcase name="Cyber Monday Popup - Interacciones › click fuera del modal lo cierra" classname="cyber-monday-popup.spec.ts" time="8.899">
-</testcase>
-<testcase name="Cyber Monday Popup - Interacciones › modal no se muestra dos veces (localStorage)" classname="cyber-monday-popup.spec.ts" time="41.163">
-<system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-7ecf5-tra-dos-veces-localStorage--ui-public\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-7ecf5-tra-dos-veces-localStorage--ui-public\video.webm]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-7ecf5-tra-dos-veces-localStorage--ui-public\error-context.md]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-7ecf5-tra-dos-veces-localStorage--ui-public-retry1\trace.zip]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Cyber Monday Popup - Interacciones › animaciones funcionan correctamente" classname="cyber-monday-popup.spec.ts" time="7.708">
-</testcase>
-<testcase name="Cyber Monday Popup - Accesibilidad › navegación por teclado (Tab)" classname="cyber-monday-popup.spec.ts" time="45.696">
-<failure message="cyber-monday-popup.spec.ts:355:7 navegación por teclado (Tab)" type="FAILURE">
-<![CDATA[  [ui-public] › cyber-monday-popup.spec.ts:355:7 › Cyber Monday Popup - Accesibilidad › navegación por teclado (Tab) 
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('text=/participá por 1 de las/i') to be visible
-
-
-      17 |   
-      18 |   // Esperar a que el modal sea visible
-    > 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })
-         |              ^
-      20 | }
-      21 |
-      22 | const closeModal = async (page: Page) => {
-        at waitForModal (C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:19:14)
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:352:5
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    TimeoutError: page.waitForSelector: Timeout 10000ms exceeded.
-    Call log:
-      - waiting for locator('text=/participá por 1 de las/i') to be visible
-        - waiting for" http://localhost:3000/" navigation to finish...
-        - navigated to "http://localhost:3000/"
-
-
-      17 |   
-      18 |   // Esperar a que el modal sea visible
-    > 19 |   await page.waitForSelector('text=/participá por 1 de las/i', { timeout: 10000 })
-         |              ^
-      20 | }
-      21 |
-      22 | const closeModal = async (page: Page) => {
-        at waitForModal (C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:19:14)
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:352:5
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\video.webm]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public\error-context.md]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-49176-navegación-por-teclado-Tab--ui-public-retry1\trace.zip]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Cyber Monday Popup - Accesibilidad › Enter envía el formulario" classname="cyber-monday-popup.spec.ts" time="8.838">
-</testcase>
-<testcase name="Cyber Monday Popup - Accesibilidad › Escape cierra el modal" classname="cyber-monday-popup.spec.ts" time="8.764">
-</testcase>
-<testcase name="Cyber Monday Popup - Accesibilidad › ARIA labels correctos" classname="cyber-monday-popup.spec.ts" time="7.383">
-</testcase>
-<testcase name="Cyber Monday Popup - Accesibilidad › contraste de colores adecuado" classname="cyber-monday-popup.spec.ts" time="7.581">
-</testcase>
-<testcase name="Cyber Monday Popup - Elementos Visuales › muestra todos los elementos visuales requeridos" classname="cyber-monday-popup.spec.ts" time="17.805">
-<failure message="cyber-monday-popup.spec.ts:422:7 muestra todos los elementos visuales requeridos" type="FAILURE">
-<![CDATA[  [ui-public] › cyber-monday-popup.spec.ts:422:7 › Cyber Monday Popup - Elementos Visuales › muestra todos los elementos visuales requeridos 
-
-    Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:
-        1) <p class="text-3xl md:text-4xl font-black mt-1">$75.000</p> aka getByText('$75.000', { exact: true })
-        2) <p class="text-white/80 text-sm mt-1">$75.000 cada una</p> aka getByText('$75.000 cada una')
-        3) <span class="text-sm font-medium">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')
-
-    Call log:
-      - Expect "toBeVisible" with timeout 5000ms
-      - waiting for getByText('$75.000')
-
-
-      426 |     // Gift Cards - usar .first() para evitar strict mode
-      427 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()
-    > 428 |     await expect(page.getByText('$75.000')).toBeVisible()
-          |                                             ^
-      429 |     
-      430 |     // Texto del sorteo
-      431 |     await expect(page.getByText(/3 gift cards/i)).toBeVisible()
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:428:45
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    Error: expect.toBeVisible: Error: strict mode violation: getByText('$75.000') resolved to 3 elements:
-        1) <p class="text-3xl md:text-4xl font-black mt-1">$75.000</p> aka getByText('$75.000', { exact: true })
-        2) <p class="text-white/80 text-sm mt-1">$75.000 cada una</p> aka getByText('$75.000 cada una')
-        3) <span class="text-sm font-medium">3 ganadoras de $75.000</span> aka getByText('3 ganadoras de $')
-
-    Call log:
-      - Expect "toBeVisible" with timeout 5000ms
-      - waiting for getByText('$75.000')
-
-
-      426 |     // Gift Cards - usar .first() para evitar strict mode
-      427 |     await expect(page.getByText('GIFT CARD', { exact: true }).first()).toBeVisible()
-    > 428 |     await expect(page.getByText('$75.000')).toBeVisible()
-          |                                             ^
-      429 |     
-      430 |     // Texto del sorteo
-      431 |     await expect(page.getByText(/3 gift cards/i)).toBeVisible()
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\cyber-monday-popup.spec.ts:428:45
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\video.webm]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public\error-context.md]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\cyber-monday-popup-Cyber-M-82707-ementos-visuales-requeridos-ui-public-retry1\trace.zip]]
-]]>
-</system-out>
-</testcase>
-<testcase name="Cyber Monday Popup - Elementos Visuales › renderiza correctamente en diferentes navegadores" classname="cyber-monday-popup.spec.ts" time="10.678">
-</testcase>
-<testcase name="Cyber Monday Popup - Performance › modal se carga rápidamente" classname="cyber-monday-popup.spec.ts" time="7.5">
-</testcase>
-<testcase name="Cyber Monday Popup - Performance › imágenes y recursos cargan correctamente" classname="cyber-monday-popup.spec.ts" time="9.446">
 </testcase>
 </testsuite>
 </testsuites>

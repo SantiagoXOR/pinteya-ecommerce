@@ -20,6 +20,7 @@ import { MapPin, Loader2, ShoppingCart, MessageCircle, Search, X } from '@/lib/o
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { HeaderLogo } from '@/components/ui/OptimizedLogo'
 import ScrollingBanner from './ScrollingBanner'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 // import GeolocationDebugger from "./GeolocationDebugger"; // Componente de debugging desactivado
 
 const Header = () => {
@@ -29,6 +30,12 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [isMounted, setIsMounted] = useState(false) // Para evitar hydration mismatch
+  
+  // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo
+  const performanceLevel = useDevicePerformance()
+  const isLowPerformance = performanceLevel === 'low'
+  const isMediumPerformance = performanceLevel === 'medium'
+  
   // #region agent log
   const cartModalContext = useCartModalContext()
   const { openCartModal } = cartModalContext
@@ -348,7 +355,9 @@ const Header = () => {
         style={{
           top: 'env(safe-area-inset-top, 0px)',
           boxShadow: '0px 4px 16px 0px rgba(0, 0, 0, 0.15)',
-          backdropFilter: 'blur(2px)',
+          // ⚡ OPTIMIZACIÓN: Reducir blur en dispositivos de bajo rendimiento
+          backdropFilter: isLowPerformance ? 'none' : 'blur(2px)',
+          WebkitBackdropFilter: isLowPerformance ? 'none' : 'blur(2px)',
         }}
       >
         {/* ScrollingBanner integrado en la parte superior del header */}
@@ -356,24 +365,49 @@ const Header = () => {
           <ScrollingBanner />
         </div>
         {/* Header principal - Con expansión de búsqueda al hacer click */}
-        <div className='max-w-[1200px] mx-auto px-3 sm:px-4 py-1.5 sm:py-2'>
-          <div className='flex items-center gap-2 sm:gap-3 min-h-[48px] sm:min-h-[52px]'>
+        {/* ⚡ FIX: Usar el mismo ancho que el bottom bar (max-w-md) en móvil, mismo ancho que BestSeller en desktop */}
+        <div className='max-w-md md:max-w-[1170px] mx-auto px-3 sm:px-4 md:px-4 lg:px-8 xl:px-0 py-1.5 sm:py-2'>
+          <div className='flex items-center justify-between md:justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px]'>
             {/* 1. Logo - Ocultar cuando search está expandido */}
+            {/* ⚡ FIX: Remover contenedor innecesario que causa el div rectangular */}
             <Link 
               href='/' 
-              className={`
-                flex-shrink-0 overflow-visible logo-container transition-all duration-300
-                ${isSearchExpanded ? 'hidden sm:hidden' : 'flex'}
-                ml-3 sm:ml-8 md:ml-12
-              `}
+              className={cn(
+                'flex-shrink-0 transition-all duration-300',
+                // ⚡ FIX: Solo ocultar en móvil cuando search está expandido, siempre visible en desktop
+                isSearchExpanded ? 'hidden sm:flex' : 'flex',
+                // ⚡ FIX: En desktop, sin margen izquierdo extra ya que usamos justify-start
+                'ml-0 sm:ml-0 md:ml-0',
+                // ⚡ FIX: Asegurar que el link no tenga padding/margin que cause el div rectangular
+                'p-0 m-0 inline-flex items-center justify-center',
+                // ⚡ FIX: Asegurar visibilidad del logo
+                'relative z-10'
+              )}
+              style={{ 
+                // ⚡ FIX: Asegurar que el contenedor se ajuste al contenido del logo
+                width: 'auto',
+                height: 'auto',
+                minWidth: 'auto',
+                minHeight: 'auto'
+              }}
             >
               <HeaderLogo
                 isMobile={false}
                 className={cn(
-                  'w-16 sm:w-24 md:w-32 h-auto transition-all duration-300 ease-out',
+                  // ⚡ FIX: Aumentar tamaño del logo para mejor visibilidad
+                  'h-16 sm:h-20 md:h-24 lg:h-28 w-auto transition-all duration-300 ease-out',
                   'hover:scale-110 cursor-pointer',
-                  isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'
+                  isSticky ? 'logo-sticky-scale scale-95' : 'scale-100',
+                  // ⚡ FIX: Asegurar que el logo sea visible y se ajuste correctamente
+                  'object-contain block',
+                  // ⚡ FIX: Asegurar visibilidad explícita
+                  'opacity-100 visible'
                 )}
+                style={{
+                  // ⚡ FIX: Aumentar dimensiones mínimas del logo
+                  minHeight: '64px',
+                  minWidth: '160px',
+                }}
               />
             </Link>
             
@@ -414,7 +448,7 @@ const Header = () => {
             {/* 3. Search Normal - Cuando NO está expandido */}
             {!isSearchExpanded && (
               <div 
-                className='flex-1 max-w-xl sm:max-w-2xl mx-4 sm:mx-8 cursor-pointer'
+                className='flex-1 max-w-xl sm:max-w-2xl md:max-w-none md:flex-1 mx-2 sm:mx-4 md:mx-0 cursor-pointer'
                 onClick={handleSearchClick}
               >
                 <div className='relative w-full'>

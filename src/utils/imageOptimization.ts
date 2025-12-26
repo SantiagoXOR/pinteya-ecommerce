@@ -93,8 +93,8 @@ export const pinteyaMobileLogoProps = {
 export const pinteyaDesktopLogoProps = {
   src: '/images/logo/LOGO POSITIVO.svg',
   alt: 'Pinteya - Tu Pinturería Online',
-  width: 160,
-  height: 32,
+  width: 200,
+  height: 56,
   priority: true,
   className: 'object-contain',
 }

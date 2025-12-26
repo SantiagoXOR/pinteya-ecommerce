@@ -102,8 +102,17 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
         style={{
           willChange: 'transform',
           backfaceVisibility: 'hidden',
-          height: logoProps.height ? `${logoProps.height}px` : 'auto',
-          width: logoProps.width ? `${logoProps.width}px` : 'auto',
+          // ⚡ FIX: Asegurar que el logo sea visible con dimensiones apropiadas
+          // Usar height específico según la variante para garantizar visibilidad
+          height: variant === 'desktop' ? '40px' : variant === 'mobile' ? '48px' : '80px',
+          width: variant === 'desktop' ? 'auto' : variant === 'mobile' ? '48px' : 'auto',
+          maxHeight: logoProps.height ? `${logoProps.height}px` : 'none',
+          maxWidth: logoProps.width ? `${logoProps.width}px` : 'none',
+          display: 'block', // ⚡ FIX: Evitar espacio extra debajo de la imagen
+          objectFit: 'contain', // ⚡ FIX: Asegurar que el logo se ajuste correctamente
+          // ⚡ FIX: Asegurar visibilidad explícita
+          visibility: 'visible',
+          opacity: 1,
         }}
         loading="eager"
         decoding="async"
