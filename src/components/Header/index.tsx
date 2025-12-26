@@ -21,6 +21,7 @@ import { useGeolocation } from '@/hooks/useGeolocation'
 import { HeaderLogo } from '@/components/ui/OptimizedLogo'
 import ScrollingBanner from './ScrollingBanner'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { useScrollActive } from '@/hooks/useScrollActive'
 // import GeolocationDebugger from "./GeolocationDebugger"; // Componente de debugging desactivado
 
 const Header = () => {
@@ -35,6 +36,9 @@ const Header = () => {
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
   const isMediumPerformance = performanceLevel === 'medium'
+  
+  // ⚡ OPTIMIZACIÓN: Detectar scroll activo para deshabilitar efectos costosos
+  const { isScrolling } = useScrollActive()
   
   // #region agent log
   const cartModalContext = useCartModalContext()
@@ -355,9 +359,9 @@ const Header = () => {
         style={{
           top: 'env(safe-area-inset-top, 0px)',
           boxShadow: '0px 4px 16px 0px rgba(0, 0, 0, 0.15)',
-          // ⚡ OPTIMIZACIÓN: Reducir blur en dispositivos de bajo rendimiento
-          backdropFilter: isLowPerformance ? 'none' : 'blur(2px)',
-          WebkitBackdropFilter: isLowPerformance ? 'none' : 'blur(2px)',
+          // ⚡ OPTIMIZACIÓN: Deshabilitar backdrop-filter durante scroll y en dispositivos de bajo rendimiento
+          backdropFilter: (isScrolling || isLowPerformance) ? 'none' : 'blur(2px)',
+          WebkitBackdropFilter: (isScrolling || isLowPerformance) ? 'none' : 'blur(2px)',
         }}
       >
         {/* ScrollingBanner integrado en la parte superior del header */}

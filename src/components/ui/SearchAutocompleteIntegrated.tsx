@@ -11,6 +11,8 @@ import { useTrendingSearches } from '@/hooks/useTrendingSearches'
 import { useRecentSearches } from '@/hooks/useRecentSearches'
 import { useAnimatedPlaceholder } from '@/hooks/useAnimatedPlaceholder'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { useScrollActive } from '@/hooks/useScrollActive'
 
 // ===================================
 // TIPOS E INTERFACES
@@ -124,6 +126,12 @@ export const SearchAutocompleteIntegrated = React.memo(
         basePlaceholder: placeholder,
         enabled: !inputValue.trim(), // Solo animar cuando no hay texto
       })
+
+      // ⚡ OPTIMIZACIÓN: Detectar scroll activo y rendimiento del dispositivo
+      const performanceLevel = useDevicePerformance()
+      const isLowPerformance = performanceLevel === 'low'
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+      const { isScrolling } = useScrollActive()
 
       // Referencias
       const inputRef = useRef<HTMLInputElement>(null)
@@ -528,8 +536,9 @@ export const SearchAutocompleteIntegrated = React.memo(
                   background: inputValue || isOpen 
                     ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.75) 100%)'
                     : 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.65) 100%)',
-                  backdropFilter: inputValue || isOpen ? 'blur(24px)' : 'blur(20px)',
-                  WebkitBackdropFilter: inputValue || isOpen ? 'blur(24px)' : 'blur(20px)',
+                  // ⚡ OPTIMIZACIÓN: Deshabilitar backdrop-filter durante scroll y en dispositivos de bajo rendimiento
+                  backdropFilter: (isScrolling || isLowPerformance || isMobile) ? 'none' : (inputValue || isOpen ? 'blur(24px)' : 'blur(20px)'),
+                  WebkitBackdropFilter: (isScrolling || isLowPerformance || isMobile) ? 'none' : (inputValue || isOpen ? 'blur(24px)' : 'blur(20px)'),
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05)',
                 }}
                 role='searchbox'
@@ -555,8 +564,9 @@ export const SearchAutocompleteIntegrated = React.memo(
                   className='absolute inset-0 rounded-full pointer-events-none'
                   style={{
                     background: 'radial-gradient(circle, rgba(250, 204, 21, 0.9) 0%, rgba(250, 204, 21, 0.7) 50%, rgba(250, 204, 21, 0.4) 100%)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)'
+                    // ⚡ OPTIMIZACIÓN: Deshabilitar backdrop-filter durante scroll y en dispositivos de bajo rendimiento
+                    backdropFilter: (isScrolling || isLowPerformance || isMobile) ? 'none' : 'blur(10px)',
+                    WebkitBackdropFilter: (isScrolling || isLowPerformance || isMobile) ? 'none' : 'blur(10px)'
                   }}
                 />
                 
