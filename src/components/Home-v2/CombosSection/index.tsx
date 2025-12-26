@@ -147,6 +147,11 @@ const slides: Slide[] = [
                     key={`${slide.id}-${index}`}
                     className="min-w-full h-full flex-shrink-0 relative cursor-pointer"
                     onClick={(e) => productSlug && handleSlideClick(productSlug, e)}
+                    style={{
+                      willChange: isTransitioning ? 'transform' : 'auto',
+                      backfaceVisibility: 'hidden',
+                      WebkitBackfaceVisibility: 'hidden',
+                    }}
                   >
                     <Image
                       src={slide.image}
@@ -211,7 +216,11 @@ const slides: Slide[] = [
                   }`}
                   style={{
                     opacity: isActive ? 1 : 0.6,
-                    willChange: 'width, opacity',
+                    // ⚡ OPTIMIZACIÓN: Solo usar transform y opacity (propiedades compositables)
+                    willChange: isActive ? 'transform, opacity' : 'opacity',
+                    transform: 'translateZ(0)', // GPU acceleration
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {

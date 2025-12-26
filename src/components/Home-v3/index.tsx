@@ -56,10 +56,8 @@ const TrendingSearches = dynamic(() => import('../Home-v2/TrendingSearches/index
   ),
 })
 
-// ⚡ CLS FIX: Cargar CombosSection dinámicamente pero con skeleton en el contenedor padre
-const CombosSection = dynamic(() => import('../Home-v2/CombosSection/index'), {
-  loading: () => null, // No mostrar loading aquí, el skeleton está en el contenedor padre
-})
+// ⚡ OPTIMIZACIÓN: Usar CombosOptimized (igual que HeroOptimized) para mejor LCP
+import CombosOptimized from './CombosOptimized'
 
 const Testimonials = dynamic(() => import('../Home-v2/Testimonials/index'), {
   ssr: false, // ⚡ OPTIMIZACIÓN: No SSR para componentes below-fold
@@ -464,9 +462,9 @@ const HomeV3 = () => {
         <PromoBanners bannerId={1} />
       </div>
 
-      {/* 4. Productos Destacados (Combos) - Misma estructura que HeroCarousel */}
+      {/* 4. Productos Destacados (Combos) - Optimizado igual que HeroOptimized */}
       <div className='mt-4 sm:mt-6 product-section'>
-        <CombosSection />
+        <CombosOptimized />
       </div>
 
       {/* 5. Carrusel Dinámico - Solo Envío Gratis */}
