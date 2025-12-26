@@ -3,6 +3,7 @@
 // ===================================
 
 import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { searchQueryKeys } from '@/lib/query-client'
 import { TrendingSearch, TrendingSearchesResponse } from '@/app/api/search/trending/route'
 import { ApiResponse } from '@/types/api'
@@ -16,8 +17,8 @@ export interface UseTrendingSearchesOptions {
   category?: string
   /** Habilitar/deshabilitar la query */
   enabled?: boolean
-  /** Intervalo de refetch en milisegundos */
-  refetchInterval?: number
+  /** Intervalo de refetch en milisegundos. false para deshabilitar refetch automático */
+  refetchInterval?: number | false
 }
 
 export interface UseTrendingSearchesReturn {
@@ -54,16 +55,24 @@ export function useTrendingSearches(
     refetchInterval = 5 * 60 * 1000, // 5 minutos
   } = options
 
+  // ⚡ OPTIMIZACIÓN: Memoizar queryKey para evitar re-renders
+  const queryKey = useMemo(
+    () => [...searchQueryKeys.trending(), 'params', { limit, days, category }],
+    [limit, days, category]
+  )
+
   // Query para obtener búsquedas trending
   const { data, isLoading, error, refetch, isStale } = useQuery({
-    queryKey: [...searchQueryKeys.trending(), 'params', { limit, days, category }],
+    queryKey,
     queryFn: async (): Promise<TrendingSearchesResponse> => {
-      console.log('🔥 useTrendingSearches: Iniciando fetch de trending searches', {
-        limit,
-        days,
-        category,
-        enabled,
-      })
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔥 useTrendingSearches: Iniciando fetch de trending searches', {
+          limit,
+          days,
+          category,
+          enabled,
+        })
+      }
 
       const params = new URLSearchParams()
       params.set('limit', limit.toString())
@@ -74,47 +83,39 @@ export function useTrendingSearches(
       }
 
       const url = `/api/search/trending?${params.toString()}`
-      console.log('🔥 useTrendingSearches: URL construida:', url)
 
       try {
         const response = await fetch(url)
-        console.log('🔥 useTrendingSearches: Response status:', response.status)
 
         if (!response.ok) {
-          console.error(
-            '🔥 useTrendingSearches: Response not OK:',
-            response.status,
-            response.statusText
-          )
           throw new Error(`Error fetching trending searches: ${response.status}`)
         }
 
         const result: ApiResponse<TrendingSearchesResponse> = await response.json()
-        console.log('🔥 useTrendingSearches: Raw API response:', result)
 
         if (!result.success || !result.data) {
-          console.error('🔥 useTrendingSearches: API response error:', result.error)
           throw new Error(result.error || 'Error obteniendo búsquedas trending')
         }
 
-        console.log('✅ useTrendingSearches: Trending searches fetched successfully', {
-          count: result.data.trending.length,
-          lastUpdated: result.data.lastUpdated,
-          data: result.data.trending,
-        })
-
         return result.data
       } catch (fetchError) {
-        console.error('🔥 useTrendingSearches: Fetch error:', fetchError)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('🔥 useTrendingSearches: Fetch error:', fetchError)
+        }
         throw fetchError
       }
     },
     enabled,
-    refetchInterval,
-    staleTime: 2 * 60 * 1000, // 2 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos
+    // ⚡ OPTIMIZACIÓN: Permitir deshabilitar refetch explícitamente con false
+    refetchInterval: refetchInterval === false ? false : (refetchInterval || false),
+    staleTime: 10 * 60 * 1000, // ⚡ Aumentado a 10 minutos para evitar re-renders
+    gcTime: 30 * 60 * 1000, // ⚡ Aumentado a 30 minutos
     retry: 2,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    // ⚡ OPTIMIZACIÓN: Solo notificar cambios en data y error, no en isLoading
+    notifyOnChangeProps: ['data', 'error'],
+    // ⚡ OPTIMIZACIÓN: Mantener datos anteriores mientras carga
+    placeholderData: (previousData) => previousData,
   })
 
   // Función para registrar una búsqueda en analytics
@@ -143,27 +144,21 @@ export function useTrendingSearches(
     }
   }
 
-  const result = {
-    trendingSearches: data?.trending || [],
+  // ⚡ OPTIMIZACIÓN: Estabilizar trendingSearches array para evitar re-renders
+  const trendingSearches = useMemo(() => {
+    return data?.trending || []
+  }, [data?.trending])
+
+  // ⚡ OPTIMIZACIÓN: Memoizar resultado para evitar cambios en cada render
+  const result = useMemo(() => ({
+    trendingSearches,
     isLoading,
     error: error as Error | null,
     refetch,
     trackSearch,
     lastUpdated: data?.lastUpdated,
-  }
-
-  // Debug temporal para verificar el flujo de datos
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 useTrendingSearches - Estado del hook:', {
-      enabled,
-      isLoading,
-      error: error?.message,
-      dataReceived: !!data,
-      trendingCount: data?.trending?.length || 0,
-      trendingData: data?.trending || [],
-      lastUpdated: data?.lastUpdated,
-    })
-  }
+    isStale,
+  }), [trendingSearches, isLoading, error, refetch, trackSearch, data?.lastUpdated, isStale])
 
   return result
 }

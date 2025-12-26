@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { TrendingUp, Search } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
@@ -45,30 +45,68 @@ const getIconForTerm = (term: string): string => {
   return termToIconMap[normalizedTerm] || '🔍'
 }
 
-const TrendingSearches = () => {
-  // Obtener búsquedas trending dinámicas
+const TrendingSearchesBase = () => {
+  // ⚡ OPTIMIZACIÓN: Deshabilitar refetch automático para evitar re-renders
   const { trendingSearches: dynamicSearches, isLoading, error } = useTrendingSearches({
     limit: 8,
     enabled: true,
+    refetchInterval: false, // ⚡ Deshabilitar refetch automático
   })
 
-  // Mapear búsquedas dinámicas al formato esperado por el componente
+  // ⚡ OPTIMIZACIÓN: Estabilizar mappedSearches usando ref para evitar re-renders
+  const prevDynamicSearchesRef = useRef<any[]>([])
   const mappedSearches = useMemo(() => {
-    if (dynamicSearches && dynamicSearches.length > 0) {
-      return dynamicSearches.map(search => ({
+    // Comparar contenido, no solo referencia
+    const currentSearches = dynamicSearches || []
+    const prevSearches = prevDynamicSearchesRef.current
+    
+    // Si el contenido es igual, retornar el mismo array
+    if (
+      currentSearches.length === prevSearches.length &&
+      currentSearches.every((search, idx) => 
+        prevSearches[idx]?.query === search.query
+      )
+    ) {
+      return prevDynamicSearchesRef.current.map(search => ({
         term: search.query,
         icon: getIconForTerm(search.query),
       }))
     }
+    
+    // Si cambió el contenido, actualizar
+    if (currentSearches.length > 0) {
+      prevDynamicSearchesRef.current = currentSearches
+      return currentSearches.map(search => ({
+        term: search.query,
+        icon: getIconForTerm(search.query),
+      }))
+    }
+    
     return null
   }, [dynamicSearches])
 
-  // Usar búsquedas dinámicas si están disponibles, sino usar fallback
-  const trendingSearches = mappedSearches || defaultTrendingSearches
+  // ⚡ OPTIMIZACIÓN: Estabilizar trendingSearches
+  const trendingSearches = useMemo(() => {
+    return mappedSearches || defaultTrendingSearches
+  }, [mappedSearches])
 
-  const handleSearchClick = (term: string) => {
+  // ⚡ OPTIMIZACIÓN: Memoizar handleSearchClick
+  const handleSearchClick = useCallback((term: string) => {
     trackEvent('trending_search_click', 'engagement', term)
-  }
+  }, [])
+
+  // ⚡ DEBUG: Log de re-renders solo en desarrollo
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const stack = new Error().stack
+      console.log('🔄 TrendingSearches re-rendered', {
+        timestamp: Date.now(),
+        caller: stack?.split('\n')[2]?.trim() || 'unknown',
+        isLoading,
+        searchesCount: trendingSearches.length,
+      })
+    }
+  })
 
   return (
     <section className='py-8 border-b border-white/10'>
@@ -145,6 +183,14 @@ const TrendingSearches = () => {
     </section>
   )
 }
+
+// ⚡ OPTIMIZACIÓN: Memoizar componente para evitar re-renders innecesarios
+const TrendingSearches = React.memo(TrendingSearchesBase, (prevProps, nextProps) => {
+  // No hay props, pero mantener la función para consistencia
+  return true
+})
+
+TrendingSearches.displayName = 'TrendingSearches'
 
 export default TrendingSearches
 

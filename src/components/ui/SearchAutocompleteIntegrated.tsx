@@ -182,6 +182,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         categoryId,
       })
 
+      // ⚡ OPTIMIZACIÓN: Deshabilitar refetch automático para evitar re-renders
       const {
         trendingSearches,
         isLoading: isTrendingLoading,
@@ -189,6 +190,7 @@ export const SearchAutocompleteIntegrated = React.memo(
       } = useTrendingSearches({
         limit: 4,
         enabled: showTrendingSearches,
+        refetchInterval: false, // ⚡ Deshabilitar refetch automático
       })
 
       const { recentSearches } = useRecentSearches({
