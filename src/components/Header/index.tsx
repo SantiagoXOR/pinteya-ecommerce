@@ -358,10 +358,9 @@ const Header = () => {
       `}
         style={{
           top: 'env(safe-area-inset-top, 0px)',
-          boxShadow: '0px 4px 16px 0px rgba(0, 0, 0, 0.15)',
-          // ⚡ OPTIMIZACIÓN: Deshabilitar backdrop-filter durante scroll y en dispositivos de bajo rendimiento
-          backdropFilter: (isScrolling || isLowPerformance) ? 'none' : 'blur(2px)',
-          WebkitBackdropFilter: (isScrolling || isLowPerformance) ? 'none' : 'blur(2px)',
+          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+          // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+          // El CSS global ya lo deshabilita
         }}
       >
         {/* ScrollingBanner integrado en la parte superior del header */}

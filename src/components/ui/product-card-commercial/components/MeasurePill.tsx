@@ -42,8 +42,8 @@ export const MeasurePill = React.memo(function MeasurePill({
     borderWidth: isSelected ? '1.5px' : '1px',
     borderColor: isSelected ? '#EA5A17' : 'rgba(229, 231, 235, 1)',
     borderStyle: 'solid',
-    backdropFilter: isSelected ? 'blur(8px)' : 'blur(4px)',
-    WebkitBackdropFilter: isSelected ? 'blur(8px)' : 'blur(4px)',
+    // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+    // El CSS global ya lo deshabilita
   }), [isSelected])
 
   // Box-shadow estático (no animado) - solo cambia opacity del pseudo-elemento

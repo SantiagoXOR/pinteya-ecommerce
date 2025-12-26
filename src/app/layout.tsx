@@ -9,6 +9,8 @@ import './css/style.css'
 import './css/euclid-fonts-turbopack.css'
 // ⚡ OPTIMIZACIÓN: CSS para móviles de bajo rendimiento (prefers-reduced-motion, animaciones optimizadas)
 import '@/styles/mobile-performance.css'
+// ⚡ OPTIMIZACIÓN CRÍTICA: CSS global para deshabilitar todos los efectos costosos
+import '@/styles/disable-all-effects.css'
 import { metadata as defaultMetadata } from './metadata'
 import type { Metadata } from 'next'
 

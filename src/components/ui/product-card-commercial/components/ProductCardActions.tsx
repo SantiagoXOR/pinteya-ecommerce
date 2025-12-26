@@ -27,10 +27,10 @@ export const ProductCardActions = React.memo(function ProductCardActions({
         className='absolute inset-0 rounded-full pointer-events-none'
         style={{
           background: stock !== 0 
-            ? 'radial-gradient(circle, rgba(250, 204, 21, 0.9) 0%, rgba(250, 204, 21, 0.7) 50%, rgba(250, 204, 21, 0.4) 100%)'
-            : 'radial-gradient(circle, rgba(156, 163, 175, 0.9) 0%, rgba(156, 163, 175, 0.7) 50%, rgba(156, 163, 175, 0.4) 100%)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)'
+            ? 'rgba(250, 204, 21, 0.9)'
+            : 'rgba(156, 163, 175, 0.9)',
+          // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+          // El CSS global ya lo deshabilita
         }}
       />
       

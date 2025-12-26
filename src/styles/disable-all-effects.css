@@ -1,0 +1,119 @@
+/* ⚡ OPTIMIZACIÓN CRÍTICA: Deshabilitar TODOS los efectos CSS costosos */
+/* Priorizar performance sobre estética */
+
+/* Deshabilitar backdrop-filter en TODOS los elementos */
+*,
+*::before,
+*::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Deshabilitar filter blur */
+* {
+  filter: none !important;
+}
+
+/* Deshabilitar will-change (causa overhead de GPU) */
+* {
+  will-change: auto !important;
+}
+
+/* Deshabilitar transform 3D costosos */
+* {
+  transform-style: flat !important;
+  perspective: none !important;
+}
+
+/* Simplificar todas las transiciones */
+* {
+  transition-duration: 0.1s !important;
+  transition-timing-function: ease !important;
+}
+
+/* Reducir todas las animaciones */
+* {
+  animation-duration: 0.2s !important;
+  animation-timing-function: ease !important;
+}
+
+/* Componentes glassmorphism - usar backgrounds sólidos */
+.glass-card,
+.glass-pill,
+.glass-header,
+.glass-header-sticky,
+.glass-search-bar,
+.glass-category-pill,
+.glass-card-3d,
+[class*="glass"] {
+  /* Backgrounds sólidos en lugar de gradientes */
+  background: rgba(255, 255, 255, 0.98) !important;
+  background-image: none !important;
+  
+  /* Eliminar backdrop-filter */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  
+  /* Eliminar transform 3D */
+  transform: none !important;
+  transform-style: flat !important;
+  perspective: none !important;
+  
+  /* Eliminar will-change */
+  will-change: auto !important;
+  
+  /* Simplificar sombras */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  
+  /* Eliminar transiciones costosas */
+  transition: none !important;
+}
+
+/* Header específico - background sólido */
+.glass-header,
+.glass-header-sticky {
+  background: rgba(234, 90, 23, 0.98) !important;
+  background-image: none !important;
+}
+
+/* Search bar específico */
+.glass-search-bar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  background-image: none !important;
+}
+
+.glass-search-bar:focus-within {
+  background: rgba(255, 255, 255, 1) !important;
+}
+
+/* Product cards - sin efectos 3D */
+.glass-card-3d,
+[data-testid="commercial-product-card"],
+[data-testid="product-card"] {
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.glass-card-3d:hover,
+[data-testid="commercial-product-card"]:hover,
+[data-testid="product-card"]:hover {
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Pills - backgrounds sólidos */
+.glass-pill,
+.glass-category-pill,
+[class*="pill"] {
+  background: rgba(255, 255, 255, 0.98) !important;
+  background-image: none !important;
+}
+
+/* Deshabilitar efectos hover costosos */
+*:hover {
+  transform: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+

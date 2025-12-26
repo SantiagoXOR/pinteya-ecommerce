@@ -279,38 +279,13 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         data-finish={badges.resolvedFinish || ''}
         data-finish-source={badges.resolvedFinishSource}
         style={{
-          transformOrigin: 'center',
-          // ⚡ OPTIMIZACIÓN 1: Deshabilitar animaciones durante scroll activo
-          transition: (isScrolling || isLowPerformance) ? 'none' : 'transform 0.3s ease-out',
-          // ⚡ OPTIMIZACIÓN 2: Simplificar transform durante scroll
-          transform: (isScrolling || isLowPerformance || isMediumPerformance) 
-            ? (state.isHovered && !isScrolling ? 'translateY(-2px)' : 'translateY(0)')
-            : (state.isHovered && !isScrolling
-              ? 'perspective(500px) rotateX(1deg) translateY(-4px)' // ⚡ OPTIMIZACIÓN 7: Reducido de 1000px y 2deg
-              : 'perspective(500px) rotateX(0deg)'),
-          // ⚡ OPTIMIZACIÓN 5: Simplificar box-shadow durante scroll
-          boxShadow: isScrolling 
-            ? '0 2px 4px rgba(0, 0, 0, 0.1)' // Simple durante scroll
-            : '0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08)', // Completo cuando estático
-          // Fondo blanco sólido para todo el card
+          // ⚡ OPTIMIZACIÓN: Eliminados todos los efectos costosos
+          // El CSS global ya los deshabilita
           backgroundColor: '#ffffff',
-          // ⚡ OPTIMIZACIÓN 3: Reducir backdrop-filter durante scroll y en gama media/baja
-          backdropFilter: (isScrolling || isLowPerformance || isMediumPerformance) 
-            ? 'none' 
-            : 'blur(10px)', // ⚡ Reducido de 30px a 10px
-          WebkitBackdropFilter: (isScrolling || isLowPerformance || isMediumPerformance) 
-            ? 'none' 
-            : 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          // ⚡ OPTIMIZACIÓN 4: will-change solo cuando hover y no scrolling
-          willChange: (isScrolling || isLowPerformance || !state.isHovered) ? 'auto' : 'transform',
-          // ⚡ OPTIMIZACIÓN 5: content-visibility para cards fuera del viewport
-          // Comentado temporalmente para evitar problemas con tests de Playwright
-          // Se puede habilitar cuando los tests se ajusten
-          // contentVisibility: 'auto',
-          // containIntrinsicSize: '280px 500px',
-          // ⚡ OPTIMIZACIÓN 10: Aislar layout y paint
-          contain: 'layout style paint',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          transform: 'none',
+          transition: 'none',
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -377,13 +352,12 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           <div 
             className='absolute inset-0 z-0 pointer-events-none overflow-hidden rounded-b-xl md:rounded-b-[1.5rem]'
             style={{
-              background: 'linear-gradient(0deg, rgba(180, 180, 180, 0.8) 0%, rgba(200, 200, 200, 0.75) 10%, rgba(220, 220, 220, 0.7) 25%, rgba(240, 240, 240, 0.85) 50%, rgba(250, 250, 250, 0.9) 70%, rgba(255, 255, 255, 0.95) 85%, rgba(255, 255, 255, 0.98) 100%)',
-              backdropFilter: 'blur(40px)',
-              WebkitBackdropFilter: 'blur(40px)',
-              boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.15), 0 -2px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              background: 'rgba(255, 255, 255, 0.98)',
+              // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+              // El CSS global ya lo deshabilita
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               paddingBottom: '0.625rem',
               bottom: 0,
-              willChange: 'transform',
             }}
           />
           

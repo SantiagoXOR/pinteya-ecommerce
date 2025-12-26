@@ -534,12 +534,11 @@ export const SearchAutocompleteIntegrated = React.memo(
                 )}
                 style={{
                   background: inputValue || isOpen 
-                    ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.75) 100%)'
-                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.65) 100%)',
-                  // ⚡ OPTIMIZACIÓN: Deshabilitar backdrop-filter durante scroll y en dispositivos de bajo rendimiento
-                  backdropFilter: (isScrolling || isLowPerformance || isMobile) ? 'none' : (inputValue || isOpen ? 'blur(24px)' : 'blur(20px)'),
-                  WebkitBackdropFilter: (isScrolling || isLowPerformance || isMobile) ? 'none' : (inputValue || isOpen ? 'blur(24px)' : 'blur(20px)'),
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05)',
+                    ? 'rgba(255, 255, 255, 0.95)'
+                    : 'rgba(255, 255, 255, 0.95)',
+                  // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+                  // El CSS global ya lo deshabilita
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                 }}
                 role='searchbox'
                 aria-expanded={isOpen}
@@ -563,10 +562,9 @@ export const SearchAutocompleteIntegrated = React.memo(
                 <div 
                   className='absolute inset-0 rounded-full pointer-events-none'
                   style={{
-                    background: 'radial-gradient(circle, rgba(250, 204, 21, 0.9) 0%, rgba(250, 204, 21, 0.7) 50%, rgba(250, 204, 21, 0.4) 100%)',
-                    // ⚡ OPTIMIZACIÓN: Deshabilitar backdrop-filter durante scroll y en dispositivos de bajo rendimiento
-                    backdropFilter: (isScrolling || isLowPerformance || isMobile) ? 'none' : 'blur(10px)',
-                    WebkitBackdropFilter: (isScrolling || isLowPerformance || isMobile) ? 'none' : 'blur(10px)'
+                    background: 'rgba(250, 204, 21, 0.9)',
+                    // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+                    // El CSS global ya lo deshabilita
                   }}
                 />
                 

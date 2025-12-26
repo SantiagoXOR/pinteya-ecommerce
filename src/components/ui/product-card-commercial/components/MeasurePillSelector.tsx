@@ -118,9 +118,9 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
           <div 
             className='absolute inset-0 rounded-full pointer-events-none'
             style={{
-              background: 'radial-gradient(circle, rgba(250, 204, 21, 0.9) 0%, rgba(250, 204, 21, 0.7) 50%, rgba(250, 204, 21, 0.4) 100%)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)'
+              background: 'rgba(250, 204, 21, 0.9)',
+              // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+              // El CSS global ya lo deshabilita
             }}
           />
           <Sheet open={showColorsSheet} onOpenChange={setShowColorsSheet}>

@@ -71,8 +71,8 @@ export const ColorPill = React.memo(function ColorPill({
     backgroundColor,
     borderWidth: isSelected ? '1.5px' : '1px',
     borderColor: isSelected ? '#EA5A17' : 'rgba(229, 231, 235, 1)',
-    backdropFilter: isSelected ? 'blur(8px)' : 'blur(4px)',
-    WebkitBackdropFilter: isSelected ? 'blur(8px)' : 'blur(4px)',
+    // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+    // El CSS global ya lo deshabilita
     ...(isTransparent ? transparentTexture : {}),
     ...woodTexture,
     ...glossTexture,

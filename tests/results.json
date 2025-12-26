@@ -268,21 +268,21 @@
   },
   "suites": [
     {
-      "title": "header-logo-performance.spec.ts",
-      "file": "header-logo-performance.spec.ts",
+      "title": "product-cards-scroll-performance.spec.ts",
+      "file": "product-cards-scroll-performance.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Header Logo Performance Test",
-          "file": "header-logo-performance.spec.ts",
-          "line": 3,
+          "title": "Product Cards Scroll Performance - Gama Alta",
+          "file": "product-cards-scroll-performance.spec.ts",
+          "line": 235,
           "column": 6,
           "specs": [
             {
-              "title": "should not reload logo repeatedly",
-              "ok": false,
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": true,
               "tags": [],
               "tests": [
                 {
@@ -295,234 +295,2627 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 9338,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m4\u001b[39m\nReceived:   \u001b[31m13\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m4\u001b[39m\nReceived:   \u001b[31m13\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts:97:30",
-                        "location": {
-                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts",
-                          "column": 30,
-                          "line": 97
-                        },
-                        "snippet": "\u001b[0m \u001b[90m  95 |\u001b[39m     \u001b[90m// The header logo should only be requested once (or at most 2 times for SSR/hydration)\u001b[39m\n \u001b[90m  96 |\u001b[39m     \u001b[90m// If it's being requested more than 3 times, that's a problem\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  97 |\u001b[39m     expect(finalHeaderCount)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m4\u001b[39m)\n \u001b[90m     |\u001b[39m                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  98 |\u001b[39m     \n \u001b[90m  99 |\u001b[39m     \u001b[90m// Additional requests after initial load should be ZERO for header logo\u001b[39m\n \u001b[90m 100 |\u001b[39m     \u001b[90m// (SSR + hydration = 2 requests max, any more indicates re-renders)\u001b[39m\u001b[0m"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts",
-                            "column": 30,
-                            "line": 97
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m4\u001b[39m\nReceived:   \u001b[31m13\u001b[39m\n\n\u001b[0m \u001b[90m  95 |\u001b[39m     \u001b[90m// The header logo should only be requested once (or at most 2 times for SSR/hydration)\u001b[39m\n \u001b[90m  96 |\u001b[39m     \u001b[90m// If it's being requested more than 3 times, that's a problem\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  97 |\u001b[39m     expect(finalHeaderCount)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m4\u001b[39m)\n \u001b[90m     |\u001b[39m                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  98 |\u001b[39m     \n \u001b[90m  99 |\u001b[39m     \u001b[90m// Additional requests after initial load should be ZERO for header logo\u001b[39m\n \u001b[90m 100 |\u001b[39m     \u001b[90m// (SSR + hydration = 2 requests max, any more indicates re-renders)\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts:97:30\u001b[22m"
-                        }
-                      ],
+                      "status": "passed",
+                      "duration": 11636,
+                      "errors": [],
                       "stdout": [
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 1)\n"
+                          "text": "\n🎯 Testing: Dispositivo de gama alta\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 2)\n"
+                          "text": "   CPU Throttling: 1x\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 3)\n"
+                          "text": "   Viewport: 1920x1080\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 4)\n"
+                          "text": "\n📊 Métricas de Scroll:\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 5)\n"
+                          "text": "   FPS Promedio: 60.39fps\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 6)\n"
+                          "text": "   FPS Mínimo: 59.52fps\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 7)\n"
+                          "text": "   FPS Máximo: 60.61fps\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 8)\n"
+                          "text": "   Total Frames: 182\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 9)\n"
+                          "text": "   Jank Count: 0 (0.00%)\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 10)\n"
+                          "text": "   Dropped Frames: 0\n"
                         },
                         {
-                          "text": "[INITIAL] Logo requests after page load: 10\n"
+                          "text": "   Smoothness Score: 37.34/100\n"
                         },
                         {
-                          "text": "[INITIAL] Header-specific logo requests: 10\n"
-                        },
-                        {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 11)\n"
-                        },
-                        {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 12)\n"
-                        },
-                        {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 13)\n"
-                        },
-                        {
-                          "text": "[FINAL] Total logo requests (all components): 13\n"
-                        },
-                        {
-                          "text": "[FINAL] Header logo requests: 13\n"
-                        },
-                        {
-                          "text": "[FINAL] Additional header requests after initial load: 3\n"
-                        },
-                        {
-                          "text": "[RENDERS] Total render logs captured: 0\n"
+                          "text": "   Long Tasks: 0\n"
                         }
                       ],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-12-25T19:35:58.343Z",
+                      "startTime": "2025-12-26T17:25:57.589Z",
                       "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\\test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\\video.webm"
-                        },
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public\\error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts",
-                        "column": 30,
-                        "line": 97
-                      }
-                    },
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-9309a58aa1a480f931c7",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 247,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
                     {
                       "workerIndex": 1,
                       "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 9851,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m4\u001b[39m\nReceived:   \u001b[31m12\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m4\u001b[39m\nReceived:   \u001b[31m12\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts:97:30",
-                        "location": {
-                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts",
-                          "column": 30,
-                          "line": 97
+                      "status": "passed",
+                      "duration": 12680,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama alta\n"
                         },
-                        "snippet": "\u001b[0m \u001b[90m  95 |\u001b[39m     \u001b[90m// The header logo should only be requested once (or at most 2 times for SSR/hydration)\u001b[39m\n \u001b[90m  96 |\u001b[39m     \u001b[90m// If it's being requested more than 3 times, that's a problem\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  97 |\u001b[39m     expect(finalHeaderCount)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m4\u001b[39m)\n \u001b[90m     |\u001b[39m                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  98 |\u001b[39m     \n \u001b[90m  99 |\u001b[39m     \u001b[90m// Additional requests after initial load should be ZERO for header logo\u001b[39m\n \u001b[90m 100 |\u001b[39m     \u001b[90m// (SSR + hydration = 2 requests max, any more indicates re-renders)\u001b[39m\u001b[0m"
+                        {
+                          "text": "   CPU Throttling: 1x\n"
+                        },
+                        {
+                          "text": "   Viewport: 1920x1080\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 41.43fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 18.00fps\n"
+                        },
+                        {
+                          "text": "   FPS Máximo: 328.95fps\n"
+                        },
+                        {
+                          "text": "   Total Frames: 125\n"
+                        },
+                        {
+                          "text": "   Jank Count: 4 (3.20%)\n"
+                        },
+                        {
+                          "text": "   Dropped Frames: 0\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 29.02/100\n"
+                        },
+                        {
+                          "text": "   Long Tasks: 0\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:26:55.587Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-a5a75e71f91d39a34559",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 247,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 13408,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m7.133592736705577\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m7.133592736705577\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:276:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 276
+                        },
+                        "snippet": "  274 |     // Thresholds ajustados basados en resultados reales post-optimización\n  275 |     // Las optimizaciones mejoraron significativamente el jank\n> 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps\n      |                            ^\n  277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps\n  278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%\n  279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts",
-                            "column": 30,
-                            "line": 97
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 276
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: < \u001b[32m4\u001b[39m\nReceived:   \u001b[31m12\u001b[39m\n\n\u001b[0m \u001b[90m  95 |\u001b[39m     \u001b[90m// The header logo should only be requested once (or at most 2 times for SSR/hydration)\u001b[39m\n \u001b[90m  96 |\u001b[39m     \u001b[90m// If it's being requested more than 3 times, that's a problem\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  97 |\u001b[39m     expect(finalHeaderCount)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m4\u001b[39m)\n \u001b[90m     |\u001b[39m                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  98 |\u001b[39m     \n \u001b[90m  99 |\u001b[39m     \u001b[90m// Additional requests after initial load should be ZERO for header logo\u001b[39m\n \u001b[90m 100 |\u001b[39m     \u001b[90m// (SSR + hydration = 2 requests max, any more indicates re-renders)\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts:97:30\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m7.133592736705577\u001b[39m\n\n  274 |     // Thresholds ajustados basados en resultados reales post-optimización\n  275 |     // Las optimizaciones mejoraron significativamente el jank\n> 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps\n      |                            ^\n  277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps\n  278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%\n  279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:276:28"
                         }
                       ],
                       "stdout": [
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 1)\n"
+                          "text": "\n🎯 Testing: Dispositivo de gama alta\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 2)\n"
+                          "text": "   CPU Throttling: 1x\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 3)\n"
+                          "text": "   Viewport: 1920x1080\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 4)\n"
+                          "text": "\n📊 Métricas de Scroll:\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 5)\n"
+                          "text": "   FPS Promedio: 7.13fps\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 6)\n"
+                          "text": "   FPS Mínimo: 4.81fps\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 7)\n"
+                          "text": "   FPS Máximo: 17.24fps\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 8)\n"
+                          "text": "   Total Frames: 22\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 9)\n"
+                          "text": "   Jank Count: 22 (100.00%)\n"
                         },
                         {
-                          "text": "[INITIAL] Logo requests after page load: 9\n"
+                          "text": "   Dropped Frames: 21\n"
                         },
                         {
-                          "text": "[INITIAL] Header-specific logo requests: 9\n"
+                          "text": "   Smoothness Score: 0.00/100\n"
                         },
                         {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 10)\n"
-                        },
-                        {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 11)\n"
-                        },
-                        {
-                          "text": "[NETWORK] Logo requested: http://localhost:3000/images/logo/LOGO%20POSITIVO.svg (Total: 12)\n"
-                        },
-                        {
-                          "text": "[FINAL] Total logo requests (all components): 12\n"
-                        },
-                        {
-                          "text": "[FINAL] Header logo requests: 12\n"
-                        },
-                        {
-                          "text": "[FINAL] Additional header requests after initial load: 3\n"
-                        },
-                        {
-                          "text": "[RENDERS] Total render logs captured: 0\n"
+                          "text": "   Long Tasks: 0\n"
                         }
                       ],
-                      "stderr": [],
-                      "retry": 1,
-                      "startTime": "2025-12-25T19:36:08.470Z",
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:27:49.795Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\\test-failed-1.png"
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\\test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\\video.webm"
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\\video.webm"
                         },
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\\error-context.md"
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 276
+                      }
+                    },
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 14269,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m5.821474773609315\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m5.821474773609315\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:276:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 276
+                        },
+                        "snippet": "  274 |     // Thresholds ajustados basados en resultados reales post-optimización\n  275 |     // Las optimizaciones mejoraron significativamente el jank\n> 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps\n      |                            ^\n  277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps\n  278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%\n  279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 276
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m5.821474773609315\u001b[39m\n\n  274 |     // Thresholds ajustados basados en resultados reales post-optimización\n  275 |     // Las optimizaciones mejoraron significativamente el jank\n> 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps\n      |                            ^\n  277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps\n  278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%\n  279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:276:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama alta\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 1x\n"
+                        },
+                        {
+                          "text": "   Viewport: 1920x1080\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 5.82fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 4.65fps\n"
+                        },
+                        {
+                          "text": "   FPS Máximo: 23.26fps\n"
+                        },
+                        {
+                          "text": "   Total Frames: 18\n"
+                        },
+                        {
+                          "text": "   Jank Count: 17 (94.44%)\n"
+                        },
+                        {
+                          "text": "   Dropped Frames: 17\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        },
+                        {
+                          "text": "   Long Tasks: 0\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:28:04.701Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\\error-context.md"
                         },
                         {
                           "name": "trace",
                           "contentType": "application/zip",
-                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\header-logo-performance-He-997c6--not-reload-logo-repeatedly-ui-public-retry1\\trace.zip"
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\\trace.zip"
                         }
                       ],
                       "errorLocation": {
-                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\header-logo-performance.spec.ts",
-                        "column": 30,
-                        "line": 97
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 276
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "4e3457728edbfa77a9f6-eb5972eaf4939ba70d95",
-              "file": "header-logo-performance.spec.ts",
-              "line": 4,
+              "id": "45fce0c88be41158a2d5-032b21b9c41b0fffb483",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 247,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12663,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama alta\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 1x\n"
+                        },
+                        {
+                          "text": "   Viewport: 1920x1080\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 54.31fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 14.99fps\n"
+                        },
+                        {
+                          "text": "   FPS Máximo: 333.33fps\n"
+                        },
+                        {
+                          "text": "   Total Frames: 164\n"
+                        },
+                        {
+                          "text": "   Jank Count: 1 (0.61%)\n"
+                        },
+                        {
+                          "text": "   Dropped Frames: 0\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 33.76/100\n"
+                        },
+                        {
+                          "text": "   Long Tasks: 0\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:29:52.756Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-402e7b17c43bffd0062c",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 247,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 14,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 15426,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m3.638769434336752\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m3.638769434336752\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:276:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 276
+                        },
+                        "snippet": "  274 |     // Thresholds ajustados basados en resultados reales post-optimización\n  275 |     // Las optimizaciones mejoraron significativamente el jank\n> 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps\n      |                            ^\n  277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps\n  278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%\n  279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 276
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m3.638769434336752\u001b[39m\n\n  274 |     // Thresholds ajustados basados en resultados reales post-optimización\n  275 |     // Las optimizaciones mejoraron significativamente el jank\n> 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps\n      |                            ^\n  277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps\n  278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%\n  279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:276:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama alta\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 1x\n"
+                        },
+                        {
+                          "text": "   Viewport: 1920x1080\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 3.64fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 3.41fps\n"
+                        },
+                        {
+                          "text": "   FPS Máximo: 4.67fps\n"
+                        },
+                        {
+                          "text": "   Total Frames: 11\n"
+                        },
+                        {
+                          "text": "   Jank Count: 11 (100.00%)\n"
+                        },
+                        {
+                          "text": "   Dropped Frames: 11\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        },
+                        {
+                          "text": "   Long Tasks: 0\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:31:14.980Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 276
+                      }
+                    },
+                    {
+                      "workerIndex": 15,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 17424,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m3.3266799733865597\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m3.3266799733865597\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:276:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 276
+                        },
+                        "snippet": "  274 |     // Thresholds ajustados basados en resultados reales post-optimización\n  275 |     // Las optimizaciones mejoraron significativamente el jank\n> 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps\n      |                            ^\n  277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps\n  278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%\n  279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 276
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m3.3266799733865597\u001b[39m\n\n  274 |     // Thresholds ajustados basados en resultados reales post-optimización\n  275 |     // Las optimizaciones mejoraron significativamente el jank\n> 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps\n      |                            ^\n  277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps\n  278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%\n  279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:276:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama alta\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 1x\n"
+                        },
+                        {
+                          "text": "   Viewport: 1920x1080\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 3.33fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 2.53fps\n"
+                        },
+                        {
+                          "text": "   FPS Máximo: 29.41fps\n"
+                        },
+                        {
+                          "text": "   Total Frames: 10\n"
+                        },
+                        {
+                          "text": "   Jank Count: 9 (90.00%)\n"
+                        },
+                        {
+                          "text": "   Dropped Frames: 9\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        },
+                        {
+                          "text": "   Long Tasks: 0\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:31:31.156Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 276
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-7fa68ed2a3368ed4803f",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 247,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Product Cards Scroll Performance - Gama Media",
+          "file": "product-cards-scroll-performance.spec.ts",
+          "line": 285,
+          "column": 6,
+          "specs": [
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10302,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama media\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 2x\n"
+                        },
+                        {
+                          "text": "   Viewport: 768x1024\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 60.18fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 59.52fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 0 (0.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 37.01/100\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:26:09.317Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-eaccbb745ed595e17607",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 293,
+              "column": 7
+            },
+            {
+              "title": "debe manejar scroll rápido sin lag excesivo",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9296,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing Scroll Rápido: Gama media\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas Scroll Rápido:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 60.25fps\n"
+                        },
+                        {
+                          "text": "   Jank: 0 (0.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness: 38.01/100\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:26:19.628Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-a4e7e2dd06a1c4700191",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 324,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9014,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama media\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 2x\n"
+                        },
+                        {
+                          "text": "   Viewport: 768x1024\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 61.05fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 24.00fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 0 (0.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 60.03/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:27:09.575Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-7cc0f659cd5d1e7a48d3",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 293,
+              "column": 7
+            },
+            {
+              "title": "debe manejar scroll rápido sin lag excesivo",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7830,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing Scroll Rápido: Gama media\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas Scroll Rápido:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 64.49fps\n"
+                        },
+                        {
+                          "text": "   Jank: 0 (0.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness: 60.66/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:27:18.603Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-6afe2f9f51ef8d305b6b",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 324,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10908,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m13.544763792533862\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m13.544763792533862\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:318:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 318
+                        },
+                        "snippet": "  316 |     // Thresholds ajustados para gama media post-optimización\n  317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%\n> 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps\n      |                            ^\n  319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps\n  320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%\n  321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 318
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m13.544763792533862\u001b[39m\n\n  316 |     // Thresholds ajustados para gama media post-optimización\n  317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%\n> 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps\n      |                            ^\n  319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps\n  320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%\n  321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:318:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama media\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 2x\n"
+                        },
+                        {
+                          "text": "   Viewport: 768x1024\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 13.54fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 10.64fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 40 (97.56%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:28:20.148Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 318
+                      }
+                    },
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 11921,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m12.803676953381483\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m12.803676953381483\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:318:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 318
+                        },
+                        "snippet": "  316 |     // Thresholds ajustados para gama media post-optimización\n  317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%\n> 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps\n      |                            ^\n  319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps\n  320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%\n  321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 318
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m12.803676953381483\u001b[39m\n\n  316 |     // Thresholds ajustados para gama media post-optimización\n  317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%\n> 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps\n      |                            ^\n  319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps\n  320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%\n  321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:318:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama media\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 2x\n"
+                        },
+                        {
+                          "text": "   Viewport: 768x1024\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 12.80fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 8.00fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 38 (97.44%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:28:31.749Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 318
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-c9714e4c81980b9eecf0",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 293,
+              "column": 7
+            },
+            {
+              "title": "debe manejar scroll rápido sin lag excesivo",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 9926,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m12.470023980815348\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m12.470023980815348\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:345:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 345
+                        },
+                        "snippet": "  343 |\n  344 |     // Thresholds ajustados para scroll rápido en gama media\n> 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25\n      |                            ^\n  346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50\n  347 |   })\n  348 | })"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 345
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m12.470023980815348\u001b[39m\n\n  343 |\n  344 |     // Thresholds ajustados para scroll rápido en gama media\n> 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25\n      |                            ^\n  346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50\n  347 |   })\n  348 | })\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:345:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing Scroll Rápido: Gama media\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas Scroll Rápido:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 12.47fps\n"
+                        },
+                        {
+                          "text": "   Jank: 26 (100.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:28:44.872Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 345
+                      }
+                    },
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 11140,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m12.621359223300972\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m12.621359223300972\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:345:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 345
+                        },
+                        "snippet": "  343 |\n  344 |     // Thresholds ajustados para scroll rápido en gama media\n> 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25\n      |                            ^\n  346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50\n  347 |   })\n  348 | })"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 345
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m12.621359223300972\u001b[39m\n\n  343 |\n  344 |     // Thresholds ajustados para scroll rápido en gama media\n> 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25\n      |                            ^\n  346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50\n  347 |   })\n  348 | })\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:345:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing Scroll Rápido: Gama media\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas Scroll Rápido:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 12.62fps\n"
+                        },
+                        {
+                          "text": "   Jank: 26 (100.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:28:55.707Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 345
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-82ff1d6f73ea161d90ff",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 324,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10341,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama media\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 2x\n"
+                        },
+                        {
+                          "text": "   Viewport: 768x1024\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 52.20fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 10.00fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 5 (3.18%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 28.19/100\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:30:06.131Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-ad14bb59db26ec34cd71",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 293,
+              "column": 7
+            },
+            {
+              "title": "debe manejar scroll rápido sin lag excesivo",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9828,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing Scroll Rápido: Gama media\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas Scroll Rápido:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 51.30fps\n"
+                        },
+                        {
+                          "text": "   Jank: 3 (2.91%)\n"
+                        },
+                        {
+                          "text": "   Smoothness: 26.93/100\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:30:16.482Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-594da13f85ef2911737c",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 324,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll fluido durante scroll medio",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 16,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 14464,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m6.79172056921087\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m6.79172056921087\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:318:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 318
+                        },
+                        "snippet": "  316 |     // Thresholds ajustados para gama media post-optimización\n  317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%\n> 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps\n      |                            ^\n  319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps\n  320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%\n  321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 318
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m6.79172056921087\u001b[39m\n\n  316 |     // Thresholds ajustados para gama media post-optimización\n  317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%\n> 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps\n      |                            ^\n  319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps\n  320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%\n  321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:318:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama media\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 2x\n"
+                        },
+                        {
+                          "text": "   Viewport: 768x1024\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 6.79fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 4.26fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 21 (100.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:31:49.824Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 318
+                      }
+                    },
+                    {
+                      "workerIndex": 17,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 13140,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m6.572461386789352\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m6.572461386789352\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:318:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 318
+                        },
+                        "snippet": "  316 |     // Thresholds ajustados para gama media post-optimización\n  317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%\n> 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps\n      |                            ^\n  319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps\n  320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%\n  321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 318
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m40\u001b[39m\nReceived:    \u001b[31m6.572461386789352\u001b[39m\n\n  316 |     // Thresholds ajustados para gama media post-optimización\n  317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%\n> 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps\n      |                            ^\n  319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps\n  320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%\n  321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:318:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama media\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 2x\n"
+                        },
+                        {
+                          "text": "   Viewport: 768x1024\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 6.57fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 4.69fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 20 (100.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:32:04.992Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 318
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-86704488be829976b389",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 293,
+              "column": 7
+            },
+            {
+              "title": "debe manejar scroll rápido sin lag excesivo",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 18,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 12492,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m7.2150072150072155\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m7.2150072150072155\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:345:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 345
+                        },
+                        "snippet": "  343 |\n  344 |     // Thresholds ajustados para scroll rápido en gama media\n> 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25\n      |                            ^\n  346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50\n  347 |   })\n  348 | })"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 345
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m7.2150072150072155\u001b[39m\n\n  343 |\n  344 |     // Thresholds ajustados para scroll rápido en gama media\n> 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25\n      |                            ^\n  346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50\n  347 |   })\n  348 | })\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:345:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing Scroll Rápido: Gama media\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas Scroll Rápido:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 7.22fps\n"
+                        },
+                        {
+                          "text": "   Jank: 15 (100.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:32:19.233Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 345
+                      }
+                    },
+                    {
+                      "workerIndex": 19,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 13121,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m6.70819357930043\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m6.70819357930043\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:345:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 345
+                        },
+                        "snippet": "  343 |\n  344 |     // Thresholds ajustados para scroll rápido en gama media\n> 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25\n      |                            ^\n  346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50\n  347 |   })\n  348 | })"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 345
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m25\u001b[39m\nReceived:    \u001b[31m6.70819357930043\u001b[39m\n\n  343 |\n  344 |     // Thresholds ajustados para scroll rápido en gama media\n> 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25\n      |                            ^\n  346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50\n  347 |   })\n  348 | })\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:345:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing Scroll Rápido: Gama media\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas Scroll Rápido:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 6.71fps\n"
+                        },
+                        {
+                          "text": "   Jank: 13 (92.86%)\n"
+                        },
+                        {
+                          "text": "   Smoothness: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:32:32.429Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 345
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-08ffcd6c43bf583e4ed9",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 324,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Product Cards Scroll Performance - Gama Baja",
+          "file": "product-cards-scroll-performance.spec.ts",
+          "line": 350,
+          "column": 6,
+          "specs": [
+            {
+              "title": "debe mantener scroll aceptable durante scroll medio",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13135,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama baja\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 4x\n"
+                        },
+                        {
+                          "text": "   Viewport: 375x667\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 60.17fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 59.52fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 0 (0.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 37.56/100\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:26:28.934Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-52739bdd3279de8586a4",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 362,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll aceptable durante scroll medio",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11476,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama baja\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 4x\n"
+                        },
+                        {
+                          "text": "   Viewport: 375x667\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 86.70fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 20.58fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 0 (0.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 83.95/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:27:26.446Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-8d88b2980f41f4dd4486",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 362,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll aceptable durante scroll medio",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 13435,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m24.1801921165949\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m24.1801921165949\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 387
+                        },
+                        "snippet": "  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 387
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m24.1801921165949\u001b[39m\n\n  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama baja\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 4x\n"
+                        },
+                        {
+                          "text": "   Viewport: 375x667\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 24.18fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 15.63fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 5 (6.85%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:29:07.935Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 387
+                      }
+                    },
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 14668,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m26.42007926023778\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m26.42007926023778\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 387
+                        },
+                        "snippet": "  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 387
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m26.42007926023778\u001b[39m\n\n  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama baja\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 4x\n"
+                        },
+                        {
+                          "text": "   Viewport: 375x667\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 26.42fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 16.13fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 3 (3.75%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:29:22.635Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 387
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-9ddec44278283e41f525",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 362,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll aceptable durante scroll medio",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 12890,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m34.62396377821325\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m34.62396377821325\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 387
+                        },
+                        "snippet": "  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 387
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m34.62396377821325\u001b[39m\n\n  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama baja\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 4x\n"
+                        },
+                        {
+                          "text": "   Viewport: 375x667\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 34.62fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 2.61fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 9 (8.65%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:30:26.321Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 387
+                      }
+                    },
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 20087,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m21.581778338406973\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m21.581778338406973\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 387
+                        },
+                        "snippet": "  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 387
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m21.581778338406973\u001b[39m\n\n  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama baja\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 4x\n"
+                        },
+                        {
+                          "text": "   Viewport: 375x667\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 21.58fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 2.40fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 7 (10.77%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:30:39.886Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 387
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-a50d48bd84e1375e827e",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 362,
+              "column": 7
+            },
+            {
+              "title": "debe mantener scroll aceptable durante scroll medio",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 20,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 13195,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m14.720314033366044\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m14.720314033366044\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 387
+                        },
+                        "snippet": "  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 387
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m14.720314033366044\u001b[39m\n\n  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama baja\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 4x\n"
+                        },
+                        {
+                          "text": "   Viewport: 375x667\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 14.72fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 12.20fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 45 (100.00%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:32:46.625Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 387
+                      }
+                    },
+                    {
+                      "workerIndex": 21,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 14703,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m14.677103718199607\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m14.677103718199607\u001b[39m\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28",
+                        "location": {
+                          "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                          "column": 28,
+                          "line": 387
+                        },
+                        "snippet": "  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                            "column": 28,
+                            "line": 387
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m35\u001b[39m\nReceived:    \u001b[31m14.677103718199607\u001b[39m\n\n  385 |     // Thresholds ajustados para gama baja post-optimización\n  386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)\n> 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps\n      |                            ^\n  388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)\n  389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)\n  390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho\n    at C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts:387:28"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "\n🎯 Testing: Dispositivo de gama baja\n"
+                        },
+                        {
+                          "text": "   CPU Throttling: 4x\n"
+                        },
+                        {
+                          "text": "   Viewport: 375x667\n"
+                        },
+                        {
+                          "text": "\n📊 Métricas de Scroll:\n"
+                        },
+                        {
+                          "text": "   FPS Promedio: 14.68fps\n"
+                        },
+                        {
+                          "text": "   FPS Mínimo: 8.93fps\n"
+                        },
+                        {
+                          "text": "   Jank Count: 44 (97.78%)\n"
+                        },
+                        {
+                          "text": "   Smoothness Score: 0.00/100\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium\n"
+                        }
+                      ],
+                      "retry": 1,
+                      "startTime": "2025-12-26T17:33:00.511Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\test-results\\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\marti\\Desktop\\DESARROLLOSW\\BOILERPLATTE E-COMMERCE\\tests\\e2e\\product-cards-scroll-performance.spec.ts",
+                        "column": 28,
+                        "line": 387
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-5b4a03af8e5175e6e337",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 362,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "Product Cards Scroll Performance - Análisis General",
+          "file": "product-cards-scroll-performance.spec.ts",
+          "line": 394,
+          "column": 6,
+          "specs": [
+            {
+              "title": "debe detectar y reportar problemas de rendimiento específicos",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "ui-public",
+                  "projectName": "ui-public",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12705,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n⚠️ Problemas de rendimiento detectados:\n"
+                        },
+                        {
+                          "text": "   - Smoothness score bajo: 38.67/100 (objetivo: 80+)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:26:42.078Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-00291672aabede7863e2",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 395,
+              "column": 7
+            },
+            {
+              "title": "debe detectar y reportar problemas de rendimiento específicos",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10735,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n⚠️ Problemas de rendimiento detectados:\n"
+                        },
+                        {
+                          "text": "   - FPS promedio bajo: 38.18fps (objetivo: 50+)\n"
+                        },
+                        {
+                          "text": "   - Smoothness score bajo: 23.83/100 (objetivo: 80+)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:27:37.934Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-b2d916ceb0248adbb963",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 395,
+              "column": 7
+            },
+            {
+              "title": "debe detectar y reportar problemas de rendimiento específicos",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13655,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n⚠️ Problemas de rendimiento detectados:\n"
+                        },
+                        {
+                          "text": "   - FPS promedio bajo: 6.88fps (objetivo: 50+)\n"
+                        },
+                        {
+                          "text": "   - Alto porcentaje de jank: 100.00% (objetivo: <10%)\n"
+                        },
+                        {
+                          "text": "   - Muchos frames dropped: 21 (95.45%)\n"
+                        },
+                        {
+                          "text": "   - Smoothness score bajo: 0.00/100 (objetivo: 80+)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:29:38.412Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-c434f53f34d976cb06d9",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 395,
+              "column": 7
+            },
+            {
+              "title": "debe detectar y reportar problemas de rendimiento específicos",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12795,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n⚠️ Problemas de rendimiento detectados:\n"
+                        },
+                        {
+                          "text": "   - Smoothness score bajo: 38.56/100 (objetivo: 80+)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:31:01.434Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-ae61209cb1aabe4dbd4b",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 395,
+              "column": 7
+            },
+            {
+              "title": "debe detectar y reportar problemas de rendimiento específicos",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 22,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 14748,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n⚠️ Problemas de rendimiento detectados:\n"
+                        },
+                        {
+                          "text": "   - FPS promedio bajo: 3.51fps (objetivo: 50+)\n"
+                        },
+                        {
+                          "text": "   - Alto porcentaje de jank: 100.00% (objetivo: <10%)\n"
+                        },
+                        {
+                          "text": "   - Muchos frames dropped: 11 (100.00%)\n"
+                        },
+                        {
+                          "text": "   - Smoothness score bajo: 0.00/100 (objetivo: 80+)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-12-26T17:33:16.285Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "45fce0c88be41158a2d5-bc57a5912cd3a14e1d73",
+              "file": "product-cards-scroll-performance.spec.ts",
+              "line": 395,
               "column": 7
             }
           ]
@@ -532,11 +2925,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-12-25T19:35:16.590Z",
-    "duration": 62578.981,
-    "expected": 0,
+    "startTime": "2025-12-26T17:25:29.224Z",
+    "duration": 481898.48099999997,
+    "expected": 16,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 9,
     "flaky": 0
   }
 }
