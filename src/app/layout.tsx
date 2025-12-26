@@ -100,9 +100,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           
           /* Reset y base styles */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-          html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;max-width:100vw;width:100%}
-          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;min-height:100vh;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;max-width:100vw;width:100%}
-          #__next{overflow-x:hidden;max-width:100vw;width:100%}
+          html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;overflow-y:auto!important;max-width:100vw;width:100%;height:100%}
+          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
+          #__next{overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;height:auto;position:relative}
+          main{overflow-x:hidden!important;overflow-y:hidden!important;position:relative}
+          header[class*="fixed"],nav[class*="fixed"]{position:fixed!important;z-index:1100!important}
           @media(min-width:1024px){body{padding-top:calc(105px + env(safe-area-inset-top, 0px))}}
           @media(max-width:768px){body{padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px))}}
           img,picture,video{max-width:100%;height:auto;display:block}

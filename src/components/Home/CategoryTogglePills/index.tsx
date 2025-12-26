@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo, useContext } from 'react'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
-import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
+import { CategoryFilterContext } from '@/contexts/CategoryFilterContext'
 import { usePrefetchOnHover, usePrefetchBestSellerOnHover } from '@/hooks/usePrefetchOnHover'
 
 interface CategoryTogglePillsProps {
@@ -117,25 +117,13 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = React.memo(({
   variant = 'default',
   useDynamicCarousel = false,
 }) => {
-  // Conectar con el contexto solo si useDynamicCarousel es true
-  let contextSelectedCategory: string | null = null
-  let contextToggleCategory: ((category: string) => void) | undefined
+  // ⚡ FIX: Los hooks deben llamarse siempre, no condicionalmente
+  // Usar useContext directamente para evitar error si no hay provider
+  const context = useContext(CategoryFilterContext)
   
-  try {
-    if (useDynamicCarousel) {
-      const context = useCategoryFilter()
-      contextSelectedCategory = context.selectedCategory
-      contextToggleCategory = context.toggleCategory
-    }
-  } catch (error) {
-    // Solo log en desarrollo
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[CategoryPills] No se pudo acceder al contexto:', error)
-    }
-  }
-  
-  const selectedCategory = contextSelectedCategory
-  const toggleCategory = contextToggleCategory
+  // Solo usar el contexto si useDynamicCarousel es true Y el contexto existe
+  const selectedCategory = useDynamicCarousel && context ? context.selectedCategory : null
+  const toggleCategory = useDynamicCarousel && context ? context.toggleCategory : undefined
 
   // ⚡ OPTIMIZACIÓN: Memoizar baseFilters para evitar rerenders
   const baseFilters = useMemo(() => ({
@@ -345,6 +333,24 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = React.memo(({
     }
   }, [])
 
+  // ⚡ FIX CRÍTICO: Todos los hooks deben estar ANTES de cualquier return temprano
+  // ⚡ OPTIMIZACIÓN: Memoizar el cálculo de categorías seleccionadas
+  const selectedCategoriesSet = useMemo(() => new Set(selectedCategories), [selectedCategories])
+
+  // ⚡ OPTIMIZACIÓN: Memoizar las categorías renderizadas
+  const renderedCategories = useMemo(() => {
+    if (!categories.length) return []
+    return categories.map(category => {
+      const isSelected = useDynamicCarousel 
+        ? selectedCategory === category.slug 
+        : selectedCategoriesSet.has(category.slug)
+      
+      return {
+        category,
+        isSelected,
+      }
+    })
+  }, [categories, selectedCategory, useDynamicCarousel, selectedCategoriesSet])
 
   if (loading) {
     if (variant === 'bare') return null
@@ -367,23 +373,6 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = React.memo(({
   if (error || categories.length === 0) {
     return null // No mostrar nada si hay error o no hay categorías
   }
-
-  // ⚡ OPTIMIZACIÓN: Memoizar el cálculo de categorías seleccionadas
-  const selectedCategoriesSet = useMemo(() => new Set(selectedCategories), [selectedCategories])
-
-  // ⚡ OPTIMIZACIÓN: Memoizar las categorías renderizadas
-  const renderedCategories = useMemo(() => {
-    return categories.map(category => {
-      const isSelected = useDynamicCarousel 
-        ? selectedCategory === category.slug 
-        : selectedCategoriesSet.has(category.slug)
-      
-      return {
-        category,
-        isSelected,
-      }
-    })
-  }, [categories, selectedCategory, useDynamicCarousel, selectedCategoriesSet])
 
   // Variante bare: solo las pills sin sección ni degradados ni márgenes
   if (variant === 'bare') {

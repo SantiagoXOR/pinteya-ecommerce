@@ -167,8 +167,10 @@
   html {
     @apply scroll-smooth;
     overflow-x: hidden;
+    overflow-y: auto; /* ⚡ FIX: Permitir solo scroll vertical en html */
     max-width: 100vw;
     width: 100%;
+    height: 100%; /* ⚡ FIX: Altura completa para evitar scroll duplicado */
     /* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll vertical a 60fps */
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
@@ -178,8 +180,11 @@
     @apply font-euclid-circular-a font-normal text-base text-dark-3 dark:text-bright-sun-200 relative z-1;
     @apply bg-background text-foreground;
     overflow-x: hidden;
+    overflow-y: hidden !important; /* ⚡ FIX CRÍTICO: No scroll en body, solo en html */
     max-width: 100vw;
     width: 100%;
+    height: auto; /* ⚡ FIX: Altura automática, no min-height para evitar scroll duplicado */
+    /* ⚡ FIX: No usar transform en body para que position:fixed funcione correctamente */
     /* Fondo degradado negro/naranja por defecto en todas las rutas - sobrescribe bg-white */
     background: linear-gradient(to bottom, #000000 0%, #000000 60%, #eb6313 100%) !important;
     background-attachment: fixed !important;
@@ -194,17 +199,39 @@
     font-family: 'Euclid Circular A', system-ui, -apple-system, 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
       var(--emoji-fonts);
-    /* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll vertical a 60fps */
-    -webkit-overflow-scrolling: touch;
-    transform: translateZ(0); /* Force GPU acceleration */
-    will-change: scroll-position;
   }
   
-  /* Prevenir scroll horizontal en todos los contenedores principales */
+  /* ⚡ FIX: Prevenir scroll en contenedores principales - solo html debe hacer scroll */
   #__next {
     overflow-x: hidden;
+    overflow-y: hidden !important; /* ⚡ FIX CRÍTICO: No scroll aquí */
     max-width: 100vw;
     width: 100%;
+    height: auto; /* Altura automática */
+    position: relative;
+  }
+  
+  /* ⚡ FIX: Asegurar que main no tenga overflow que cause scroll duplicado */
+  main {
+    overflow-x: hidden;
+    overflow-y: hidden !important; /* ⚡ FIX CRÍTICO: No scroll aquí, solo en html */
+    position: relative;
+  }
+
+  /* ⚡ FIX: Asegurar que elementos fixed (header, bottom nav) funcionen correctamente */
+  header[class*="fixed"],
+  nav[class*="fixed"],
+  header.fixed,
+  nav.fixed {
+    position: fixed !important;
+    z-index: 1100 !important;
+  }
+
+  /* Bottom navigation específico */
+  nav.z-bottom-nav,
+  nav[class*="bottom-nav"] {
+    position: fixed !important;
+    z-index: 1300 !important;
   }
 
   /* Mobile pequeño - Reducir padding para aprovechar mejor el espacio */

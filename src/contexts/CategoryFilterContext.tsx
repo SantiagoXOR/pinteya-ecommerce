@@ -16,7 +16,7 @@ interface CategoryFilterContextType {
   toggleCategory: (category: string) => void
 }
 
-const CategoryFilterContext = createContext<CategoryFilterContextType | undefined>(undefined)
+export const CategoryFilterContext = createContext<CategoryFilterContextType | undefined>(undefined)
 
 export const useCategoryFilter = () => {
   const context = useContext(CategoryFilterContext)
