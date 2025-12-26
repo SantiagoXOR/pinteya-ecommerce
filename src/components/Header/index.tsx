@@ -164,29 +164,38 @@ const Header = () => {
     testLocation,
   } = useGeolocation(geoEnabled ? undefined : { skip: true })
 
-  // ⚡ PERFORMANCE: Sticky header logic optimizado con requestAnimationFrame
+  // ⚡ PERFORMANCE: Sticky header logic optimizado con requestAnimationFrame y throttling
   // ⚡ FIX: Usar useRef para lastScrollY para evitar re-registrar el listener constantemente
   const lastScrollYRef = useRef(0)
+  const lastUpdateTimeRef = useRef(0)
   
   useEffect(() => {
     let ticking = false
     let rafId: number | null = null
+    const THROTTLE_MS = 16 // ~60fps, actualizar máximo cada 16ms
 
     const handleScroll = () => {
       if (!ticking) {
         rafId = window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          const prevScrollY = lastScrollYRef.current
+          const now = performance.now()
+          const timeSinceLastUpdate = now - lastUpdateTimeRef.current
 
-          // Determinar si el header debe ser sticky
-          const newIsSticky = currentScrollY > 100
-          const newIsScrollingUp = currentScrollY < prevScrollY || currentScrollY < 10
+          // ⚡ OPTIMIZACIÓN: Throttle adicional para evitar actualizaciones excesivas
+          if (timeSinceLastUpdate >= THROTTLE_MS) {
+            const currentScrollY = window.scrollY
+            const prevScrollY = lastScrollYRef.current
 
-          // Solo actualizar estado si realmente cambió
-          setIsSticky(prev => prev !== newIsSticky ? newIsSticky : prev)
-          setIsScrollingUp(prev => prev !== newIsScrollingUp ? newIsScrollingUp : prev)
-          
-          lastScrollYRef.current = currentScrollY
+            // Determinar si el header debe ser sticky
+            const newIsSticky = currentScrollY > 100
+            const newIsScrollingUp = currentScrollY < prevScrollY || currentScrollY < 10
+
+            // Solo actualizar estado si realmente cambió
+            setIsSticky(prev => prev !== newIsSticky ? newIsSticky : prev)
+            setIsScrollingUp(prev => prev !== newIsScrollingUp ? newIsScrollingUp : prev)
+            
+            lastScrollYRef.current = currentScrollY
+            lastUpdateTimeRef.current = now
+          }
 
           ticking = false
           rafId = null
