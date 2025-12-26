@@ -59,7 +59,7 @@ const ScrollingBanner = () => {
         }
 
         .animate-scroll-banner-infinite {
-          animation: scroll-banner-infinite 30s linear infinite;
+          animation: scroll-banner-infinite 30s linear infinite !important;
           will-change: transform;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
@@ -72,6 +72,15 @@ const ScrollingBanner = () => {
         /* Asegurar transiciones suaves */
         .animate-scroll-banner-infinite {
           transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* ⚡ FIX: Excluir ScrollingBanner de la optimización de animaciones en mobile */
+        /* El CSS global reduce animaciones a 0.1s en mobile, pero necesitamos mantener 30s para legibilidad */
+        @media (max-width: 768px) {
+          .animate-scroll-banner-infinite {
+            animation: scroll-banner-infinite 30s linear infinite !important;
+            animation-duration: 30s !important;
+          }
         }
       `}</style>
     </div>

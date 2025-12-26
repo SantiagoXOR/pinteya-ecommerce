@@ -90,7 +90,9 @@ const MercadoLibreBottomNav = dynamic(() => import('@/components/ui/bottom-navig
 })
 
 // ⚡ PERFORMANCE: Memoizar componentes para evitar re-renders innecesarios
-const MemoizedHeader = React.memo(Header)
+// ⚡ FIX: Header no recibe props, así que memo no ayuda - el problema está en los hooks internos
+// La optimización debe hacerse dentro del componente Header mismo
+const MemoizedHeader = Header // No memoizar ya que no recibe props y los hooks internos causan re-renders
 const MemoizedFooter = React.memo(Footer)
 // ScrollToTop y Toaster ya son lazy loaded, no necesitan memoización adicional
 

@@ -11,6 +11,7 @@ import { UserAvatarDropdown, LoginButton } from './UserAvatarDropdown'
 import { useAuth } from '@/hooks/useAuth'
 import ActionButtons from './ActionButtons'
 import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocompleteIntegrated'
+import { cn } from '@/lib/core/utils'
 
 // ⚡ PERFORMANCE: Memoizar SearchAutocomplete para evitar re-renders innecesarios
 const MemoizedSearchAutocomplete = React.memo(SearchAutocompleteIntegrated)
@@ -28,9 +29,117 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [isMounted, setIsMounted] = useState(false) // Para evitar hydration mismatch
-  const { openCartModal } = useCartModalContext()
-  const { isAnimating } = useCartAnimation()
-  const { isSignedIn } = useAuth()
+  // #region agent log
+  const cartModalContext = useCartModalContext()
+  const { openCartModal } = cartModalContext
+  React.useEffect(() => {
+    const logData = {
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'E',
+      location: 'Header.tsx:useCartModalContext',
+      message: 'CartModalContext changed',
+      data: {
+        hasOpenCartModal: !!openCartModal,
+        timestamp: Date.now()
+      },
+      timestamp: Date.now()
+    }
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(logData)
+    }).catch(() => {})
+  }, [openCartModal])
+  
+  const cartAnimation = useCartAnimation()
+  const { isAnimating } = cartAnimation
+  React.useEffect(() => {
+    const logData = {
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'F',
+      location: 'Header.tsx:useCartAnimation',
+      message: 'CartAnimation changed',
+      data: {
+        isAnimating,
+        timestamp: Date.now()
+      },
+      timestamp: Date.now()
+    }
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(logData)
+    }).catch(() => {})
+  }, [isAnimating])
+  
+  const auth = useAuth()
+  const { isSignedIn } = auth
+  React.useEffect(() => {
+    const logData = {
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'G',
+      location: 'Header.tsx:useAuth',
+      message: 'Auth changed',
+      data: {
+        isSignedIn,
+        timestamp: Date.now()
+      },
+      timestamp: Date.now()
+    }
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(logData)
+    }).catch(() => {})
+  }, [isSignedIn])
+  // #endregion
+
+  // #region agent log
+  const renderCountRef = useRef(0)
+  const prevStateRef = useRef({ isSticky, isScrollingUp, isSearchExpanded, isMounted })
+  
+  useEffect(() => {
+    renderCountRef.current += 1
+    const prevState = prevStateRef.current
+    
+    // Solo loggear si el estado realmente cambió
+    const stateChanged = 
+      prevState.isSticky !== isSticky ||
+      prevState.isScrollingUp !== isScrollingUp ||
+      prevState.isSearchExpanded !== isSearchExpanded ||
+      prevState.isMounted !== isMounted
+    
+    if (stateChanged || renderCountRef.current <= 5) {
+      const logData = {
+        sessionId: 'debug-session',
+        runId: 'run1',
+        hypothesisId: 'C',
+        location: 'Header.tsx:render',
+        message: 'Header rendered',
+        data: {
+          renderCount: renderCountRef.current,
+          isSticky,
+          isScrollingUp,
+          isSearchExpanded,
+          isMounted,
+          stateChanged,
+          timestamp: Date.now()
+        },
+        timestamp: Date.now()
+      }
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logData)
+      }).catch(() => {})
+      
+      prevStateRef.current = { isSticky, isScrollingUp, isSearchExpanded, isMounted }
+    }
+  }, [isSticky, isScrollingUp, isSearchExpanded, isMounted])
+  // #endregion
 
   // ⚡ PERFORMANCE: Hook de geolocalización diferido (no bloquea FCP)
   // Solo se inicializa después de 2 segundos del mount
@@ -56,6 +165,9 @@ const Header = () => {
   } = useGeolocation(geoEnabled ? undefined : { skip: true })
 
   // ⚡ PERFORMANCE: Sticky header logic optimizado con requestAnimationFrame
+  // ⚡ FIX: Usar useRef para lastScrollY para evitar re-registrar el listener constantemente
+  const lastScrollYRef = useRef(0)
+  
   useEffect(() => {
     let ticking = false
     let rafId: number | null = null
@@ -64,13 +176,17 @@ const Header = () => {
       if (!ticking) {
         rafId = window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY
+          const prevScrollY = lastScrollYRef.current
 
           // Determinar si el header debe ser sticky
-          setIsSticky(currentScrollY > 100)
+          const newIsSticky = currentScrollY > 100
+          const newIsScrollingUp = currentScrollY < prevScrollY || currentScrollY < 10
 
-          // Determinar dirección del scroll para animaciones
-          setIsScrollingUp(currentScrollY < lastScrollY || currentScrollY < 10)
-          setLastScrollY(currentScrollY)
+          // Solo actualizar estado si realmente cambió
+          setIsSticky(prev => prev !== newIsSticky ? newIsSticky : prev)
+          setIsScrollingUp(prev => prev !== newIsScrollingUp ? newIsScrollingUp : prev)
+          
+          lastScrollYRef.current = currentScrollY
 
           ticking = false
           rafId = null
@@ -86,7 +202,7 @@ const Header = () => {
         cancelAnimationFrame(rafId)
       }
     }
-  }, [lastScrollY])
+  }, []) // ⚡ FIX: Sin dependencias para evitar re-registrar el listener
 
   // Log para debugging del estado de geolocalización (solo cuando cambia la zona)
   useEffect(() => {}, [detectedZone?.name]) // Solo depender del nombre de la zona
@@ -113,8 +229,17 @@ const Header = () => {
     }
   }, [])
 
-  const product = useAppSelector(state => state.cartReducer.items)
-  const totalPrice = useSelector(selectTotalPrice)
+  // ⚡ FIX: Usar selectores memoizados con shallowEqual para evitar re-renders innecesarios
+  const product = useAppSelector(state => state.cartReducer.items, (prev, next) => {
+    if (prev.length !== next.length) return false
+    // Solo re-renderizar si cambió la cantidad de items o sus IDs/cantidades
+    return prev.every((item, index) => {
+      const nextItem = next[index]
+      return nextItem && item.id === nextItem.id && item.quantity === nextItem.quantity
+    })
+  })
+  
+  const totalPrice = useSelector(selectTotalPrice, (prev, next) => prev === next)
 
   // Efecto para animar el carrito cuando se agregan productos
   useEffect(() => {
@@ -235,11 +360,11 @@ const Header = () => {
             >
               <HeaderLogo
                 isMobile={false}
-                className={`
-                  w-16 sm:w-24 md:w-32 h-auto transition-all duration-300 ease-out
-                  hover:scale-110 cursor-pointer
-                  ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
-                `}
+                className={cn(
+                  'w-16 sm:w-24 md:w-32 h-auto transition-all duration-300 ease-out',
+                  'hover:scale-110 cursor-pointer',
+                  isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'
+                )}
               />
             </Link>
             

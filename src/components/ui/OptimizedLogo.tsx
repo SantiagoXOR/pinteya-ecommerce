@@ -41,13 +41,38 @@ const getLogoProps = (variant: LogoVariant, format: LogoFormat) => {
 /**
  * Componente de logo optimizado con fallbacks automáticos
  */
-export const OptimizedLogo: React.FC<OptimizedLogoProps> = ({
+export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   variant = 'desktop',
   format = 'auto',
   className,
   onClick,
   'data-testid': testId,
 }) => {
+  // #region agent log
+  React.useEffect(() => {
+    const logData = {
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'A',
+      location: 'OptimizedLogo.tsx:render',
+      message: 'OptimizedLogo rendered',
+      data: {
+        variant,
+        format,
+        testId,
+        timestamp: Date.now(),
+        renderCount: performance.now()
+      },
+      timestamp: Date.now()
+    }
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(logData)
+    }).catch(() => {})
+  }, [variant, format, testId])
+  // #endregion
+
   const logoProps = getLogoProps(variant, format)
 
   // Clases base según la variante
@@ -59,13 +84,44 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = ({
 
   const combinedClassName = cn(baseClasses[variant], logoProps.className, className)
 
+  // ⚡ FIX: Para SVGs, usar <img> tag directamente para evitar re-fetches de Next.js Image
+  // Next.js Image puede recargar SVGs en cada re-render incluso con unoptimized
+  const isSVG = logoProps.src.endsWith('.svg')
+  const logoSrc = React.useMemo(() => logoProps.src, [logoProps.src])
+  
+  if (isSVG) {
+    return (
+      <img
+        src={logoSrc}
+        alt={logoProps.alt || 'Pinteya Logo'}
+        className={combinedClassName}
+        onClick={onClick}
+        data-testid={testId}
+        // ⚡ FIX: Key estable para evitar re-mounts innecesarios
+        key={`logo-${variant}-${testId}`}
+        style={{
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
+          height: logoProps.height ? `${logoProps.height}px` : 'auto',
+          width: logoProps.width ? `${logoProps.width}px` : 'auto',
+        }}
+        loading="eager"
+        decoding="async"
+      />
+    )
+  }
+  
   return (
     <Image
       {...logoProps}
-      unoptimized={logoProps.src.endsWith('.svg')}
+      src={logoSrc}
+      unoptimized={false}
       className={combinedClassName}
       onClick={onClick}
       data-testid={testId}
+      // ⚡ FIX: Key estable para evitar re-mounts innecesarios
+      key={`logo-${variant}-${testId}`}
+      priority={logoProps.priority !== false}
       style={{
         willChange: 'transform',
         backfaceVisibility: 'hidden',
@@ -88,7 +144,16 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = ({
       }}
     />
   )
-}
+}, (prevProps, nextProps) => {
+  // Comparación personalizada para memoización
+  return (
+    prevProps.variant === nextProps.variant &&
+    prevProps.format === nextProps.format &&
+    prevProps.className === nextProps.className &&
+    prevProps['data-testid'] === nextProps['data-testid'] &&
+    prevProps.onClick === nextProps.onClick
+  )
+})
 
 /**
  * Componente específico para el logo del header
@@ -97,7 +162,32 @@ export const HeaderLogo: React.FC<{
   isMobile?: boolean
   className?: string
   onClick?: () => void
-}> = ({ isMobile = false, className, onClick }) => {
+}> = React.memo(({ isMobile = false, className, onClick }) => {
+  // #region agent log
+  React.useEffect(() => {
+    const logData = {
+      sessionId: 'debug-session',
+      runId: 'run1',
+      hypothesisId: 'B',
+      location: 'HeaderLogo.tsx:render',
+      message: 'HeaderLogo rendered',
+      data: {
+        isMobile,
+        className,
+        hasOnClick: !!onClick,
+        timestamp: Date.now(),
+        renderCount: performance.now()
+      },
+      timestamp: Date.now()
+    }
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(logData)
+    }).catch(() => {})
+  }, [isMobile, className, onClick])
+  // #endregion
+
   return (
     <OptimizedLogo
       variant={isMobile ? 'mobile' : 'desktop'}
@@ -107,7 +197,13 @@ export const HeaderLogo: React.FC<{
       data-testid={isMobile ? 'mobile-logo' : 'desktop-logo'}
     />
   )
-}
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.isMobile === nextProps.isMobile &&
+    prevProps.className === nextProps.className &&
+    prevProps.onClick === nextProps.onClick
+  )
+})
 
 /**
  * Componente para el logo en secciones hero
