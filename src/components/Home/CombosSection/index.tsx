@@ -45,7 +45,7 @@ const CombosSection: React.FC = () => {
   }, [currentIndex])
 
   return (
-    <section className='w-full pt-6 pb-2 px-4 bg-white'>
+    <section className='w-full pt-6 pb-2 px-4 bg-white CombosSection'>
       <div className='max-w-7xl mx-auto'>
         {/* Carrusel horizontal */}
         <div className='relative'>
@@ -53,16 +53,16 @@ const CombosSection: React.FC = () => {
           <div className='overflow-hidden rounded-2xl'>
             <div
               ref={containerRef}
-              className={`flex ${isTransitioning ? 'transition-transform duration-300 ease-in-out' : ''}`}
+              className={`flex ${isTransitioning ? 'transition-transform duration-500 ease-in-out' : ''}`}
               style={{ transform: `translateX(-${currentIndex * 100}%)` }}
             >
               {infiniteData.map((combo, index) => (
                 <div key={index} className='w-full flex-shrink-0'>
-                  <Link href={combo.url} className='block'>
+                  <Link href={combo.url} className='block combo-image-link'>
                     <img
                       src={combo.image}
                       alt={`Combo promocional ${(index % combosData.length) + 1}`}
-                      className='w-full h-auto object-contain max-h-[300px] md:max-h-[400px] hover:scale-105 transition-transform duration-300 cursor-pointer hover:shadow-xl rounded-2xl'
+                      className='w-full h-auto object-contain max-h-[300px] md:max-h-[400px] combo-image hover:scale-105 transition-transform duration-500 cursor-pointer hover:shadow-xl rounded-2xl'
                     />
                   </Link>
                 </div>

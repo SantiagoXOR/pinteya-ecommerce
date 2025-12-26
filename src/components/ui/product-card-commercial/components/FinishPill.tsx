@@ -63,7 +63,7 @@ export const FinishPill = React.memo(function FinishPill({
           ? 'px-1.5'
           : 'px-1.5 cursor-not-allowed',
         // Solo transiciones compuestas
-        isAvailable && 'transition-transform duration-200 ease-out active:scale-95'
+        isAvailable && 'transition-transform duration-500 ease-in-out active:scale-95'
       )}
       style={{
         ...baseStyle,

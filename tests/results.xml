@@ -1,1194 +1,1392 @@
-<testsuites id="" name="" tests="25" failures="9" skipped="0" errors="0" time="481.89848099999995">
-<testsuite name="product-cards-scroll-performance.spec.ts" timestamp="2025-12-26T17:25:56.939Z" hostname="ui-public" tests="5" failures="0" skipped="0" time="57.074" errors="0">
-<testcase name="Product Cards Scroll Performance - Gama Alta › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="11.636">
+<testsuites id="" name="" tests="35" failures="10" skipped="0" errors="0" time="365.524624">
+<testsuite name="animation-duration-verification.spec.ts" timestamp="2025-12-26T18:29:38.430Z" hostname="ui-public" tests="7" failures="0" skipped="0" time="41.141" errors="0">
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para transiciones" classname="animation-duration-verification.spec.ts" time="5.381">
+<system-out>
+<![CDATA[📊 Duraciones Globales de Transiciones:
+  - CSS Computed: 0.8s
+  - Duración en segundos: [33m0.8[39m
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para animaciones" classname="animation-duration-verification.spec.ts" time="5.426">
+<system-out>
+<![CDATA[📊 Duraciones Globales de Animaciones:
+  - CSS Computed: 1s
+  - Duración en segundos: [33m1[39m
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en botones del Hero Carousel" classname="animation-duration-verification.spec.ts" time="5.001">
+<system-out>
+<![CDATA[📊 Duraciones en Botones del Hero Carousel:
+  Botón 1:
+    - Transition: 0.8s (0.8s)
+  Botón 2:
+    - Transition: 0.8s (0.8s)
+  Botón 3:
+    - Transition: 0.8s (0.8s)
+  Botón 4:
+    - Transition: 0.8s (0.8s)
+  Botón 5:
+    - Transition: 0.8s (0.8s)
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en imágenes de Combos" classname="animation-duration-verification.spec.ts" time="5.776">
+<system-out>
+<![CDATA[📊 Duraciones en Imágenes de Combos:
+  Imagen 1:
+    - Transition: 0.8s (0.8s)
+  Imagen 2:
+    - Transition: 0.8s (0.8s)
+  Imagen 3:
+    - Transition: 0.8s (0.8s)
+  Imagen 4:
+    - Transition: 0.8s (0.8s)
+  Imagen 5:
+    - Transition: 0.8s (0.8s)
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en botón del Hero" classname="animation-duration-verification.spec.ts" time="6.728">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Botón del Hero:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en imagen de Combo" classname="animation-duration-verification.spec.ts" time="7.024">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Imagen de Combo:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe verificar todas las duraciones en la página" classname="animation-duration-verification.spec.ts" time="5.805">
 <system-out>
 <![CDATA[
-🎯 Testing: Dispositivo de gama alta
-   CPU Throttling: 1x
-   Viewport: 1920x1080
+📊 RESUMEN DE DUraciones DE ANIMACIONES:
+==========================================
+Transiciones Globales:
+  - CSS: 0.8s
+  - Duración: 0.8s
 
-📊 Métricas de Scroll:
-   FPS Promedio: 60.39fps
-   FPS Mínimo: 59.52fps
-   FPS Máximo: 60.61fps
-   Total Frames: 182
-   Jank Count: 0 (0.00%)
-   Dropped Frames: 0
-   Smoothness Score: 37.34/100
-   Long Tasks: 0
-]]>
-</system-out>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="10.302">
-<system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama media
-   CPU Throttling: 2x
-   Viewport: 768x1024
+Animaciones Globales:
+  - CSS: 1s
+  - Duración: 1s
 
-📊 Métricas de Scroll:
-   FPS Promedio: 60.18fps
-   FPS Mínimo: 59.52fps
-   Jank Count: 0 (0.00%)
-   Smoothness Score: 37.01/100
-]]>
-</system-out>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe manejar scroll rápido sin lag excesivo" classname="product-cards-scroll-performance.spec.ts" time="9.296">
-<system-out>
-<![CDATA[
-🎯 Testing Scroll Rápido: Gama media
+Botones del Hero Carousel:
+  Botón 1: 0.8s
+  Botón 2: 0.8s
+  Botón 3: 0.8s
+  Botón 4: 0.8s
+  Botón 5: 0.8s
 
-📊 Métricas Scroll Rápido:
-   FPS Promedio: 60.25fps
-   Jank: 0 (0.00%)
-   Smoothness: 38.01/100
-]]>
-</system-out>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Gama Baja › debe mantener scroll aceptable durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="13.135">
-<system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama baja
-   CPU Throttling: 4x
-   Viewport: 375x667
+Imágenes de Combos:
+  Imagen 1: 0.8s
+  Imagen 2: 0.8s
+  Imagen 3: 0.8s
+  Imagen 4: 0.8s
+  Imagen 5: 0.8s
 
-📊 Métricas de Scroll:
-   FPS Promedio: 60.17fps
-   FPS Mínimo: 59.52fps
-   Jank Count: 0 (0.00%)
-   Smoothness Score: 37.56/100
-]]>
-</system-out>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Análisis General › debe detectar y reportar problemas de rendimiento específicos" classname="product-cards-scroll-performance.spec.ts" time="12.705">
-<system-out>
-<![CDATA[
-⚠️ Problemas de rendimiento detectados:
-   - Smoothness score bajo: 38.67/100 (objetivo: 80+)
-]]>
-</system-out>
-</testcase>
-</testsuite>
-<testsuite name="product-cards-scroll-performance.spec.ts" timestamp="2025-12-26T17:25:56.939Z" hostname="firefox" tests="5" failures="0" skipped="0" time="51.735" errors="0">
-<testcase name="Product Cards Scroll Performance - Gama Alta › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="12.68">
-<system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama alta
-   CPU Throttling: 1x
-   Viewport: 1920x1080
+Pills de Product Cards:
+  Pill 1: 0.8s
+  Pill 2: 0s
+  Pill 3: 0s
+  Pill 4: 0s
+  Pill 5: 0s
+==========================================
 
-📊 Métricas de Scroll:
-   FPS Promedio: 41.43fps
-   FPS Mínimo: 18.00fps
-   FPS Máximo: 328.95fps
-   Total Frames: 125
-   Jank Count: 4 (3.20%)
-   Dropped Frames: 0
-   Smoothness Score: 29.02/100
-   Long Tasks: 0
-]]>
-</system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="9.014">
-<system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama media
-   CPU Throttling: 2x
-   Viewport: 768x1024
-
-📊 Métricas de Scroll:
-   FPS Promedio: 61.05fps
-   FPS Mínimo: 24.00fps
-   Jank Count: 0 (0.00%)
-   Smoothness Score: 60.03/100
-]]>
-</system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe manejar scroll rápido sin lag excesivo" classname="product-cards-scroll-performance.spec.ts" time="7.83">
-<system-out>
-<![CDATA[
-🎯 Testing Scroll Rápido: Gama media
-
-📊 Métricas Scroll Rápido:
-   FPS Promedio: 64.49fps
-   Jank: 0 (0.00%)
-   Smoothness: 60.66/100
-]]>
-</system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Gama Baja › debe mantener scroll aceptable durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="11.476">
-<system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama baja
-   CPU Throttling: 4x
-   Viewport: 375x667
-
-📊 Métricas de Scroll:
-   FPS Promedio: 86.70fps
-   FPS Mínimo: 20.58fps
-   Jank Count: 0 (0.00%)
-   Smoothness Score: 83.95/100
-]]>
-</system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Análisis General › debe detectar y reportar problemas de rendimiento específicos" classname="product-cards-scroll-performance.spec.ts" time="10.735">
-<system-out>
-<![CDATA[
-⚠️ Problemas de rendimiento detectados:
-   - FPS promedio bajo: 38.18fps (objetivo: 50+)
-   - Smoothness score bajo: 23.83/100 (objetivo: 80+)
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="product-cards-scroll-performance.spec.ts" timestamp="2025-12-26T17:25:56.939Z" hostname="webkit" tests="5" failures="4" skipped="0" time="113.33" errors="0">
-<testcase name="Product Cards Scroll Performance - Gama Alta › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="27.677">
-<failure message="product-cards-scroll-performance.spec.ts:247:7 debe mantener scroll fluido durante scroll medio" type="FAILURE">
-<![CDATA[  [webkit] › product-cards-scroll-performance.spec.ts:247:7 › Product Cards Scroll Performance - Gama Alta › debe mantener scroll fluido durante scroll medio 
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 25
-    Received:    7.133592736705577
-
-      274 |     // Thresholds ajustados basados en resultados reales post-optimización
-      275 |     // Las optimizaciones mejoraron significativamente el jank
-    > 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps
-          |                            ^
-      277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps
-      278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%
-      279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:276:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 25
-    Received:    5.821474773609315
-
-      274 |     // Thresholds ajustados basados en resultados reales post-optimización
-      275 |     // Las optimizaciones mejoraron significativamente el jank
-    > 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps
-          |                            ^
-      277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps
-      278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%
-      279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:276:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
+<testsuite name="animation-duration-verification.spec.ts" timestamp="2025-12-26T18:29:38.430Z" hostname="firefox" tests="7" failures="0" skipped="0" time="47.772" errors="0">
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para transiciones" classname="animation-duration-verification.spec.ts" time="6.579">
 <system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama alta
-   CPU Throttling: 1x
-   Viewport: 1920x1080
-
-📊 Métricas de Scroll:
-   FPS Promedio: 7.13fps
-   FPS Mínimo: 4.81fps
-   FPS Máximo: 17.24fps
-   Total Frames: 22
-   Jank Count: 22 (100.00%)
-   Dropped Frames: 21
-   Smoothness Score: 0.00/100
-   Long Tasks: 0
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit\error-context.md]]
-
-🎯 Testing: Dispositivo de gama alta
-   CPU Throttling: 1x
-   Viewport: 1920x1080
-
-📊 Métricas de Scroll:
-   FPS Promedio: 5.82fps
-   FPS Mínimo: 4.65fps
-   FPS Máximo: 23.26fps
-   Total Frames: 18
-   Jank Count: 17 (94.44%)
-   Dropped Frames: 17
-   Smoothness Score: 0.00/100
-   Long Tasks: 0
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-webkit-retry1\trace.zip]]
+<![CDATA[📊 Duraciones Globales de Transiciones:
+  - CSS Computed: 0.8s
+  - Duración en segundos: [33m0.8[39m
 ]]>
 </system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="22.829">
-<failure message="product-cards-scroll-performance.spec.ts:293:7 debe mantener scroll fluido durante scroll medio" type="FAILURE">
-<![CDATA[  [webkit] › product-cards-scroll-performance.spec.ts:293:7 › Product Cards Scroll Performance - Gama Media › debe mantener scroll fluido durante scroll medio 
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 40
-    Received:    13.544763792533862
-
-      316 |     // Thresholds ajustados para gama media post-optimización
-      317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%
-    > 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps
-          |                            ^
-      319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps
-      320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%
-      321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:318:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 40
-    Received:    12.803676953381483
-
-      316 |     // Thresholds ajustados para gama media post-optimización
-      317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%
-    > 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps
-          |                            ^
-      319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps
-      320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%
-      321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:318:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para animaciones" classname="animation-duration-verification.spec.ts" time="5.764">
 <system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama media
-   CPU Throttling: 2x
-   Viewport: 768x1024
-
-📊 Métricas de Scroll:
-   FPS Promedio: 13.54fps
-   FPS Mínimo: 10.64fps
-   Jank Count: 40 (97.56%)
-   Smoothness Score: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit\error-context.md]]
-
-🎯 Testing: Dispositivo de gama media
-   CPU Throttling: 2x
-   Viewport: 768x1024
-
-📊 Métricas de Scroll:
-   FPS Promedio: 12.80fps
-   FPS Mínimo: 8.00fps
-   Jank Count: 38 (97.44%)
-   Smoothness Score: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-webkit-retry1\trace.zip]]
+<![CDATA[📊 Duraciones Globales de Animaciones:
+  - CSS Computed: 1s
+  - Duración en segundos: [33m1[39m
 ]]>
 </system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe manejar scroll rápido sin lag excesivo" classname="product-cards-scroll-performance.spec.ts" time="21.066">
-<failure message="product-cards-scroll-performance.spec.ts:324:7 debe manejar scroll rápido sin lag excesivo" type="FAILURE">
-<![CDATA[  [webkit] › product-cards-scroll-performance.spec.ts:324:7 › Product Cards Scroll Performance - Gama Media › debe manejar scroll rápido sin lag excesivo 
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 25
-    Received:    12.470023980815348
-
-      343 |
-      344 |     // Thresholds ajustados para scroll rápido en gama media
-    > 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25
-          |                            ^
-      346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50
-      347 |   })
-      348 | })
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:345:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 25
-    Received:    12.621359223300972
-
-      343 |
-      344 |     // Thresholds ajustados para scroll rápido en gama media
-    > 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25
-          |                            ^
-      346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50
-      347 |   })
-      348 | })
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:345:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en botones del Hero Carousel" classname="animation-duration-verification.spec.ts" time="6.522">
 <system-out>
-<![CDATA[
-🎯 Testing Scroll Rápido: Gama media
-
-📊 Métricas Scroll Rápido:
-   FPS Promedio: 12.47fps
-   Jank: 26 (100.00%)
-   Smoothness: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit\error-context.md]]
-
-🎯 Testing Scroll Rápido: Gama media
-
-📊 Métricas Scroll Rápido:
-   FPS Promedio: 12.62fps
-   Jank: 26 (100.00%)
-   Smoothness: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-webkit-retry1\trace.zip]]
+<![CDATA[📊 Duraciones en Botones del Hero Carousel:
+  Botón 1:
+    - Transition: 0.8s (0.8s)
+  Botón 2:
+    - Transition: 0.8s (0.8s)
+  Botón 3:
+    - Transition: 0.8s (0.8s)
+  Botón 4:
+    - Transition: 0.8s (0.8s)
+  Botón 5:
+    - Transition: 0.8s (0.8s)
 ]]>
 </system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Gama Baja › debe mantener scroll aceptable durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="28.103">
-<failure message="product-cards-scroll-performance.spec.ts:362:7 debe mantener scroll aceptable durante scroll medio" type="FAILURE">
-<![CDATA[  [webkit] › product-cards-scroll-performance.spec.ts:362:7 › Product Cards Scroll Performance - Gama Baja › debe mantener scroll aceptable durante scroll medio 
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 35
-    Received:    24.1801921165949
-
-      385 |     // Thresholds ajustados para gama baja post-optimización
-      386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)
-    > 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps
-          |                            ^
-      388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)
-      389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)
-      390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:387:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 35
-    Received:    26.42007926023778
-
-      385 |     // Thresholds ajustados para gama baja post-optimización
-      386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)
-    > 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps
-          |                            ^
-      388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)
-      389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)
-      390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:387:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en imágenes de Combos" classname="animation-duration-verification.spec.ts" time="7.29">
 <system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama baja
-   CPU Throttling: 4x
-   Viewport: 375x667
-
-📊 Métricas de Scroll:
-   FPS Promedio: 24.18fps
-   FPS Mínimo: 15.63fps
-   Jank Count: 5 (6.85%)
-   Smoothness Score: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit\error-context.md]]
-
-🎯 Testing: Dispositivo de gama baja
-   CPU Throttling: 4x
-   Viewport: 375x667
-
-📊 Métricas de Scroll:
-   FPS Promedio: 26.42fps
-   FPS Mínimo: 16.13fps
-   Jank Count: 3 (3.75%)
-   Smoothness Score: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-webkit-retry1\trace.zip]]
+<![CDATA[📊 Duraciones en Imágenes de Combos:
+  Imagen 1:
+    - Transition: 0.8s (0.8s)
+  Imagen 2:
+    - Transition: 0.8s (0.8s)
+  Imagen 3:
+    - Transition: 0.8s (0.8s)
+  Imagen 4:
+    - Transition: 0.8s (0.8s)
+  Imagen 5:
+    - Transition: 0.8s (0.8s)
 ]]>
 </system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Análisis General › debe detectar y reportar problemas de rendimiento específicos" classname="product-cards-scroll-performance.spec.ts" time="13.655">
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en botón del Hero" classname="animation-duration-verification.spec.ts" time="8.795">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Botón del Hero:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en imagen de Combo" classname="animation-duration-verification.spec.ts" time="7.671">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Imagen de Combo:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe verificar todas las duraciones en la página" classname="animation-duration-verification.spec.ts" time="5.151">
 <system-out>
 <![CDATA[
-⚠️ Problemas de rendimiento detectados:
-   - FPS promedio bajo: 6.88fps (objetivo: 50+)
-   - Alto porcentaje de jank: 100.00% (objetivo: <10%)
-   - Muchos frames dropped: 21 (95.45%)
-   - Smoothness score bajo: 0.00/100 (objetivo: 80+)
+📊 RESUMEN DE DUraciones DE ANIMACIONES:
+==========================================
+Transiciones Globales:
+  - CSS: 0.8s
+  - Duración: 0.8s
+
+Animaciones Globales:
+  - CSS: 1s
+  - Duración: 1s
+
+Botones del Hero Carousel:
+  Botón 1: 0.8s
+  Botón 2: 0.8s
+  Botón 3: 0.8s
+  Botón 4: 0.8s
+  Botón 5: 0.8s
+
+Imágenes de Combos:
+  Imagen 1: 0.8s
+  Imagen 2: 0.8s
+  Imagen 3: 0.8s
+  Imagen 4: 0.8s
+  Imagen 5: 0.8s
+
+Pills de Product Cards:
+  Pill 1: 0.8s
+  Pill 2: 0s
+  Pill 3: 0s
+  Pill 4: 0s
+  Pill 5: 0s
+==========================================
+
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="product-cards-scroll-performance.spec.ts" timestamp="2025-12-26T17:25:56.939Z" hostname="Mobile Chrome" tests="5" failures="1" skipped="0" time="78.604" errors="0">
-<testcase name="Product Cards Scroll Performance - Gama Alta › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="12.663">
+<testsuite name="animation-duration-verification.spec.ts" timestamp="2025-12-26T18:29:38.430Z" hostname="webkit" tests="7" failures="0" skipped="0" time="48.238" errors="0">
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para transiciones" classname="animation-duration-verification.spec.ts" time="5.913">
 <system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama alta
-   CPU Throttling: 1x
-   Viewport: 1920x1080
-
-📊 Métricas de Scroll:
-   FPS Promedio: 54.31fps
-   FPS Mínimo: 14.99fps
-   FPS Máximo: 333.33fps
-   Total Frames: 164
-   Jank Count: 1 (0.61%)
-   Dropped Frames: 0
-   Smoothness Score: 33.76/100
-   Long Tasks: 0
+<![CDATA[📊 Duraciones Globales de Transiciones:
+  - CSS Computed: 0.8s
+  - Duración en segundos: [33m0.8[39m
 ]]>
 </system-out>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="10.341">
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para animaciones" classname="animation-duration-verification.spec.ts" time="5.761">
 <system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama media
-   CPU Throttling: 2x
-   Viewport: 768x1024
-
-📊 Métricas de Scroll:
-   FPS Promedio: 52.20fps
-   FPS Mínimo: 10.00fps
-   Jank Count: 5 (3.18%)
-   Smoothness Score: 28.19/100
+<![CDATA[📊 Duraciones Globales de Animaciones:
+  - CSS Computed: 1s
+  - Duración en segundos: [33m1[39m
 ]]>
 </system-out>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe manejar scroll rápido sin lag excesivo" classname="product-cards-scroll-performance.spec.ts" time="9.828">
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en botones del Hero Carousel" classname="animation-duration-verification.spec.ts" time="7.046">
 <system-out>
-<![CDATA[
-🎯 Testing Scroll Rápido: Gama media
-
-📊 Métricas Scroll Rápido:
-   FPS Promedio: 51.30fps
-   Jank: 3 (2.91%)
-   Smoothness: 26.93/100
+<![CDATA[📊 Duraciones en Botones del Hero Carousel:
+  Botón 1:
+    - Transition: 0.8s (0.8s)
+  Botón 2:
+    - Transition: 0.8s (0.8s)
+  Botón 3:
+    - Transition: 0.8s (0.8s)
+  Botón 4:
+    - Transition: 0.8s (0.8s)
+  Botón 5:
+    - Transition: 0.8s (0.8s)
 ]]>
 </system-out>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Gama Baja › debe mantener scroll aceptable durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="32.977">
-<failure message="product-cards-scroll-performance.spec.ts:362:7 debe mantener scroll aceptable durante scroll medio" type="FAILURE">
-<![CDATA[  [Mobile Chrome] › product-cards-scroll-performance.spec.ts:362:7 › Product Cards Scroll Performance - Gama Baja › debe mantener scroll aceptable durante scroll medio 
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 35
-    Received:    34.62396377821325
-
-      385 |     // Thresholds ajustados para gama baja post-optimización
-      386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)
-    > 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps
-          |                            ^
-      388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)
-      389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)
-      390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:387:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 35
-    Received:    21.581778338406973
-
-      385 |     // Thresholds ajustados para gama baja post-optimización
-      386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)
-    > 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps
-          |                            ^
-      388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)
-      389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)
-      390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:387:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en imágenes de Combos" classname="animation-duration-verification.spec.ts" time="5.812">
 <system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama baja
-   CPU Throttling: 4x
-   Viewport: 375x667
-
-📊 Métricas de Scroll:
-   FPS Promedio: 34.62fps
-   FPS Mínimo: 2.61fps
-   Jank Count: 9 (8.65%)
-   Smoothness Score: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome\error-context.md]]
-
-🎯 Testing: Dispositivo de gama baja
-   CPU Throttling: 4x
-   Viewport: 375x667
-
-📊 Métricas de Scroll:
-   FPS Promedio: 21.58fps
-   FPS Mínimo: 2.40fps
-   Jank Count: 7 (10.77%)
-   Smoothness Score: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Chrome-retry1\trace.zip]]
+<![CDATA[📊 Duraciones en Imágenes de Combos:
+  Imagen 1:
+    - Transition: 0.8s (0.8s)
+  Imagen 2:
+    - Transition: 0.8s (0.8s)
+  Imagen 3:
+    - Transition: 0.8s (0.8s)
+  Imagen 4:
+    - Transition: 0.8s (0.8s)
+  Imagen 5:
+    - Transition: 0.8s (0.8s)
 ]]>
 </system-out>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Análisis General › debe detectar y reportar problemas de rendimiento específicos" classname="product-cards-scroll-performance.spec.ts" time="12.795">
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en botón del Hero" classname="animation-duration-verification.spec.ts" time="7.636">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Botón del Hero:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en imagen de Combo" classname="animation-duration-verification.spec.ts" time="8.705">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Imagen de Combo:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe verificar todas las duraciones en la página" classname="animation-duration-verification.spec.ts" time="7.365">
 <system-out>
 <![CDATA[
-⚠️ Problemas de rendimiento detectados:
-   - Smoothness score bajo: 38.56/100 (objetivo: 80+)
+📊 RESUMEN DE DUraciones DE ANIMACIONES:
+==========================================
+Transiciones Globales:
+  - CSS: 0.8s
+  - Duración: 0.8s
+
+Animaciones Globales:
+  - CSS: 1s
+  - Duración: 1s
+
+Botones del Hero Carousel:
+  Botón 1: 0.8s
+  Botón 2: 0.8s
+  Botón 3: 0.8s
+  Botón 4: 0.8s
+  Botón 5: 0.8s
+
+Imágenes de Combos:
+  Imagen 1: 0.8s
+  Imagen 2: 0.8s
+  Imagen 3: 0.8s
+  Imagen 4: 0.8s
+  Imagen 5: 0.8s
+
+Pills de Product Cards:
+  Pill 1: 0.8s
+  Pill 2: 0s
+  Pill 3: 0s
+  Pill 4: 0s
+  Pill 5: 0s
+==========================================
+
 ]]>
 </system-out>
 </testcase>
 </testsuite>
-<testsuite name="product-cards-scroll-performance.spec.ts" timestamp="2025-12-26T17:25:56.939Z" hostname="Mobile Safari" tests="5" failures="4" skipped="0" time="128.713" errors="0">
-<testcase name="Product Cards Scroll Performance - Gama Alta › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="32.85">
-<failure message="product-cards-scroll-performance.spec.ts:247:7 debe mantener scroll fluido durante scroll medio" type="FAILURE">
-<![CDATA[  [Mobile Safari] › product-cards-scroll-performance.spec.ts:247:7 › Product Cards Scroll Performance - Gama Alta › debe mantener scroll fluido durante scroll medio 
+<testsuite name="animation-duration-verification.spec.ts" timestamp="2025-12-26T18:29:38.430Z" hostname="Mobile Chrome" tests="7" failures="5" skipped="0" time="71.98" errors="0">
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para transiciones" classname="animation-duration-verification.spec.ts" time="10.594">
+<failure message="animation-duration-verification.spec.ts:166:7 debe tener duraciones globales correctas para transiciones" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › animation-duration-verification.spec.ts:166:7 › Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para transiciones 
 
     Error: expect(received).toBeGreaterThanOrEqual(expected)
 
-    Expected: >= 25
-    Received:    3.638769434336752
+    Expected: >= 0.7
+    Received:    0.1
 
-      274 |     // Thresholds ajustados basados en resultados reales post-optimización
-      275 |     // Las optimizaciones mejoraron significativamente el jank
-    > 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps
-          |                            ^
-      277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps
-      278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%
-      279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:276:28
+      173 |     // Verificar que la duración global sea aproximadamente 0.8s
+      174 |     // Permitir un rango de 0.7s a 0.9s para tolerancia
+    > 175 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeGreaterThanOrEqual(0.7)
+          |                                                                  ^
+      176 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeLessThanOrEqual(0.9)
+      177 |   })
+      178 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:175:66
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\test-failed-1.png
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\video.webm
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\error-context.md
+    Error Context: ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
     Error: expect(received).toBeGreaterThanOrEqual(expected)
 
-    Expected: >= 25
-    Received:    3.3266799733865597
+    Expected: >= 0.7
+    Received:    0.1
 
-      274 |     // Thresholds ajustados basados en resultados reales post-optimización
-      275 |     // Las optimizaciones mejoraron significativamente el jank
-    > 276 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Ajustado basado en resultados: 26.87-26.96fps
-          |                            ^
-      277 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(10) // Ajustado basado en resultados: 11.99-12.02fps
-      278 |     expect(metrics.jankPercentage).toBeLessThan(15) // Mejorado significativamente: 4.94-9.88%
-      279 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness score aún bajo, pero jank mejoró
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:276:28
+      173 |     // Verificar que la duración global sea aproximadamente 0.8s
+      174 |     // Permitir un rango de 0.7s a 0.9s para tolerancia
+    > 175 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeGreaterThanOrEqual(0.7)
+          |                                                                  ^
+      176 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeLessThanOrEqual(0.9)
+      177 |   })
+      178 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:175:66
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\test-failed-1.png
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\video.webm
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\error-context.md
+    Error Context: ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\trace.zip
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[📊 Duraciones Globales de Transiciones:
+  - CSS Computed: 0.1s
+  - Duración en segundos: [33m0.1[39m
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome\error-context.md]]
+📊 Duraciones Globales de Transiciones:
+  - CSS Computed: 0.1s
+  - Duración en segundos: [33m0.1[39m
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Chrome-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para animaciones" classname="animation-duration-verification.spec.ts" time="11.027">
+<failure message="animation-duration-verification.spec.ts:179:7 debe tener duraciones globales correctas para animaciones" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › animation-duration-verification.spec.ts:179:7 › Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para animaciones 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.9
+    Received:    0.1
+
+      187 |     // Permitir un rango de 0.9s a 1.1s para tolerancia
+      188 |     if (metrics.globalAnimations.computedAnimationDuration > 0) {
+    > 189 |       expect(metrics.globalAnimations.computedAnimationDuration).toBeGreaterThanOrEqual(0.9)
+          |                                                                  ^
+      190 |       expect(metrics.globalAnimations.computedAnimationDuration).toBeLessThanOrEqual(1.1)
+      191 |     }
+      192 |   })
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:189:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.9
+    Received:    0.1
+
+      187 |     // Permitir un rango de 0.9s a 1.1s para tolerancia
+      188 |     if (metrics.globalAnimations.computedAnimationDuration > 0) {
+    > 189 |       expect(metrics.globalAnimations.computedAnimationDuration).toBeGreaterThanOrEqual(0.9)
+          |                                                                  ^
+      190 |       expect(metrics.globalAnimations.computedAnimationDuration).toBeLessThanOrEqual(1.1)
+      191 |     }
+      192 |   })
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:189:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[📊 Duraciones Globales de Animaciones:
+  - CSS Computed: 0.1s
+  - Duración en segundos: [33m0.1[39m
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome\error-context.md]]
+📊 Duraciones Globales de Animaciones:
+  - CSS Computed: 0.1s
+  - Duración en segundos: [33m0.1[39m
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Chrome-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en botones del Hero Carousel" classname="animation-duration-verification.spec.ts" time="10.442">
+<failure message="animation-duration-verification.spec.ts:194:7 debe tener duraciones correctas en botones del Hero Carousel" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › animation-duration-verification.spec.ts:194:7 › Verificación de Duraciones de Animaciones › debe tener duraciones correctas en botones del Hero Carousel 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      209 |         btn => btn.computedTransitionDuration >= 0.7 && btn.computedTransitionDuration <= 0.9
+      210 |       )
+    > 211 |       expect(validDurations.length).toBeGreaterThan(0)
+          |                                     ^
+      212 |     }
+      213 |   })
+      214 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:211:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      209 |         btn => btn.computedTransitionDuration >= 0.7 && btn.computedTransitionDuration <= 0.9
+      210 |       )
+    > 211 |       expect(validDurations.length).toBeGreaterThan(0)
+          |                                     ^
+      212 |     }
+      213 |   })
+      214 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:211:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[📊 Duraciones en Botones del Hero Carousel:
+  Botón 1:
+    - Transition: 0.1s (0.1s)
+  Botón 2:
+    - Transition: 0.1s (0.1s)
+  Botón 3:
+    - Transition: 0.1s (0.1s)
+  Botón 4:
+    - Transition: 0.1s (0.1s)
+  Botón 5:
+    - Transition: 0.1s (0.1s)
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome\error-context.md]]
+📊 Duraciones en Botones del Hero Carousel:
+  Botón 1:
+    - Transition: 0.1s (0.1s)
+  Botón 2:
+    - Transition: 0.1s (0.1s)
+  Botón 3:
+    - Transition: 0.1s (0.1s)
+  Botón 4:
+    - Transition: 0.1s (0.1s)
+  Botón 5:
+    - Transition: 0.1s (0.1s)
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Chrome-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en imágenes de Combos" classname="animation-duration-verification.spec.ts" time="10.094">
+<failure message="animation-duration-verification.spec.ts:215:7 debe tener duraciones correctas en imágenes de Combos" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › animation-duration-verification.spec.ts:215:7 › Verificación de Duraciones de Animaciones › debe tener duraciones correctas en imágenes de Combos 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      230 |         img => img.computedTransitionDuration >= 0.7 && img.computedTransitionDuration <= 0.9
+      231 |       )
+    > 232 |       expect(validDurations.length).toBeGreaterThan(0)
+          |                                     ^
+      233 |     }
+      234 |   })
+      235 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:232:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      230 |         img => img.computedTransitionDuration >= 0.7 && img.computedTransitionDuration <= 0.9
+      231 |       )
+    > 232 |       expect(validDurations.length).toBeGreaterThan(0)
+          |                                     ^
+      233 |     }
+      234 |   })
+      235 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:232:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[📊 Duraciones en Imágenes de Combos:
+  Imagen 1:
+    - Transition: 0.1s (0.1s)
+  Imagen 2:
+    - Transition: 0.1s (0.1s)
+  Imagen 3:
+    - Transition: 0.1s (0.1s)
+  Imagen 4:
+    - Transition: 0.1s (0.1s)
+  Imagen 5:
+    - Transition: 0.1s (0.1s)
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome\error-context.md]]
+📊 Duraciones en Imágenes de Combos:
+  Imagen 1:
+    - Transition: 0.1s (0.1s)
+  Imagen 2:
+    - Transition: 0.1s (0.1s)
+  Imagen 3:
+    - Transition: 0.1s (0.1s)
+  Imagen 4:
+    - Transition: 0.1s (0.1s)
+  Imagen 5:
+    - Transition: 0.1s (0.1s)
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Chrome-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en botón del Hero" classname="animation-duration-verification.spec.ts" time="12.25">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Botón del Hero:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en imagen de Combo" classname="animation-duration-verification.spec.ts" time="7.146">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Imagen de Combo:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe verificar todas las duraciones en la página" classname="animation-duration-verification.spec.ts" time="10.427">
+<failure message="animation-duration-verification.spec.ts:270:7 debe verificar todas las duraciones en la página" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › animation-duration-verification.spec.ts:270:7 › Verificación de Duraciones de Animaciones › debe verificar todas las duraciones en la página 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.7
+    Received:    0.1
+
+      294 |
+      295 |     // Verificaciones generales
+    > 296 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeGreaterThanOrEqual(0.7)
+          |                                                                  ^
+      297 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeLessThanOrEqual(0.9)
+      298 |   })
+      299 | })
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:296:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.7
+    Received:    0.1
+
+      294 |
+      295 |     // Verificaciones generales
+    > 296 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeGreaterThanOrEqual(0.7)
+          |                                                                  ^
+      297 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeLessThanOrEqual(0.9)
+      298 |   })
+      299 | })
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:296:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-🎯 Testing: Dispositivo de gama alta
-   CPU Throttling: 1x
-   Viewport: 1920x1080
+📊 RESUMEN DE DUraciones DE ANIMACIONES:
+==========================================
+Transiciones Globales:
+  - CSS: 0.1s
+  - Duración: 0.1s
 
-📊 Métricas de Scroll:
-   FPS Promedio: 3.64fps
-   FPS Mínimo: 3.41fps
-   FPS Máximo: 4.67fps
-   Total Frames: 11
-   Jank Count: 11 (100.00%)
-   Dropped Frames: 11
-   Smoothness Score: 0.00/100
-   Long Tasks: 0
+Animaciones Globales:
+  - CSS: 0.1s
+  - Duración: 0.1s
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\test-failed-1.png]]
+Botones del Hero Carousel:
+  Botón 1: 0.1s
+  Botón 2: 0.1s
+  Botón 3: 0.1s
+  Botón 4: 0.1s
+  Botón 5: 0.1s
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\video.webm]]
+Imágenes de Combos:
+  Imagen 1: 0.1s
+  Imagen 2: 0.1s
+  Imagen 3: 0.1s
+  Imagen 4: 0.1s
+  Imagen 5: 0.1s
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari\error-context.md]]
+Pills de Product Cards:
+  Pill 1: 0.1s
+  Pill 2: 0s
+  Pill 3: 0s
+  Pill 4: 0s
+  Pill 5: 0s
+==========================================
 
-🎯 Testing: Dispositivo de gama alta
-   CPU Throttling: 1x
-   Viewport: 1920x1080
 
-📊 Métricas de Scroll:
-   FPS Promedio: 3.33fps
-   FPS Mínimo: 2.53fps
-   FPS Máximo: 29.41fps
-   Total Frames: 10
-   Jank Count: 9 (90.00%)
-   Dropped Frames: 9
-   Smoothness Score: 0.00/100
-   Long Tasks: 0
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome\video.webm]]
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome\error-context.md]]
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\error-context.md]]
+📊 RESUMEN DE DUraciones DE ANIMACIONES:
+==========================================
+Transiciones Globales:
+  - CSS: 0.1s
+  - Duración: 0.1s
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-06c5a-fluido-durante-scroll-medio-Mobile-Safari-retry1\trace.zip]]
+Animaciones Globales:
+  - CSS: 0.1s
+  - Duración: 0.1s
+
+Botones del Hero Carousel:
+  Botón 1: 0.1s
+  Botón 2: 0.1s
+  Botón 3: 0.1s
+  Botón 4: 0.1s
+  Botón 5: 0.1s
+
+Imágenes de Combos:
+  Imagen 1: 0.1s
+  Imagen 2: 0.1s
+  Imagen 3: 0.1s
+  Imagen 4: 0.1s
+  Imagen 5: 0.1s
+
+Pills de Product Cards:
+  Pill 1: 0.1s
+  Pill 2: 0s
+  Pill 3: 0s
+  Pill 4: 0s
+  Pill 5: 0s
+==========================================
+
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Chrome-retry1\trace.zip]]
 ]]>
 </system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
 </testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe mantener scroll fluido durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="27.604">
-<failure message="product-cards-scroll-performance.spec.ts:293:7 debe mantener scroll fluido durante scroll medio" type="FAILURE">
-<![CDATA[  [Mobile Safari] › product-cards-scroll-performance.spec.ts:293:7 › Product Cards Scroll Performance - Gama Media › debe mantener scroll fluido durante scroll medio 
+</testsuite>
+<testsuite name="animation-duration-verification.spec.ts" timestamp="2025-12-26T18:29:38.430Z" hostname="Mobile Safari" tests="7" failures="5" skipped="0" time="99.386" errors="0">
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para transiciones" classname="animation-duration-verification.spec.ts" time="13.59">
+<failure message="animation-duration-verification.spec.ts:166:7 debe tener duraciones globales correctas para transiciones" type="FAILURE">
+<![CDATA[  [Mobile Safari] › animation-duration-verification.spec.ts:166:7 › Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para transiciones 
 
     Error: expect(received).toBeGreaterThanOrEqual(expected)
 
-    Expected: >= 40
-    Received:    6.79172056921087
+    Expected: >= 0.7
+    Received:    0.1
 
-      316 |     // Thresholds ajustados para gama media post-optimización
-      317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%
-    > 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps
-          |                            ^
-      319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps
-      320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%
-      321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:318:28
+      173 |     // Verificar que la duración global sea aproximadamente 0.8s
+      174 |     // Permitir un rango de 0.7s a 0.9s para tolerancia
+    > 175 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeGreaterThanOrEqual(0.7)
+          |                                                                  ^
+      176 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeLessThanOrEqual(0.9)
+      177 |   })
+      178 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:175:66
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\test-failed-1.png
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\video.webm
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\error-context.md
+    Error Context: ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
     Error: expect(received).toBeGreaterThanOrEqual(expected)
 
-    Expected: >= 40
-    Received:    6.572461386789352
+    Expected: >= 0.7
+    Received:    0.1
 
-      316 |     // Thresholds ajustados para gama media post-optimización
-      317 |     // Excelente mejora: 43.44-44.68fps, jank 0.76-2.17%
-    > 318 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(40) // Mejorado: 43.44-44.68fps
-          |                            ^
-      319 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(7) // Ajustado: 7.50-19.96fps
-      320 |     expect(metrics.jankPercentage).toBeLessThan(5) // Excelente mejora: 0.76-2.17%
-      321 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(20) // Mejorado: 20.00-25.12/100
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:318:28
+      173 |     // Verificar que la duración global sea aproximadamente 0.8s
+      174 |     // Permitir un rango de 0.7s a 0.9s para tolerancia
+    > 175 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeGreaterThanOrEqual(0.7)
+          |                                                                  ^
+      176 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeLessThanOrEqual(0.9)
+      177 |   })
+      178 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:175:66
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\test-failed-1.png
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\video.webm
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\error-context.md
+    Error Context: ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\trace.zip
+    ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[📊 Duraciones Globales de Transiciones:
+  - CSS Computed: 0.1s
+  - Duración en segundos: [33m0.1[39m
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari\error-context.md]]
+📊 Duraciones Globales de Transiciones:
+  - CSS Computed: 0.1s
+  - Duración en segundos: [33m0.1[39m
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-2a281-correctas-para-transiciones-Mobile-Safari-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para animaciones" classname="animation-duration-verification.spec.ts" time="14.345">
+<failure message="animation-duration-verification.spec.ts:179:7 debe tener duraciones globales correctas para animaciones" type="FAILURE">
+<![CDATA[  [Mobile Safari] › animation-duration-verification.spec.ts:179:7 › Verificación de Duraciones de Animaciones › debe tener duraciones globales correctas para animaciones 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.9
+    Received:    0.1
+
+      187 |     // Permitir un rango de 0.9s a 1.1s para tolerancia
+      188 |     if (metrics.globalAnimations.computedAnimationDuration > 0) {
+    > 189 |       expect(metrics.globalAnimations.computedAnimationDuration).toBeGreaterThanOrEqual(0.9)
+          |                                                                  ^
+      190 |       expect(metrics.globalAnimations.computedAnimationDuration).toBeLessThanOrEqual(1.1)
+      191 |     }
+      192 |   })
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:189:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.9
+    Received:    0.1
+
+      187 |     // Permitir un rango de 0.9s a 1.1s para tolerancia
+      188 |     if (metrics.globalAnimations.computedAnimationDuration > 0) {
+    > 189 |       expect(metrics.globalAnimations.computedAnimationDuration).toBeGreaterThanOrEqual(0.9)
+          |                                                                  ^
+      190 |       expect(metrics.globalAnimations.computedAnimationDuration).toBeLessThanOrEqual(1.1)
+      191 |     }
+      192 |   })
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:189:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[📊 Duraciones Globales de Animaciones:
+  - CSS Computed: 0.1s
+  - Duración en segundos: [33m0.1[39m
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari\error-context.md]]
+📊 Duraciones Globales de Animaciones:
+  - CSS Computed: 0.1s
+  - Duración en segundos: [33m0.1[39m
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-a2607--correctas-para-animaciones-Mobile-Safari-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en botones del Hero Carousel" classname="animation-duration-verification.spec.ts" time="16.292">
+<failure message="animation-duration-verification.spec.ts:194:7 debe tener duraciones correctas en botones del Hero Carousel" type="FAILURE">
+<![CDATA[  [Mobile Safari] › animation-duration-verification.spec.ts:194:7 › Verificación de Duraciones de Animaciones › debe tener duraciones correctas en botones del Hero Carousel 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      209 |         btn => btn.computedTransitionDuration >= 0.7 && btn.computedTransitionDuration <= 0.9
+      210 |       )
+    > 211 |       expect(validDurations.length).toBeGreaterThan(0)
+          |                                     ^
+      212 |     }
+      213 |   })
+      214 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:211:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      209 |         btn => btn.computedTransitionDuration >= 0.7 && btn.computedTransitionDuration <= 0.9
+      210 |       )
+    > 211 |       expect(validDurations.length).toBeGreaterThan(0)
+          |                                     ^
+      212 |     }
+      213 |   })
+      214 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:211:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[📊 Duraciones en Botones del Hero Carousel:
+  Botón 1:
+    - Transition: 0.1s (0.1s)
+  Botón 2:
+    - Transition: 0.1s (0.1s)
+  Botón 3:
+    - Transition: 0.1s (0.1s)
+  Botón 4:
+    - Transition: 0.1s (0.1s)
+  Botón 5:
+    - Transition: 0.1s (0.1s)
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari\error-context.md]]
+📊 Duraciones en Botones del Hero Carousel:
+  Botón 1:
+    - Transition: 0.1s (0.1s)
+  Botón 2:
+    - Transition: 0.1s (0.1s)
+  Botón 3:
+    - Transition: 0.1s (0.1s)
+  Botón 4:
+    - Transition: 0.1s (0.1s)
+  Botón 5:
+    - Transition: 0.1s (0.1s)
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-5e03c-n-botones-del-Hero-Carousel-Mobile-Safari-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe tener duraciones correctas en imágenes de Combos" classname="animation-duration-verification.spec.ts" time="15.933">
+<failure message="animation-duration-verification.spec.ts:215:7 debe tener duraciones correctas en imágenes de Combos" type="FAILURE">
+<![CDATA[  [Mobile Safari] › animation-duration-verification.spec.ts:215:7 › Verificación de Duraciones de Animaciones › debe tener duraciones correctas en imágenes de Combos 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      230 |         img => img.computedTransitionDuration >= 0.7 && img.computedTransitionDuration <= 0.9
+      231 |       )
+    > 232 |       expect(validDurations.length).toBeGreaterThan(0)
+          |                                     ^
+      233 |     }
+      234 |   })
+      235 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:232:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      230 |         img => img.computedTransitionDuration >= 0.7 && img.computedTransitionDuration <= 0.9
+      231 |       )
+    > 232 |       expect(validDurations.length).toBeGreaterThan(0)
+          |                                     ^
+      233 |     }
+      234 |   })
+      235 |
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:232:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[📊 Duraciones en Imágenes de Combos:
+  Imagen 1:
+    - Transition: 0.1s (0.1s)
+  Imagen 2:
+    - Transition: 0.1s (0.1s)
+  Imagen 3:
+    - Transition: 0.1s (0.1s)
+  Imagen 4:
+    - Transition: 0.1s (0.1s)
+  Imagen 5:
+    - Transition: 0.1s (0.1s)
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari\error-context.md]]
+📊 Duraciones en Imágenes de Combos:
+  Imagen 1:
+    - Transition: 0.1s (0.1s)
+  Imagen 2:
+    - Transition: 0.1s (0.1s)
+  Imagen 3:
+    - Transition: 0.1s (0.1s)
+  Imagen 4:
+    - Transition: 0.1s (0.1s)
+  Imagen 5:
+    - Transition: 0.1s (0.1s)
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\animation-duration-verific-27ede-ectas-en-imágenes-de-Combos-Mobile-Safari-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en botón del Hero" classname="animation-duration-verification.spec.ts" time="14.344">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Botón del Hero:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe medir duración real de transición hover en imagen de Combo" classname="animation-duration-verification.spec.ts" time="9.911">
+<system-out>
+<![CDATA[📊 Duración Real de Transición Hover en Imagen de Combo:
+  - Duración medida: 0ms
+]]>
+</system-out>
+</testcase>
+<testcase name="Verificación de Duraciones de Animaciones › debe verificar todas las duraciones en la página" classname="animation-duration-verification.spec.ts" time="14.971">
+<failure message="animation-duration-verification.spec.ts:270:7 debe verificar todas las duraciones en la página" type="FAILURE">
+<![CDATA[  [Mobile Safari] › animation-duration-verification.spec.ts:270:7 › Verificación de Duraciones de Animaciones › debe verificar todas las duraciones en la página 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.7
+    Received:    0.1
+
+      294 |
+      295 |     // Verificaciones generales
+    > 296 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeGreaterThanOrEqual(0.7)
+          |                                                                  ^
+      297 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeLessThanOrEqual(0.9)
+      298 |   })
+      299 | })
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:296:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.7
+    Received:    0.1
+
+      294 |
+      295 |     // Verificaciones generales
+    > 296 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeGreaterThanOrEqual(0.7)
+          |                                                                  ^
+      297 |     expect(metrics.globalTransitions.computedTransitionDuration).toBeLessThanOrEqual(0.9)
+      298 |   })
+      299 | })
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\animation-duration-verification.spec.ts:296:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-🎯 Testing: Dispositivo de gama media
-   CPU Throttling: 2x
-   Viewport: 768x1024
+📊 RESUMEN DE DUraciones DE ANIMACIONES:
+==========================================
+Transiciones Globales:
+  - CSS: 0.1s
+  - Duración: 0.1s
 
-📊 Métricas de Scroll:
-   FPS Promedio: 6.79fps
-   FPS Mínimo: 4.26fps
-   Jank Count: 21 (100.00%)
-   Smoothness Score: 0.00/100
+Animaciones Globales:
+  - CSS: 0.1s
+  - Duración: 0.1s
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\test-failed-1.png]]
+Botones del Hero Carousel:
+  Botón 1: 0.1s
+  Botón 2: 0.1s
+  Botón 3: 0.1s
+  Botón 4: 0.1s
+  Botón 5: 0.1s
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\video.webm]]
+Imágenes de Combos:
+  Imagen 1: 0.1s
+  Imagen 2: 0.1s
+  Imagen 3: 0.1s
+  Imagen 4: 0.1s
+  Imagen 5: 0.1s
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari\error-context.md]]
+Pills de Product Cards:
+  Pill 1: 0.1s
+  Pill 2: 0s
+  Pill 3: 0s
+  Pill 4: 0s
+  Pill 5: 0s
+==========================================
 
-🎯 Testing: Dispositivo de gama media
-   CPU Throttling: 2x
-   Viewport: 768x1024
 
-📊 Métricas de Scroll:
-   FPS Promedio: 6.57fps
-   FPS Mínimo: 4.69fps
-   Jank Count: 20 (100.00%)
-   Smoothness Score: 0.00/100
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari\video.webm]]
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\video.webm]]
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari\error-context.md]]
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\error-context.md]]
+📊 RESUMEN DE DUraciones DE ANIMACIONES:
+==========================================
+Transiciones Globales:
+  - CSS: 0.1s
+  - Duración: 0.1s
 
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-6c198-fluido-durante-scroll-medio-Mobile-Safari-retry1\trace.zip]]
-]]>
-</system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Gama Media › debe manejar scroll rápido sin lag excesivo" classname="product-cards-scroll-performance.spec.ts" time="25.613">
-<failure message="product-cards-scroll-performance.spec.ts:324:7 debe manejar scroll rápido sin lag excesivo" type="FAILURE">
-<![CDATA[  [Mobile Safari] › product-cards-scroll-performance.spec.ts:324:7 › Product Cards Scroll Performance - Gama Media › debe manejar scroll rápido sin lag excesivo 
+Animaciones Globales:
+  - CSS: 0.1s
+  - Duración: 0.1s
 
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
+Botones del Hero Carousel:
+  Botón 1: 0.1s
+  Botón 2: 0.1s
+  Botón 3: 0.1s
+  Botón 4: 0.1s
+  Botón 5: 0.1s
 
-    Expected: >= 25
-    Received:    7.2150072150072155
+Imágenes de Combos:
+  Imagen 1: 0.1s
+  Imagen 2: 0.1s
+  Imagen 3: 0.1s
+  Imagen 4: 0.1s
+  Imagen 5: 0.1s
 
-      343 |
-      344 |     // Thresholds ajustados para scroll rápido en gama media
-    > 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25
-          |                            ^
-      346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50
-      347 |   })
-      348 | })
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:345:28
+Pills de Product Cards:
+  Pill 1: 0.1s
+  Pill 2: 0s
+  Pill 3: 0s
+  Pill 4: 0s
+  Pill 5: 0s
+==========================================
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\test-failed-1.png]]
 
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\error-context.md
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\video.webm]]
 
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\error-context.md]]
 
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 25
-    Received:    6.70819357930043
-
-      343 |
-      344 |     // Thresholds ajustados para scroll rápido en gama media
-    > 345 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(25) // Reducido de 40 a 25
-          |                            ^
-      346 |     expect(metrics.jankPercentage).toBeLessThan(50) // Aumentado de 20 a 50
-      347 |   })
-      348 | })
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:345:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-🎯 Testing Scroll Rápido: Gama media
-
-📊 Métricas Scroll Rápido:
-   FPS Promedio: 7.22fps
-   Jank: 15 (100.00%)
-   Smoothness: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari\error-context.md]]
-
-🎯 Testing Scroll Rápido: Gama media
-
-📊 Métricas Scroll Rápido:
-   FPS Promedio: 6.71fps
-   Jank: 13 (92.86%)
-   Smoothness: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-bf38f-oll-rápido-sin-lag-excesivo-Mobile-Safari-retry1\trace.zip]]
-]]>
-</system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Gama Baja › debe mantener scroll aceptable durante scroll medio" classname="product-cards-scroll-performance.spec.ts" time="27.898">
-<failure message="product-cards-scroll-performance.spec.ts:362:7 debe mantener scroll aceptable durante scroll medio" type="FAILURE">
-<![CDATA[  [Mobile Safari] › product-cards-scroll-performance.spec.ts:362:7 › Product Cards Scroll Performance - Gama Baja › debe mantener scroll aceptable durante scroll medio 
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 35
-    Received:    14.720314033366044
-
-      385 |     // Thresholds ajustados para gama baja post-optimización
-      386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)
-    > 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps
-          |                            ^
-      388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)
-      389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)
-      390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:387:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\error-context.md
-
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
-
-    Error: expect(received).toBeGreaterThanOrEqual(expected)
-
-    Expected: >= 35
-    Received:    14.677103718199607
-
-      385 |     // Thresholds ajustados para gama baja post-optimización
-      386 |     // Mejora dramática: 35.86-42.32fps, jank 3.15-4.42% (antes: 50-100%)
-    > 387 |     expect(metrics.avgFPS).toBeGreaterThanOrEqual(35) // Mejorado: 35.86-42.32fps
-          |                            ^
-      388 |     expect(metrics.minFPS).toBeGreaterThanOrEqual(2) // Ajustado: 2.73-3.00fps (puede tener picos bajos)
-      389 |     expect(metrics.jankPercentage).toBeLessThan(10) // Mejora dramática: 3.15-4.42% (antes: 50-100%)
-      390 |     expect(metrics.scrollSmoothness).toBeGreaterThanOrEqual(0) // Smoothness aún bajo, pero jank mejoró mucho
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\product-cards-scroll-performance.spec.ts:387:28
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    Error Context: ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\error-context.md
-
-    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\trace.zip
-    Usage:
-
-        npx playwright show-trace ..\..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\trace.zip
-
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-]]>
-</failure>
-<system-out>
-<![CDATA[
-🎯 Testing: Dispositivo de gama baja
-   CPU Throttling: 4x
-   Viewport: 375x667
-
-📊 Métricas de Scroll:
-   FPS Promedio: 14.72fps
-   FPS Mínimo: 12.20fps
-   Jank Count: 45 (100.00%)
-   Smoothness Score: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari\error-context.md]]
-
-🎯 Testing: Dispositivo de gama baja
-   CPU Throttling: 4x
-   Viewport: 375x667
-
-📊 Métricas de Scroll:
-   FPS Promedio: 14.68fps
-   FPS Mínimo: 8.93fps
-   Jank Count: 44 (97.78%)
-   Smoothness Score: 0.00/100
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\product-cards-scroll-perfo-316f4-ptable-durante-scroll-medio-Mobile-Safari-retry1\trace.zip]]
-]]>
-</system-out>
-<system-err>
-<![CDATA[No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-No se pudo configurar CPU throttling: Error: browserContext.newCDPSession: CDP session is only available in Chromium
-]]>
-</system-err>
-</testcase>
-<testcase name="Product Cards Scroll Performance - Análisis General › debe detectar y reportar problemas de rendimiento específicos" classname="product-cards-scroll-performance.spec.ts" time="14.748">
-<system-out>
-<![CDATA[
-⚠️ Problemas de rendimiento detectados:
-   - FPS promedio bajo: 3.51fps (objetivo: 50+)
-   - Alto porcentaje de jank: 100.00% (objetivo: <10%)
-   - Muchos frames dropped: 11 (100.00%)
-   - Smoothness score bajo: 0.00/100 (objetivo: 80+)
+[[ATTACHMENT|..\test-results\animation-duration-verific-b79f5-las-duraciones-en-la-página-Mobile-Safari-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>

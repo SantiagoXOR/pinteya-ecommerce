@@ -60,7 +60,7 @@ export const MeasurePill = React.memo(function MeasurePill({
           ? 'pl-1.5 pr-2' 
           : 'px-1.5',
         // Solo transiciones compuestas
-        'transition-transform duration-200 ease-out'
+        'transition-transform duration-500 ease-in-out'
       )}
       style={{
         ...baseStyle,
@@ -70,7 +70,7 @@ export const MeasurePill = React.memo(function MeasurePill({
     >
       {/* Pseudo-elemento para box-shadow con opacity animada */}
       <span
-        className="absolute inset-0 rounded-full pointer-events-none transition-opacity duration-200 ease-out"
+        className="absolute inset-0 rounded-full pointer-events-none transition-opacity duration-500 ease-in-out"
         style={{
           boxShadow: isSelected 
             ? '0 2px 8px rgba(234, 90, 23, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)'

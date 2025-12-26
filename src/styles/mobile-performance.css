@@ -20,19 +20,19 @@
 
 /* Optimizaciones para dispositivos de bajo rendimiento */
 @media (max-width: 768px) {
-  /* Reducir complejidad de animaciones en móviles */
+  /* Reducir complejidad de animaciones en móviles - pero mantener duraciones visibles */
   .animate-shimmer,
   .animate-gradient,
   .animate-bounce-slow {
-    animation-duration: 0.3s;
+    animation-duration: 0.8s; /* Aumentado de 0.3s para mejor visibilidad */
     animation-iteration-count: 1;
   }
   
-  /* Simplificar transiciones */
+  /* Simplificar transiciones - pero mantener duraciones visibles */
   .transition-composite,
   .transition-composite-fast,
   .transition-composite-slow {
-    transition-duration: 0.15s;
+    transition-duration: 0.6s; /* Aumentado de 0.15s para mejor visibilidad */
   }
 }
 

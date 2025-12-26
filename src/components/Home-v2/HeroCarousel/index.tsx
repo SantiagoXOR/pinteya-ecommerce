@@ -118,7 +118,7 @@ const HeroCarousel = () => {
   }, [currentIndex, isTransitioning, extendedSlides.length])
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full hero-carousel">
       {/* Contenedor del carrusel con aspect ratio preservado */}
       <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
         <div 
@@ -128,7 +128,7 @@ const HeroCarousel = () => {
           {/* Slides */}
           {/* ⚡ OPTIMIZACIÓN: GPU acceleration para transiciones a 60fps */}
           <div 
-            className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
+            className={`flex h-full ${isTransitioning ? 'transition-transform duration-1000 ease-in-out' : ''}`}
             style={{ 
               transform: `translateX(-${currentIndex * 100}%)`,
               willChange: isTransitioning ? 'transform' : 'auto',
@@ -174,11 +174,11 @@ const HeroCarousel = () => {
             className="hidden md:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-10 
                      bg-white/90 hover:bg-white text-blaze-orange-600 
                      p-2 lg:p-3 rounded-full shadow-lg hover:shadow-xl
-                     transition-all duration-300 hover:scale-110 active:scale-95
+                     transition-all duration-500 hover:scale-110 active:scale-95
                      items-center justify-center group"
             aria-label="Slide anterior"
           >
-            <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[-2px] transition-transform" />
+            <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[-2px] transition-transform duration-500" />
           </button>
 
           <button
@@ -186,11 +186,11 @@ const HeroCarousel = () => {
             className="hidden md:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-10 
                      bg-white/90 hover:bg-white text-blaze-orange-600 
                      p-2 lg:p-3 rounded-full shadow-lg hover:shadow-xl
-                     transition-all duration-300 hover:scale-110 active:scale-95
+                     transition-all duration-500 hover:scale-110 active:scale-95
                      items-center justify-center group"
             aria-label="Siguiente slide"
           >
-            <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[2px] transition-transform" />
+            <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[2px] transition-transform duration-500" />
           </button>
 
           {/* Indicadores (dots) - Estilo Mercado Libre */}
@@ -208,7 +208,7 @@ const HeroCarousel = () => {
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`relative rounded-full bg-white/60 transition-all duration-300 ${
+                  className={`relative rounded-full bg-white/60 transition-all duration-500 ${
                     isActive 
                       ? 'w-8 sm:w-10 h-2 sm:h-2.5' 
                       : 'w-2 sm:w-2.5 h-2 sm:h-2.5'
