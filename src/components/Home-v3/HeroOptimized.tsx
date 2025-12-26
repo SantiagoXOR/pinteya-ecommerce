@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 
@@ -20,11 +20,35 @@ const HeroCarousel = dynamic(() => import('../Home-v2/HeroCarousel/index'), {
  */
 export default function HeroOptimized() {
   const [showCarousel, setShowCarousel] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+  const renderCountRef = useRef(0)
+  const hasLoggedRef = useRef(false)
+
+  // ⚡ DEBUG: Log de renders
+  useEffect(() => {
+    renderCountRef.current += 1
+    if (process.env.NODE_ENV === 'development' && !hasLoggedRef.current) {
+      console.log('🔄 HeroOptimized render #' + renderCountRef.current, {
+        showCarousel,
+        isMounted,
+        timestamp: Date.now(),
+      })
+      if (renderCountRef.current >= 3) {
+        hasLoggedRef.current = true
+      }
+    }
+  })
+
+  // ⚡ FIX: Marcar como montado después del primer render
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
-    // ⚡ OPTIMIZACIÓN: Reducir delay de 1.5s a 800ms para mejorar LCP
-    // El carousel se carga después de que la imagen estática se haya renderizado
+    // ⚡ OPTIMIZACIÓN: Cargar carousel después de que el componente esté montado
     // Usar requestIdleCallback para no bloquear el hilo principal
+    if (!isMounted) return
+
     const loadCarousel = () => {
       setShowCarousel(true)
     }
@@ -34,19 +58,22 @@ export default function HeroOptimized() {
     } else {
       setTimeout(loadCarousel, 800)
     }
-  }, [])
+  }, [isMounted])
 
-  if (!showCarousel) {
-    // ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano
-    // Usar solo Image component de Next.js con priority para evitar requests duplicados
-    // Next.js Image con priority ya se renderiza en HTML inicial y ofrece optimizaciones (WebP/AVIF, responsive)
-    return (
+  // ⚡ OPTIMIZACIÓN: Renderizar ambos componentes y usar transición suave
+  // La imagen estática se desvanece cuando el carousel está listo
+  // Esto evita el doble render completo del componente
+  return (
       <div className="relative w-full">
-        <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
-          <div className="relative w-full overflow-hidden" style={{ aspectRatio: '2.77' }}>
-            {/* ⚡ CRITICAL: Image component con priority para descubrimiento temprano y optimizaciones */}
-            {/* Se renderiza en HTML inicial del servidor, no depende de JavaScript */}
-            {/* Next.js optimiza automáticamente (WebP/AVIF, responsive, preload) */}
+        <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '2.77' }}>
+          {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
+          {/* Se desvanece suavemente cuando el carousel está listo */}
+          <div 
+            className={`absolute inset-0 z-10 transition-opacity duration-500 ${
+              showCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
+          >
             <Image
               src="/images/hero/hero2/hero1.webp"
               alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
@@ -56,16 +83,25 @@ export default function HeroOptimized() {
               className="object-contain"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
               quality={80}
-              // ⚡ OPTIMIZACIÓN: Usar loading="eager" para asegurar carga inmediata
               loading="eager"
-              // ⚡ OPTIMIZACIÓN: Preload de imagen ya está en layout.tsx
+              aria-hidden={showCarousel ? 'true' : 'false'}
             />
           </div>
+          
+          {/* ⚡ PERFORMANCE: Carousel carga dinámicamente después del LCP */}
+          {/* Pre-cargar pero mantener oculto hasta que esté listo para evitar re-render */}
+          {isMounted && (
+            <div 
+              className={`relative z-20 transition-opacity duration-500 ${
+                showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <HeroCarousel />
+            </div>
+          )}
         </div>
       </div>
-    )
-  }
-
-  return <HeroCarousel />
+    </div>
+  )
 }
 

@@ -39,16 +39,32 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
 
   // Configuración de duración optimizada
   const animationDuration = useMemo(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'checkout-transition-animation.tsx:41',message:'animationDuration calculation start',data:{customDuration,skipAnimation,enablePerformanceMode},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'A,B,D'})}).catch(()=>{});
+    // #endregion agent log
     if (customDuration) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'checkout-transition-animation.tsx:45',message:'animationDuration using customDuration',data:{customDuration,result:customDuration},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'A,B,D'})}).catch(()=>{});
+      // #endregion agent log
       return customDuration
     }
     if (skipAnimation) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'checkout-transition-animation.tsx:50',message:'animationDuration using skipAnimation',data:{result:100},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'A,B,D'})}).catch(()=>{});
+      // #endregion agent log
       return 100
     }
     if (enablePerformanceMode) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'checkout-transition-animation.tsx:54',message:'animationDuration using enablePerformanceMode',data:{result:1500},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'A,B,D'})}).catch(()=>{});
+      // #endregion agent log
       return 1500
     } // Versión más rápida para dispositivos lentos
-    return 2500 // Duración completa
+    const result = 2500
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'checkout-transition-animation.tsx:59',message:'animationDuration default',data:{result,unit:'ms (milliseconds)'},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'A,B,D'})}).catch(()=>{});
+    // #endregion agent log
+    return result // Duración completa
   }, [customDuration, skipAnimation, enablePerformanceMode])
 
   // Secuencia de animaciones optimizada
@@ -210,7 +226,13 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
           initial='initial'
           animate='animate'
           transition={{
-            duration: animationSequence.find(seq => seq.name === 'wave')?.duration || 1.5,
+            duration: (() => {
+              const duration = animationSequence.find(seq => seq.name === 'wave')?.duration || 1.5;
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'checkout-transition-animation.tsx:213',message:'wave animation duration',data:{duration,unit:'seconds (framer-motion)',expectedRealDuration:duration*1000,element:'wave'},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'A'})}).catch(()=>{});
+              // #endregion agent log
+              return duration;
+            })(),
             delay: animationSequence.find(seq => seq.name === 'wave')?.delay || 0.3,
             times: [0, 0.6, 0.8, 1],
             ease: 'easeOut',
@@ -234,7 +256,13 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
           initial='initial'
           animate='animate'
           transition={{
-            duration: animationSequence.find(seq => seq.name === 'logo')?.duration || 1.8,
+            duration: (() => {
+              const duration = animationSequence.find(seq => seq.name === 'logo')?.duration || 1.8;
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'checkout-transition-animation.tsx:237',message:'logo animation duration',data:{duration,unit:'seconds (framer-motion)',expectedRealDuration:duration*1000,element:'logo'},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'A'})}).catch(()=>{});
+              // #endregion agent log
+              return duration;
+            })(),
             delay: animationSequence.find(seq => seq.name === 'logo')?.delay || 0.8,
             times: [0, 0.3, 0.7, 1],
             ease: [0.68, -0.55, 0.265, 1.55], // Bounce effect
@@ -343,7 +371,14 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 0.3, 0.5, 0.8] }}
           transition={{
-            duration: animationDuration / 1000,
+            duration: (() => {
+              const durationMs = animationDuration;
+              const durationSec = durationMs / 1000;
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'checkout-transition-animation.tsx:346',message:'overlay animation duration conversion',data:{animationDurationMs:durationMs,durationSec,conversion:'ms/1000',expectedRealDuration:durationSec*1000,element:'overlay'},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'D'})}).catch(()=>{});
+              // #endregion agent log
+              return durationSec;
+            })(),
             ease: 'easeInOut',
           }}
         />

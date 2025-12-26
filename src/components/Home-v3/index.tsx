@@ -321,7 +321,7 @@ const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
 
   if (!shouldRender) {
     return (
-      <div className='mt-2 sm:mt-3'>
+      <div className='mt-1 sm:mt-1.5'>
         <div className='flex gap-2 px-4 overflow-x-auto'>
           {[...Array(5)].map((_, i) => (
             <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
@@ -332,7 +332,7 @@ const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
   }
 
   return (
-    <div className='mt-2 sm:mt-3'>
+    <div className='mt-1 sm:mt-1.5'>
       <CategoryTogglePillsWithSearch />
     </div>
   )
@@ -433,7 +433,7 @@ const HomeV3 = () => {
       {/* NUEVO ORDEN OPTIMIZADO CON GLASSMORPHISM */}
 
       {/* 0. Hero Optimized - Imagen estática inicial, carousel después del FCP */}
-      <div className='pt-3 sm:pt-4 md:pt-6'>
+      <div className='pt-1 sm:pt-2'>
         <HeroOptimized />
       </div>
 
