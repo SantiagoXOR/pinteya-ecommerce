@@ -126,9 +126,15 @@ const HeroCarousel = () => {
           style={{ aspectRatio: '2.77' }}
         >
           {/* Slides */}
+          {/* ⚡ OPTIMIZACIÓN: GPU acceleration para transiciones a 60fps */}
           <div 
             className={`flex h-full ${isTransitioning ? 'transition-transform duration-700 ease-in-out' : ''}`}
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            style={{ 
+              transform: `translateX(-${currentIndex * 100}%)`,
+              willChange: isTransitioning ? 'transform' : 'auto',
+              backfaceVisibility: 'hidden', // Prevenir flickering
+              WebkitBackfaceVisibility: 'hidden',
+            }}
           >
             {extendedSlides.map((slide, index) => {
               // ⚡ OPTIMIZACIÓN: Solo la primera imagen real (índice 1) tiene priority
@@ -140,6 +146,11 @@ const HeroCarousel = () => {
                 <div
                   key={`${slide.id}-${index}`}
                   className="min-w-full h-full flex-shrink-0 relative"
+                  style={{
+                    willChange: isTransitioning ? 'transform' : 'auto',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                  }}
                 >
                   <Image
                     src={slide.image}
@@ -204,7 +215,11 @@ const HeroCarousel = () => {
                   }`}
                   style={{
                     opacity: isActive ? 1 : 0.6,
-                    willChange: 'width, opacity',
+                    // ⚡ OPTIMIZACIÓN: Solo usar transform y opacity (propiedades compositables)
+                    willChange: isActive ? 'transform, opacity' : 'opacity',
+                    transform: 'translateZ(0)', // GPU acceleration
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {

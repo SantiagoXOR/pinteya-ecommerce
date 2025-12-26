@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,98 @@ interface CategoryTogglePillsProps {
   useDynamicCarousel?: boolean // Nueva prop para indicar si debe usar el contexto de carrusel dinámico
 }
 
-const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
+// ⚡ OPTIMIZACIÓN: Componente memoizado para cada item del carrusel
+interface CategoryPillItemProps {
+  category: {
+    id: string
+    slug: string
+    name: string
+    image_url?: string | null
+  }
+  isSelected: boolean
+  useDynamicCarousel: boolean
+  onToggle: (slug: string) => void
+  onMouseEnter: (slug: string) => void
+  onMouseLeave: () => void
+}
+
+const CategoryPillItem = React.memo<CategoryPillItemProps>(({
+  category,
+  isSelected,
+  useDynamicCarousel,
+  onToggle,
+  onMouseEnter,
+  onMouseLeave,
+}) => {
+  const handleClick = useCallback(() => {
+    onToggle(category.slug)
+  }, [category.slug, onToggle])
+
+  const handleMouseEnter = useCallback(() => {
+    onMouseEnter(category.slug)
+  }, [category.slug, onMouseEnter])
+
+  return (
+    <div 
+      className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className={`
+        relative rounded-full transition-all duration-300
+        ${isSelected && useDynamicCarousel ? 'ring-2 ring-bright-sun-400 scale-105 shadow-md' : 'scale-100'}
+      `}>
+        <Button
+          data-testid={`category-pill-${category.slug}`}
+          variant={isSelected ? 'default' : 'outline'}
+          size='sm'
+          className={`
+            group transition-all duration-200 border-2
+            flex items-center justify-center p-0
+            w-14 h-14 sm:w-16 sm:h-16 rounded-full
+            md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
+            ${isSelected ? 'glass-category-pill-active' : 'glass-category-pill'}
+            ${
+              isSelected && useDynamicCarousel
+                ? 'hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600'
+                : isSelected
+                ? 'hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
+                : 'hover:shadow-lg text-gray-900'
+            }
+          `}
+        >
+          {category.image_url && (
+            <div className={`
+              flex items-center justify-center 
+              w-9 h-9 sm:w-10 sm:h-10 md:w-10 md:h-10
+              transition-transform duration-300 ease-out
+              ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
+            `}>
+              <Image
+                src={category.image_url}
+                alt=''
+                width={40}
+                height={40}
+                className='w-full h-full object-contain'
+                loading='lazy'
+              />
+            </div>
+          )}
+          <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
+            {category.name}
+          </span>
+        </Button>
+      </div>
+      <span className='text-[9px] font-medium text-center leading-[1.1] text-white max-w-[85px] line-clamp-1 md:hidden truncate'>{category.name}</span>
+    </div>
+  )
+})
+
+CategoryPillItem.displayName = 'CategoryPillItem'
+
+// ⚡ OPTIMIZACIÓN: Memoizar el componente principal para evitar rerenders innecesarios
+const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = React.memo(({
   onCategoryChange,
   selectedCategories,
   searchTerm,
@@ -37,17 +128,23 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       contextToggleCategory = context.toggleCategory
     }
   } catch (error) {
-    console.warn('[CategoryPills] No se pudo acceder al contexto:', error)
+    // Solo log en desarrollo
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[CategoryPills] No se pudo acceder al contexto:', error)
+    }
   }
   
   const selectedCategory = contextSelectedCategory
   const toggleCategory = contextToggleCategory
 
+  // ⚡ OPTIMIZACIÓN: Memoizar baseFilters para evitar rerenders
+  const baseFilters = useMemo(() => ({
+    ...(searchTerm && { search: searchTerm }),
+    ...otherFilters,
+  }), [searchTerm, otherFilters])
+
   const { categories, loading, error, stats } = useCategoriesWithDynamicCounts({
-    baseFilters: {
-      ...(searchTerm && { search: searchTerm }),
-      ...otherFilters,
-    },
+    baseFilters,
     selectedCategories,
     enableDynamicCounts: false, // Deshabilitar conteos dinámicos para evitar errores de API
   })
@@ -61,29 +158,6 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   const { handleMouseEnter: prefetchBestSeller } = usePrefetchBestSellerOnHover({
     delay: 300,
   })
-  
-  // Debug: Log de categorías para verificar image_url
-  useEffect(() => {
-    if (categories.length > 0) {
-      console.log('[CategoryPills] Categorías cargadas:', categories.map(c => ({
-        name: c.name,
-        slug: c.slug,
-        hasImage: !!c.image_url,
-        image_url: c.image_url
-      })))
-    }
-  }, [categories])
-  
-  // Debug: Log de categoría seleccionada
-  useEffect(() => {
-    if (useDynamicCarousel) {
-      console.log('[CategoryPills] Estado del contexto:', {
-        useDynamicCarousel,
-        selectedCategory,
-        hasToggleFunction: !!toggleCategory
-      })
-    }
-  }, [selectedCategory, useDynamicCarousel, toggleCategory])
 
   // Referencia para el contenedor del carrusel
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -95,8 +169,9 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   
   // Estado para controlar la animación inicial
   const [hasPlayedScrollHint, setHasPlayedScrollHint] = useState(false)
+  const categoriesLoadedRef = useRef(false)
 
-  // Manejador para scroll horizontal con rueda del mouse
+  // ⚡ OPTIMIZACIÓN: Manejador para scroll horizontal con rueda del mouse - solo se ejecuta una vez
   useEffect(() => {
     const carousel = carouselRef.current
     if (!carousel) {
@@ -107,7 +182,10 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       // Solo aplicar scroll horizontal si hay contenido que se desborda
       if (carousel.scrollWidth > carousel.clientWidth) {
         e.preventDefault()
-        carousel.scrollLeft += e.deltaY
+        // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para mejor performance
+        requestAnimationFrame(() => {
+          carousel.scrollLeft += e.deltaY
+        })
       }
     }
 
@@ -116,19 +194,28 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return () => {
       carousel.removeEventListener('wheel', handleWheel)
     }
-  }, [categories])
+  }, []) // ⚡ FIX: Sin dependencia de categories para evitar múltiples registros
 
-  // Animación de "peek" al montar el componente
+  // ⚡ OPTIMIZACIÓN: Animación de "peek" al montar - solo una vez cuando las categorías se cargan
   useEffect(() => {
-    if (!carouselRef.current || hasPlayedScrollHint || variant === 'bare') return
+    if (!carouselRef.current || hasPlayedScrollHint || variant === 'bare' || !categories.length || categoriesLoadedRef.current) return
     
+    categoriesLoadedRef.current = true
     const carousel = carouselRef.current
     
-    // Función para verificar y ejecutar la animación
-    const executeAnimation = () => {
+    // Usar requestIdleCallback si está disponible para mejor performance
+    const scheduleAnimation = (callback: () => void) => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(callback, { timeout: 1000 })
+      } else {
+        setTimeout(callback, 800)
+      }
+    }
+    
+    scheduleAnimation(() => {
       // Solo animar si hay contenido que se desborda o si hay suficientes categorías
       const hasOverflow = carousel.scrollWidth > carousel.clientWidth
-      const hasEnoughCategories = categories.length > 4 // Si hay más de 4 categorías, probablemente necesite scroll
+      const hasEnoughCategories = categories.length > 4
       
       if (hasOverflow || hasEnoughCategories) {
         // Pequeño scroll a la derecha
@@ -142,16 +229,11 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       } else {
         setHasPlayedScrollHint(true)
       }
-    }
-    
-    // Esperar a que las categorías se carguen completamente
-    const timer = setTimeout(executeAnimation, 800)
-    
-    return () => clearTimeout(timer)
-  }, [hasPlayedScrollHint, variant])
+    })
+  }, [categories.length, hasPlayedScrollHint, variant]) // ⚡ FIX: Solo depende de length, no del array completo
 
-  // Manejadores para drag scroll
-  const handleMouseDown = (e: React.MouseEvent) => {
+  // ⚡ OPTIMIZACIÓN: Manejadores memoizados para drag scroll
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     const carousel = carouselRef.current
     if (!carousel) {
       return
@@ -167,25 +249,25 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     requestAnimationFrame(() => {
       carousel.style.cursor = 'grabbing'
     })
-  }
+  }, [])
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setIsDragging(false)
     const carousel = carouselRef.current
     if (carousel) {
       carousel.style.cursor = 'grab'
     }
-  }
+  }, [])
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false)
     const carousel = carouselRef.current
     if (carousel) {
       carousel.style.cursor = 'grab'
     }
-  }
+  }, [])
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging) {
       return
     }
@@ -198,10 +280,14 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
 
     const x = e.pageX - carousel.offsetLeft
     const walk = (x - startX) * 2 // Multiplicador para velocidad de scroll
-    carousel.scrollLeft = scrollLeft - walk
-  }
+    // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para scroll suave
+    requestAnimationFrame(() => {
+      carousel.scrollLeft = scrollLeft - walk
+    })
+  }, [isDragging, startX, scrollLeft])
 
-  const handleCategoryToggle = (categorySlug: string) => {
+  // ⚡ OPTIMIZACIÓN: Handler memoizado para toggle de categoría
+  const handleCategoryToggle = useCallback((categorySlug: string) => {
     // Prevenir click si se está arrastrando
     if (isDragging) {
       return
@@ -209,16 +295,21 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
 
     // Si usamos el carrusel dinámico, actualizar el contexto
     if (useDynamicCarousel && toggleCategory) {
-      console.log('[CategoryPills] Toggle category:', categorySlug, '- Actual:', selectedCategory)
+      // Solo log en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[CategoryPills] Toggle category:', categorySlug, '- Actual:', selectedCategory)
+      }
       toggleCategory(categorySlug)
       
-      // Scroll suave al carrusel dinámico
-      setTimeout(() => {
-        const carousel = document.getElementById('dynamic-carousel')
-        if (carousel) {
-          carousel.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-      }, 100)
+      // Scroll suave al carrusel dinámico - usar requestAnimationFrame
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const carousel = document.getElementById('dynamic-carousel')
+          if (carousel) {
+            carousel.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        }, 100)
+      })
     } else {
       // Comportamiento original para filtros de productos
       const isSelected = selectedCategories.includes(categorySlug)
@@ -231,18 +322,28 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         onCategoryChange([categorySlug])
       }
     }
-  }
+  }, [isDragging, useDynamicCarousel, toggleCategory, selectedCategory, selectedCategories, onCategoryChange])
 
-  // Función para scroll con botones de navegación
-  const scroll = (direction: 'left' | 'right') => {
+  // ⚡ OPTIMIZACIÓN: Handler memoizado para prefetch
+  const handleMouseEnterCategory = useCallback((slug: string) => {
+    prefetchCategory(slug, 12)
+    prefetchBestSeller(slug)
+  }, [prefetchCategory, prefetchBestSeller])
+
+  // ⚡ OPTIMIZACIÓN: Función memoizada para scroll con botones de navegación
+  const scroll = useCallback((direction: 'left' | 'right') => {
     if (carouselRef.current) {
       const scrollAmount = 300
-      carouselRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
+      requestAnimationFrame(() => {
+        if (carouselRef.current) {
+          carouselRef.current.scrollBy({
+            left: direction === 'left' ? -scrollAmount : scrollAmount,
+            behavior: 'smooth',
+          })
+        }
       })
     }
-  }
+  }, [])
 
 
   if (loading) {
@@ -267,93 +368,50 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return null // No mostrar nada si hay error o no hay categorías
   }
 
+  // ⚡ OPTIMIZACIÓN: Memoizar el cálculo de categorías seleccionadas
+  const selectedCategoriesSet = useMemo(() => new Set(selectedCategories), [selectedCategories])
+
+  // ⚡ OPTIMIZACIÓN: Memoizar las categorías renderizadas
+  const renderedCategories = useMemo(() => {
+    return categories.map(category => {
+      const isSelected = useDynamicCarousel 
+        ? selectedCategory === category.slug 
+        : selectedCategoriesSet.has(category.slug)
+      
+      return {
+        category,
+        isSelected,
+      }
+    })
+  }, [categories, selectedCategory, useDynamicCarousel, selectedCategoriesSet])
+
   // Variante bare: solo las pills sin sección ni degradados ni márgenes
   if (variant === 'bare') {
     return (
       <div
         ref={carouselRef}
         className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto flex-nowrap py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full'
+        style={{
+          willChange: 'scroll-position',
+          transform: 'translateZ(0)', // GPU acceleration
+          WebkitOverflowScrolling: 'touch', // Smooth scrolling en iOS
+        }}
         onMouseDown={handleMouseDown}
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
       >
-        {categories.map(category => {
-          // Determinar si está seleccionada según el modo (contexto o props)
-          const isSelected = useDynamicCarousel 
-            ? selectedCategory === category.slug 
-            : selectedCategories.includes(category.slug)
-          
-          // Debug individual por categoría
-          if (useDynamicCarousel && category.slug === selectedCategory) {
-            console.log(`[CategoryPills] Pill "${category.name}" debería estar seleccionada:`, {
-              categorySlug: category.slug,
-              selectedCategory,
-              isSelected,
-              shouldHighlight: isSelected && useDynamicCarousel
-            })
-          }
-          
-          return (
-            <div 
-              key={category.id}
-              className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
-              onClick={() => handleCategoryToggle(category.slug)}
-              onMouseEnter={() => {
-                // Prefetch productos de la categoría y best sellers
-                prefetchCategory(category.slug, 12)
-                prefetchBestSeller(category.slug)
-              }}
-              onMouseLeave={stopPrefetchCategory}
-            >
-              <div className={`
-                relative rounded-full transition-all duration-300
-                ${isSelected && useDynamicCarousel ? 'ring-2 ring-bright-sun-400 scale-105 shadow-md' : 'scale-100'}
-              `}>
-                <Button
-                  data-testid={`category-pill-${category.slug}`}
-                  variant={isSelected ? 'default' : 'outline'}
-                  size='sm'
-                  className={`
-                    group transition-all duration-200 border-2
-                    flex items-center justify-center p-0
-                    w-14 h-14 sm:w-16 sm:h-16 rounded-full
-                    md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
-                    ${isSelected ? 'glass-category-pill-active' : 'glass-category-pill'}
-                    ${
-                      isSelected && useDynamicCarousel
-                        ? 'hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600'
-                        : isSelected
-                        ? 'hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
-                        : 'hover:shadow-lg text-gray-900'
-                    }
-                  `}
-                >
-                {category.image_url && (
-                  <div className={`
-                    flex items-center justify-center 
-                    w-9 h-9 sm:w-10 sm:h-10 md:w-10 md:h-10
-                    transition-transform duration-300 ease-out
-                    ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
-                  `}>
-                    <Image
-                      src={category.image_url}
-                      alt=''
-                      width={40}
-                      height={40}
-                      className='w-full h-full object-contain'
-                    />
-                  </div>
-                )}
-                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
-                  {category.name}
-                </span>
-              </Button>
-              </div>
-              <span className='text-[9px] font-medium text-center leading-[1.1] text-white max-w-[85px] line-clamp-1 md:hidden truncate'>{category.name}</span>
-            </div>
-          )
-        })}
+        {renderedCategories.map(({ category, isSelected }) => (
+          <CategoryPillItem
+            key={category.id}
+            category={category}
+            isSelected={isSelected}
+            useDynamicCarousel={useDynamicCarousel}
+            onToggle={handleCategoryToggle}
+            onMouseEnter={handleMouseEnterCategory}
+            onMouseLeave={stopPrefetchCategory}
+          />
+        ))}
       </div>
     )
   }
@@ -383,85 +441,38 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         </div>
 
         {/* Pills de categorías - Full width, centradas cuando son pocas en desktop */}
+        {/* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll fluido a 60fps */}
         <div
           ref={carouselRef}
           className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full md:justify-center'
+          style={{
+            willChange: 'scroll-position',
+            transform: 'translateZ(0)', // GPU acceleration
+            WebkitOverflowScrolling: 'touch', // Smooth scrolling en iOS
+          }}
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
           data-testid='category-pills-container'
         >
-            {categories.map(category => {
-              // Determinar si está seleccionada según el modo (contexto o props)
-              const isSelected = useDynamicCarousel 
-                ? selectedCategory === category.slug 
-                : selectedCategories.includes(category.slug)
-
-              return (
-                <div 
-                  key={category.id}
-                  className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
-                  onClick={() => handleCategoryToggle(category.slug)}
-                  onMouseEnter={() => {
-                    // Prefetch productos de la categoría y best sellers
-                    prefetchCategory(category.slug, 12)
-                    prefetchBestSeller(category.slug)
-                  }}
-                  onMouseLeave={stopPrefetchCategory}
-                >
-                  <div className={`
-                  relative rounded-full transition-all duration-300
-                  ${isSelected && useDynamicCarousel ? 'ring-2 ring-bright-sun-400 scale-105 shadow-md' : 'scale-100'}
-                `}>
-                  <Button
-                    data-testid={`category-pill-${category.slug}`}
-                    variant={isSelected ? 'default' : 'outline'}
-                    size='sm'
-                    className={`
-                      group transition-all duration-200 border-2
-                      flex items-center justify-center p-0
-                      w-14 h-14 sm:w-16 sm:h-16 rounded-full
-                      md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
-                      ${isSelected ? 'glass-category-pill-active' : 'glass-category-pill'}
-                      ${
-                        isSelected && useDynamicCarousel
-                          ? 'hover:bg-bright-sun-500 text-gray-900 border-bright-sun-600'
-                          : isSelected
-                          ? 'hover:bg-[#bd4811] text-[#fff4c6] border-[#eb6313]'
-                          : 'hover:shadow-lg text-gray-900'
-                      }
-                    `}
-                  >
-                {category.image_url && (
-                  <div className={`
-                    flex items-center justify-center 
-                    w-9 h-9 sm:w-10 sm:h-10 md:w-10 md:h-10
-                    transition-transform duration-300 ease-out
-                    ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
-                  `}>
-                    <Image
-                      src={category.image_url}
-                      alt=''
-                      width={40}
-                      height={40}
-                      className='w-full h-full object-contain'
-                    />
-                  </div>
-                )}
-                <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
-                  {category.name}
-                </span>
-              </Button>
-              </div>
-              <span className='text-[9px] font-medium text-center leading-[1.1] text-white max-w-[85px] line-clamp-1 md:hidden truncate'>{category.name}</span>
-            </div>
-              )
-            })}
+          {renderedCategories.map(({ category, isSelected }) => (
+            <CategoryPillItem
+              key={category.id}
+              category={category}
+              isSelected={isSelected}
+              useDynamicCarousel={useDynamicCarousel}
+              onToggle={handleCategoryToggle}
+              onMouseEnter={handleMouseEnterCategory}
+              onMouseLeave={stopPrefetchCategory}
+            />
+          ))}
         </div>
       </div>
     </section>
   )
-}
+})
+
+CategoryTogglePills.displayName = 'CategoryTogglePills'
 
 export default CategoryTogglePills

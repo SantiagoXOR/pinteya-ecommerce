@@ -362,46 +362,64 @@ const HomeV3 = () => {
   const categoryToggleDelay = shouldDelay ? 2000 : 0
   const bestSellerDelay = shouldDelay ? 3000 : 0
   
-  // Scroll depth tracking - Optimizado con requestAnimationFrame para evitar re-renders
+  // ⚡ OPTIMIZACIÓN: Scroll depth tracking con IntersectionObserver (más eficiente que scroll events)
   useEffect(() => {
-    let maxDepth = 0
+    // Guardar SSR/hidratación: evitar acceder a window/document en servidor
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return
+    }
+
     const trackingThresholds = [25, 50, 75, 100]
     const trackedDepths = new Set<number>()
-    let ticking = false
 
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const windowHeight = window.innerHeight
-          const documentHeight = document.documentElement.scrollHeight
-          const scrollTop = window.scrollY
-
-          const scrollPercentage = Math.round(
-            ((scrollTop + windowHeight) / documentHeight) * 100
-          )
-
-          if (scrollPercentage > maxDepth) {
-            maxDepth = scrollPercentage
-          }
-
-          // Trackear cada threshold una sola vez
-          trackingThresholds.forEach(threshold => {
-            if (scrollPercentage >= threshold && !trackedDepths.has(threshold)) {
+    // Crear markers invisibles en el documento para cada threshold
+    const markers: HTMLDivElement[] = []
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const threshold = parseInt(entry.target.getAttribute('data-threshold') || '0', 10)
+            if (!trackedDepths.has(threshold)) {
               trackedDepths.add(threshold)
               trackScrollDepth(threshold, window.location.pathname)
             }
-          })
-
-          ticking = false
+          }
         })
-        ticking = true
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.01,
       }
-    }
+    )
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    // Calcular posiciones de los markers
+    const windowHeight = window.innerHeight
+    const documentHeight = document.documentElement.scrollHeight
+    const scrollableHeight = Math.max(documentHeight - windowHeight, 1)
 
+    trackingThresholds.forEach((threshold) => {
+      const marker = document.createElement('div')
+      marker.setAttribute('data-threshold', threshold.toString())
+      marker.style.position = 'absolute'
+      marker.style.top = `${(threshold / 100) * scrollableHeight}px`
+      marker.style.height = '1px'
+      marker.style.width = '1px'
+      marker.style.pointerEvents = 'none'
+      marker.style.visibility = 'hidden'
+      document.body.appendChild(marker)
+      markers.push(marker)
+      observer.observe(marker)
+    })
+
+    // Cleanup
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      observer.disconnect()
+      markers.forEach((marker) => {
+        if (marker.parentNode) {
+          marker.parentNode.removeChild(marker)
+        }
+      })
     }
   }, [])
 

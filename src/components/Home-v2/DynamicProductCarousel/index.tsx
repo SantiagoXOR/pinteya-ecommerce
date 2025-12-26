@@ -54,12 +54,17 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   // Los productos ya vienen adaptados del hook, no necesitamos adaptarlos nuevamente
   const products = Array.isArray(rawProducts) ? rawProducts : []
   
+  // ⚡ OPTIMIZACIÓN: Scroll con requestAnimationFrame para 60fps
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const scrollAmount = 300
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollBy({
+            left: direction === 'left' ? -scrollAmount : scrollAmount,
+            behavior: 'smooth',
+          })
+        }
       })
     }
   }
@@ -149,10 +154,17 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             <ChevronRight className='w-5 h-5' />
           </button>
 
+          {/* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll fluido a 60fps */}
           <div
             ref={scrollRef}
             className='flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4'
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              willChange: 'scroll-position',
+              transform: 'translateZ(0)', // GPU acceleration
+              WebkitOverflowScrolling: 'touch', // Smooth scrolling en iOS
+            }}
           >
             {products.map((product, idx) => (
               <div key={idx} className='w-[calc(50%-0.5rem)] md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] flex-shrink-0 flex flex-col'>
