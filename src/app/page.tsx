@@ -1,7 +1,7 @@
 import HomeV3 from '@/components/Home-v3'
 import { Metadata } from 'next'
 import '@/styles/home-v3-glassmorphism.css'
-import { createClient } from '@/lib/integrations/supabase/server'
+import { createPublicClient } from '@/lib/integrations/supabase/server'
 import { Category } from '@/types/database'
 import { QueryClient, dehydrate, Hydrate } from '@tanstack/react-query'
 import { productQueryKeys } from '@/hooks/queries/productQueryKeys'
@@ -45,9 +45,10 @@ export const metadata: Metadata = {
 export const revalidate = 60
 
 // ⚡ OPTIMIZACIÓN CRÍTICA: Pre-cargar categorías en el servidor para evitar re-renders
+// Usa createPublicClient (sin cookies) para permitir renderizado estático (ISR)
 async function getCategoriesServerSide(): Promise<Category[]> {
   try {
-    const supabase = await createClient()
+    const supabase = createPublicClient()
     const { data, error } = await supabase
       .from('categories')
       .select('*')

@@ -61,3 +61,25 @@ export function createAdminClient() {
     }
   )
 }
+
+// ⚡ OPTIMIZACIÓN: Cliente público sin cookies para datos estáticos (ISR)
+// Usa la anon key directamente sin cookies para permitir renderizado estático
+export function createPublicClient() {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get() {
+          return undefined
+        },
+        set() {
+          // No-op for public client
+        },
+        remove() {
+          // No-op for public client
+        },
+      },
+    }
+  )
+}
