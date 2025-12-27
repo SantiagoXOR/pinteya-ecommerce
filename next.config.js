@@ -31,6 +31,9 @@ const nextConfig = {
   // output: 'standalone', // ⚡ REMOVIDO: Incompatible con Vercel
 
   // ✅ Compiler optimizations - Solo las esenciales
+  // ⚡ FASE 6: SWC (Next.js 16) respeta automáticamente .browserslistrc
+  // No se requiere configuración adicional - SWC transpila según browserslist
+  // .browserslistrc ya está optimizado para navegadores modernos (últimas 2 versiones)
   compiler: {
     removeConsole:
       process.env.NODE_ENV === 'production'
@@ -129,27 +132,65 @@ const nextConfig = {
     }
     
     // ⚡ OPTIMIZACIÓN: Code splitting mejorado para reducir código sin usar
+    // ⚡ FASE 9: Optimización agresiva para reducir 80 KiB JS sin usar
     if (!isServer && config.optimization) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 200000, // 200 KB máximo por chunk
+          maxSize: 150000, // ⚡ REDUCIDO: 150 KB máximo (de 200 KB) para mejor splitting
           minSize: 20000, // 20 KB mínimo
+          maxAsyncRequests: 30,
+          maxInitialRequests: 25,
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
+            // ⚡ Framework core (React, Next.js) - Prioridad alta
             framework: {
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
               name: 'framework',
               priority: 40,
-              maxSize: 300000, // 300 KB máximo para framework
+              maxSize: 250000, // ⚡ REDUCIDO: 250 KB máximo (de 300 KB) para framework
               reuseExistingChunk: true,
             },
+            // ⚡ Framer Motion - Separado para mejor tree shaking
+            framerMotion: {
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              name: 'framer-motion',
+              priority: 35,
+              maxSize: 100000, // 100 KB máximo para evitar código sin usar
+              reuseExistingChunk: true,
+            },
+            // ⚡ Radix UI - Separado para mejor tree shaking
+            radixUI: {
+              test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+              name: 'radix-ui',
+              priority: 35,
+              maxSize: 100000, // 100 KB máximo para evitar código sin usar
+              reuseExistingChunk: true,
+            },
+            // ⚡ Swiper - Separado para lazy loading
+            swiper: {
+              test: /[\\/]node_modules[\\/]swiper[\\/]/,
+              name: 'swiper',
+              priority: 30,
+              maxSize: 80000, // 80 KB máximo
+              reuseExistingChunk: true,
+            },
+            // ⚡ Recharts - Separado para lazy loading
+            recharts: {
+              test: /[\\/]node_modules[\\/]recharts[\\/]/,
+              name: 'recharts',
+              priority: 30,
+              maxSize: 100000, // 100 KB máximo
+              reuseExistingChunk: true,
+            },
+            // ⚡ Vendor libraries - Chunks más pequeños para mejor tree shaking
             vendor: {
-              test: /[\\/]node_modules[\\/]/,
+              test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 200000, // 200 KB máximo
+              maxSize: 150000, // ⚡ REDUCIDO: 150 KB máximo (de 200 KB)
+              minSize: 20000,
               reuseExistingChunk: true,
             },
           },
@@ -232,9 +273,10 @@ module.exports.__esModule = true;
     // Cache más largo para imágenes optimizadas
     minimumCacheTTL: 31536000, // 1 año para imágenes estáticas
     // ⚡ OPTIMIZACIÓN: Tamaños responsivos optimizados para productos y hero
-    // Tamaños específicos para productos (263x263, 286x286, 320x320) para reducir 162 KiB
+    // ⚡ FASE 3: Agregado 308px para product cards (308x308 según reporte PageSpeed)
+    // Tamaños específicos para productos (263x263, 286x286, 308x308, 320x320) para reducir 162 KiB
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 263, 286, 320, 384],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 263, 286, 308, 320, 384],
     // Nota: quality se especifica en cada componente Image individualmente (default: 75)
     // Habilitar optimización de imágenes remotas
     remotePatterns: [

@@ -16,25 +16,21 @@ const config: Config = {
   ],
   darkMode: ['class', 'class'],
   // ⚡ OPTIMIZACIÓN: Purge CSS no utilizado en producción
-  // ⚡ CRITICAL: Safelist mínima - solo clases realmente dinámicas
+  // ⚡ FASE 9: Safelist optimizada - solo clases realmente dinámicas y verificadas
+  // ⚡ REDUCIDO: Eliminadas clases de dark mode de safelist (Tailwind las detecta estáticamente)
+  // ⚡ REDUCIDO: Solo mantener clases que se generan dinámicamente (template strings, código)
   safelist: [
-    // Mantener clases dinámicas que Tailwind no puede detectar
+    // ⚡ Animaciones usadas dinámicamente (verificado: ProductList.tsx, feedback.tsx)
     'animate-fade-in',
     'animate-slide-up',
     'animate-scale-in',
-    // Clases de z-index críticas
+    // ⚡ Clases de z-index críticas (verificado: layout.tsx, Header, dialog.tsx)
     'z-header',
     'z-modal',
     'z-toast',
-    // ⚡ CRITICAL: Clases de dark mode para títulos y textos
-    'dark:text-bright-sun-200',
-    'dark:text-bright-sun-300',
-    'dark:text-bright-sun-400',
-    'dark:!text-bright-sun-200',
-    'dark:!text-bright-sun-300',
-    'dark:!text-bright-sun-400',
-    // ⚡ CRITICAL: Solo agregar clases que realmente se generan dinámicamente
-    // No agregar clases que se pueden detectar estáticamente
+    // ⚡ NOTA: Clases de dark mode removidas de safelist
+    // Tailwind puede detectar clases estáticas automáticamente (dark:text-bright-sun-*)
+    // Solo agregar a safelist si se generan dinámicamente en template strings
   ],
   theme: {
     fontFamily: {
