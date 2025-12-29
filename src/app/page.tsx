@@ -141,8 +141,8 @@ export default async function HomePage() {
                 // ⚡ CRITICAL: Asegurar que la imagen sea el LCP element y permanezca visible
                 position: 'relative',
                 zIndex: 10,
-                visibility: 'visible !important',
-                opacity: '1 !important',
+                visibility: 'visible',
+                opacity: 1,
                 // ⚡ FASE 21: Asegurar que la imagen sea visible y no se oculte antes de LCP
                 pointerEvents: 'auto',
                 // ⚡ FASE 21: Asegurar que la imagen esté en el viewport
