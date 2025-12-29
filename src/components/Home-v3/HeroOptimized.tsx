@@ -21,9 +21,10 @@ const HeroCarousel = dynamic(() => import('./Hero/Carousel'), {
  */
 const HeroOptimized = memo(() => {
   const [isMounted, setIsMounted] = useState(false)
+  const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   
   // ⚡ OPTIMIZACIÓN: Usar hook personalizado para detección de LCP
-  const { shouldLoad: shouldLoadCarousel } = useLCPDetection({
+  const { shouldLoad: shouldLoadFromLCP, forceLoad } = useLCPDetection({
     delayAfterLCP: 2000,
     maxWaitTime: 3000,
     useIdleCallback: true,
@@ -33,6 +34,29 @@ const HeroOptimized = memo(() => {
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  // ⚡ FIX: Sincronizar shouldLoadCarousel con shouldLoadFromLCP
+  useEffect(() => {
+    if (shouldLoadFromLCP) {
+      setShouldLoadCarousel(true)
+    }
+  }, [shouldLoadFromLCP])
+
+  // ⚡ FIX: Fallback agresivo - cargar carousel después de 5 segundos máximo
+  // Esto asegura que el carousel siempre se cargue, incluso si LCP no se detecta
+  useEffect(() => {
+    if (!isMounted) return
+
+    const fallbackTimeout = setTimeout(() => {
+      if (!shouldLoadCarousel) {
+        console.log('⚡ HeroOptimized: Fallback activado - cargando carousel después de 5s')
+        setShouldLoadCarousel(true)
+        forceLoad() // También forzar en el hook
+      }
+    }, 5000) // 5 segundos máximo
+
+    return () => clearTimeout(fallbackTimeout)
+  }, [isMounted, shouldLoadCarousel, forceLoad])
 
   // ⚡ FASE 23: NO ocultar la imagen estática NUNCA durante la evaluación de Lighthouse
   // Lighthouse necesita que la imagen permanezca visible para detectarla como LCP
