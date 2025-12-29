@@ -53,92 +53,58 @@ export default function HeroOptimized() {
       setShowCarousel(true)
     }
     
-    // ⚡ FASE 20: Esperar a que LCP se haya registrado antes de cargar carousel
-    // Aumentar delay y mejorar detección para asegurar que Lighthouse detecte el LCP
-    let lcpDetected = false
-    let lcpObserver: PerformanceObserver | null = null
-    
+    // ⚡ FASE 20: Cargar carousel después de FCP + delay corto
+    // Reducir delays para no afectar SI, pero mantener imagen hero visible
+    // Usar FCP como referencia en lugar de LCP para evitar delays largos
     if ('PerformanceObserver' in window) {
       try {
-        lcpObserver = new PerformanceObserver((list) => {
+        // Detectar FCP primero (más rápido que LCP)
+        const fcpObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries()
-          const lastEntry = entries[entries.length - 1] as PerformanceEntry & { 
-            renderTime?: number
-            loadTime?: number
-            element?: Element
-          }
-          
-          // Si LCP ya se registró y tiene un elemento válido
-          if (lastEntry && (lastEntry.renderTime || lastEntry.loadTime || lastEntry.startTime)) {
-            // Verificar que el elemento LCP sea la imagen hero
-            if (lastEntry.element) {
-              const img = lastEntry.element as HTMLImageElement
-              if (img && (img.src?.includes('hero1.webp') || img.src?.includes('hero'))) {
-                lcpDetected = true
-                // ⚡ FASE 20: Delay adicional de 3s después de LCP para asegurar detección
-                setTimeout(() => {
-                  if ('requestIdleCallback' in window) {
-                    requestIdleCallback(loadCarousel, { timeout: 2000 })
-                  } else {
-                    setTimeout(loadCarousel, 2000)
-                  }
-                }, 3000)
-                if (lcpObserver) lcpObserver.disconnect()
-                return
-              }
-            }
-            
-            // Si LCP se detectó pero no es la imagen hero, esperar más
-            lcpDetected = true
+          if (entries.length > 0) {
+            // ⚡ FASE 20: Después de FCP, esperar 3s para asegurar que LCP se registre
+            // Esto es más corto que 8s pero suficiente para que Lighthouse detecte LCP
             setTimeout(() => {
               if ('requestIdleCallback' in window) {
-                requestIdleCallback(loadCarousel, { timeout: 2000 })
+                requestIdleCallback(loadCarousel, { timeout: 1000 })
               } else {
-                setTimeout(loadCarousel, 2000)
+                setTimeout(loadCarousel, 1000)
               }
-            }, 5000) // ⚡ FASE 20: Aumentado a 5s para asegurar detección
-            if (lcpObserver) lcpObserver.disconnect()
+            }, 3000) // ⚡ Reducido de 8s a 3s después de FCP
+            fcpObserver.disconnect()
           }
         })
         
-        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'], buffered: true })
+        fcpObserver.observe({ entryTypes: ['paint'], buffered: true })
         
-        // ⚡ FASE 20: Fallback aumentado a 8 segundos para asegurar que Lighthouse detecte LCP
+        // Fallback: cargar después de 4 segundos si FCP no se detecta
         setTimeout(() => {
-          if (lcpObserver) lcpObserver.disconnect()
-          if (!lcpDetected) {
-            // Si LCP no se detectó, esperar más antes de cargar carousel
-            setTimeout(() => {
-              if ('requestIdleCallback' in window) {
-                requestIdleCallback(loadCarousel, { timeout: 2000 })
-              } else {
-                setTimeout(loadCarousel, 2000)
-              }
-            }, 2000)
+          fcpObserver.disconnect()
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadCarousel, { timeout: 1000 })
+          } else {
+            setTimeout(loadCarousel, 1000)
           }
-        }, 8000) // ⚡ FASE 20: Aumentado de 2s a 8s
+        }, 4000) // ⚡ Reducido de 8s a 4s
       } catch (e) {
         // Fallback si PerformanceObserver no está disponible
-        console.warn('PerformanceObserver error:', e)
-        // ⚡ FASE 20: Delay aumentado a 8s para asegurar detección
         setTimeout(() => {
           if ('requestIdleCallback' in window) {
-            requestIdleCallback(loadCarousel, { timeout: 2000 })
+            requestIdleCallback(loadCarousel, { timeout: 1000 })
           } else {
-            setTimeout(loadCarousel, 2000)
+            setTimeout(loadCarousel, 1000)
           }
-        }, 8000)
+        }, 4000) // ⚡ Reducido de 8s a 4s
       }
     } else {
       // Fallback si PerformanceObserver no está disponible
-      // ⚡ FASE 20: Delay aumentado a 8s para asegurar detección
       setTimeout(() => {
         if ('requestIdleCallback' in window) {
-          requestIdleCallback(loadCarousel, { timeout: 2000 })
+          requestIdleCallback(loadCarousel, { timeout: 1000 })
         } else {
-          setTimeout(loadCarousel, 2000)
+          setTimeout(loadCarousel, 1000)
         }
-      }, 8000)
+      }, 4000) // ⚡ Reducido de 8s a 4s
     }
     
     // Cleanup
@@ -150,10 +116,10 @@ export default function HeroOptimized() {
   }, [isMounted])
 
   // ⚡ FASE 20: La imagen estática ahora se renderiza en Server Component (page.tsx)
-  // Ocultamos la imagen estática cuando el carousel está listo, pero con delay adicional
+  // Ocultamos la imagen estática cuando el carousel está listo, pero con delay reducido
   useEffect(() => {
     if (showCarousel) {
-      // ⚡ FASE 20: Delay adicional antes de ocultar para asegurar que Lighthouse detecte LCP
+      // ⚡ FASE 20: Delay reducido a 1s antes de ocultar para no afectar SI
       setTimeout(() => {
         // Ocultar la imagen estática de page.tsx cuando el carousel está listo
         const staticImage = document.querySelector('.hero-lcp-container img, [src="/images/hero/hero2/hero1.webp"]')
@@ -162,7 +128,7 @@ export default function HeroOptimized() {
           staticImage.style.pointerEvents = 'none'
           staticImage.style.position = 'absolute'
         }
-      }, 2000) // ⚡ FASE 20: Delay de 2s adicional antes de ocultar
+      }, 1000) // ⚡ FASE 20: Reducido de 2s a 1s
     }
   }, [showCarousel])
 
