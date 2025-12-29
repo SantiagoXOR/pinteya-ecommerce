@@ -90,7 +90,7 @@ const MetaPixel: React.FC = () => {
       // ⚡ OPTIMIZACIÓN: Aumentar delay a 10 segundos para dar más tiempo al contenido principal
       // Meta Pixel es pesado (66KB unused), mejor cargarlo mucho después
       // Esto reduce unused JavaScript y mejora TBT
-      loadTimeout = setTimeout(loadPixel, 10000) // ⚡ FASE 21: Aumentado a 10s para reducir unused JS
+      loadTimeout = setTimeout(loadPixel, 13000) // ⚡ FASE 22: Aumentado a 13s para reducir unused JS y mejorar LCP
       loadHandler = loadAfterLCP
     }
 

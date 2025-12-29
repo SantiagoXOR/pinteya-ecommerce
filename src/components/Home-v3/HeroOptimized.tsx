@@ -45,29 +45,75 @@ export default function HeroOptimized() {
   }, [])
 
   useEffect(() => {
-    // ⚡ FASE 20: Cargar carousel después de que LCP se haya registrado
-    // Aumentar delay para asegurar que Lighthouse detecte el LCP correctamente
+    // ⚡ FASE 22: Cargar carousel después de que LCP se haya registrado
+    // Usar PerformanceObserver para detectar LCP y cargar carousel después
     if (!isMounted) return
 
     const loadCarousel = () => {
       setShowCarousel(true)
     }
     
-    // ⚡ FASE 21: Aumentar delay del carousel para evitar competir con LCP
-    // El carousel ahora no carga hero1.webp, pero aún así debe cargarse después del LCP
-    // Esto reduce el trabajo en el main thread y mejora TBT y LCP
-    const loadDelay = 5000 // ⚡ FASE 21: Aumentado a 5s para dar más tiempo al LCP
+    // ⚡ FASE 22: Detectar LCP usando PerformanceObserver y cargar carousel después
+    // Reducir delay a 2s después de LCP detectado para mejorar experiencia de usuario
+    let lcpDetected = false
+    let lcpTime = 0
     
-    const timeoutId = setTimeout(() => {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadCarousel, { timeout: 1000 })
-      } else {
-        setTimeout(loadCarousel, 1000)
+    // Detectar LCP usando PerformanceObserver
+    if ('PerformanceObserver' in window) {
+      try {
+        const lcpObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries()
+          const lastEntry = entries[entries.length - 1] as PerformanceEntry & { renderTime?: number; loadTime?: number; startTime?: number }
+          
+          if (lastEntry) {
+            lcpDetected = true
+            // Usar renderTime si está disponible, sino loadTime, sino startTime
+            lcpTime = lastEntry.renderTime || lastEntry.loadTime || lastEntry.startTime || 0
+            
+            // ⚡ FASE 22: Cargar carousel 2s después de LCP detectado
+            setTimeout(() => {
+              if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadCarousel, { timeout: 500 })
+              } else {
+                setTimeout(loadCarousel, 500)
+              }
+            }, 2000) // ⚡ FASE 22: Reducido a 2s después de LCP
+          }
+        })
+        
+        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
+        
+        // Fallback: Si LCP no se detecta en 3s, cargar carousel de todas formas
+        setTimeout(() => {
+          if (!lcpDetected) {
+            setTimeout(() => {
+              if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadCarousel, { timeout: 500 })
+              } else {
+                setTimeout(loadCarousel, 500)
+              }
+            }, 2000) // ⚡ FASE 22: 2s después del fallback también
+          }
+        }, 3000)
+      } catch (e) {
+        // Si PerformanceObserver falla, usar delay fijo de 2s
+        setTimeout(() => {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadCarousel, { timeout: 500 })
+          } else {
+            setTimeout(loadCarousel, 500)
+          }
+        }, 2000) // ⚡ FASE 22: Delay fijo de 2s si PerformanceObserver no está disponible
       }
-    }, loadDelay)
-    
-    return () => {
-      clearTimeout(timeoutId)
+    } else {
+      // Fallback para navegadores sin PerformanceObserver
+      setTimeout(() => {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(loadCarousel, { timeout: 500 })
+        } else {
+          setTimeout(loadCarousel, 500)
+        }
+      }, 2000) // ⚡ FASE 22: Delay fijo de 2s
     }
   }, [isMounted])
 

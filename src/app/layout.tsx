@@ -240,57 +240,71 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   const href = link.getAttribute('href') || '';
                   // ⚡ FASE 21: Detección más agresiva del CSS bloqueante
                   // Detectar TODOS los CSS de Next.js, incluyendo el chunk específico que está bloqueando
+                  // ⚡ FASE 22: Detección más agresiva - convertir TODOS los CSS bloqueantes
+                  // Incluir el chunk específico que está bloqueando (8976ffb1399428d1.css)
                   const isNextJSCSS = href.includes('_next/static/css') || 
                                       href.includes('/chunks/') || 
                                       href.includes('8976ffb1399428d1') ||
-                                      (href.includes('.css') && href.includes('_next'));
+                                      (href.includes('.css') && href.includes('_next')) ||
+                                      (href.includes('.css') && !href.includes('print'));
                   
                   if (isNextJSCSS) {
-                    // ⚡ FASE 21: Marcar inmediatamente para evitar procesamiento múltiple
+                    // ⚡ FASE 22: Marcar inmediatamente para evitar procesamiento múltiple
                     link.setAttribute('data-non-blocking', 'true');
                     
-                    // Si ya está cargado completamente, aplicar media="print" de todas formas
-                    // para evitar que bloquee en futuras cargas
+                    // ⚡ FASE 22: Si ya está cargado, aplicar media="print" inmediatamente
+                    // Esto evita que bloquee el renderizado incluso si ya está cargado
                     if (link.sheet && link.sheet.cssRules && link.sheet.cssRules.length > 0) {
                       const originalMedia = link.media || 'all';
                       if (originalMedia !== 'print') {
                         link.media = 'print';
-                        setTimeout(function() {
+                        // ⚡ FASE 22: Usar requestAnimationFrame para aplicar cambio inmediatamente
+                        requestAnimationFrame(function() {
                           link.media = originalMedia;
-                        }, 0);
+                        });
                       }
                       return;
                     }
                     
                     converted = true;
                     
-                    // ⚡ FASE 21: Preload + media="print" + onload - más agresivo
+                    // ⚡ FASE 22: Preload + media="print" + onload - ultra agresivo
                     const preload = document.createElement('link');
                     preload.rel = 'preload';
                     preload.as = 'style';
                     preload.href = href;
+                    preload.setAttribute('fetchpriority', 'high');
                     document.head.insertBefore(preload, link);
                     
                     const originalMedia = link.media || 'all';
+                    // ⚡ FASE 22: Aplicar media="print" ANTES de que el CSS se cargue
+                    // Esto evita que bloquee el renderizado desde el inicio
                     link.media = 'print';
                     
+                    // ⚡ FASE 22: Usar onload para restaurar media cuando esté listo
                     link.onload = function() {
-                      link.media = originalMedia;
-                      if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      requestAnimationFrame(function() {
+                        link.media = originalMedia;
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      });
                     };
                     
                     link.onerror = function() {
-                      link.media = originalMedia;
-                      if (preload.parentNode) preload.parentNode.removeChild(preload);
-                    };
-                    
-                    // ⚡ FASE 21: Fallback reducido a 1 segundo para conversión ultra-rápida
-                    setTimeout(function() {
-                      if (link.media === 'print') {
+                      requestAnimationFrame(function() {
                         link.media = originalMedia;
                         if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      });
+                    };
+                    
+                    // ⚡ FASE 22: Fallback ultra-rápido (500ms) para conversión inmediata
+                    setTimeout(function() {
+                      if (link.media === 'print') {
+                        requestAnimationFrame(function() {
+                          link.media = originalMedia;
+                          if (preload.parentNode) preload.parentNode.removeChild(preload);
+                        });
                       }
-                    }, 1000); // ⚡ FASE 21: Reducido a 1s para conversión más rápida
+                    }, 500); // ⚡ FASE 22: Reducido a 500ms para conversión ultra-rápida
                   }
                 });
                 return converted;
@@ -299,21 +313,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // Ejecutar inmediatamente
               convertCSSToNonBlocking();
               
-              // ⚡ FASE 21: Intervalo más agresivo (10ms) para detección ultra-temprana
+              // ⚡ FASE 22: Intervalo ultra-agresivo (5ms) para detección inmediata
               // Ejecutar múltiples veces para capturar CSS que se inserta después
               let attempts = 0;
-              const maxAttempts = 20; // ⚡ FASE 21: Aumentado para capturar más CSS dinámico
+              const maxAttempts = 30; // ⚡ FASE 22: Aumentado para capturar más CSS dinámico
               const interval = setInterval(function() {
                 attempts++;
                 const converted = convertCSSToNonBlocking();
-                // ⚡ FASE 21: Continuar más tiempo para asegurar que todo el CSS se convierte
-                if (!converted && attempts > 8) {
+                // ⚡ FASE 22: Continuar más tiempo para asegurar que todo el CSS se convierte
+                if (!converted && attempts > 10) {
                   clearInterval(interval);
                 }
                 if (attempts >= maxAttempts) {
                   clearInterval(interval);
                 }
-              }, 10); // ⚡ FASE 21: Reducido a 10ms para detección ultra-temprana
+              }, 5); // ⚡ FASE 22: Reducido a 5ms para detección ultra-inmediata
               
               // También en DOMContentLoaded por si acaso
               if (document.readyState === 'loading') {
