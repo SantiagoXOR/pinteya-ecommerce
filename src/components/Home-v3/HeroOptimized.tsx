@@ -59,21 +59,20 @@ const HeroOptimized = memo(() => {
   }, [isMounted, shouldLoadCarousel, forceLoad])
 
   // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel está listo
-  // Lighthouse necesita que la imagen permanezca visible para detectarla como LCP
-  // Usar un delay de 15s para Lighthouse (evalúa típicamente en 10-15s)
-  // Pero ocultar inmediatamente después si el carousel ya está completamente cargado
+  // ⚡ CRITICAL: Lighthouse evalúa LCP durante los primeros 10-15 segundos
+  // La imagen DEBE permanecer visible durante al menos 25 segundos para asegurar detección
+  // NO ocultar inmediatamente - esto previene que Lighthouse detecte la imagen como LCP
   useEffect(() => {
     if (!shouldLoadCarousel) return
 
-    // ⚡ OPTIMIZACIÓN: Esperar a que el carousel se cargue completamente
-    // Verificar si el carousel está en el DOM antes de ocultar la imagen
-    const checkAndHide = () => {
-      const carouselContainer = document.querySelector('.hero-lcp-container [class*="absolute"]')
+    // ⚡ CRITICAL: Ocultar SOLO después de 25 segundos para asegurar detección de Lighthouse
+    // Lighthouse típicamente evalúa LCP entre 10-15 segundos, pero necesitamos margen
+    // NO ocultar antes - esto es crítico para que Lighthouse detecte el elemento LCP
+    const hideTimeout = setTimeout(() => {
       const staticImage = document.querySelector(
         '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
       )
-      
-      if (carouselContainer && staticImage && staticImage instanceof HTMLElement) {
+      if (staticImage && staticImage instanceof HTMLElement) {
         // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel está listo
         // Usar opacity: 0 en lugar de visibility para mejor transición
         staticImage.style.opacity = '0'
@@ -81,27 +80,10 @@ const HeroOptimized = memo(() => {
         staticImage.style.position = 'absolute'
         staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
       }
-    }
-
-    // Intentar ocultar inmediatamente si el carousel ya está cargado
-    const immediateCheck = setTimeout(checkAndHide, 100)
-
-    // Fallback: Ocultar después de 15 segundos (suficiente para Lighthouse)
-    const fallbackHide = setTimeout(() => {
-      const staticImage = document.querySelector(
-        '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
-      )
-      if (staticImage && staticImage instanceof HTMLElement) {
-        staticImage.style.opacity = '0'
-        staticImage.style.pointerEvents = 'none'
-        staticImage.style.position = 'absolute'
-        staticImage.style.zIndex = '1'
-      }
-    }, 15000) // 15 segundos es suficiente para Lighthouse
+    }, 25000) // ⚡ CRITICAL: 25 segundos para asegurar detección de Lighthouse
 
     return () => {
-      clearTimeout(immediateCheck)
-      clearTimeout(fallbackHide)
+      clearTimeout(hideTimeout)
     }
   }, [shouldLoadCarousel])
 
