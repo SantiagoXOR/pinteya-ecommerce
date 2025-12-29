@@ -14,6 +14,13 @@ const HomeV3 = dynamic(() => import('@/components/Home-v3'), {
   loading: () => null, // No mostrar loading, la imagen hero ya está visible
 })
 
+// ⚡ FASE 23: HeroOptimized se carga dinámicamente para reducir bundle inicial
+// El carousel se renderiza después del LCP, pero el componente debe estar disponible
+const HeroOptimized = dynamic(() => import('@/components/Home-v3/HeroOptimized'), {
+  ssr: false, // Client Component - no necesita SSR
+  loading: () => null, // No mostrar loading, la imagen estática ya está visible
+})
+
 export const metadata: Metadata = {
   title: 'Pinteya - Tu Pinturería Online | Envío Gratis +$50.000',
   description:
