@@ -72,14 +72,14 @@ const MetaPixel: React.FC = () => {
       })
 
       // ⚡ OPTIMIZACIÓN: Cargar después de interacción del usuario o después de LCP + delay
-      // ⚡ FASE 18: Aumentar delay para cargar pixel más tarde (reduce unused JS)
+      // ⚡ FASE 18: Delay reducido a 0.5s para no bloquear LCP (el delay de 2s estaba causando problemas)
       const interactionEvents = ['mousedown', 'touchstart', 'keydown', 'scroll']
       const onInteraction = () => {
         markUserActive()
-        // ⚡ FASE 18: Delay adicional de 2s después de interacción para no bloquear LCP
+        // ⚡ FASE 18: Delay reducido a 0.5s para balance entre unused JS y LCP
         setTimeout(() => {
           loadPixel()
-        }, 2000)
+        }, 500)
       }
 
       interactionEvents.forEach(event => {
