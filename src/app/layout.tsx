@@ -48,6 +48,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.pinteya.com" />
         
+        {/* ⚡ CRITICAL: Preload de imagen LCP del hero - INMEDIATAMENTE después del preconnect */}
+        {/* Esto elimina el retraso de 1,480ms en la carga de recursos */}
+        {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
+        <link
+          rel="preload"
+          as="image"
+          href="/images/hero/hero2/hero1.webp"
+          fetchPriority="high"
+          type="image/webp"
+          crossOrigin="anonymous"
+        />
+        
         {/* ⚡ CRITICAL CSS - Inline para FCP rápido (-0.2s) */}
         <style dangerouslySetInnerHTML={{__html: `
           /* CSS Variables - Inline para eliminar archivo bloqueante */
@@ -180,22 +192,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         
         {/* ⚡ FASE 7: Preconnect a Supabase - Crítico para imágenes de productos */}
         {/* Ahorro estimado de LCP: 330 ms según Lighthouse */}
-        {/* Ahorro estimado de LCP: 330 ms según Lighthouse */}
-        {/* Posicionado inmediatamente después del dominio propio para máximo impacto */}
+        {/* Posicionado después del preload de imagen hero para no competir con LCP */}
         <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
-        
-        {/* ⚡ CRITICAL: Preload de imagen LCP del hero - POSICIONADO PRIMERO para máxima prioridad */}
-        {/* Esto elimina el retraso de 1,480ms en la carga de recursos */}
-        {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
-        <link
-          rel="preload"
-          as="image"
-          href="/images/hero/hero2/hero1.webp"
-          fetchPriority="high"
-          type="image/webp"
-          crossOrigin="anonymous"
-        />
         
         {/* ⚡ CRITICAL: Preload de fuentes críticas - ANTES de otros recursos */}
         {/* Esto reduce la latencia de ruta crítica de 2,124 ms */}
