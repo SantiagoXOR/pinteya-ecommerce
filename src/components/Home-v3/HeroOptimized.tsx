@@ -140,34 +140,31 @@ export default function HeroOptimized() {
   }, [showCarousel])
 
   // ⚡ FASE 23: La imagen estática ahora se renderiza en Server Component (page.tsx)
-  // El carousel se renderiza en el MISMO contenedor que la imagen estática para que coincidan
+  // El carousel se renderiza en el MISMO contenedor que la imagen estática para que coincidan exactamente
   // Solo renderizamos el carousel aquí, que se carga después del LCP
+  // ⚡ CRITICAL: El carousel debe estar en el MISMO contenedor que la imagen estática en page.tsx
   return (
-    <div className="relative w-full hero-lcp-container">
-      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
+    <>
+      {/* ⚡ FASE 23: Carousel carga dinámicamente después del LCP */}
+      {/* La imagen estática está en page.tsx (Server Component) para descubrimiento temprano */}
+      {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
+      {isMounted && (
         <div 
-          className="relative w-full overflow-hidden" 
-          style={{ 
-            aspectRatio: '2.77',
-            minHeight: '277px',
-            height: 'auto',
+          className={`absolute inset-0 z-20 transition-opacity duration-500 ${
+            showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
           }}
         >
-          {/* ⚡ FASE 23: Carousel carga dinámicamente después del LCP */}
-          {/* La imagen estática está en page.tsx (Server Component) para descubrimiento temprano */}
-          {/* El carousel se renderiza en el MISMO contenedor para que coincida exactamente */}
-          {isMounted && (
-            <div 
-              className={`absolute inset-0 z-20 transition-opacity duration-500 ${
-                showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
-              }`}
-            >
-              <HeroCarousel />
-            </div>
-          )}
+          <HeroCarousel />
         </div>
-      </div>
-    </div>
+      )}
+    </>
   )
 }
 
