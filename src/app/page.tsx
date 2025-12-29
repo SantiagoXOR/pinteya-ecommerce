@@ -118,6 +118,7 @@ export default async function HomePage() {
             {/* ⚡ FASE 21: Imagen hero optimizada para LCP - sin duplicación */}
             {/* Usar <img> estático para descubrimiento temprano, sin Next.js Image optimization inicial */}
             {/* Esto evita duplicación de requests (original + optimizada) */}
+            {/* ⚡ CRITICAL: Esta imagen DEBE permanecer visible para que Lighthouse la detecte como LCP */}
             <img
               src="/images/hero/hero2/hero1.webp"
               alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
@@ -136,14 +137,17 @@ export default async function HomePage() {
                 aspectRatio: '1200/433',
                 objectFit: 'contain',
                 display: 'block',
-                transition: 'opacity 0.5s ease',
-                // ⚡ FASE 21: Asegurar que la imagen sea el LCP element
+                // ⚡ FASE 21: NO usar transition en opacity para evitar que se oculte
+                // ⚡ CRITICAL: Asegurar que la imagen sea el LCP element y permanezca visible
                 position: 'relative',
                 zIndex: 10,
-                visibility: 'visible',
-                opacity: '1',
+                visibility: 'visible !important',
+                opacity: '1 !important',
                 // ⚡ FASE 21: Asegurar que la imagen sea visible y no se oculte antes de LCP
-                pointerEvents: 'auto'
+                pointerEvents: 'auto',
+                // ⚡ FASE 21: Asegurar que la imagen esté en el viewport
+                minHeight: '277px',
+                minWidth: '100%'
               }}
             />
           </div>
