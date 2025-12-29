@@ -278,5 +278,67 @@ describe('product-utils', () => {
       expect(result).toBeDefined()
     })
   })
+
+  // ===================================
+  // CASOS EDGE ADICIONALES
+  // ===================================
+
+  describe('Edge Cases', () => {
+    it('should handle product names with special characters', () => {
+      const result = detectProductType('Pintura & Más - Especial!')
+      expect(result).toBeDefined()
+      expect(result.id).toBeDefined()
+    })
+
+    it('should handle empty product name', () => {
+      const result = detectProductType('')
+      expect(result).toBeDefined()
+      expect(result.id).toBe('pinturas-latex') // Default
+    })
+
+    it('should handle very long product names', () => {
+      const longName = 'Pintura '.repeat(100) + 'Latex'
+      const result = detectProductType(longName)
+      expect(result).toBeDefined()
+    })
+
+    it('should handle capacity with unusual formats', () => {
+      expect(formatCapacity('0.5', 'litros')).toBe('0.5L')
+      expect(formatCapacity('100', 'litros')).toBe('100L')
+    })
+
+    it('should handle color names with accents', () => {
+      const color = getColorHex('ROJO TEJA')
+      expect(color).toBeDefined()
+    })
+
+    it('should handle unknown color names gracefully', () => {
+      const color = getColorHex('COLOR_INEXISTENTE_XYZ')
+      expect(color).toBeUndefined()
+    })
+
+    it('should handle product type detection with mixed case', () => {
+      const result1 = detectProductType('PINTURA LATEX')
+      const result2 = detectProductType('pintura latex')
+      const result3 = detectProductType('PiNtUrA lAtEx')
+      
+      expect(result1.id).toBe('pinturas-latex')
+      expect(result2.id).toBe('pinturas-latex')
+      expect(result3.id).toBe('pinturas-latex')
+    })
+
+    it('should handle capacity extraction from complex names', () => {
+      const result = extractProductCapacity('Pintura Especial Premium 4L Plus Edition')
+      expect(result).toBeDefined()
+      if (result && typeof result === 'object') {
+        expect(result.capacity).toBeDefined()
+      }
+    })
+
+    it('should handle multiple capacities in name', () => {
+      const result = extractProductCapacity('Pintura 4L y 1L disponible')
+      expect(result).toBeDefined()
+    })
+  })
 })
 

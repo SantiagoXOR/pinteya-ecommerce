@@ -71,11 +71,15 @@ const MetaPixel: React.FC = () => {
         activityListeners.push({ event, handler: markUserActive })
       })
 
-      // Opción 1: Cargar después de interacción del usuario
+      // ⚡ OPTIMIZACIÓN: Cargar después de interacción del usuario o después de LCP + delay
+      // ⚡ FASE 18: Aumentar delay para cargar pixel más tarde (reduce unused JS)
       const interactionEvents = ['mousedown', 'touchstart', 'keydown', 'scroll']
       const onInteraction = () => {
         markUserActive()
-        loadPixel()
+        // ⚡ FASE 18: Delay adicional de 2s después de interacción para no bloquear LCP
+        setTimeout(() => {
+          loadPixel()
+        }, 2000)
       }
 
       interactionEvents.forEach(event => {

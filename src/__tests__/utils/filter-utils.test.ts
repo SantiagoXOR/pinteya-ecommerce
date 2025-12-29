@@ -187,6 +187,106 @@ describe('filter-utils', () => {
       expect(blancoColor).toBeDefined()
       expect(blancoColor?.hex).toBe('#FFFFFF')
     })
+
+    // ===================================
+    // CASOS EDGE ADICIONALES
+    // ===================================
+
+    it('should handle products with null values', () => {
+      const products = [
+        {
+          title: null,
+          variants: null,
+        },
+      ]
+
+      const result = buildFilterBadgesFromProducts(products)
+      expect(result.measures).toEqual([])
+      expect(result.colors).toEqual([])
+    })
+
+    it('should handle products with undefined fields', () => {
+      const products = [
+        {
+          title: undefined,
+          variants: undefined,
+        },
+      ]
+
+      const result = buildFilterBadgesFromProducts(products)
+      expect(result.measures).toEqual([])
+      expect(result.colors).toEqual([])
+    })
+
+    it('should handle very large product arrays', () => {
+      const products = Array.from({ length: 1000 }, (_, i) => ({
+        title: `Producto ${i}`,
+        variants: [
+          { measure: '4L', color_name: 'BLANCO', color_hex: '#FFFFFF' },
+        ],
+      }))
+
+      const result = buildFilterBadgesFromProducts(products)
+      expect(result.measures).toContain('4L')
+      expect(result.colors.length).toBeGreaterThan(0)
+    })
+
+    it('should handle products with empty variant arrays', () => {
+      const products = [
+        {
+          title: 'Producto Test',
+          variants: [],
+        },
+      ]
+
+      const result = buildFilterBadgesFromProducts(products)
+      // Should fallback to legacy fields or return empty
+      expect(result).toBeDefined()
+    })
+
+    it('should handle color names with special characters', () => {
+      const products = [
+        {
+          title: 'Pintura Test',
+          variants: [
+            { measure: '4L', color_name: 'ROJO TEJA', color_hex: '#A63A2B' },
+          ],
+        },
+      ]
+
+      const result = buildFilterBadgesFromProducts(products)
+      expect(result.colors.find(c => c.name === 'ROJO TEJA')).toBeDefined()
+    })
+
+    it('should handle measure values with units', () => {
+      const products = [
+        {
+          title: 'Pintura Test',
+          variants: [
+            { measure: '4 L', color_name: 'BLANCO', color_hex: '#FFFFFF' },
+            { measure: '1L', color_name: 'NEGRO', color_hex: '#000000' },
+          ],
+        },
+      ]
+
+      const result = buildFilterBadgesFromProducts(products)
+      expect(result.measures.length).toBeGreaterThan(0)
+    })
+
+    it('should handle products with both title and name fields', () => {
+      const products = [
+        {
+          title: 'Producto Title',
+          name: 'Producto Name',
+          variants: [
+            { measure: '4L', color_name: 'BLANCO', color_hex: '#FFFFFF' },
+          ],
+        },
+      ]
+
+      const result = buildFilterBadgesFromProducts(products)
+      expect(result.measures).toContain('4L')
+    })
   })
 })
 

@@ -1004,95 +1004,82 @@ global.fetch = jest.fn((url, options) => {
 // ===================================
 
 // Mock para componentes de shadcn/ui que usan Radix UI
-jest.mock('@radix-ui/react-dialog', () => ({
-  Root: ({ children, open, onOpenChange }: any) => (
-    <div data-testid="dialog-root" data-open={open}>
-      {open && children}
-    </div>
-  ),
-  Trigger: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-  Portal: ({ children }: any) => <div>{children}</div>,
-  Overlay: ({ children }: any) => <div data-testid="dialog-overlay">{children}</div>,
-  Content: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
-  Title: ({ children }: any) => <h2 data-testid="dialog-title">{children}</h2>,
-  Description: ({ children }: any) => <p data-testid="dialog-description">{children}</p>,
-  Close: ({ children, onClick }: any) => (
-    <button onClick={onClick} data-testid="dialog-close">
-      {children}
-    </button>
-  ),
-}))
+jest.mock('@radix-ui/react-dialog', () => {
+  const React = require('react')
+  return {
+    Root: ({ children, open, onOpenChange }) =>
+      React.createElement('div', { 'data-testid': 'dialog-root', 'data-open': open }, open && children),
+    Trigger: ({ children, onClick }) =>
+      React.createElement('button', { onClick }, children),
+    Portal: ({ children }) => React.createElement('div', null, children),
+    Overlay: ({ children }) => React.createElement('div', { 'data-testid': 'dialog-overlay' }, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'dialog-content' }, children),
+    Title: ({ children }) => React.createElement('h2', { 'data-testid': 'dialog-title' }, children),
+    Description: ({ children }) => React.createElement('p', { 'data-testid': 'dialog-description' }, children),
+    Close: ({ children, onClick }) =>
+      React.createElement('button', { onClick, 'data-testid': 'dialog-close' }, children),
+  }
+})
 
-jest.mock('@radix-ui/react-dropdown-menu', () => ({
-  Root: ({ children }: any) => <div>{children}</div>,
-  Trigger: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-  Content: ({ children }: any) => <div data-testid="dropdown-content">{children}</div>,
-  Item: ({ children, onClick }: any) => (
-    <div onClick={onClick} data-testid="dropdown-item">
-      {children}
-    </div>
-  ),
-}))
+jest.mock('@radix-ui/react-dropdown-menu', () => {
+  const React = require('react')
+  return {
+    Root: ({ children }) => React.createElement('div', null, children),
+    Trigger: ({ children, onClick }) => React.createElement('button', { onClick }, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'dropdown-content' }, children),
+    Item: ({ children, onClick }) =>
+      React.createElement('div', { onClick, 'data-testid': 'dropdown-item' }, children),
+  }
+})
 
-jest.mock('@radix-ui/react-select', () => ({
-  Root: ({ children, onValueChange, value }: any) => (
-    <div data-testid="select-root" data-value={value}>
-      {children}
-    </div>
-  ),
-  Trigger: ({ children, onClick }: any) => (
-    <button onClick={onClick} data-testid="select-trigger">
-      {children}
-    </button>
-  ),
-  Content: ({ children }: any) => <div data-testid="select-content">{children}</div>,
-  Item: ({ children, onClick, value }: any) => (
-    <div onClick={() => onClick?.(value)} data-testid="select-item" data-value={value}>
-      {children}
-    </div>
-  ),
-}))
+jest.mock('@radix-ui/react-select', () => {
+  const React = require('react')
+  return {
+    Root: ({ children, onValueChange, value }) =>
+      React.createElement('div', { 'data-testid': 'select-root', 'data-value': value }, children),
+    Trigger: ({ children, onClick }) =>
+      React.createElement('button', { onClick, 'data-testid': 'select-trigger' }, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'select-content' }, children),
+    Item: ({ children, onClick, value }) =>
+      React.createElement(
+        'div',
+        { onClick: () => onClick?.(value), 'data-testid': 'select-item', 'data-value': value },
+        children
+      ),
+  }
+})
 
-jest.mock('@radix-ui/react-popover', () => ({
-  Root: ({ children, open, onOpenChange }: any) => (
-    <div data-testid="popover-root" data-open={open}>
-      {open && children}
-    </div>
-  ),
-  Trigger: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-  Content: ({ children }: any) => <div data-testid="popover-content">{children}</div>,
-}))
+jest.mock('@radix-ui/react-popover', () => {
+  const React = require('react')
+  return {
+    Root: ({ children, open, onOpenChange }) =>
+      React.createElement('div', { 'data-testid': 'popover-root', 'data-open': open }, open && children),
+    Trigger: ({ children, onClick }) => React.createElement('button', { onClick }, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'popover-content' }, children),
+  }
+})
 
-jest.mock('@radix-ui/react-tooltip', () => ({
-  Root: ({ children }: any) => <div>{children}</div>,
-  Trigger: ({ children }: any) => <div>{children}</div>,
-  Content: ({ children }: any) => <div data-testid="tooltip-content">{children}</div>,
-}))
+jest.mock('@radix-ui/react-tooltip', () => {
+  const React = require('react')
+  return {
+    Root: ({ children }) => React.createElement('div', null, children),
+    Trigger: ({ children }) => React.createElement('div', null, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'tooltip-content' }, children),
+  }
+})
 
-jest.mock('@radix-ui/react-tabs', () => ({
-  Root: ({ children, defaultValue }: any) => (
-    <div data-testid="tabs-root" data-default-value={defaultValue}>
-      {children}
-    </div>
-  ),
-  List: ({ children }: any) => <div data-testid="tabs-list">{children}</div>,
-  Trigger: ({ children, onClick, value }: any) => (
-    <button onClick={onClick} data-testid="tabs-trigger" data-value={value}>
-      {children}
-    </button>
-  ),
-  Content: ({ children, value }: any) => (
-    <div data-testid="tabs-content" data-value={value}>
-      {children}
-    </div>
-  ),
-}))
+jest.mock('@radix-ui/react-tabs', () => {
+  const React = require('react')
+  return {
+    Root: ({ children, defaultValue }) =>
+      React.createElement('div', { 'data-testid': 'tabs-root', 'data-default-value': defaultValue }, children),
+    List: ({ children }) => React.createElement('div', { 'data-testid': 'tabs-list' }, children),
+    Trigger: ({ children, onClick, value }) =>
+      React.createElement('button', { onClick, 'data-testid': 'tabs-trigger', 'data-value': value }, children),
+    Content: ({ children, value }) =>
+      React.createElement('div', { 'data-testid': 'tabs-content', 'data-value': value }, children),
+  }
+})
 
 // ===================================
 // MOCK DE OPTIMIZED IMPORTS
@@ -1140,7 +1127,7 @@ afterEach(() => {
   sessionStorageMock.clear()
   
   // Limpiar mocks de fetch
-  if (global.fetch) {
-    ;(global.fetch as jest.Mock).mockClear()
+  if (global.fetch && typeof global.fetch.mockClear === 'function') {
+    global.fetch.mockClear()
   }
 })

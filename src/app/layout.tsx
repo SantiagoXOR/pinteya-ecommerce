@@ -238,8 +238,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 let converted = false;
                 stylesheets.forEach(function(link) {
                   const href = link.getAttribute('href') || '';
-                  // Detectar chunks CSS de Next.js, webpack, Turbopack y otros CSS
-                  if (href.includes('_next/static/css') || href.includes('/chunks/') || href.includes('webpack') || href.includes('turbopack') || (href.includes('.css') && !href.includes('data:'))) {
+                  // ⚡ OPTIMIZACIÓN: Detectar chunks CSS de Next.js, webpack, Turbopack y otros CSS
+                  // Incluir detección específica del chunk CSS bloqueante (8976ffb1399428d1.css)
+                  if (href.includes('_next/static/css') || href.includes('/chunks/') || href.includes('webpack') || href.includes('turbopack') || href.includes('8976ffb1399428d1') || (href.includes('.css') && !href.includes('data:'))) {
                     link.setAttribute('data-non-blocking', 'true');
                     // Si ya está cargado, no hacer nada
                     if (link.sheet && link.sheet.cssRules && link.sheet.cssRules.length > 0) {

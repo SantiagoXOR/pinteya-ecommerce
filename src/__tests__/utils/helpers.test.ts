@@ -277,4 +277,90 @@ describe('helpers', () => {
       expect(capitalizeWords('')).toBe('')
     })
   })
+
+  // ===================================
+  // CASOS EDGE ADICIONALES
+  // ===================================
+
+  describe('Edge Cases', () => {
+    it('should handle very large prices', () => {
+      expect(formatPrice(999999999)).toBe('$999.999.999')
+      expect(formatPrice(1000000000)).toBe('$1.000.000.000')
+    })
+
+    it('should handle negative prices gracefully', () => {
+      // formatPrice should handle negative numbers
+      const result = formatPrice(-1000)
+      expect(result).toBeDefined()
+      expect(typeof result).toBe('string')
+    })
+
+    it('should handle email with multiple dots', () => {
+      expect(validateEmail('user.name.last@example.com')).toBe(true)
+      expect(validateEmail('user..name@example.com')).toBe(false)
+    })
+
+    it('should handle email with plus sign', () => {
+      expect(validateEmail('user+tag@example.com')).toBe(true)
+    })
+
+    it('should handle very long slugs', () => {
+      const longText = 'a'.repeat(1000)
+      const slug = generateSlug(longText)
+      expect(slug.length).toBeLessThanOrEqual(1000)
+      expect(slug).not.toContain(' ')
+    })
+
+    it('should handle DNI with leading zeros', () => {
+      expect(validateDNI('01234567')).toBe(true)
+      expect(formatDNI('01234567')).toBe('01.234.567')
+    })
+
+    it('should handle phone numbers with country code', () => {
+      const result = formatPhoneNumber('+5493512345678')
+      expect(result).toBeDefined()
+      expect(typeof result).toBe('string')
+    })
+
+    it('should handle cart item with zero quantity', () => {
+      const item = {
+        id: 1,
+        name: 'Producto',
+        price: 1000,
+        quantity: 0,
+      }
+      expect(validateCartItem(item)).toBe(false)
+    })
+
+    it('should handle cart item with negative price', () => {
+      const item = {
+        id: 1,
+        name: 'Producto',
+        price: -1000,
+        quantity: 2,
+      }
+      expect(validateCartItem(item)).toBe(false)
+    })
+
+    it('should handle order reference uniqueness', () => {
+      const refs = Array.from({ length: 100 }, () => generateOrderReference())
+      const uniqueRefs = new Set(refs)
+      expect(uniqueRefs.size).toBe(100)
+    })
+
+    it('should handle sanitizeInput with script tags', () => {
+      const malicious = '<script>alert("xss")</script>Hello'
+      const sanitized = sanitizeInput(malicious)
+      expect(sanitized).not.toContain('<script>')
+      expect(sanitized).not.toContain('</script>')
+    })
+
+    it('should handle calculateDiscount with zero discounted price', () => {
+      expect(calculateDiscount(100, 0)).toBe(100)
+    })
+
+    it('should handle calculateDiscount with same prices', () => {
+      expect(calculateDiscount(100, 100)).toBe(0)
+    })
+  })
 })

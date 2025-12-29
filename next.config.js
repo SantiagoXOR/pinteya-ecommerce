@@ -141,7 +141,7 @@ const nextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 150000, // ⚡ REDUCIDO: 150 KB máximo (de 200 KB) para mejor splitting
+          maxSize: 120000, // ⚡ FASE 18: REDUCIDO a 120 KB para mejor splitting y menos unused JS
           minSize: 20000, // 20 KB mínimo
           maxAsyncRequests: 30,
           maxInitialRequests: 25,
@@ -152,7 +152,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
               name: 'framework',
               priority: 40,
-              maxSize: 250000, // ⚡ REDUCIDO: 250 KB máximo (de 300 KB) para framework
+              maxSize: 200000, // ⚡ FASE 18: REDUCIDO a 200 KB para mejor splitting
               reuseExistingChunk: true,
             },
             // ⚡ Framer Motion - Separado para mejor tree shaking
@@ -192,7 +192,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 150000, // ⚡ REDUCIDO: 150 KB máximo (de 200 KB)
+              maxSize: 120000, // ⚡ FASE 18: REDUCIDO a 120 KB para mejor splitting y menos unused JS
               minSize: 20000,
               reuseExistingChunk: true,
             },

@@ -71,11 +71,15 @@ const GoogleAnalytics: React.FC = () => {
         activityListeners.push({ event, handler: markUserActive })
       })
 
-      // ⚡ OPTIMIZACIÓN: Cargar después de interacción del usuario
+      // ⚡ OPTIMIZACIÓN: Cargar después de interacción del usuario o después de LCP + delay
+      // ⚡ FASE 18: Aumentar delay para cargar analytics más tarde (reduce unused JS)
       const interactionEvents = ['mousedown', 'touchstart', 'keydown', 'scroll', 'pointerdown']
       const onInteraction = () => {
         markUserActive()
-        loadAnalytics()
+        // ⚡ FASE 18: Delay adicional de 2s después de interacción para no bloquear LCP
+        setTimeout(() => {
+          loadAnalytics()
+        }, 2000)
       }
 
       interactionEvents.forEach(event => {
