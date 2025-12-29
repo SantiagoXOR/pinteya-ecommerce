@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 // ⚡ FASE 1: CSS glassmorphism movido a carga diferida via DeferredCSS (solo en desktop)
 import { createPublicClient } from '@/lib/integrations/supabase/server'
 import { Category } from '@/types/database'
