@@ -100,11 +100,10 @@ export default async function HomePage() {
 
   return (
     <Hydrate state={dehydrate(queryClient)}>
-      {/* ⚡ FASE 2: Imagen hero renderizada en Server Component para descubrimiento temprano */}
-      {/* Esto elimina el retraso de 1,300ms en carga de recursos - la imagen está en HTML inicial */}
-      {/* La imagen se renderiza ANTES de HomeV3 para que esté en el HTML inicial del servidor */}
-      {/* HeroOptimized ocultará esta imagen cuando el carousel esté listo */}
-      {/* ⚡ FASE 3: Contenedor con dimensiones fijas para evitar CLS */}
+      {/* ⚡ FASE 23: Imagen hero renderizada en Server Component para descubrimiento temprano */}
+      {/* Esta imagen debe estar en EXACTAMENTE el mismo lugar que el hero banner del carousel */}
+      {/* HeroOptimized renderiza el carousel en el mismo contenedor, por eso deben coincidir */}
+      {/* ⚡ CRITICAL: Esta imagen DEBE permanecer visible para que Lighthouse la detecte como LCP */}
       <div className="relative w-full hero-lcp-container">
         <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
           <div 
@@ -112,22 +111,20 @@ export default async function HomePage() {
             style={{ 
               aspectRatio: '2.77', 
               minHeight: '277px',
-              // ⚡ FASE 3: Altura fija calculada para evitar layout shift
               height: 'auto',
             }}
           >
-            {/* ⚡ FASE 23: Imagen hero optimizada para LCP usando Next.js Image */}
-            {/* Usar Next.js Image con priority para mejor optimización y descubrimiento temprano */}
-            {/* Next.js Image genera preload automático y optimización de imágenes */}
-            {/* ⚡ CRITICAL: Esta imagen DEBE permanecer visible para que Lighthouse la detecte como LCP */}
-            <Image
+            {/* ⚡ FASE 23: Imagen hero estática - misma posición que el carousel */}
+            {/* Usar <img> estático para evitar duplicación de requests con Next.js Image */}
+            {/* El preload en layout.tsx asegura descubrimiento temprano */}
+            <img
               src="/images/hero/hero2/hero1.webp"
               alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
               width={1200}
               height={433}
-              priority
               fetchPriority="high"
-              quality={85}
+              loading="eager"
+              decoding="async"
               className="hero-static-image"
               id="hero-lcp-image"
               data-lcp="true"
@@ -138,14 +135,11 @@ export default async function HomePage() {
                 aspectRatio: '1200/433',
                 objectFit: 'contain',
                 display: 'block',
-                // ⚡ FASE 23: Asegurar que la imagen sea el LCP element y permanezca visible
                 position: 'relative',
                 zIndex: 10,
                 visibility: 'visible',
                 opacity: 1,
-                // ⚡ FASE 23: Asegurar que la imagen sea visible y no se oculte antes de LCP
                 pointerEvents: 'auto',
-                // ⚡ FASE 23: Asegurar que la imagen esté en el viewport
                 minHeight: '277px',
                 minWidth: '100%'
               }}

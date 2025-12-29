@@ -139,17 +139,26 @@ export default function HeroOptimized() {
     }
   }, [showCarousel])
 
-  // ⚡ FASE 2: La imagen estática ahora se renderiza en Server Component (page.tsx)
+  // ⚡ FASE 23: La imagen estática ahora se renderiza en Server Component (page.tsx)
+  // El carousel se renderiza en el MISMO contenedor que la imagen estática para que coincidan
   // Solo renderizamos el carousel aquí, que se carga después del LCP
   return (
-    <div className="relative w-full">
+    <div className="relative w-full hero-lcp-container">
       <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '2.77' }}>
-          {/* ⚡ FASE 2: Carousel carga dinámicamente después del LCP */}
+        <div 
+          className="relative w-full overflow-hidden" 
+          style={{ 
+            aspectRatio: '2.77',
+            minHeight: '277px',
+            height: 'auto',
+          }}
+        >
+          {/* ⚡ FASE 23: Carousel carga dinámicamente después del LCP */}
           {/* La imagen estática está en page.tsx (Server Component) para descubrimiento temprano */}
+          {/* El carousel se renderiza en el MISMO contenedor para que coincida exactamente */}
           {isMounted && (
             <div 
-              className={`relative z-20 transition-opacity duration-500 ${
+              className={`absolute inset-0 z-20 transition-opacity duration-500 ${
                 showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
             >
