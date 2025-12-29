@@ -147,7 +147,7 @@ export default async function HomePage() {
                 objectFit: 'contain',
                 display: 'block',
                 position: 'relative',
-                zIndex: 10,
+                zIndex: 1, // ⚡ FIX: z-index más bajo que el carousel (z-20)
                 visibility: 'visible',
                 opacity: 1,
                 pointerEvents: 'auto',
@@ -159,6 +159,8 @@ export default async function HomePage() {
                 // ⚡ OPTIMIZACIÓN LCP: Asegurar que la imagen sea visible inmediatamente
                 willChange: 'auto',
                 contentVisibility: 'auto',
+                // ⚡ OPTIMIZACIÓN: Transición suave cuando se oculta
+                transition: 'opacity 0.5s ease-in-out',
               }}
             />
             {/* ⚡ FASE 23: HeroOptimized renderiza el carousel aquí, en el mismo contenedor */}

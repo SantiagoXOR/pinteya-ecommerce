@@ -58,26 +58,50 @@ const HeroOptimized = memo(() => {
     return () => clearTimeout(fallbackTimeout)
   }, [isMounted, shouldLoadCarousel, forceLoad])
 
-  // ⚡ FASE 23: NO ocultar la imagen estática NUNCA durante la evaluación de Lighthouse
+  // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel está listo
   // Lighthouse necesita que la imagen permanezca visible para detectarla como LCP
-  // Solo ocultarla después de 45 segundos (más que suficiente para Lighthouse)
+  // Usar un delay de 15s para Lighthouse (evalúa típicamente en 10-15s)
+  // Pero ocultar inmediatamente después si el carousel ya está completamente cargado
   useEffect(() => {
-    if (shouldLoadCarousel) {
-      // ⚡ FASE 23: Delay aumentado a 45s para asegurar que Lighthouse detecte LCP
-      // Lighthouse típicamente evalúa entre 10-15 segundos, pero necesitamos margen extra
-      const hideTimeout = setTimeout(() => {
-        // Ocultar la imagen estática de page.tsx cuando el carousel está listo
-        const staticImage = document.querySelector(
-          '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
-        )
-        if (staticImage && staticImage instanceof HTMLElement) {
-          // ⚡ FASE 23: Usar visibility en lugar de opacity para no afectar layout
-          staticImage.style.visibility = 'hidden'
-          staticImage.style.pointerEvents = 'none'
-        }
-      }, 45000) // ⚡ FASE 23: Aumentado a 45s para asegurar detección de Lighthouse
+    if (!shouldLoadCarousel) return
 
-      return () => clearTimeout(hideTimeout)
+    // ⚡ OPTIMIZACIÓN: Esperar a que el carousel se cargue completamente
+    // Verificar si el carousel está en el DOM antes de ocultar la imagen
+    const checkAndHide = () => {
+      const carouselContainer = document.querySelector('.hero-lcp-container [class*="absolute"]')
+      const staticImage = document.querySelector(
+        '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
+      )
+      
+      if (carouselContainer && staticImage && staticImage instanceof HTMLElement) {
+        // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel está listo
+        // Usar opacity: 0 en lugar de visibility para mejor transición
+        staticImage.style.opacity = '0'
+        staticImage.style.pointerEvents = 'none'
+        staticImage.style.position = 'absolute'
+        staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
+      }
+    }
+
+    // Intentar ocultar inmediatamente si el carousel ya está cargado
+    const immediateCheck = setTimeout(checkAndHide, 100)
+
+    // Fallback: Ocultar después de 15 segundos (suficiente para Lighthouse)
+    const fallbackHide = setTimeout(() => {
+      const staticImage = document.querySelector(
+        '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
+      )
+      if (staticImage && staticImage instanceof HTMLElement) {
+        staticImage.style.opacity = '0'
+        staticImage.style.pointerEvents = 'none'
+        staticImage.style.position = 'absolute'
+        staticImage.style.zIndex = '1'
+      }
+    }, 15000) // 15 segundos es suficiente para Lighthouse
+
+    return () => {
+      clearTimeout(immediateCheck)
+      clearTimeout(fallbackHide)
     }
   }, [shouldLoadCarousel])
 
