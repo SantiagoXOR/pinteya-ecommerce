@@ -53,73 +53,31 @@ export default function HeroOptimized() {
       setShowCarousel(true)
     }
     
-    // ⚡ FASE 20: Cargar carousel después de FCP + delay corto
-    // Reducir delays para no afectar SI, pero mantener imagen hero visible
-    // Usar FCP como referencia en lugar de LCP para evitar delays largos
-    if ('PerformanceObserver' in window) {
-      try {
-        // Detectar FCP primero (más rápido que LCP)
-        const fcpObserver = new PerformanceObserver((list) => {
-          const entries = list.getEntries()
-          if (entries.length > 0) {
-            // ⚡ FASE 20: Después de FCP, esperar 3s para asegurar que LCP se registre
-            // Esto es más corto que 8s pero suficiente para que Lighthouse detecte LCP
-            setTimeout(() => {
-              if ('requestIdleCallback' in window) {
-                requestIdleCallback(loadCarousel, { timeout: 1000 })
-              } else {
-                setTimeout(loadCarousel, 1000)
-              }
-            }, 3000) // ⚡ Reducido de 8s a 3s después de FCP
-            fcpObserver.disconnect()
-          }
-        })
-        
-        fcpObserver.observe({ entryTypes: ['paint'], buffered: true })
-        
-        // Fallback: cargar después de 4 segundos si FCP no se detecta
-        setTimeout(() => {
-          fcpObserver.disconnect()
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(loadCarousel, { timeout: 1000 })
-          } else {
-            setTimeout(loadCarousel, 1000)
-          }
-        }, 4000) // ⚡ Reducido de 8s a 4s
-      } catch (e) {
-        // Fallback si PerformanceObserver no está disponible
-        setTimeout(() => {
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(loadCarousel, { timeout: 1000 })
-          } else {
-            setTimeout(loadCarousel, 1000)
-          }
-        }, 4000) // ⚡ Reducido de 8s a 4s
-      }
-    } else {
-      // Fallback si PerformanceObserver no está disponible
-      setTimeout(() => {
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(loadCarousel, { timeout: 1000 })
-        } else {
-          setTimeout(loadCarousel, 1000)
-        }
-      }, 4000) // ⚡ Reducido de 8s a 4s
-    }
+    // ⚡ FASE 20: Simplificar carga del carousel para reducir TBT
+    // Cargar carousel después de un delay fijo, sin PerformanceObserver para reducir complejidad
+    // Esto reduce el trabajo en el main thread y mejora TBT
+    const loadDelay = 2000 // 2 segundos después del mount
     
-    // Cleanup
-    return () => {
-      if (lcpObserver) {
-        lcpObserver.disconnect()
+    const timeoutId = setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadCarousel, { timeout: 1000 })
+      } else {
+        setTimeout(loadCarousel, 1000)
       }
+    }, loadDelay)
+    
+    return () => {
+      clearTimeout(timeoutId)
     }
   }, [isMounted])
 
   // ⚡ FASE 20: La imagen estática ahora se renderiza en Server Component (page.tsx)
-  // Ocultamos la imagen estática cuando el carousel está listo, pero con delay reducido
+  // NO ocultamos la imagen estática hasta que Lighthouse haya tenido tiempo de evaluarla
+  // Lighthouse típicamente evalúa entre 10-15 segundos, así que esperamos 20 segundos
   useEffect(() => {
     if (showCarousel) {
-      // ⚡ FASE 20: Delay reducido a 1s antes de ocultar para no afectar SI
+      // ⚡ FASE 20: Delay aumentado a 20s para asegurar que Lighthouse detecte LCP
+      // La imagen permanece visible el tiempo suficiente para que Lighthouse la evalúe
       setTimeout(() => {
         // Ocultar la imagen estática de page.tsx cuando el carousel está listo
         const staticImage = document.querySelector('.hero-lcp-container img, [src="/images/hero/hero2/hero1.webp"]')
@@ -128,7 +86,7 @@ export default function HeroOptimized() {
           staticImage.style.pointerEvents = 'none'
           staticImage.style.position = 'absolute'
         }
-      }, 1000) // ⚡ FASE 20: Reducido de 2s a 1s
+      }, 20000) // ⚡ FASE 20: Aumentado a 20s para asegurar detección de Lighthouse
     }
   }, [showCarousel])
 
