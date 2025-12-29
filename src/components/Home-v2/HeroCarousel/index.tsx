@@ -137,8 +137,9 @@ const HeroCarousel = () => {
             }}
           >
             {extendedSlides.map((slide, index) => {
-              // ⚡ OPTIMIZACIÓN: Solo la primera imagen real (índice 1) tiene priority
-              // Imágenes 2 y 3 (índices 2 y 0) se cargan lazy
+              // ⚡ FASE 21: NO usar priority en ninguna imagen del carousel
+              // La imagen estática en page.tsx ya tiene priority y preload
+              // Usar priority aquí causaría duplicación de requests
               const isFirstRealSlide = index === 1
               const isClone = index === 0 || index === extendedSlides.length - 1
               
@@ -156,11 +157,11 @@ const HeroCarousel = () => {
                     src={slide.image}
                     alt={slide.alt}
                     fill
-                    priority={isFirstRealSlide} // Solo primera slide real
-                    loading={isFirstRealSlide ? undefined : 'lazy'} // ⚡ FASE 14: Lazy para slides 2 y 3
-                    fetchPriority={isFirstRealSlide ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority explícito para LCP
+                    priority={false} // ⚡ FASE 21: NO usar priority - imagen estática ya tiene priority
+                    loading="lazy" // ⚡ FASE 21: Lazy loading para todas las imágenes del carousel
+                    fetchPriority="auto" // ⚡ FASE 21: Auto priority - no competir con imagen estática
                     className="object-contain"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1200px" // ⚡ FASE 14: sizes optimizado para breakpoints reales
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px" // ⚡ FASE 21: Ajustado para match con imagen estática
                     quality={75} // ⚡ FASE 14: Reducido de 80 a 75 para mejor balance tamaño/calidad
                     decoding="async" // ⚡ FASE 14: Decodificar de forma asíncrona
                   />

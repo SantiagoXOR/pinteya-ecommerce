@@ -115,6 +115,9 @@ export default async function HomePage() {
               height: 'auto',
             }}
           >
+            {/* ⚡ FASE 21: Imagen hero optimizada para LCP - sin duplicación */}
+            {/* Usar <img> estático para descubrimiento temprano, sin Next.js Image optimization inicial */}
+            {/* Esto evita duplicación de requests (original + optimizada) */}
             <img
               src="/images/hero/hero2/hero1.webp"
               alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
@@ -126,6 +129,7 @@ export default async function HomePage() {
               className="hero-static-image"
               id="hero-lcp-image"
               data-lcp="true"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
               style={{ 
                 width: '100%', 
                 height: 'auto', 
@@ -133,11 +137,13 @@ export default async function HomePage() {
                 objectFit: 'contain',
                 display: 'block',
                 transition: 'opacity 0.5s ease',
-                // ⚡ FASE 20: Asegurar que la imagen no cause layout shift y sea visible para LCP
+                // ⚡ FASE 21: Asegurar que la imagen sea el LCP element
                 position: 'relative',
-                zIndex: 10, // ⚡ Aumentado para asegurar visibilidad
-                visibility: 'visible', // ⚡ Explícito para asegurar visibilidad
-                opacity: '1' // ⚡ Explícito para asegurar visibilidad
+                zIndex: 10,
+                visibility: 'visible',
+                opacity: '1',
+                // ⚡ FASE 21: Asegurar que la imagen sea visible y no se oculte antes de LCP
+                pointerEvents: 'auto'
               }}
             />
           </div>
