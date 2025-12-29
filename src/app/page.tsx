@@ -16,8 +16,10 @@ const HomeV3 = dynamic(() => import('@/components/Home-v3'), {
 
 // ⚡ FASE 23: HeroOptimized se carga dinámicamente para reducir bundle inicial
 // El carousel se renderiza después del LCP, pero el componente debe estar disponible
+// ⚡ FIX: ssr: true es requerido en Server Components, pero HeroOptimized es Client Component
+// El componente se hidratará en el cliente y no mostrará el carousel hasta que se monte
 const HeroOptimized = dynamic(() => import('@/components/Home-v3/HeroOptimized'), {
-  ssr: false, // Client Component - no necesita SSR
+  ssr: true, // Requerido en Server Components - el componente se hidratará en el cliente
   loading: () => null, // No mostrar loading, la imagen estática ya está visible
 })
 
