@@ -87,8 +87,10 @@ const MetaPixel: React.FC = () => {
         interactionListeners.push({ event, handler: onInteraction })
       })
 
-      // ⚡ OPTIMIZACIÓN: Aumentar delay a 6 segundos para dar más tiempo al contenido principal
-      loadTimeout = setTimeout(loadPixel, 6000) // 6 segundos después de carga inicial (aumentado de 3s)
+      // ⚡ OPTIMIZACIÓN: Aumentar delay a 10 segundos para dar más tiempo al contenido principal
+      // Meta Pixel es pesado (66KB unused), mejor cargarlo mucho después
+      // Esto reduce unused JavaScript y mejora TBT
+      loadTimeout = setTimeout(loadPixel, 10000) // ⚡ FASE 21: Aumentado a 10s para reducir unused JS
       loadHandler = loadAfterLCP
     }
 

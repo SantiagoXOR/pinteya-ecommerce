@@ -87,9 +87,10 @@ const GoogleAnalytics: React.FC = () => {
         interactionListeners.push({ event, handler: onInteraction })
       })
 
-      // ⚡ OPTIMIZACIÓN: Aumentar delay a 8 segundos para dar más tiempo al contenido principal
-      // Google Tag Manager es pesado (153 KiB), mejor cargarlo después de que todo esté listo
-      loadTimeout = setTimeout(loadAnalytics, 8000) // 8 segundos después de carga inicial (aumentado de 4s)
+      // ⚡ OPTIMIZACIÓN: Aumentar delay a 12 segundos para dar más tiempo al contenido principal
+      // Google Tag Manager es pesado (153 KiB, 49KB unused), mejor cargarlo mucho después
+      // Esto reduce unused JavaScript y mejora TBT
+      loadTimeout = setTimeout(loadAnalytics, 12000) // ⚡ FASE 21: Aumentado a 12s para reducir unused JS
       loadHandler = loadAfterLCP
     }
 

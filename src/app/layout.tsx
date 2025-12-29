@@ -238,18 +238,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 let converted = false;
                 stylesheets.forEach(function(link) {
                   const href = link.getAttribute('href') || '';
-                  // ⚡ OPTIMIZACIÓN: Detectar chunks CSS de Next.js, webpack, Turbopack y otros CSS
-                  // Incluir detección específica del chunk CSS bloqueante (8976ffb1399428d1.css)
-                  if (href.includes('_next/static/css') || href.includes('/chunks/') || href.includes('webpack') || href.includes('turbopack') || href.includes('8976ffb1399428d1') || (href.includes('.css') && !href.includes('data:'))) {
+                  // ⚡ FASE 21: Detección más agresiva del CSS bloqueante
+                  // Detectar TODOS los CSS de Next.js, incluyendo el chunk específico que está bloqueando
+                  const isNextJSCSS = href.includes('_next/static/css') || 
+                                      href.includes('/chunks/') || 
+                                      href.includes('8976ffb1399428d1') ||
+                                      (href.includes('.css') && href.includes('_next'));
+                  
+                  if (isNextJSCSS) {
+                    // ⚡ FASE 21: Marcar inmediatamente para evitar procesamiento múltiple
                     link.setAttribute('data-non-blocking', 'true');
-                    // Si ya está cargado, no hacer nada
+                    
+                    // Si ya está cargado completamente, aplicar media="print" de todas formas
+                    // para evitar que bloquee en futuras cargas
                     if (link.sheet && link.sheet.cssRules && link.sheet.cssRules.length > 0) {
+                      const originalMedia = link.media || 'all';
+                      if (originalMedia !== 'print') {
+                        link.media = 'print';
+                        setTimeout(function() {
+                          link.media = originalMedia;
+                        }, 0);
+                      }
                       return;
                     }
                     
                     converted = true;
                     
-                    // Preload + media="print" + onload
+                    // ⚡ FASE 21: Preload + media="print" + onload - más agresivo
                     const preload = document.createElement('link');
                     preload.rel = 'preload';
                     preload.as = 'style';
@@ -269,13 +284,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       if (preload.parentNode) preload.parentNode.removeChild(preload);
                     };
                     
-                    // Fallback después de 3 segundos
+                    // ⚡ FASE 21: Fallback reducido a 2 segundos para conversión más rápida
                     setTimeout(function() {
                       if (link.media === 'print') {
                         link.media = originalMedia;
                         if (preload.parentNode) preload.parentNode.removeChild(preload);
                       }
-                    }, 3000);
+                    }, 2000);
                   }
                 });
                 return converted;
@@ -284,21 +299,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // Ejecutar inmediatamente
               convertCSSToNonBlocking();
               
-              // ⚡ FASE 11: Intervalo reducido de 50ms a 25ms para detección más temprana
+              // ⚡ FASE 21: Intervalo más agresivo (10ms) para detección ultra-temprana
               // Ejecutar múltiples veces para capturar CSS que se inserta después
               let attempts = 0;
-              const maxAttempts = 15; // Aumentado para capturar más CSS dinámico
+              const maxAttempts = 20; // ⚡ FASE 21: Aumentado para capturar más CSS dinámico
               const interval = setInterval(function() {
                 attempts++;
                 const converted = convertCSSToNonBlocking();
-                // Si no se convirtió nada en 5 intentos consecutivos, detener
-                if (!converted && attempts > 5) {
+                // ⚡ FASE 21: Continuar más tiempo para asegurar que todo el CSS se convierte
+                if (!converted && attempts > 8) {
                   clearInterval(interval);
                 }
                 if (attempts >= maxAttempts) {
                   clearInterval(interval);
                 }
-              }, 25); // ⚡ FASE 11: Reducido de 50ms a 25ms para detección más temprana
+              }, 10); // ⚡ FASE 21: Reducido a 10ms para detección ultra-temprana
               
               // También en DOMContentLoaded por si acaso
               if (document.readyState === 'loading') {
