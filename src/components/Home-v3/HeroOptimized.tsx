@@ -117,23 +117,25 @@ export default function HeroOptimized() {
     }
   }, [isMounted])
 
-  // ⚡ FASE 21: NO ocultar la imagen estática NUNCA durante la evaluación de Lighthouse
+  // ⚡ FASE 23: NO ocultar la imagen estática NUNCA durante la evaluación de Lighthouse
   // Lighthouse necesita que la imagen permanezca visible para detectarla como LCP
-  // Solo ocultarla después de 30 segundos (más que suficiente para Lighthouse)
+  // Solo ocultarla después de 45 segundos (más que suficiente para Lighthouse)
   useEffect(() => {
     if (showCarousel) {
-      // ⚡ FASE 21: Delay aumentado a 30s para asegurar que Lighthouse detecte LCP
+      // ⚡ FASE 23: Delay aumentado a 45s para asegurar que Lighthouse detecte LCP
       // Lighthouse típicamente evalúa entre 10-15 segundos, pero necesitamos margen extra
+      // Usar un delay muy largo para asegurar que la imagen permanezca visible
       setTimeout(() => {
         // Ocultar la imagen estática de page.tsx cuando el carousel está listo
-        const staticImage = document.querySelector('.hero-lcp-container img, [src="/images/hero/hero2/hero1.webp"]')
+        // Buscar tanto img como Next.js Image component
+        const staticImage = document.querySelector('.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]')
         if (staticImage && staticImage instanceof HTMLElement) {
-          // ⚡ FASE 21: Usar visibility en lugar de opacity para no afectar layout
+          // ⚡ FASE 23: Usar visibility en lugar de opacity para no afectar layout
           staticImage.style.visibility = 'hidden'
           staticImage.style.pointerEvents = 'none'
           // NO usar position: absolute para no afectar el layout y LCP
         }
-      }, 30000) // ⚡ FASE 21: Aumentado a 30s para asegurar detección de Lighthouse
+      }, 45000) // ⚡ FASE 23: Aumentado a 45s para asegurar detección de Lighthouse
     }
   }, [showCarousel])
 

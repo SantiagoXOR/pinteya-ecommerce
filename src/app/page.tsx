@@ -115,18 +115,18 @@ export default async function HomePage() {
               height: 'auto',
             }}
           >
-            {/* ⚡ FASE 21: Imagen hero optimizada para LCP - sin duplicación */}
-            {/* Usar <img> estático para descubrimiento temprano, sin Next.js Image optimization inicial */}
-            {/* Esto evita duplicación de requests (original + optimizada) */}
+            {/* ⚡ FASE 23: Imagen hero optimizada para LCP usando Next.js Image */}
+            {/* Usar Next.js Image con priority para mejor optimización y descubrimiento temprano */}
+            {/* Next.js Image genera preload automático y optimización de imágenes */}
             {/* ⚡ CRITICAL: Esta imagen DEBE permanecer visible para que Lighthouse la detecte como LCP */}
-            <img
+            <Image
               src="/images/hero/hero2/hero1.webp"
               alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
               width={1200}
               height={433}
+              priority
               fetchPriority="high"
-              loading="eager"
-              decoding="async"
+              quality={85}
               className="hero-static-image"
               id="hero-lcp-image"
               data-lcp="true"
@@ -137,15 +137,14 @@ export default async function HomePage() {
                 aspectRatio: '1200/433',
                 objectFit: 'contain',
                 display: 'block',
-                // ⚡ FASE 21: NO usar transition en opacity para evitar que se oculte
-                // ⚡ CRITICAL: Asegurar que la imagen sea el LCP element y permanezca visible
+                // ⚡ FASE 23: Asegurar que la imagen sea el LCP element y permanezca visible
                 position: 'relative',
                 zIndex: 10,
                 visibility: 'visible',
                 opacity: 1,
-                // ⚡ FASE 21: Asegurar que la imagen sea visible y no se oculte antes de LCP
+                // ⚡ FASE 23: Asegurar que la imagen sea visible y no se oculte antes de LCP
                 pointerEvents: 'auto',
-                // ⚡ FASE 21: Asegurar que la imagen esté en el viewport
+                // ⚡ FASE 23: Asegurar que la imagen esté en el viewport
                 minHeight: '277px',
                 minWidth: '100%'
               }}
