@@ -297,7 +297,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       });
                     };
                     
-                    // ⚡ FASE 22: Fallback ultra-rápido (500ms) para conversión inmediata
+                    // ⚡ CRITICAL FIX: Fallback ultra-rápido (100ms) para conversión inmediata
+                    // Reducir a 100ms para eliminar el bloqueo de 302ms lo más rápido posible
                     setTimeout(function() {
                       if (link.media === 'print') {
                         requestAnimationFrame(function() {
@@ -305,7 +306,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                           if (preload.parentNode) preload.parentNode.removeChild(preload);
                         });
                       }
-                    }, 500); // ⚡ FASE 22: Reducido a 500ms para conversión ultra-rápida
+                    }, 100); // ⚡ CRITICAL: Reducido a 100ms para conversión ultra-rápida y eliminar bloqueo
                   }
                 });
                 return converted;
@@ -314,21 +315,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // Ejecutar inmediatamente
               convertCSSToNonBlocking();
               
-              // ⚡ FASE 22: Intervalo ultra-agresivo (5ms) para detección inmediata
+              // ⚡ CRITICAL FIX: Intervalo ultra-agresivo (1ms) para detección inmediata
               // Ejecutar múltiples veces para capturar CSS que se inserta después
+              // Aumentar maxAttempts para asegurar que el chunk 8976ffb1399428d1.css se convierta
               let attempts = 0;
-              const maxAttempts = 30; // ⚡ FASE 22: Aumentado para capturar más CSS dinámico
+              const maxAttempts = 100; // ⚡ CRITICAL: Aumentado a 100 para capturar TODO el CSS dinámico
               const interval = setInterval(function() {
                 attempts++;
                 const converted = convertCSSToNonBlocking();
-                // ⚡ FASE 22: Continuar más tiempo para asegurar que todo el CSS se convierte
-                if (!converted && attempts > 10) {
+                // ⚡ CRITICAL: Continuar más tiempo para asegurar que todo el CSS se convierte
+                if (!converted && attempts > 50) {
                   clearInterval(interval);
                 }
                 if (attempts >= maxAttempts) {
                   clearInterval(interval);
                 }
-              }, 5); // ⚡ FASE 22: Reducido a 5ms para detección ultra-inmediata
+              }, 1); // ⚡ CRITICAL: Reducido a 1ms para detección ultra-inmediata
               
               // También en DOMContentLoaded por si acaso
               if (document.readyState === 'loading') {

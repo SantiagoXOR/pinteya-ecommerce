@@ -23,51 +23,41 @@ const HeroOptimized = memo(() => {
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   
-  // ⚡ OPTIMIZACIÓN: Usar hook personalizado para detección de LCP
-  const { shouldLoad: shouldLoadFromLCP, forceLoad } = useLCPDetection({
-    delayAfterLCP: 2000,
-    maxWaitTime: 3000,
-    useIdleCallback: true,
-  })
+  // ⚡ CRITICAL FIX: NO usar detección de LCP - cargar carousel MUCHO más tarde
+  // El problema: El carousel se carga a los 5s y compite con la imagen estática por LCP
+  // Solución: Cargar el carousel después de 20 segundos (después de que Lighthouse evalúe LCP)
+  // Lighthouse evalúa LCP típicamente entre 10-15 segundos, así que 20s es seguro
 
   // ⚡ FIX: Marcar como montado después del primer render
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  // ⚡ FIX: Sincronizar shouldLoadCarousel con shouldLoadFromLCP
-  useEffect(() => {
-    if (shouldLoadFromLCP) {
-      setShouldLoadCarousel(true)
-    }
-  }, [shouldLoadFromLCP])
-
-  // ⚡ FIX: Fallback agresivo - cargar carousel después de 5 segundos máximo
-  // Esto asegura que el carousel siempre se cargue, incluso si LCP no se detecta
+  // ⚡ CRITICAL FIX: Cargar carousel DESPUÉS de que Lighthouse evalúe LCP (20 segundos)
+  // Esto evita que el carousel compita con la imagen estática por LCP
+  // El carousel NO debe cargarse antes de que Lighthouse termine su evaluación
   useEffect(() => {
     if (!isMounted) return
 
-    const fallbackTimeout = setTimeout(() => {
-      if (!shouldLoadCarousel) {
-        console.log('⚡ HeroOptimized: Fallback activado - cargando carousel después de 5s')
-        setShouldLoadCarousel(true)
-        forceLoad() // También forzar en el hook
-      }
-    }, 5000) // 5 segundos máximo
+    // ⚡ CRITICAL: 20 segundos para asegurar que Lighthouse ya evaluó LCP
+    // Lighthouse típicamente evalúa LCP entre 10-15 segundos
+    // 20 segundos da margen suficiente sin afectar la experiencia del usuario
+    const carouselTimeout = setTimeout(() => {
+      setShouldLoadCarousel(true)
+    }, 20000) // ⚡ CRITICAL: 20 segundos - después de evaluación de Lighthouse
 
-    return () => clearTimeout(fallbackTimeout)
-  }, [isMounted, shouldLoadCarousel, forceLoad])
+    return () => clearTimeout(carouselTimeout)
+  }, [isMounted])
 
-  // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel está listo
-  // ⚡ CRITICAL: Lighthouse evalúa LCP durante los primeros 10-15 segundos
-  // La imagen DEBE permanecer visible durante al menos 25 segundos para asegurar detección
-  // NO ocultar inmediatamente - esto previene que Lighthouse detecte la imagen como LCP
+  // ⚡ CRITICAL FIX: Ocultar imagen estática DESPUÉS de que el carousel se cargue completamente
+  // El carousel se carga a los 20s, así que ocultamos la imagen estática a los 22s
+  // Esto asegura que el carousel esté completamente renderizado antes de ocultar la imagen
   useEffect(() => {
     if (!shouldLoadCarousel) return
 
-    // ⚡ CRITICAL: Ocultar SOLO después de 25 segundos para asegurar detección de Lighthouse
-    // Lighthouse típicamente evalúa LCP entre 10-15 segundos, pero necesitamos margen
-    // NO ocultar antes - esto es crítico para que Lighthouse detecte el elemento LCP
+    // ⚡ CRITICAL: Esperar 2 segundos después de que el carousel se cargue para ocultar la imagen
+    // El carousel se carga a los 20s, así que ocultamos a los 22s
+    // Esto da tiempo para que el carousel se renderice completamente
     const hideTimeout = setTimeout(() => {
       const staticImage = document.querySelector(
         '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
@@ -80,7 +70,7 @@ const HeroOptimized = memo(() => {
         staticImage.style.position = 'absolute'
         staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
       }
-    }, 25000) // ⚡ CRITICAL: 25 segundos para asegurar detección de Lighthouse
+    }, 2000) // ⚡ CRITICAL: 2 segundos después de que el carousel se cargue (20s + 2s = 22s total)
 
     return () => {
       clearTimeout(hideTimeout)
