@@ -144,6 +144,8 @@ export default async function HomePage() {
                 minWidth: '100%'
               }}
             />
+            {/* ⚡ FASE 23: HeroOptimized renderiza el carousel aquí, en el mismo contenedor */}
+            <HeroOptimized />
           </div>
         </div>
       </div>
