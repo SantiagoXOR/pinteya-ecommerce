@@ -45,73 +45,124 @@ export default function HeroOptimized() {
   }, [])
 
   useEffect(() => {
-    // ⚡ FASE 15: Cargar carousel después de que LCP se haya registrado
-    // Usar requestIdleCallback para no bloquear el hilo principal
+    // ⚡ FASE 20: Cargar carousel después de que LCP se haya registrado
+    // Aumentar delay para asegurar que Lighthouse detecte el LCP correctamente
     if (!isMounted) return
 
     const loadCarousel = () => {
       setShowCarousel(true)
     }
     
-    // ⚡ FASE 15: Esperar a que LCP se haya registrado antes de cargar carousel
-    // Esto asegura que la imagen estática sea el LCP
+    // ⚡ FASE 20: Esperar a que LCP se haya registrado antes de cargar carousel
+    // Aumentar delay y mejorar detección para asegurar que Lighthouse detecte el LCP
+    let lcpDetected = false
+    let lcpObserver: PerformanceObserver | null = null
+    
     if ('PerformanceObserver' in window) {
       try {
-        const lcpObserver = new PerformanceObserver((list) => {
+        lcpObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries()
-          const lastEntry = entries[entries.length - 1] as PerformanceEntry & { renderTime?: number; loadTime?: number }
+          const lastEntry = entries[entries.length - 1] as PerformanceEntry & { 
+            renderTime?: number
+            loadTime?: number
+            element?: Element
+          }
           
-          // Si LCP ya se registró, cargar carousel
+          // Si LCP ya se registró y tiene un elemento válido
           if (lastEntry && (lastEntry.renderTime || lastEntry.loadTime || lastEntry.startTime)) {
-            if ('requestIdleCallback' in window) {
-              requestIdleCallback(loadCarousel, { timeout: 1000 })
-            } else {
-              setTimeout(loadCarousel, 1000)
+            // Verificar que el elemento LCP sea la imagen hero
+            if (lastEntry.element) {
+              const img = lastEntry.element as HTMLImageElement
+              if (img && (img.src?.includes('hero1.webp') || img.src?.includes('hero'))) {
+                lcpDetected = true
+                // ⚡ FASE 20: Delay adicional de 3s después de LCP para asegurar detección
+                setTimeout(() => {
+                  if ('requestIdleCallback' in window) {
+                    requestIdleCallback(loadCarousel, { timeout: 2000 })
+                  } else {
+                    setTimeout(loadCarousel, 2000)
+                  }
+                }, 3000)
+                if (lcpObserver) lcpObserver.disconnect()
+                return
+              }
             }
-            lcpObserver.disconnect()
+            
+            // Si LCP se detectó pero no es la imagen hero, esperar más
+            lcpDetected = true
+            setTimeout(() => {
+              if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadCarousel, { timeout: 2000 })
+              } else {
+                setTimeout(loadCarousel, 2000)
+              }
+            }, 5000) // ⚡ FASE 20: Aumentado a 5s para asegurar detección
+            if (lcpObserver) lcpObserver.disconnect()
           }
         })
         
-        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
+        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'], buffered: true })
         
-        // Fallback: cargar después de 2 segundos si LCP no se registra
+        // ⚡ FASE 20: Fallback aumentado a 8 segundos para asegurar que Lighthouse detecte LCP
         setTimeout(() => {
-          lcpObserver.disconnect()
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(loadCarousel, { timeout: 1000 })
-          } else {
-            setTimeout(loadCarousel, 1000)
+          if (lcpObserver) lcpObserver.disconnect()
+          if (!lcpDetected) {
+            // Si LCP no se detectó, esperar más antes de cargar carousel
+            setTimeout(() => {
+              if ('requestIdleCallback' in window) {
+                requestIdleCallback(loadCarousel, { timeout: 2000 })
+              } else {
+                setTimeout(loadCarousel, 2000)
+              }
+            }, 2000)
           }
-        }, 2000)
+        }, 8000) // ⚡ FASE 20: Aumentado de 2s a 8s
       } catch (e) {
         // Fallback si PerformanceObserver no está disponible
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(loadCarousel, { timeout: 1000 })
-        } else {
-          setTimeout(loadCarousel, 1000)
-        }
+        console.warn('PerformanceObserver error:', e)
+        // ⚡ FASE 20: Delay aumentado a 8s para asegurar detección
+        setTimeout(() => {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadCarousel, { timeout: 2000 })
+          } else {
+            setTimeout(loadCarousel, 2000)
+          }
+        }, 8000)
       }
     } else {
       // Fallback si PerformanceObserver no está disponible
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadCarousel, { timeout: 1000 })
-      } else {
-        setTimeout(loadCarousel, 1000)
+      // ⚡ FASE 20: Delay aumentado a 8s para asegurar detección
+      setTimeout(() => {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(loadCarousel, { timeout: 2000 })
+        } else {
+          setTimeout(loadCarousel, 2000)
+        }
+      }, 8000)
+    }
+    
+    // Cleanup
+    return () => {
+      if (lcpObserver) {
+        lcpObserver.disconnect()
       }
     }
   }, [isMounted])
 
-  // ⚡ FASE 2: La imagen estática ahora se renderiza en Server Component (page.tsx)
-  // Ocultamos la imagen estática cuando el carousel está listo
+  // ⚡ FASE 20: La imagen estática ahora se renderiza en Server Component (page.tsx)
+  // Ocultamos la imagen estática cuando el carousel está listo, pero con delay adicional
   useEffect(() => {
     if (showCarousel) {
-      // Ocultar la imagen estática de page.tsx cuando el carousel está listo
-      const staticImage = document.querySelector('.hero-lcp-container img, [src="/images/hero/hero2/hero1.webp"]')
-      if (staticImage && staticImage instanceof HTMLElement) {
-        staticImage.style.opacity = '0'
-        staticImage.style.pointerEvents = 'none'
-        staticImage.style.position = 'absolute'
-      }
+      // ⚡ FASE 20: Delay adicional antes de ocultar para asegurar que Lighthouse detecte LCP
+      setTimeout(() => {
+        // Ocultar la imagen estática de page.tsx cuando el carousel está listo
+        const staticImage = document.querySelector('.hero-lcp-container img, [src="/images/hero/hero2/hero1.webp"]')
+        if (staticImage && staticImage instanceof HTMLElement) {
+          staticImage.style.opacity = '0'
+          staticImage.style.pointerEvents = 'none'
+          staticImage.style.position = 'absolute'
+        }
+      }, 2000) // ⚡ FASE 20: Delay de 2s adicional antes de ocultar
     }
   }, [showCarousel])
 

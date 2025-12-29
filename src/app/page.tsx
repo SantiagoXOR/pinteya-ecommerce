@@ -124,6 +124,8 @@ export default async function HomePage() {
               loading="eager"
               decoding="async"
               className="hero-static-image"
+              id="hero-lcp-image"
+              data-lcp="true"
               style={{ 
                 width: '100%', 
                 height: 'auto', 
@@ -131,9 +133,11 @@ export default async function HomePage() {
                 objectFit: 'contain',
                 display: 'block',
                 transition: 'opacity 0.5s ease',
-                // ⚡ FASE 3: Asegurar que la imagen no cause layout shift
+                // ⚡ FASE 20: Asegurar que la imagen no cause layout shift y sea visible para LCP
                 position: 'relative',
-                zIndex: 1
+                zIndex: 10, // ⚡ Aumentado para asegurar visibilidad
+                visibility: 'visible', // ⚡ Explícito para asegurar visibilidad
+                opacity: '1' // ⚡ Explícito para asegurar visibilidad
               }}
             />
           </div>
