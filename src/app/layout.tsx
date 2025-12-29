@@ -199,8 +199,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
         
-        {/* ⚡ CRITICAL: Preload de fuentes críticas - ANTES de otros recursos */}
+        {/* ⚡ FASE 4: Preload de fuentes críticas - DESPUÉS del preload de imagen hero */}
         {/* Esto reduce la latencia de ruta crítica de 2,124 ms */}
+        {/* Regular es crítica para FCP, SemiBold puede cargarse después del FCP */}
         <link
           rel="preload"
           href="/fonts/EuclidCircularA-Regular.woff2"
@@ -209,6 +210,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
           fetchPriority="high"
         />
+        {/* ⚡ FASE 4: SemiBold puede diferirse ligeramente - no es crítica para FCP */}
         <link
           rel="preload"
           href="/fonts/EuclidCircularA-SemiBold.woff2"

@@ -471,15 +471,18 @@ const HomeV3 = () => {
       <LazyBestSeller delay={bestSellerDelay} />
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
-      <div 
-        className='mt-3 sm:mt-4' 
-        style={{ 
-          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px)
-          height: 'auto' // Permite que el contenido defina la altura
-        }}
-      >
-        <PromoBanners bannerId={1} />
-      </div>
+      {/* ⚡ FASE 1B: Diferir después del LCP para reducir main thread work */}
+      {shouldLoadAfterLCP && (
+        <div 
+          className='mt-3 sm:mt-4' 
+          style={{ 
+            minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px)
+            height: 'auto' // Permite que el contenido defina la altura
+          }}
+        >
+          <PromoBanners bannerId={1} />
+        </div>
+      )}
 
       {/* 4. Productos Destacados (Combos) - Optimizado igual que HeroOptimized */}
       <div className='mt-4 sm:mt-6 product-section'>
@@ -487,9 +490,12 @@ const HomeV3 = () => {
       </div>
 
       {/* 5. Carrusel Dinámico - Solo Envío Gratis */}
-      <div className='product-section' style={{ minHeight: '350px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
-        <DynamicProductCarousel freeShippingOnly={true} />
-      </div>
+      {/* ⚡ FASE 1B: Diferir después del LCP para reducir main thread work */}
+      {shouldLoadAfterLCP && (
+        <div className='product-section' style={{ minHeight: '350px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
+          <DynamicProductCarousel freeShippingOnly={true} />
+        </div>
+      )}
 
       {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded - Subido más arriba y más separado de Nuevos Productos */}
       <div 
