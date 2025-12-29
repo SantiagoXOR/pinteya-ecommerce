@@ -190,6 +190,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .bg-gray-50:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input,
           .bg-gray-50:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) select,
           .bg-gray-100:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input{color:#111827!important}
+          
+          /* ⚡ FASE 2.3: Critical Hero LCP Container Styles - Inline para evitar CSS bloqueante */
+          /* Estos estilos son críticos para el LCP y deben estar inline para evitar bloqueo */
+          .hero-lcp-container{position:relative;width:100%;margin-top:0}
+          .hero-lcp-container>div{max-width:1200px;margin-left:auto;margin-right:auto;padding-left:0.5rem;padding-right:0.5rem;padding-top:0.25rem;padding-bottom:0.25rem}
+          @media(min-width:640px){.hero-lcp-container>div{padding-left:1rem;padding-right:1rem;padding-top:0.5rem;padding-bottom:0.375rem}}
+          @media(min-width:1024px){.hero-lcp-container>div{padding-left:1.5rem;padding-right:1.5rem}}
+          .hero-lcp-container>div>div{position:relative;width:100%;overflow:hidden;aspect-ratio:2.77;min-height:277px;height:auto}
+          .hero-static-image,#hero-lcp-image{width:100%;height:auto;aspect-ratio:1200/433;object-fit:contain;display:block;position:relative;z-index:1;visibility:visible;opacity:1;pointer-events:auto;min-height:277px;min-width:100%;margin:0;padding:0;transition:opacity 0.5s ease-in-out}
+          /* Contenedor principal con max-width */
+          .max-w-\[1200px\]{max-width:1200px}
         `}} />
         
         {/* ⚡ FASE 7: Preconnect a Supabase - Crítico para imágenes de productos */}
@@ -269,13 +280,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     
                     converted = true;
                     
-                    // ⚡ FASE 22: Preload + media="print" + onload - ultra agresivo
+                    // ⚡ FASE 2.2: Preload + media="print" + onload - ultra agresivo
+                    // Crear preload ANTES del link para descarga paralela sin bloqueo
                     const preload = document.createElement('link');
                     preload.rel = 'preload';
                     preload.as = 'style';
                     preload.href = href;
                     preload.setAttribute('fetchpriority', 'high');
-                    document.head.insertBefore(preload, link);
+                    // ⚡ FASE 2.2: Insertar preload ANTES del link para máxima prioridad
+                    // Si el link tiene un sibling anterior, insertar antes de él, sino al inicio del head
+                    const firstChild = document.head.firstChild;
+                    if (firstChild) {
+                      document.head.insertBefore(preload, firstChild);
+                    } else {
+                      document.head.appendChild(preload);
+                    }
                     
                     const originalMedia = link.media || 'all';
                     // ⚡ FASE 22: Aplicar media="print" ANTES de que el CSS se cargue

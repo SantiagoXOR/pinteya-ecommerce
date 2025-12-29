@@ -6,13 +6,22 @@ import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { useLCPDetection } from '@/hooks/useLCPDetection'
 import type { PromoBannersProps } from '../Home-v2/PromoBanners'
 import { ProductSkeletonGrid, ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
 // ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism de forma diferida (no bloqueante)
 // El CSS se importa pero se carga después del FCP usando DeferredGlassmorphismCSS
 import { DeferredGlassmorphismCSS } from './DeferredGlassmorphismCSS'
-// ✅ FIX CRÍTICO: Importar BestSeller directamente en lugar de dynamic para evitar problemas de carga
-import BestSeller from '../Home-v2/BestSeller/index'
+// ⚡ FASE 1B: BestSeller diferido con ssr: false para reducir main thread work
+const BestSeller = dynamic(() => import('../Home-v2/BestSeller/index'), {
+  ssr: false, // ⚡ OPTIMIZACIÓN: No SSR para reducir main thread work
+  loading: () => (
+    <div className='px-4'>
+      <div className='h-8 w-48 bg-gray-200 rounded skeleton-pulse mb-4' />
+      <ProductSkeletonCarousel count={4} />
+    </div>
+  ),
+})
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
 // ⚡ PERFORMANCE: HeroOptimized renderiza imagen estática inicial y carga carousel después del FCP
@@ -343,6 +352,13 @@ const HomeV3 = () => {
   const isLowPerformance = performanceLevel === 'low'
   const isMediumPerformance = performanceLevel === 'medium'
   
+  // ⚡ FASE 1B: Detectar LCP para diferir componentes no críticos después del LCP
+  const { shouldLoad: shouldLoadAfterLCP } = useLCPDetection({
+    delayAfterLCP: 1000, // Cargar 1s después del LCP
+    maxWaitTime: 3000, // Fallback después de 3s
+    useIdleCallback: true,
+  })
+  
   // ⚡ OPTIMIZACIÓN CRÍTICA: Detectar si es móvil para deshabilitar efectos costosos
   const [isMobile, setIsMobile] = React.useState(false)
   
@@ -355,10 +371,11 @@ const HomeV3 = () => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
   
-  // Aplicar delays más largos en dispositivos de bajo/medio rendimiento o móviles
+  // ⚡ FASE 1B: Aplicar delays basados en LCP y rendimiento del dispositivo
+  // Si LCP no se ha detectado, usar delays adaptativos basados en rendimiento
   const shouldDelay = isLowPerformance || isMediumPerformance || isMobile
-  const categoryToggleDelay = shouldDelay ? 2000 : 0
-  const bestSellerDelay = shouldDelay ? 3000 : 0
+  const categoryToggleDelay = shouldLoadAfterLCP ? 0 : (shouldDelay ? 2000 : 0)
+  const bestSellerDelay = shouldLoadAfterLCP ? 0 : (shouldDelay ? 3000 : 0)
   
   // ⚡ OPTIMIZACIÓN: Scroll depth tracking con IntersectionObserver (más eficiente que scroll events)
   useEffect(() => {

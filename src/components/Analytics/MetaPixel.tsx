@@ -60,7 +60,7 @@ const MetaPixel: React.FC = () => {
             if (!userActive) {
               setShouldLoad(true) // Cargar de todas formas después de delay extendido
             }
-          }, 10000) // 10 segundos si usuario está inactivo
+          }, 20000) // ⚡ FASE 6: Aumentado a 20s si usuario está inactivo
         }
       }
 
@@ -87,10 +87,10 @@ const MetaPixel: React.FC = () => {
         interactionListeners.push({ event, handler: onInteraction })
       })
 
-      // ⚡ OPTIMIZACIÓN: Aumentar delay a 10 segundos para dar más tiempo al contenido principal
-      // Meta Pixel es pesado (66KB unused), mejor cargarlo mucho después
-      // Esto reduce unused JavaScript y mejora TBT
-      loadTimeout = setTimeout(loadPixel, 13000) // ⚡ FASE 22: Aumentado a 13s para reducir unused JS y mejorar LCP
+      // ⚡ FASE 6: Aumentar delay a 20 segundos para diferir más agresivamente
+      // Meta Pixel es pesado (90.53KB según Lighthouse), mejor cargarlo mucho después del LCP
+      // Esto reduce main thread work y mejora LCP significativamente
+      loadTimeout = setTimeout(loadPixel, 20000) // ⚡ FASE 6: Aumentado a 20s para reducir main thread work y mejorar LCP
       loadHandler = loadAfterLCP
     }
 
