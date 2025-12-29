@@ -284,13 +284,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       if (preload.parentNode) preload.parentNode.removeChild(preload);
                     };
                     
-                    // ⚡ FASE 21: Fallback reducido a 2 segundos para conversión más rápida
+                    // ⚡ FASE 21: Fallback reducido a 1 segundo para conversión ultra-rápida
                     setTimeout(function() {
                       if (link.media === 'print') {
                         link.media = originalMedia;
                         if (preload.parentNode) preload.parentNode.removeChild(preload);
                       }
-                    }, 2000);
+                    }, 1000); // ⚡ FASE 21: Reducido a 1s para conversión más rápida
                   }
                 });
                 return converted;

@@ -12,12 +12,9 @@ interface HeroSlide {
 }
 
 // ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia
+// ⚡ FASE 21: hero1.webp NO se incluye aquí porque ya está renderizado como imagen estática
+// El carousel empezará en hero2.webp para evitar duplicación de requests
 const heroSlides: HeroSlide[] = [
-  {
-    id: 'hero-1',
-    image: '/images/hero/hero2/hero1.webp',
-    alt: 'Pintá rápido, fácil y cotiza al instante - Pinteya'
-  },
   {
     id: 'hero-2',
     image: '/images/hero/hero2/hero2.webp',
@@ -27,6 +24,21 @@ const heroSlides: HeroSlide[] = [
     id: 'hero-3',
     image: '/images/hero/hero2/hero3.webp',
     alt: 'Pagá con Mercado Pago - Pinteya'
+  },
+  {
+    id: 'hero-4',
+    image: '/images/hero/hero2/hero4.webp',
+    alt: 'Pintá rápido, fácil y cotiza al instante - Pinteya'
+  },
+  {
+    id: 'hero-5',
+    image: '/images/hero/hero2/hero5.webp',
+    alt: 'Pintá rápido, fácil y cotiza al instante - Pinteya'
+  },
+  {
+    id: 'hero-6',
+    image: '/images/hero/hero2/hero6.webp',
+    alt: 'Pintá rápido, fácil y cotiza al instante - Pinteya'
   }
 ]
 
@@ -35,7 +47,10 @@ const HeroCarousel = () => {
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
   
-  const [currentIndex, setCurrentIndex] = useState(1) // Empezar en la primera slide real
+  // ⚡ FASE 21: Empezar en índice 1 (primera slide real del carousel, que es hero2.webp)
+  // Índice 0 es el clone de la última, índice 1 es hero2.webp (primera real)
+  // Esto evita cargar hero1.webp que ya está renderizado como imagen estática
+  const [currentIndex, setCurrentIndex] = useState(1) // Empezar en la primera slide real (hero2.webp)
   const [isTransitioning, setIsTransitioning] = useState(false)
   // ⚡ OPTIMIZACIÓN: Deshabilitar auto-play por defecto en dispositivos de bajo rendimiento
   // Inicializar como false para ser seguro, luego actualizar cuando se detecte el nivel de rendimiento
@@ -47,17 +62,18 @@ const HeroCarousel = () => {
     setIsAutoPlaying(!isLowPerformance)
   }, [isLowPerformance])
 
-  // Crear array extendido: [última, ...originales, primera]
+  // ⚡ FASE 21: Array extendido sin hero1.webp
+  // [última, ...originales, primera] - pero primera es hero2.webp, no hero1.webp
   const extendedSlides = useMemo(() => [
     heroSlides[heroSlides.length - 1], // Clone de la última
-    ...heroSlides,                       // Slides originales
-    heroSlides[0]                        // Clone de la primera
+    ...heroSlides,                       // Slides originales (hero2, hero3, hero4, hero5, hero6)
+    heroSlides[0]                        // Clone de la primera (hero2.webp)
   ], [])
 
   // Callbacks de navegación
   const goToSlide = useCallback((index: number) => {
     setIsTransitioning(true)
-    setCurrentIndex(index + 1) // +1 porque el primer slide real está en índice 1
+    setCurrentIndex(index + 1) // ⚡ FASE 21: +1 porque índice 0 es clone, índice 1 es primera real
     setIsAutoPlaying(false)
     // ⚡ FIX: Solo re-habilitar auto-play si NO es dispositivo de bajo rendimiento
     if (!isLowPerformance) {
@@ -96,24 +112,29 @@ const HeroCarousel = () => {
     return () => clearInterval(interval)
   }, [isAutoPlaying, goToNext])
 
-  // Manejar el loop infinito
+  // ⚡ FASE 21: Manejar el loop infinito - ajustado para empezar en índice 0
   useEffect(() => {
     if (!isTransitioning) return
 
-    // Si estamos en el clone final, saltar sin transición al inicio real
+    // Si estamos en el clone final, saltar sin transición al inicio real (índice 1)
     if (currentIndex === extendedSlides.length - 1) {
       setTimeout(() => {
         setIsTransitioning(false)
-        setCurrentIndex(1)
+        setCurrentIndex(1) // ⚡ FASE 21: Empezar en índice 1 (hero2.webp, primera slide real)
       }, 700) // Después de la transición
     }
     
     // Si estamos en el clone inicial, saltar sin transición al final real
-    if (currentIndex === 0) {
-      setTimeout(() => {
-        setIsTransitioning(false)
-        setCurrentIndex(heroSlides.length)
-      }, 700)
+    if (currentIndex === 0 && extendedSlides.length > 0) {
+      // Verificar que no es el índice inicial válido (0 es válido para hero2.webp)
+      // Solo saltar si realmente estamos en el clone
+      const isClone = currentIndex === 0 && extendedSlides[0]?.id === heroSlides[heroSlides.length - 1]?.id
+      if (isClone) {
+        setTimeout(() => {
+          setIsTransitioning(false)
+          setCurrentIndex(heroSlides.length - 1) // ⚡ FASE 21: Última slide real
+        }, 700)
+      }
     }
   }, [currentIndex, isTransitioning, extendedSlides.length])
 
@@ -142,6 +163,8 @@ const HeroCarousel = () => {
               // Usar priority aquí causaría duplicación de requests
               if (!slide) return null
               
+              // ⚡ FASE 21: Índice 1 es la primera slide real (hero2.webp)
+              // Índice 0 es clone de la última, índice 1 es hero2.webp (primera real sin hero1.webp)
               const isFirstRealSlide = index === 1
               const isClone = index === 0 || index === extendedSlides.length - 1
               

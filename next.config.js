@@ -141,10 +141,10 @@ const nextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 100000, // ⚡ FASE 19: REDUCIDO a 100 KB para chunks más pequeños y menos bloqueo del main thread
+          maxSize: 80000, // ⚡ FASE 21: REDUCIDO a 80 KB para chunks aún más pequeños y menos tiempo de ejecución
           minSize: 20000, // 20 KB mínimo
-          maxAsyncRequests: 40, // ⚡ AUMENTADO para permitir más chunks pequeños
-          maxInitialRequests: 30, // ⚡ AUMENTADO para permitir más chunks iniciales
+          maxAsyncRequests: 50, // ⚡ FASE 21: AUMENTADO a 50 para permitir más chunks pequeños
+          maxInitialRequests: 35, // ⚡ FASE 21: AUMENTADO a 35 para permitir más chunks iniciales
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
             // ⚡ Framework core (React, Next.js) - Prioridad alta
@@ -152,7 +152,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
               name: 'framework',
               priority: 40,
-              maxSize: 150000, // ⚡ FASE 19: REDUCIDO a 150 KB para mejor splitting y menos bloqueo
+              maxSize: 120000, // ⚡ FASE 21: REDUCIDO a 120 KB para reducir tiempo de ejecución (2038ms → ~1500ms)
               reuseExistingChunk: true,
             },
             // ⚡ Framer Motion - Separado para mejor tree shaking
@@ -192,7 +192,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 100000, // ⚡ FASE 19: REDUCIDO a 100 KB para chunks más pequeños
+              maxSize: 80000, // ⚡ FASE 21: REDUCIDO a 80 KB para chunks más pequeños y menos tiempo de ejecución
               minSize: 20000,
               reuseExistingChunk: true,
             },
@@ -201,7 +201,7 @@ const nextConfig = {
               test: /[\\/]src[\\/](app|components[\\/]Home)[\\/]/,
               name: 'pages',
               priority: 20,
-              maxSize: 100000, // 100 KB máximo para páginas
+              maxSize: 80000, // ⚡ FASE 21: REDUCIDO a 80 KB para páginas - menos tiempo de ejecución
               minSize: 20000,
               reuseExistingChunk: true,
             },

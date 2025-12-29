@@ -53,10 +53,10 @@ export default function HeroOptimized() {
       setShowCarousel(true)
     }
     
-    // ⚡ FASE 20: Simplificar carga del carousel para reducir TBT
-    // Cargar carousel después de un delay fijo, sin PerformanceObserver para reducir complejidad
-    // Esto reduce el trabajo en el main thread y mejora TBT
-    const loadDelay = 2000 // 2 segundos después del mount
+    // ⚡ FASE 21: Aumentar delay del carousel para evitar competir con LCP
+    // El carousel ahora no carga hero1.webp, pero aún así debe cargarse después del LCP
+    // Esto reduce el trabajo en el main thread y mejora TBT y LCP
+    const loadDelay = 5000 // ⚡ FASE 21: Aumentado a 5s para dar más tiempo al LCP
     
     const timeoutId = setTimeout(() => {
       if ('requestIdleCallback' in window) {
