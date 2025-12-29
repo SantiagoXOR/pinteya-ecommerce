@@ -141,7 +141,9 @@ export default async function HomePage() {
               className="hero-static-image"
               id="hero-lcp-image"
               data-lcp="true"
+              data-hero="true"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+              srcSet="/images/hero/hero2/hero1.webp 1200w"
               style={{ 
                 width: '100%', 
                 height: 'auto', 

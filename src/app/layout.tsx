@@ -51,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⚡ CRITICAL: Preload de imagen LCP del hero - INMEDIATAMENTE después del preconnect */}
         {/* Esto elimina el retraso de 1,480ms en la carga de recursos */}
         {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
-        {/* ⚡ OPTIMIZACIÓN LCP: Agregar imagesizes para mejor descubrimiento temprano */}
+        {/* ⚡ OPTIMIZACIÓN LCP: Agregar imagesizes y imagesrcset para mejor descubrimiento temprano */}
         <link
           rel="preload"
           as="image"
@@ -59,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fetchPriority="high"
           type="image/webp"
           imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+          imagesrcset="/images/hero/hero2/hero1.webp 1200w"
           crossOrigin="anonymous"
         />
         
@@ -305,16 +306,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       });
                     };
                     
-                    // ⚡ CRITICAL FIX: Fallback ultra-rápido (100ms) para conversión inmediata
-                    // Reducir a 100ms para eliminar el bloqueo de 302ms lo más rápido posible
+                    // ⚡ CRITICAL FIX: Fallback ultra-rápido (50ms) para conversión inmediata
+                    // Reducir a 50ms para eliminar el bloqueo de 301ms lo más rápido posible
+                    // Aplicar inmediatamente sin esperar para evitar cualquier bloqueo
                     setTimeout(function() {
                       if (link.media === 'print') {
-                        requestAnimationFrame(function() {
-                          link.media = originalMedia;
-                          if (preload.parentNode) preload.parentNode.removeChild(preload);
-                        });
+                        // Aplicar inmediatamente sin requestAnimationFrame para máxima velocidad
+                        link.media = originalMedia;
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
                       }
-                    }, 100); // ⚡ CRITICAL: Reducido a 100ms para conversión ultra-rápida y eliminar bloqueo
+                    }, 50); // ⚡ CRITICAL: Reducido a 50ms para conversión ultra-rápida y eliminar bloqueo
                   }
                 });
                 return converted;
