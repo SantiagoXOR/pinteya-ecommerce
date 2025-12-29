@@ -51,12 +51,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⚡ CRITICAL: Preload de imagen LCP del hero - INMEDIATAMENTE después del preconnect */}
         {/* Esto elimina el retraso de 1,480ms en la carga de recursos */}
         {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
+        {/* ⚡ OPTIMIZACIÓN LCP: Agregar imagesizes para mejor descubrimiento temprano */}
         <link
           rel="preload"
           as="image"
           href="/images/hero/hero2/hero1.webp"
           fetchPriority="high"
           type="image/webp"
+          imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
           crossOrigin="anonymous"
         />
         

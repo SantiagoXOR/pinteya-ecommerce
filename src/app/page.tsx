@@ -127,6 +127,7 @@ export default async function HomePage() {
             {/* Usar <img> estático para evitar duplicación de requests con Next.js Image */}
             {/* El preload en layout.tsx asegura descubrimiento temprano */}
             {/* ⚡ CRITICAL: Esta imagen DEBE ser el LCP - optimizada para carga inmediata */}
+            {/* ⚡ OPTIMIZACIÓN LCP: Usar decoding="async" para no bloquear renderizado */}
             <img
               src="/images/hero/hero2/hero1.webp"
               alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
@@ -134,7 +135,7 @@ export default async function HomePage() {
               height={433}
               fetchPriority="high"
               loading="eager"
-              decoding="sync"
+              decoding="async"
               className="hero-static-image"
               id="hero-lcp-image"
               data-lcp="true"
@@ -155,6 +156,9 @@ export default async function HomePage() {
                 // ⚡ CRITICAL: Asegurar que la imagen esté en el viewport desde el inicio
                 margin: 0,
                 padding: 0,
+                // ⚡ OPTIMIZACIÓN LCP: Asegurar que la imagen sea visible inmediatamente
+                willChange: 'auto',
+                contentVisibility: 'auto',
               }}
             />
             {/* ⚡ FASE 23: HeroOptimized renderiza el carousel aquí, en el mismo contenedor */}
