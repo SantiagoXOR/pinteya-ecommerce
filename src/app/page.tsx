@@ -1,10 +1,17 @@
-import HomeV3 from '@/components/Home-v3'
 import { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 // ⚡ FASE 1: CSS glassmorphism movido a carga diferida via DeferredCSS (solo en desktop)
 import { createPublicClient } from '@/lib/integrations/supabase/server'
 import { Category } from '@/types/database'
 import { QueryClient, dehydrate, Hydrate } from '@tanstack/react-query'
 import { productQueryKeys } from '@/hooks/queries/productQueryKeys'
+
+// ⚡ FASE 19: Lazy load de HomeV3 para reducir bundle inicial y bloqueo del main thread
+// Esto permite que la imagen hero se cargue primero sin esperar el JavaScript de HomeV3
+const HomeV3 = dynamic(() => import('@/components/Home-v3'), {
+  ssr: true, // Mantener SSR para SEO
+  loading: () => null, // No mostrar loading, la imagen hero ya está visible
+})
 
 export const metadata: Metadata = {
   title: 'Pinteya - Tu Pinturería Online | Envío Gratis +$50.000',

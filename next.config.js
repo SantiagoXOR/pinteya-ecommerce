@@ -141,10 +141,10 @@ const nextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 120000, // ⚡ FASE 18: REDUCIDO a 120 KB para mejor splitting y menos unused JS
+          maxSize: 100000, // ⚡ FASE 19: REDUCIDO a 100 KB para chunks más pequeños y menos bloqueo del main thread
           minSize: 20000, // 20 KB mínimo
-          maxAsyncRequests: 30,
-          maxInitialRequests: 25,
+          maxAsyncRequests: 40, // ⚡ AUMENTADO para permitir más chunks pequeños
+          maxInitialRequests: 30, // ⚡ AUMENTADO para permitir más chunks iniciales
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
             // ⚡ Framework core (React, Next.js) - Prioridad alta
@@ -152,7 +152,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
               name: 'framework',
               priority: 40,
-              maxSize: 200000, // ⚡ FASE 18: REDUCIDO a 200 KB para mejor splitting
+              maxSize: 150000, // ⚡ FASE 19: REDUCIDO a 150 KB para mejor splitting y menos bloqueo
               reuseExistingChunk: true,
             },
             // ⚡ Framer Motion - Separado para mejor tree shaking
@@ -192,7 +192,16 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 120000, // ⚡ FASE 18: REDUCIDO a 120 KB para mejor splitting y menos unused JS
+              maxSize: 100000, // ⚡ FASE 19: REDUCIDO a 100 KB para chunks más pequeños
+              minSize: 20000,
+              reuseExistingChunk: true,
+            },
+            // ⚡ FASE 19: Chunk separado para componentes de página (Home, etc.)
+            pages: {
+              test: /[\\/]src[\\/](app|components[\\/]Home)[\\/]/,
+              name: 'pages',
+              priority: 20,
+              maxSize: 100000, // 100 KB máximo para páginas
               minSize: 20000,
               reuseExistingChunk: true,
             },
