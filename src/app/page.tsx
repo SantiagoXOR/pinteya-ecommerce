@@ -113,7 +113,8 @@ export default async function HomePage() {
       {/* Esta imagen debe estar en EXACTAMENTE el mismo lugar que el hero banner del carousel */}
       {/* HeroOptimized renderiza el carousel en el mismo contenedor, por eso deben coincidir */}
       {/* ⚡ CRITICAL: Esta imagen DEBE permanecer visible para que Lighthouse la detecte como LCP */}
-      <div className="relative w-full hero-lcp-container">
+      {/* ⚡ OPTIMIZACIÓN LCP: Simplificar contenedores para reducir delay de renderizado */}
+      <div className="relative w-full hero-lcp-container" style={{ marginTop: 0 }}>
         <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
           <div 
             className="relative w-full overflow-hidden" 
@@ -127,7 +128,8 @@ export default async function HomePage() {
             {/* Usar <img> estático para evitar duplicación de requests con Next.js Image */}
             {/* El preload en layout.tsx asegura descubrimiento temprano */}
             {/* ⚡ CRITICAL: Esta imagen DEBE ser el LCP - optimizada para carga inmediata */}
-            {/* ⚡ OPTIMIZACIÓN LCP: Usar decoding="async" para no bloquear renderizado */}
+            {/* ⚡ OPTIMIZACIÓN LCP: decoding="sync" para renderizado inmediato (por defecto, pero explícito) */}
+            {/* ⚡ OPTIMIZACIÓN LCP: Eliminar contentVisibility que puede retrasar renderizado */}
             <img
               src="/images/hero/hero2/hero1.webp"
               alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
@@ -135,7 +137,7 @@ export default async function HomePage() {
               height={433}
               fetchPriority="high"
               loading="eager"
-              decoding="async"
+              decoding="sync"
               className="hero-static-image"
               id="hero-lcp-image"
               data-lcp="true"
@@ -156,9 +158,7 @@ export default async function HomePage() {
                 // ⚡ CRITICAL: Asegurar que la imagen esté en el viewport desde el inicio
                 margin: 0,
                 padding: 0,
-                // ⚡ OPTIMIZACIÓN LCP: Asegurar que la imagen sea visible inmediatamente
-                willChange: 'auto',
-                contentVisibility: 'auto',
+                // ⚡ OPTIMIZACIÓN LCP: Eliminar contentVisibility que puede retrasar renderizado
                 // ⚡ OPTIMIZACIÓN: Transición suave cuando se oculta
                 transition: 'opacity 0.5s ease-in-out',
               }}
