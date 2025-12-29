@@ -140,6 +140,8 @@ const HeroCarousel = () => {
               // ⚡ FASE 21: NO usar priority en ninguna imagen del carousel
               // La imagen estática en page.tsx ya tiene priority y preload
               // Usar priority aquí causaría duplicación de requests
+              if (!slide) return null
+              
               const isFirstRealSlide = index === 1
               const isClone = index === 0 || index === extendedSlides.length - 1
               
