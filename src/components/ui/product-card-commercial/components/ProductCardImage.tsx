@@ -38,13 +38,13 @@ export const ProductCardImage = React.memo(function ProductCardImage({
               // ⚡ OPTIMIZACIÓN: Deshabilitar transición durante scroll para mejor rendimiento
               'transition-transform duration-300 ease-out'
             )}
-            // ⚡ OPTIMIZACIÓN: sizes más preciso para dimensiones reales de productos (263x263, 286x286)
+            // ⚡ FASE 14: sizes optimizado para dimensiones reales de productos (308x308 según reporte)
             // Esto reduce el tamaño de descarga al servir imágenes del tamaño correcto
-            sizes="(max-width: 640px) 263px, (max-width: 1024px) 286px, 320px"
+            sizes="(max-width: 640px) 308px, (max-width: 1024px) 308px, 320px"
             priority={false}
             loading="lazy"
             decoding="async" // ⚡ OPTIMIZACIÓN: Decodificar imagen de forma asíncrona para no bloquear render
-            quality={70} // ⚡ OPTIMIZACIÓN: 70 es suficiente para thumbnails (vs 75 default)
+            quality={65} // ⚡ FASE 14: Optimizado para thumbnails (ahorro adicional de ~5-10% tamaño)
             onError={onImageError}
             onLoad={handleLoad}
             style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1' }}

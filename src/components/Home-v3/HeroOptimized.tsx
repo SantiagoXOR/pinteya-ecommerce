@@ -45,7 +45,7 @@ export default function HeroOptimized() {
   }, [])
 
   useEffect(() => {
-    // ⚡ OPTIMIZACIÓN: Cargar carousel después de que el componente esté montado
+    // ⚡ FASE 15: Cargar carousel después de que LCP se haya registrado
     // Usar requestIdleCallback para no bloquear el hilo principal
     if (!isMounted) return
 
@@ -53,45 +53,76 @@ export default function HeroOptimized() {
       setShowCarousel(true)
     }
     
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(loadCarousel, { timeout: 800 })
+    // ⚡ FASE 15: Esperar a que LCP se haya registrado antes de cargar carousel
+    // Esto asegura que la imagen estática sea el LCP
+    if ('PerformanceObserver' in window) {
+      try {
+        const lcpObserver = new PerformanceObserver((list) => {
+          const entries = list.getEntries()
+          const lastEntry = entries[entries.length - 1] as PerformanceEntry & { renderTime?: number; loadTime?: number }
+          
+          // Si LCP ya se registró, cargar carousel
+          if (lastEntry && (lastEntry.renderTime || lastEntry.loadTime || lastEntry.startTime)) {
+            if ('requestIdleCallback' in window) {
+              requestIdleCallback(loadCarousel, { timeout: 1000 })
+            } else {
+              setTimeout(loadCarousel, 1000)
+            }
+            lcpObserver.disconnect()
+          }
+        })
+        
+        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] })
+        
+        // Fallback: cargar después de 2 segundos si LCP no se registra
+        setTimeout(() => {
+          lcpObserver.disconnect()
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadCarousel, { timeout: 1000 })
+          } else {
+            setTimeout(loadCarousel, 1000)
+          }
+        }, 2000)
+      } catch (e) {
+        // Fallback si PerformanceObserver no está disponible
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(loadCarousel, { timeout: 1000 })
+        } else {
+          setTimeout(loadCarousel, 1000)
+        }
+      }
     } else {
-      setTimeout(loadCarousel, 800)
+      // Fallback si PerformanceObserver no está disponible
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadCarousel, { timeout: 1000 })
+      } else {
+        setTimeout(loadCarousel, 1000)
+      }
     }
   }, [isMounted])
 
-  // ⚡ OPTIMIZACIÓN: Renderizar ambos componentes y usar transición suave
-  // La imagen estática se desvanece cuando el carousel está listo
-  // Esto evita el doble render completo del componente
+  // ⚡ FASE 2: La imagen estática ahora se renderiza en Server Component (page.tsx)
+  // Ocultamos la imagen estática cuando el carousel está listo
+  useEffect(() => {
+    if (showCarousel) {
+      // Ocultar la imagen estática de page.tsx cuando el carousel está listo
+      const staticImage = document.querySelector('.hero-lcp-container img, [src="/images/hero/hero2/hero1.webp"]')
+      if (staticImage && staticImage instanceof HTMLElement) {
+        staticImage.style.opacity = '0'
+        staticImage.style.pointerEvents = 'none'
+        staticImage.style.position = 'absolute'
+      }
+    }
+  }, [showCarousel])
+
+  // ⚡ FASE 2: La imagen estática ahora se renderiza en Server Component (page.tsx)
+  // Solo renderizamos el carousel aquí, que se carga después del LCP
   return (
-      <div className="relative w-full">
-        <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
+    <div className="relative w-full">
+      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
         <div className="relative w-full overflow-hidden" style={{ aspectRatio: '2.77' }}>
-          {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
-          {/* Se desvanece suavemente cuando el carousel está listo */}
-          <div 
-            className={`absolute inset-0 z-10 transition-opacity duration-500 ${
-              showCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            }`}
-          >
-            <Image
-              src="/images/hero/hero2/hero1.webp"
-              alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
-              width={1200}
-              height={433}
-              priority
-              fetchPriority="high"
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-              quality={80}
-              loading="eager"
-              aria-hidden={showCarousel ? 'true' : 'false'}
-              style={{ width: '100%', height: 'auto', aspectRatio: '1200/433' }}
-            />
-          </div>
-          
-          {/* ⚡ PERFORMANCE: Carousel carga dinámicamente después del LCP */}
-          {/* Pre-cargar pero mantener oculto hasta que esté listo para evitar re-render */}
+          {/* ⚡ FASE 2: Carousel carga dinámicamente después del LCP */}
+          {/* La imagen estática está en page.tsx (Server Component) para descubrimiento temprano */}
           {isMounted && (
             <div 
               className={`relative z-20 transition-opacity duration-500 ${

@@ -225,8 +225,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* NonBlockingCSS convierte los CSS generados por Next.js a carga no bloqueante */}
         {/* Esto elimina ~1,200ms de render-blocking según Lighthouse */}
         
-        {/* ⚡ CRITICAL: Script inline mejorado - Ejecutar INMEDIATAMENTE después de CSS crítico */}
-        {/* ⚡ OPTIMIZACIÓN V4: Ejecución inmediata mejorada con detección más temprana de CSS */}
+        {/* ⚡ FASE 11: Script inline mejorado - Ejecutar INMEDIATAMENTE después de CSS crítico */}
+        {/* ⚡ OPTIMIZACIÓN V5: Ejecución inmediata mejorada con detección más temprana y intervalo reducido */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -238,8 +238,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 let converted = false;
                 stylesheets.forEach(function(link) {
                   const href = link.getAttribute('href') || '';
-                  // Detectar chunks CSS de Next.js y otros CSS
-                  if (href.includes('_next/static/css') || href.includes('/chunks/') || (href.includes('.css') && !href.includes('data:'))) {
+                  // Detectar chunks CSS de Next.js, webpack, Turbopack y otros CSS
+                  if (href.includes('_next/static/css') || href.includes('/chunks/') || href.includes('webpack') || href.includes('turbopack') || (href.includes('.css') && !href.includes('data:'))) {
                     link.setAttribute('data-non-blocking', 'true');
                     // Si ya está cargado, no hacer nada
                     if (link.sheet && link.sheet.cssRules && link.sheet.cssRules.length > 0) {
@@ -283,20 +283,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // Ejecutar inmediatamente
               convertCSSToNonBlocking();
               
+              // ⚡ FASE 11: Intervalo reducido de 50ms a 25ms para detección más temprana
               // Ejecutar múltiples veces para capturar CSS que se inserta después
               let attempts = 0;
-              const maxAttempts = 10;
+              const maxAttempts = 15; // Aumentado para capturar más CSS dinámico
               const interval = setInterval(function() {
                 attempts++;
                 const converted = convertCSSToNonBlocking();
-                // Si no se convirtió nada en 3 intentos consecutivos, detener
-                if (!converted && attempts > 3) {
+                // Si no se convirtió nada en 5 intentos consecutivos, detener
+                if (!converted && attempts > 5) {
                   clearInterval(interval);
                 }
                 if (attempts >= maxAttempts) {
                   clearInterval(interval);
                 }
-              }, 50); // Verificar cada 50ms
+              }, 25); // ⚡ FASE 11: Reducido de 50ms a 25ms para detección más temprana
               
               // También en DOMContentLoaded por si acaso
               if (document.readyState === 'loading') {
@@ -306,26 +307,43 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 });
               }
               
-              // MutationObserver para CSS dinámico - más agresivo
+              // ⚡ FASE 11: MutationObserver mejorado para CSS dinámico - más agresivo
               if (typeof MutationObserver !== 'undefined') {
                 const observer = new MutationObserver(function(mutations) {
                   let shouldCheck = false;
                   mutations.forEach(function(mutation) {
                     mutation.addedNodes.forEach(function(node) {
-                      if (node.nodeType === 1 && node.tagName === 'LINK' && node.rel === 'stylesheet') {
-                        shouldCheck = true;
+                      // Detectar links de stylesheet y también cambios en atributos
+                      if (node.nodeType === 1) {
+                        if (node.tagName === 'LINK' && (node.rel === 'stylesheet' || node.getAttribute('rel') === 'stylesheet')) {
+                          shouldCheck = true;
+                        }
+                        // También detectar cambios en href de links existentes
+                        if (node.tagName === 'LINK' && mutation.type === 'attributes' && mutation.attributeName === 'href') {
+                          shouldCheck = true;
+                        }
                       }
                     });
                   });
                   if (shouldCheck) {
+                    // Ejecutar inmediatamente cuando se detecta nuevo CSS
                     convertCSSToNonBlocking();
                   }
                 });
                 observer.observe(document.head, {
                   childList: true,
                   subtree: false,
-                  attributes: false
+                  attributes: true, // ⚡ FASE 11: Observar cambios en atributos también
+                  attributeFilter: ['href', 'rel'] // Solo observar cambios relevantes
                 });
+              }
+              
+              // ⚡ FASE 11: Usar requestIdleCallback para CSS no crítico detectado después de FCP
+              if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+                requestIdleCallback(function() {
+                  // Verificar una vez más después de que el navegador esté idle
+                  convertCSSToNonBlocking();
+                }, { timeout: 2000 });
               }
             })();
             `,
@@ -396,17 +414,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         
-        {/* ⚡ PERFORMANCE: Preconnect a dominios externos - Agregar crossorigin para recursos CORS */}
+        {/* ⚡ FASE 13: Preconnect a dominios externos - Agregar crossorigin para recursos CORS */}
         {/* Orden optimizado: primero los más críticos para LCP */}
+        {/* ⚡ FASE 13: DNS-prefetch para recursos de terceros (mejora latencia) */}
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <link rel="dns-prefetch" href="https://www.googleadservices.com" />
+        <link rel="dns-prefetch" href="https://connect.facebook.net" />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googleadservices.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
         {/* ⚡ NOTA: Supabase preconnect movido arriba (después del dominio propio) para máximo impacto */}
-        <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
-        <link rel="preconnect" href="https://images.clerk.dev" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.clerk.dev" />
+        <link rel="preconnect" href="https://images.clerk.dev" crossOrigin="anonymous" />
         
         {/* Google Merchant Center Verification */}
         <meta

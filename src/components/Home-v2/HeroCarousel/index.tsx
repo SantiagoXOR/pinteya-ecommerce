@@ -157,11 +157,12 @@ const HeroCarousel = () => {
                     alt={slide.alt}
                     fill
                     priority={isFirstRealSlide} // Solo primera slide real
-                    loading={isFirstRealSlide ? undefined : 'lazy'} // Lazy para slides 2 y 3
+                    loading={isFirstRealSlide ? undefined : 'lazy'} // ⚡ FASE 14: Lazy para slides 2 y 3
                     fetchPriority={isFirstRealSlide ? 'high' : 'auto'} // ⚡ CRITICAL: fetchPriority explícito para LCP
                     className="object-contain"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-                    quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1200px" // ⚡ FASE 14: sizes optimizado para breakpoints reales
+                    quality={75} // ⚡ FASE 14: Reducido de 80 a 75 para mejor balance tamaño/calidad
+                    decoding="async" // ⚡ FASE 14: Decodificar de forma asíncrona
                   />
                 </div>
               )
@@ -169,28 +170,60 @@ const HeroCarousel = () => {
           </div>
 
           {/* Botones de navegación - Solo en desktop */}
+          {/* ⚡ FASE 8: Optimizado - reemplazar background-color animado por opacity */}
           <button
             onClick={goToPrevious}
             className="hidden md:flex absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 z-10 
-                     bg-white/90 hover:bg-white text-blaze-orange-600 
-                     p-2 lg:p-3 rounded-full shadow-lg hover:shadow-xl
-                     transition-all duration-500 hover:scale-110 active:scale-95
-                     items-center justify-center group"
+                     bg-white/90 text-blaze-orange-600 
+                     p-2 lg:p-3 rounded-full shadow-lg
+                     transition-transform duration-500 hover:scale-110 active:scale-95
+                     items-center justify-center group relative"
+            style={{
+              // ⚡ FASE 8: Usar opacity en lugar de background-color animado
+              opacity: 0.9,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              // Shadow más intenso en hover usando opacity en pseudo-elemento
+              const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+              if (shadow) shadow.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.9'
+              const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+              if (shadow) shadow.style.opacity = '0'
+            }}
             aria-label="Slide anterior"
           >
-            <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[-2px] transition-transform duration-500" />
+            <span className="absolute inset-0 rounded-full shadow-xl opacity-0 hover-shadow transition-opacity duration-500 pointer-events-none" />
+            <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[-2px] transition-transform duration-500 relative z-10" />
           </button>
 
           <button
             onClick={goToNext}
             className="hidden md:flex absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 z-10 
-                     bg-white/90 hover:bg-white text-blaze-orange-600 
-                     p-2 lg:p-3 rounded-full shadow-lg hover:shadow-xl
-                     transition-all duration-500 hover:scale-110 active:scale-95
-                     items-center justify-center group"
+                     bg-white/90 text-blaze-orange-600 
+                     p-2 lg:p-3 rounded-full shadow-lg
+                     transition-transform duration-500 hover:scale-110 active:scale-95
+                     items-center justify-center group relative"
+            style={{
+              // ⚡ FASE 8: Usar opacity en lugar de background-color animado
+              opacity: 0.9,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+              if (shadow) shadow.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.9'
+              const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+              if (shadow) shadow.style.opacity = '0'
+            }}
             aria-label="Siguiente slide"
           >
-            <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[2px] transition-transform duration-500" />
+            <span className="absolute inset-0 rounded-full shadow-xl opacity-0 hover-shadow transition-opacity duration-500 pointer-events-none" />
+            <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6 group-hover:translate-x-[2px] transition-transform duration-500 relative z-10" />
           </button>
 
           {/* Indicadores (dots) - Estilo Mercado Libre */}
@@ -208,16 +241,12 @@ const HeroCarousel = () => {
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`relative rounded-full bg-white/60 transition-all duration-500 ${
-                    isActive 
-                      ? 'w-8 sm:w-10 h-2 sm:h-2.5' 
-                      : 'w-2 sm:w-2.5 h-2 sm:h-2.5'
-                  }`}
+                  className="relative rounded-full bg-white/60 h-2 sm:h-2.5 w-2 sm:w-2.5 transition-opacity duration-500"
                   style={{
                     opacity: isActive ? 1 : 0.6,
-                    // ⚡ OPTIMIZACIÓN: Solo usar transform y opacity (propiedades compositables)
-                    willChange: isActive ? 'transform, opacity' : 'opacity',
-                    transform: 'translateZ(0)', // GPU acceleration
+                    // ⚡ FASE 8: Reemplazar width animado por transform: scaleX() (propiedad compositable)
+                    transform: isActive ? 'scaleX(4) translateZ(0)' : 'scaleX(1) translateZ(0)',
+                    willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
                   }}

@@ -32,7 +32,7 @@ const nextConfig = {
 
   // ✅ Compiler optimizations - Solo las esenciales
   // ⚡ FASE 6: SWC (Next.js 16) respeta automáticamente .browserslistrc
-  // No se requiere configuración adicional - SWC transpila según browserslist
+  // ⚡ FASE 12: Configuración explícita para evitar transpilación innecesaria
   // .browserslistrc ya está optimizado para navegadores modernos (últimas 2 versiones)
   compiler: {
     removeConsole:
@@ -41,6 +41,9 @@ const nextConfig = {
             exclude: ['error', 'warn'],
           }
         : false,
+    // ⚡ FASE 12: SWC minify está habilitado por defecto en Next.js 16
+    // No se requiere configuración adicional - SWC transpila según browserslist
+    // El archivo .browserslistrc ya está configurado para navegadores modernos
   },
 
   // ⚡ PERFORMANCE: Modular imports para reducir bundle size
@@ -448,9 +451,10 @@ module.exports.__esModule = true;
             key: 'Permissions-Policy',
             value: 'browsing-topics=()',
           },
+          // ⚡ FASE 13: Cache optimizado para páginas HTML con stale-while-revalidate
           {
             key: 'Cache-Control',
-            value: 'public, max-age=3600, must-revalidate',
+            value: 'public, s-maxage=300, stale-while-revalidate=600, max-age=60',
           },
         ],
       },
@@ -492,13 +496,13 @@ module.exports.__esModule = true;
           },
         ],
       },
-      // ⚡ PERFORMANCE: Headers para imágenes estáticas - Caché de 1 año para recursos inmutables
+      // ⚡ FASE 13: Headers para imágenes estáticas - Caché de 1 año para recursos inmutables
       {
         source: '/images/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable', // ⚡ OPTIMIZACIÓN: 1 año en lugar de 1 día (ahorro de 1,327 KiB según Lighthouse)
+            value: 'public, max-age=2592000, s-maxage=31536000, immutable', // ⚡ FASE 13: 30 días en cliente, 1 año en CDN
           },
         ],
       },
