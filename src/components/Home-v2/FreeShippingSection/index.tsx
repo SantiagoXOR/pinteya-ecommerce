@@ -87,19 +87,48 @@ const FreeShippingSection = () => {
         {/* Carousel Horizontal - Sin badge de envío gratis */}
         <div className='relative mb-4'>
           {/* Controles de navegación - A los costados del carrusel, mitad y mitad */}
+          {/* ⚡ FASE 8: Optimizado - reemplazar color y border-color animados por opacity y transform */}
           <button
             onClick={() => scroll('left')}
-            className='hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-green-500 hover:text-green-500 transition-colors shadow-lg'
+            className='hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center shadow-lg relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity para color y transform para border
+              color: '#10b981', // green-500
+              opacity: 0.7,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              e.currentTarget.style.transform = 'scale(1.05) translateY(-50%)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.7'
+              e.currentTarget.style.transform = 'translateY(-50%)'
+            }}
             aria-label='Anterior'
           >
-            <ChevronLeft className='w-5 h-5' />
+            <span className="absolute inset-0 rounded-full border-2 border-green-500 opacity-0 transition-opacity duration-300 pointer-events-none" style={{ transform: 'scale(1.1)' }} />
+            <ChevronLeft className='w-5 h-5 relative z-10' />
           </button>
           <button
             onClick={() => scroll('right')}
-            className='hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-green-500 hover:text-green-500 transition-colors shadow-lg'
+            className='hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center shadow-lg relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity para color y transform para border
+              color: '#10b981', // green-500
+              opacity: 0.7,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              e.currentTarget.style.transform = 'scale(1.05) translateY(-50%)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.7'
+              e.currentTarget.style.transform = 'translateY(-50%)'
+            }}
             aria-label='Siguiente'
           >
-            <ChevronRight className='w-5 h-5' />
+            <span className="absolute inset-0 rounded-full border-2 border-green-500 opacity-0 transition-opacity duration-300 pointer-events-none" style={{ transform: 'scale(1.1)' }} />
+            <ChevronRight className='w-5 h-5 relative z-10' />
           </button>
 
           <div

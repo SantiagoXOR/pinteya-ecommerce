@@ -252,9 +252,8 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   // Mutation para operaciones masivas
   const bulkOperationMutation = useMutation({
     mutationFn: async (operation: BulkOperation) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-before-fetch',message:'Antes de fetch a API',data:{operation,operationStringified:JSON.stringify(operation)},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       
       const response = await fetch('/api/admin/products/bulk', {
         method: 'POST',
@@ -262,30 +261,26 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
         body: JSON.stringify(operation),
       })
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-after-fetch',message:'Después de fetch a API',data:{status:response.status,statusText:response.statusText,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H4'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
       if (!response.ok) {
         const errorText = await response.text()
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-error',message:'Error en respuesta de API',data:{status:response.status,statusText:response.statusText,errorText},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H4'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
 
       const result = await response.json()
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-success',message:'Respuesta exitosa de API',data:{result},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H4'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       
       return result
     },
     onSuccess: (data) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkOperationMutation-onSuccess',message:'onSuccess del mutation ejecutado',data:{mutationData:data},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2,H5'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       // ✅ CORREGIDO: Invalidar con exact: false para invalidar todas las variantes con filtros
       queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
       queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
@@ -379,18 +374,16 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
 
   const bulkDelete = useCallback(
     (productIds: string[]) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkDelete-entry',message:'bulkDelete llamado',data:{productIds,productIdsType:typeof productIds[0],productIdsLength:productIds.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       
       const operation = {
         operation: 'delete',
         product_ids: productIds,
       }
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useProductsEnterprise.ts:bulkDelete-before-mutation',message:'Antes de ejecutar mutation',data:{operation},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       
       return bulkOperationMutation.mutateAsync(operation)
     },

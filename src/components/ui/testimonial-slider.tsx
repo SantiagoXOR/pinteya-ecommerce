@@ -38,9 +38,21 @@ const TestimonialSlider = ({
     return () => clearInterval(interval)
   }, [autoPlayEnabled, autorotateTiming, testimonials.length])
 
+  // ⚡ FASE 5: Optimizado - agrupar lectura de geometría en requestAnimationFrame
   const heightFix = () => {
     if (testimonialsRef.current && testimonialsRef.current.parentElement) {
-      testimonialsRef.current.parentElement.style.height = `${testimonialsRef.current.clientHeight}px`
+      // ⚡ FASE 5: Agrupar lectura de geometría antes de escribir estilo
+      requestAnimationFrame(() => {
+        if (testimonialsRef.current && testimonialsRef.current.parentElement) {
+          const height = testimonialsRef.current.clientHeight
+          // Escribir estilo en el siguiente frame para evitar forced reflow
+          requestAnimationFrame(() => {
+            if (testimonialsRef.current?.parentElement) {
+              testimonialsRef.current.parentElement.style.height = `${height}px`
+            }
+          })
+        }
+      })
     }
   }
 

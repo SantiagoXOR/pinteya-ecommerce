@@ -49,9 +49,21 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
     const container = scrollContainerRef.current
     if (!container) return
 
+    // ⚡ FASE 5: Optimizado - agrupar lecturas de geometría en requestAnimationFrame
     const checkScroll = () => {
-      setCanScrollLeft(container.scrollLeft > 0)
-      setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 1)
+      requestAnimationFrame(() => {
+        if (!container) return
+        // Agrupar todas las lecturas de geometría
+        const scrollLeft = container.scrollLeft
+        const scrollWidth = container.scrollWidth
+        const clientWidth = container.clientWidth
+        
+        // Actualizar estado en el siguiente frame
+        requestAnimationFrame(() => {
+          setCanScrollLeft(scrollLeft > 0)
+          setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
+        })
+      })
     }
 
     checkScroll()
@@ -219,13 +231,37 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                     onClick={handleAddToCartClick}
                     disabled={isAddingToCart || stock === 0}
                     className={cn(
-                      'w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-md',
+                      'w-14 h-14 rounded-full flex items-center justify-center transition-transform shadow-md relative',
                       stock === 0 || isAddingToCart
                         ? 'bg-gray-200 cursor-not-allowed'
-                        : 'bg-[#facc15] hover:bg-[#f5c000] hover:scale-105 active:scale-95',
+                        : 'bg-[#facc15] hover:scale-105 active:scale-95',
                       isAddingToCart && 'animate-pulse'
                     )}
+                    style={{
+                      // ⚡ FASE 8: Usar opacity en pseudo-elemento en lugar de background-color animado
+                      ...(stock !== 0 && !isAddingToCart ? {
+                        opacity: 1,
+                      } : {})
+                    }}
+                    onMouseEnter={(e) => {
+                      if (stock !== 0 && !isAddingToCart) {
+                        const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement
+                        if (overlay) overlay.style.opacity = '1'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (stock !== 0 && !isAddingToCart) {
+                        const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement
+                        if (overlay) overlay.style.opacity = '0'
+                      }
+                    }}
                   >
+                    {/* ⚡ FASE 8: Overlay para hover effect usando opacity (compositable) */}
+                    {stock !== 0 && !isAddingToCart && (
+                      <span 
+                        className="absolute inset-0 rounded-full bg-[#f5c000] opacity-0 hover-overlay transition-opacity duration-300 pointer-events-none"
+                      />
+                    )}
                     {isAddingToCart ? (
                       <div className='w-5 h-5 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin' />
                     ) : (

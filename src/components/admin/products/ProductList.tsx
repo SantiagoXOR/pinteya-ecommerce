@@ -695,26 +695,22 @@ export function ProductList({
 
   // Event handlers
   const handleDeleteProduct = async (productId: string) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-entry',message:'handleDeleteProduct iniciado',data:{productId,onBulkDeleteDefined:!!onBulkDelete},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     
     // Usar onBulkDelete con un solo ID para eliminar el producto individual
     if (onBulkDelete) {
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-before-call',message:'Antes de llamar onBulkDelete con un solo ID',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         const result = await onBulkDelete([productId])
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-after-call',message:'Después de llamar onBulkDelete',data:{result,productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H3'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-before-cache-clear',message:'Antes de limpiar cache y forzar refetch',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2,H3'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         // ✅ SOLUCIÓN DEFINITIVA: Limpiar completamente el cache y forzar recarga
         // En lugar de intentar actualizar el cache manualmente, simplemente lo limpiamos
@@ -724,9 +720,8 @@ export function ProductList({
         queryClient.removeQueries({ queryKey: ['admin-products'], exact: false })
         queryClient.removeQueries({ queryKey: ['admin-products-stats'], exact: false })
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-cache-removed',message:'Cache removido completamente',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         // Paso 2: Invalidar queries para forzar refetch
         queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
@@ -773,42 +768,36 @@ export function ProductList({
           console.warn('Error en refetchQueries:', refetchError)
         }
       } catch (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-error',message:'Error en eliminación de producto',data:{error:error instanceof Error ? error.message : String(error),productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2,H3'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         console.error('Error en eliminación de producto:', error)
         throw error // Re-lanzar para que el componente padre maneje el error
       }
     } else {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleDeleteProduct-no-handler',message:'onBulkDelete no está definido',data:{productId},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       console.warn('onBulkDelete no está definido, no se puede eliminar el producto')
     }
   }
 
   const handleBulkDelete = async (productIds: string[]) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-entry',message:'handleBulkDelete iniciado',data:{productIds,productIdsType:typeof productIds[0],productIdsLength:productIds.length,onBulkDeleteDefined:!!onBulkDelete},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     
     if (onBulkDelete) {
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-before-call',message:'Antes de llamar onBulkDelete',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         const result = await onBulkDelete(productIds)
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-after-call',message:'Después de llamar onBulkDelete',data:{result,productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H3'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         setSelectedProducts([]) // Limpiar selección después de la acción
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-before-cache-clear',message:'Antes de limpiar cache y forzar refetch',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2,H3'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         // ✅ SOLUCIÓN DEFINITIVA: Limpiar completamente el cache y forzar recarga
         // En lugar de intentar actualizar el cache manualmente, simplemente lo limpiamos
@@ -818,9 +807,8 @@ export function ProductList({
         queryClient.removeQueries({ queryKey: ['admin-products'], exact: false })
         queryClient.removeQueries({ queryKey: ['admin-products-stats'], exact: false })
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-cache-removed',message:'Cache removido completamente',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         // Paso 2: Invalidar queries para forzar refetch
         queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
@@ -867,16 +855,14 @@ export function ProductList({
           console.warn('Error en refetchQueries:', refetchError)
         }
       } catch (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-error',message:'Error en eliminación masiva',data:{error:error instanceof Error ? error.message : String(error),productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1,H2,H3'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         console.error('Error en eliminación masiva:', error)
         throw error // Re-lanzar para que el componente padre maneje el error
       }
     } else {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleBulkDelete-no-handler',message:'onBulkDelete no está definido',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       console.warn('onBulkDelete no está definido')
     }
   }
@@ -1177,22 +1163,11 @@ export function ProductList({
     event: React.MouseEvent<HTMLTableRowElement>,
     product: Product
   ) => {
-    // #region agent log
-    try {
-      const target = event.target as HTMLElement
-      const targetInfo = {
-        tagName: target?.tagName || 'unknown',
-        className: typeof target?.className === 'string' ? target.className.substring(0, 50) : String(target?.className || '').substring(0, 50)
-      }
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleRowClick',message:'Row clicked',data:{productId:product.id,...targetInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'D'})}).catch(()=>{});
-    } catch (e) {
-      // Ignorar errores de serialización
-    }
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     if (event.defaultPrevented) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleRowClick-prevented',message:'Row click prevented',data:{productId:product.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       return
     }
 
@@ -1200,9 +1175,8 @@ export function ProductList({
     const isInteractive = target.closest(
       'button, a, input, select, textarea, label, [role="button"], [data-interactive="true"], .product-actions-menu'
     )
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductList.tsx:handleRowClick-check',message:'Row click check',data:{productId:product.id,isInteractive:!!isInteractive,targetTag:target?.tagName||'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     if (isInteractive) {
       return
     }

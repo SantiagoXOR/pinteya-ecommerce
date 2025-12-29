@@ -79,13 +79,11 @@ export function ProductsPageClient() {
           <Button
                 variant='secondary'
             onClick={async () => {
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductsPageClient.tsx:refresh-button-click',message:'Refresh button clicked',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H3'})}).catch(()=>{});
-              // #endregion
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
               await refreshProducts()
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductsPageClient.tsx:refresh-button-completed',message:'Refresh completed',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H3'})}).catch(()=>{});
-              // #endregion
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
             }}
             disabled={isLoading}
                 className='flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-white/20 hover:bg-white/30 text-white border-white/30'

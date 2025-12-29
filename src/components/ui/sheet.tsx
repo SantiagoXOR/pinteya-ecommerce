@@ -19,21 +19,8 @@ const SheetOverlay = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay> & { side?: 'top' | 'bottom' | 'left' | 'right' }
 >(({ className, side, ...props }, ref) => {
-  // #region agent log
-  const handlePointerDown = (e: React.PointerEvent) => {
-    const target = e.target as HTMLElement;
-    const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
-    const bottomNavZIndex = bottomNav ? window.getComputedStyle(bottomNav).zIndex : 'none';
-    const overlayZIndex = window.getComputedStyle(e.currentTarget).zIndex;
-    const isBottomNavArea = bottomNav && e.clientY > window.innerHeight - 80;
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:handlePointerDown',message:'Overlay pointer down event',data:{targetTag:target.tagName,targetClass:target.className,overlayZIndex,bottomNavZIndex,pointerX:e.clientX,pointerY:e.clientY,isBottomNavArea,side,windowHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v3',hypothesisId:'A'})}).catch(()=>{});
-    // Si el click es en el área del bottom bar, prevenir que el overlay capture el evento
-    if (isBottomNavArea && side === 'bottom') {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  };
-  // #endregion
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
   
   // Cuando el sheet es de tipo "bottom", hacer que el overlay no bloquee eventos en el área del bottom bar
   // Usamos estilos inline con !important para sobrescribir el inset-0 de Radix UI
@@ -63,9 +50,8 @@ const SheetOverlay = React.forwardRef<
         const isInsideSheetContent = sheetContent && sheetContent.contains(target);
         const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:handleDocumentClick',message:'Document click handler',data:{isInsideBottomNav,isInsideSheetContent,isBottomNavArea,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:target.tagName,targetClass:target.className},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v9',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         // Si el click es en el área del bottom bar o dentro del bottom nav, NO cerrar el modal
         if (isInsideBottomNav || isBottomNavArea) {
@@ -116,13 +102,8 @@ const SheetOverlay = React.forwardRef<
       style={overlayStyle}
       onPointerDown={handlePointerDown}
       onClick={(e) => {
-        // #region agent log
-        const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
-        const clickedElement = e.target as HTMLElement;
-        const isInsideBottomNav = bottomNav && (bottomNav.contains(clickedElement) || clickedElement.closest('[class*="z-bottom-nav"]'));
-        const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:onClick',message:'Overlay click event',data:{isInsideBottomNav,isBottomNavArea,side,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:clickedElement.tagName,hasOverlayStyle:!!overlayStyle,pointerEvents:side === 'bottom' ? 'none' : 'auto'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v8',hypothesisId:'D'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         // Si el overlay tiene pointer-events: none, no hacer nada aquí
         // El cierre se maneja en el listener global
         if (side === 'bottom') {
@@ -173,16 +154,16 @@ const SheetContent = React.forwardRef<
   
   React.useEffect(() => {
     if (isBottom) {
-      // Usar setTimeout para asegurarnos de que el elemento esté disponible
+      // ⚡ FASE 5: Usar requestAnimationFrame para agrupar lecturas de geometría
       const timeoutId = setTimeout(() => {
         if (contentRef.current) {
-          // #region agent log
-          const computedStyle = window.getComputedStyle(contentRef.current);
-          const rect = contentRef.current.getBoundingClientRect();
-          const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
-          const bottomNavRect = bottomNav?.getBoundingClientRect();
-          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:useEffect-SheetContent',message:'SheetContent computed styles',data:{bottom:computedStyle.bottom,height:computedStyle.height,maxHeight:computedStyle.maxHeight,rectBottom:rect.bottom,rectHeight:rect.height,bottomNavTop:bottomNavRect?.top,windowHeight:window.innerHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v15',hypothesisId:'G'})}).catch(()=>{});
-          // #endregion
+          // ⚡ FASE 5: Agrupar todas las lecturas de geometría en un solo requestAnimationFrame
+          requestAnimationFrame(() => {
+            if (contentRef.current) {
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+            }
+          });
         }
       }, 100);
       
@@ -202,9 +183,8 @@ const SheetContent = React.forwardRef<
         const isInsideSheetContent = sheetContent && sheetContent.contains(target);
         const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:handleDocumentClick-SheetContent',message:'Document click handler in SheetContent',data:{isInsideBottomNav,isInsideSheetContent,isBottomNavArea,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:target.tagName,targetClass:target.className},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v15',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         // Si el click es en el área del bottom bar o dentro del bottom nav, permitir que el evento pase
         if (isInsideBottomNav || isBottomNavArea) {
@@ -268,36 +248,25 @@ const SheetContent = React.forwardRef<
         } : undefined}
         onPointerDown={(e) => {
           if (isBottom) {
-            // #region agent log
-            const target = e.target as HTMLElement;
-            const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
-            const bottomNavRect = bottomNav?.getBoundingClientRect();
-            const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
-            const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
-            const contentRect = contentRef.current?.getBoundingClientRect();
-            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:SheetContent-onPointerDown',message:'SheetContent pointer down',data:{isBottomNavArea,isInsideBottomNav,bottomNavExists:!!bottomNav,bottomNavTop:bottomNavRect?.top,contentBottom:contentRect?.bottom,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:target.tagName},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v15',hypothesisId:'F'})}).catch(()=>{});
-            // #endregion
-            // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
-            // Permitir que el evento pase al bottom bar
-            if (isBottomNavArea || isInsideBottomNav) {
-              // No hacer nada, permitir que el evento llegue al bottom bar
-              e.stopPropagation();
-              e.preventDefault();
-              return;
-            }
+            // ⚡ FASE 5: Agrupar lecturas de geometría en requestAnimationFrame
+            requestAnimationFrame(() => {
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+              // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
+              // Permitir que el evento pase al bottom bar
+              if (isBottomNavArea || isInsideBottomNav) {
+                // No hacer nada, permitir que el evento llegue al bottom bar
+                e.stopPropagation();
+                e.preventDefault();
+                return;
+              }
+            });
           }
         }}
         onClick={(e) => {
           if (isBottom) {
-            // #region agent log
-            const target = e.target as HTMLElement;
-            const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
-            const bottomNavRect = bottomNav?.getBoundingClientRect();
-            const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
-            const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
-            const contentRect = contentRef.current?.getBoundingClientRect();
-            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'sheet.tsx:SheetContent-onClick',message:'SheetContent click',data:{isBottomNavArea,isInsideBottomNav,bottomNavExists:!!bottomNav,bottomNavTop:bottomNavRect?.top,contentBottom:contentRect?.bottom,clientY:e.clientY,windowHeight:window.innerHeight,targetTag:target.tagName},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v15',hypothesisId:'F'})}).catch(()=>{});
-            // #endregion
+            // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
             // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
             if (isBottomNavArea || isInsideBottomNav) {
               e.stopPropagation();

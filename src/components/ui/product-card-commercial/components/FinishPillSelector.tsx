@@ -28,9 +28,21 @@ export const FinishPillSelector = React.memo(function FinishPillSelector({
     const container = scrollContainerRef.current
     if (!container) return
 
+    // ⚡ FASE 5: Optimizado - agrupar lecturas de geometría en requestAnimationFrame
     const checkScroll = () => {
-      setCanScrollLeft(container.scrollLeft > 0)
-      setCanScrollRight(container.scrollLeft < container.scrollWidth - container.clientWidth - 1)
+      requestAnimationFrame(() => {
+        if (!container) return
+        // Agrupar todas las lecturas de geometría
+        const scrollLeft = container.scrollLeft
+        const scrollWidth = container.scrollWidth
+        const clientWidth = container.clientWidth
+        
+        // Actualizar estado en el siguiente frame
+        requestAnimationFrame(() => {
+          setCanScrollLeft(scrollLeft > 0)
+          setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
+        })
+      })
     }
 
     checkScroll()

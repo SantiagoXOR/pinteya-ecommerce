@@ -299,15 +299,26 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       return
     }
 
+    // ⚡ FASE 5: Optimizado - agrupar lectura de geometría
     const handleWheel = (e: WheelEvent) => {
-      // Solo aplicar scroll horizontal si hay contenido que se desborda
-      if (carousel.scrollWidth > carousel.clientWidth) {
-        e.preventDefault()
-        // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para mejor performance
-        requestAnimationFrame(() => {
-          carousel.scrollLeft += e.deltaY
-        })
-      }
+      // ⚡ FASE 5: Agrupar lectura de geometría en requestAnimationFrame
+      requestAnimationFrame(() => {
+        if (!carousel) return
+        // Agrupar lectura de geometría
+        const scrollWidth = carousel.scrollWidth
+        const clientWidth = carousel.clientWidth
+        
+        // Solo aplicar scroll horizontal si hay contenido que se desborda
+        if (scrollWidth > clientWidth) {
+          e.preventDefault()
+          // Escribir scroll en el siguiente frame
+          requestAnimationFrame(() => {
+            if (carousel) {
+              carousel.scrollLeft += e.deltaY
+            }
+          })
+        }
+      })
     }
 
     carousel.addEventListener('wheel', handleWheel, { passive: false })
@@ -334,22 +345,28 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     }
     
     scheduleAnimation(() => {
-      // Solo animar si hay contenido que se desborda o si hay suficientes categorías
-      const hasOverflow = carousel.scrollWidth > carousel.clientWidth
-      const hasEnoughCategories = categories.length > 4
+      // ⚡ FASE 5: Agrupar lecturas de geometría en requestAnimationFrame
+      requestAnimationFrame(() => {
+        if (!carousel) return
+        // Agrupar todas las lecturas de geometría
+        const scrollWidth = carousel.scrollWidth
+        const clientWidth = carousel.clientWidth
+        const hasOverflow = scrollWidth > clientWidth
+        const hasEnoughCategories = categories.length > 4
       
-      if (hasOverflow || hasEnoughCategories) {
-        // Pequeño scroll a la derecha
-        carousel.scrollTo({ left: 100, behavior: 'smooth' })
-        
-        // Volver a la posición inicial después de 800ms
-        setTimeout(() => {
-          carousel.scrollTo({ left: 0, behavior: 'smooth' })
+        if (hasOverflow || hasEnoughCategories) {
+          // Pequeño scroll a la derecha
+          carousel.scrollTo({ left: 100, behavior: 'smooth' })
+          
+          // Volver a la posición inicial después de 800ms
+          setTimeout(() => {
+            carousel.scrollTo({ left: 0, behavior: 'smooth' })
+            setHasPlayedScrollHint(true)
+          }, 800)
+        } else {
           setHasPlayedScrollHint(true)
-        }, 800)
-      } else {
-        setHasPlayedScrollHint(true)
-      }
+        }
+      })
     })
   }, [categories.length, hasPlayedScrollHint, variant]) // ⚡ FIX: Solo depende de length, no del array completo
 

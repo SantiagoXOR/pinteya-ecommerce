@@ -431,6 +431,8 @@ const HomeV3 = () => {
       {/* NUEVO ORDEN OPTIMIZADO CON GLASSMORPHISM */}
 
       {/* 0. Hero Optimized - Imagen estática inicial, carousel después del FCP */}
+      {/* ⚡ FASE 2: Imagen hero ahora se renderiza en Server Component (page.tsx) para descubrimiento temprano */}
+      {/* HeroOptimized solo maneja el carousel que se carga después del LCP */}
       <div className='pt-1 sm:pt-2'>
         <HeroOptimized />
       </div>

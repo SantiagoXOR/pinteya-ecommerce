@@ -917,9 +917,8 @@ export const GET = async (request: NextRequest) => {
     // Apply sorting - IMPORTANTE: Asegurar que el ordenamiento se aplique correctamente
     query = query.order(sortBy, { ascending: sortOrder === 'asc' })
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'route.ts:GET-before-execute-query',message:'Antes de ejecutar query',data:{page,limit,sortBy,sortOrder,from,to},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     const { data: products, error, count } = await query
     
@@ -934,9 +933,8 @@ export const GET = async (request: NextRequest) => {
       todosLosIDs: products?.map(p => p.id) || [],
     })
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'route.ts:GET-after-execute-query',message:'Después de ejecutar query',data:{productsLength:products?.length,count,error:error?.message,primeros3IDs:products?.slice(0,3).map(p=>p.id)||[],tieneProducto294,tieneProducto257:products?.some(p=>p.id===257)||false,tieneProducto258:products?.some(p=>p.id===258)||false},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     
     logger.dev('[API] Resultado:', {
       productsLength: products?.length,
@@ -948,9 +946,8 @@ export const GET = async (request: NextRequest) => {
       tieneProducto258: products?.some(p => p.id === 258) || false,
     })
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'route.ts:GET-after-query',message:'Query ejecutada',data:{productsLength:products?.length,count,page,limit,from,to,sortBy,sortOrder,primeros5IDs:products?.slice(0,5).map(p=>p.id)||[],tieneProducto256:products?.some(p=>p.id===256)||false,tieneProducto257:products?.some(p=>p.id===257)||false,tieneProducto258:products?.some(p=>p.id===258)||false,error:error?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     if (error) {
       logger.error('[API] Database error:', error)

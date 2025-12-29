@@ -172,27 +172,58 @@ const slides: Slide[] = [
           </div>
 
           {/* Botones de navegación - Solo en desktop, mitad y mitad al borde del banner */}
+          {/* ⚡ FASE 8: Optimizado - reemplazar background-color animado por opacity */}
           <button
             onClick={goToPrevious}
             className='hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 
-                     w-10 h-10 rounded-full bg-white/90 hover:bg-white border-2 border-gray-200
-                     text-blaze-orange-600 shadow-lg hover:shadow-xl
-                     transition-all duration-500 hover:scale-110 active:scale-95
-                     items-center justify-center group'
+                     w-10 h-10 rounded-full bg-white/90 border-2 border-gray-200
+                     text-blaze-orange-600 shadow-lg
+                     transition-transform duration-500 hover:scale-110 active:scale-95
+                     items-center justify-center group relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity en lugar de background-color animado
+              opacity: 0.9,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+              if (shadow) shadow.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.9'
+              const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+              if (shadow) shadow.style.opacity = '0'
+            }}
             aria-label='Slide anterior'
           >
-            <ChevronLeft className='w-5 h-5 group-hover:translate-x-[-2px] transition-transform duration-500' />
+            <span className="absolute inset-0 rounded-full shadow-xl opacity-0 hover-shadow transition-opacity duration-500 pointer-events-none" />
+            <ChevronLeft className='w-5 h-5 group-hover:translate-x-[-2px] transition-transform duration-500 relative z-10' />
           </button>
           <button
             onClick={goToNext}
             className='hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 
-                     w-10 h-10 rounded-full bg-white/90 hover:bg-white border-2 border-gray-200
-                     text-blaze-orange-600 shadow-lg hover:shadow-xl
-                     transition-all duration-500 hover:scale-110 active:scale-95
-                     items-center justify-center group'
+                     w-10 h-10 rounded-full bg-white/90 border-2 border-gray-200
+                     text-blaze-orange-600 shadow-lg
+                     transition-transform duration-500 hover:scale-110 active:scale-95
+                     items-center justify-center group relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity en lugar de background-color animado
+              opacity: 0.9,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+              if (shadow) shadow.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.9'
+              const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+              if (shadow) shadow.style.opacity = '0'
+            }}
             aria-label='Siguiente slide'
           >
-            <ChevronRight className='w-5 h-5 group-hover:translate-x-[2px] transition-transform duration-500' />
+            <span className="absolute inset-0 rounded-full shadow-xl opacity-0 hover-shadow transition-opacity duration-500 pointer-events-none" />
+            <ChevronRight className='w-5 h-5 group-hover:translate-x-[2px] transition-transform duration-500 relative z-10' />
           </button>
 
           {/* Indicadores (dots) - Estilo Mercado Libre */}
@@ -209,16 +240,12 @@ const slides: Slide[] = [
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`relative rounded-full bg-white/60 transition-all duration-500 ${
-                    isActive 
-                      ? 'w-8 sm:w-10 h-2 sm:h-2.5' 
-                      : 'w-2 sm:w-2.5 h-2 sm:h-2.5'
-                  }`}
+                  className="relative rounded-full bg-white/60 h-2 sm:h-2.5 w-2 sm:w-2.5 transition-opacity duration-500"
                   style={{
                     opacity: isActive ? 1 : 0.6,
-                    // ⚡ OPTIMIZACIÓN: Solo usar transform y opacity (propiedades compositables)
-                    willChange: isActive ? 'transform, opacity' : 'opacity',
-                    transform: 'translateZ(0)', // GPU acceleration
+                    // ⚡ FASE 8: Reemplazar width animado por transform: scaleX() (propiedad compositable)
+                    transform: isActive ? 'scaleX(4) translateZ(0)' : 'scaleX(1) translateZ(0)',
+                    willChange: 'transform, opacity',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
                   }}

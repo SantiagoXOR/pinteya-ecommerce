@@ -138,7 +138,34 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     </div>
 
                     {/* CTA Button - Flecha mini en círculo */}
-                    <div className={`flex items-center justify-center ${banner.id === 1 ? 'bg-yellow-400 hover:bg-yellow-300' : 'bg-white hover:bg-gray-100'} text-gray-900 w-7 h-7 md:w-9 md:h-9 rounded-full transition-all shadow-sm hover:shadow-md hover:scale-110`}>
+                    {/* ⚡ FASE 8: Optimizado - reemplazar background-color animado por opacity */}
+                    <div 
+                      className={`flex items-center justify-center text-gray-900 w-7 h-7 md:w-9 md:h-9 rounded-full transition-transform shadow-sm hover:scale-110 relative ${
+                        banner.id === 1 ? 'bg-yellow-400' : 'bg-white'
+                      }`}
+                      style={{
+                        opacity: 1,
+                      }}
+                      onMouseEnter={(e) => {
+                        const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement
+                        if (overlay) overlay.style.opacity = '1'
+                        const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                        if (shadow) shadow.style.opacity = '1'
+                      }}
+                      onMouseLeave={(e) => {
+                        const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement
+                        if (overlay) overlay.style.opacity = '0'
+                        const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                        if (shadow) shadow.style.opacity = '0'
+                      }}
+                    >
+                      {/* ⚡ FASE 8: Overlay para hover effect usando opacity */}
+                      <span 
+                        className={`absolute inset-0 rounded-full opacity-0 hover-overlay transition-opacity duration-300 pointer-events-none ${
+                          banner.id === 1 ? 'bg-yellow-300' : 'bg-gray-100'
+                        }`}
+                      />
+                      <span className="absolute inset-0 rounded-full shadow-md opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
                       <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} style={{ color: banner.id === 1 ? 'rgba(235, 99, 19, 1)' : 'rgba(17, 24, 39, 1)' }} />
                     </div>
                   </div>
@@ -194,7 +221,19 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     </div>
 
                     {/* CTA más compacto */}
-                    <div className='flex items-center gap-2 bg-white/95 text-gray-900 px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold hover:bg-white transition-colors text-xs md:text-sm'>
+                    {/* ⚡ FASE 8: Optimizado - reemplazar background-color animado por opacity */}
+                    <div 
+                      className='flex items-center gap-2 bg-white/95 text-gray-900 px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-xs md:text-sm relative'
+                      style={{
+                        opacity: 0.95,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = '1'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = '0.95'
+                      }}
+                    >
                       <span className='hidden sm:inline'>{banner.ctaText}</span>
                       <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
                     </div>

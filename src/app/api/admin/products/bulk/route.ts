@@ -56,17 +56,15 @@ const BulkOperationSchema = z.object({
 // =====================================================
 
 export async function POST(request: NextRequest) {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-entry',message:'POST handler iniciado',data:{url:request.url},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-  // #endregion
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
   
   try {
     // Verificar autenticación
     const session = await auth()
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-after-auth',message:'Después de verificar autenticación',data:{hasSession:!!session,hasUser:!!session?.user},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     
     if (!session?.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -75,9 +73,8 @@ export async function POST(request: NextRequest) {
     // Validar datos de entrada
     const body = await request.json()
     
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-before-validation',message:'Antes de validar body',data:{body,bodyKeys:Object.keys(body || {})},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     
     const validationResult = BulkOperationSchema.safeParse(body)
 
@@ -93,22 +90,19 @@ export async function POST(request: NextRequest) {
 
     const { operation, product_ids, data } = validationResult.data
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-after-validation',message:'Después de validación',data:{operation,product_ids,product_idsType:typeof product_ids[0],product_idsLength:product_ids.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     // ✅ CORREGIDO: Asegurar que todos los IDs sean números enteros
     // Usar 'let' en lugar de 'const' para permitir reasignación si algunos productos no existen
     let numericProductIds = product_ids.map(id => typeof id === 'string' ? parseInt(id, 10) : id).filter(id => !isNaN(id) && id > 0)
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-after-conversion',message:'Después de conversión a números',data:{numericProductIds,numericProductIdsLength:numericProductIds.length,originalLength:product_ids.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     if (numericProductIds.length === 0) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-invalid-ids',message:'IDs inválidos después de conversión',data:{product_ids,numericProductIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       return NextResponse.json(
         { error: 'IDs de productos inválidos' },
         { status: 400 }
@@ -116,18 +110,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar que los productos existen y pertenecen al usuario autorizado
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-before-check-products',message:'Antes de verificar productos existentes',data:{numericProductIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     
     const { data: existingProducts, error: checkError } = await supabase
       .from('products')
       .select('id, name')
       .in('id', numericProductIds)
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-after-check-products',message:'Después de verificar productos existentes',data:{existingProducts,existingProductsLength:existingProducts?.length || 0,expectedLength:numericProductIds.length,checkError:checkError?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     if (checkError) {
       console.error('Error verificando productos:', checkError)
@@ -137,9 +129,8 @@ export async function POST(request: NextRequest) {
     // ✅ CORREGIDO: Si algunos productos no existen, continuar con los que sí existen
     // Esto puede pasar si ya fueron eliminados pero la UI no se actualizó
     if (existingProducts.length !== numericProductIds.length) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-products-partial',message:'Algunos productos no encontrados, continuando con los existentes',data:{existingProductsLength:existingProducts.length,expectedLength:numericProductIds.length,existingProductsIds:existingProducts.map(p => p.id),requestedIds:numericProductIds},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       
       // Si no hay productos existentes, retornar éxito vacío (ya fueron eliminados)
       if (existingProducts.length === 0) {
@@ -159,9 +150,8 @@ export async function POST(request: NextRequest) {
       const existingProductIds = existingProducts.map(p => p.id)
       numericProductIds = existingProductIds
       
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-products-filtered',message:'Filtrando IDs para solo incluir productos existentes',data:{originalIds:numericProductIds,filteredIds:existingProductIds},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     }
 
     let result
@@ -371,9 +361,8 @@ export async function POST(request: NextRequest) {
 
         affectedCount = deleteData?.length || 0
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-delete-completed',message:'Eliminación completada',data:{affectedCount,expectedCount:numericProductIds.length,hard_delete:!orderItems || orderItems.length === 0,soft_delete:orderItems && orderItems.length > 0,deleteData,numericProductIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H4'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         console.log('✅ Eliminación completada:', { 
           affectedCount, 
@@ -402,9 +391,8 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     })
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'bulk/route.ts:POST-before-response',message:'Antes de enviar respuesta',data:{operation,affectedCount,result},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H4'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     return NextResponse.json({
       success: true,

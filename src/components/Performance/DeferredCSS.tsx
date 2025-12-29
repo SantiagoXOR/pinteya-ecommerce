@@ -76,6 +76,26 @@ export function DeferredCSS() {
         path: '/styles/collapsible.css',
         priority: 'low',
       },
+      
+      // ⚡ FASE 1: CSS no crítico movido de layout.tsx a carga diferida
+      // Estos CSS solo afectan animaciones y efectos costosos, no son críticos para render inicial
+      {
+        path: '/styles/mobile-performance.css',
+        priority: 'low',
+        condition: () => window.innerWidth < 768, // Solo en mobile
+      },
+      {
+        path: '/styles/disable-all-effects.css',
+        priority: 'low', // Carga diferida - solo deshabilita efectos costosos
+      },
+      
+      // ⚡ FASE 1: CSS glassmorphism movido de page.tsx a carga diferida (solo en desktop)
+      {
+        path: '/styles/home-v3-glassmorphism.css',
+        priority: 'low',
+        condition: () => window.innerWidth >= 768, // Solo en desktop
+        routes: ['/'], // Solo en homepage
+      },
     ]
 
     // Función para cargar CSS con técnica media="print" + preload

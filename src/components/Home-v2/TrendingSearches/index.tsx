@@ -146,15 +146,40 @@ const TrendingSearchesBase = () => {
               key={index}
               href={`/search?search=${encodeURIComponent(search.term)}`}
               onClick={() => handleSearchClick(search.term)}
-              className='group relative bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-300 rounded-full px-3 py-1.5 transition-all hover:shadow-md hover:scale-[1.01] flex items-center gap-1 min-w-fit snap-start'
+              className='group relative bg-white border border-gray-200 rounded-full px-3 py-1.5 transition-transform hover:scale-[1.01] flex items-center gap-1 min-w-fit snap-start'
+              style={{
+                // ⚡ FASE 8: Usar opacity y transform en lugar de background-color y border-color animados
+                willChange: 'transform',
+              }}
+              onMouseEnter={(e) => {
+                const bg = e.currentTarget.querySelector('.hover-bg') as HTMLElement
+                const border = e.currentTarget.querySelector('.hover-border') as HTMLElement
+                const text = e.currentTarget.querySelector('.hover-text') as HTMLElement
+                if (bg) bg.style.opacity = '1'
+                if (border) border.style.opacity = '1'
+                if (text) text.style.opacity = '1'
+              }}
+              onMouseLeave={(e) => {
+                const bg = e.currentTarget.querySelector('.hover-bg') as HTMLElement
+                const border = e.currentTarget.querySelector('.hover-border') as HTMLElement
+                const text = e.currentTarget.querySelector('.hover-text') as HTMLElement
+                if (bg) bg.style.opacity = '0'
+                if (border) border.style.opacity = '0'
+                if (text) text.style.opacity = '0.7'
+              }}
             >
+              {/* ⚡ FASE 8: Overlays para hover effects usando opacity (compositable) */}
+              <span className="absolute inset-0 rounded-full bg-orange-50 opacity-0 hover-bg transition-opacity duration-300 pointer-events-none" />
+              <span className="absolute inset-0 rounded-full border border-orange-300 opacity-0 hover-border transition-opacity duration-300 pointer-events-none" />
+              <span className="absolute inset-0 rounded-full shadow-md opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
+              
               {/* Icon */}
-              <span className='text-base group-hover:scale-110 transition-transform flex-shrink-0'>
+              <span className='text-base group-hover:scale-110 transition-transform flex-shrink-0 relative z-10'>
                 {search.icon}
               </span>
 
               {/* Term */}
-              <span className='text-xs sm:text-sm font-medium text-gray-900 group-hover:text-orange-600 transition-colors break-words whitespace-nowrap'>
+              <span className='text-xs sm:text-sm font-medium text-gray-900 break-words whitespace-nowrap relative z-10 hover-text' style={{ opacity: 0.7 }}>
                 {search.term}
               </span>
 
@@ -172,7 +197,17 @@ const TrendingSearchesBase = () => {
         <div className='mt-6 text-center'>
           <Link
             href='/products'
-            className='inline-flex items-center gap-2 text-sm text-white/80 hover:text-orange-600 dark:hover:text-bright-sun-400 font-medium transition-colors group'
+            className='inline-flex items-center gap-2 text-sm text-white/80 font-medium group relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity en lugar de color animado
+              color: 'rgba(234, 90, 23, 0.8)', // orange-600 con opacity
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.8'
+            }}
           >
             <Search className='w-4 h-4' />
             Ver todos los productos

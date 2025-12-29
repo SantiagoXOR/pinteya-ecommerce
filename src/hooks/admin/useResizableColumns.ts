@@ -26,23 +26,20 @@ export function useResizableColumns({
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, columnKey: string) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useResizableColumns.ts:26',message:'handleMouseDown called',data:{columnKey,clientX:e.clientX,defaultPrevented:e.defaultPrevented,isPropagationStopped:false},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       e.preventDefault()
       e.stopPropagation()
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useResizableColumns.ts:30',message:'after stopPropagation',data:{columnKey,defaultPrevented:e.defaultPrevented},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       
       const currentWidth = columnWidths[columnKey] || defaultWidths[columnKey] || 150
       setIsResizing(columnKey)
       setStartX(e.clientX)
       setStartWidth(currentWidth)
       setJustFinishedResizing(null) // Reset flag
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useResizableColumns.ts:36',message:'resize state set',data:{columnKey,currentWidth,isResizing:columnKey},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     },
     [columnWidths, defaultWidths]
   )
@@ -63,9 +60,8 @@ export function useResizableColumns({
   )
 
   const handleMouseUp = useCallback(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useResizableColumns.ts:56',message:'handleMouseUp called',data:{wasResizing:isResizing},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     if (isResizing) {
       // Marcar que acabamos de redimensionar esta columna para prevenir clicks
       setJustFinishedResizing(isResizing)

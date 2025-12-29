@@ -1,6 +1,6 @@
 import HomeV3 from '@/components/Home-v3'
 import { Metadata } from 'next'
-import '@/styles/home-v3-glassmorphism.css'
+// ⚡ FASE 1: CSS glassmorphism movido a carga diferida via DeferredCSS (solo en desktop)
 import { createPublicClient } from '@/lib/integrations/supabase/server'
 import { Category } from '@/types/database'
 import { QueryClient, dehydrate, Hydrate } from '@tanstack/react-query'
@@ -74,6 +74,8 @@ export default async function HomePage() {
     defaultOptions: {
       queries: {
         staleTime: 10 * 60 * 1000, // 10 minutos
+        // gcTime se usa en React Query v5, cacheTime en v4
+        // @ts-ignore - Compatibilidad con diferentes versiones
         gcTime: 30 * 60 * 1000, // 30 minutos
       },
     },
@@ -90,6 +92,46 @@ export default async function HomePage() {
 
   return (
     <Hydrate state={dehydrate(queryClient)}>
+      {/* ⚡ FASE 2: Imagen hero renderizada en Server Component para descubrimiento temprano */}
+      {/* Esto elimina el retraso de 1,300ms en carga de recursos - la imagen está en HTML inicial */}
+      {/* La imagen se renderiza ANTES de HomeV3 para que esté en el HTML inicial del servidor */}
+      {/* HeroOptimized ocultará esta imagen cuando el carousel esté listo */}
+      {/* ⚡ FASE 3: Contenedor con dimensiones fijas para evitar CLS */}
+      <div className="relative w-full hero-lcp-container">
+        <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
+          <div 
+            className="relative w-full overflow-hidden" 
+            style={{ 
+              aspectRatio: '2.77', 
+              minHeight: '277px',
+              // ⚡ FASE 3: Altura fija calculada para evitar layout shift
+              height: 'auto',
+            }}
+          >
+            <img
+              src="/images/hero/hero2/hero1.webp"
+              alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
+              width={1200}
+              height={433}
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
+              className="hero-static-image"
+              style={{ 
+                width: '100%', 
+                height: 'auto', 
+                aspectRatio: '1200/433',
+                objectFit: 'contain',
+                display: 'block',
+                transition: 'opacity 0.5s ease',
+                // ⚡ FASE 3: Asegurar que la imagen no cause layout shift
+                position: 'relative',
+                zIndex: 1
+              }}
+            />
+          </div>
+        </div>
+      </div>
       <HomeV3 />
     </Hydrate>
   )

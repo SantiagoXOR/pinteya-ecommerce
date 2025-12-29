@@ -129,4 +129,57 @@ test.describe('Cart Width Selector Tests', () => {
       console.log('✅ Test de actualización de información completado');
     }
   });
+
+  test('should display products correctly in mobile cart modal after adding with width selector', async ({ page }) => {
+    // Configurar viewport mobile
+    await page.setViewportSize({ width: 375, height: 667 });
+    
+    // Navegar a la página principal
+    await page.goto('http://localhost:3000');
+    await page.waitForLoadState('networkidle');
+    
+    // Buscar producto con selector de ancho
+    await page.waitForSelector('text=Cinta Papel Blanca', { timeout: 10000 });
+    await page.click('text=Cinta Papel Blanca');
+    
+    // Esperar a que el modal se abra
+    await page.waitForSelector('[role="dialog"]', { timeout: 10000 });
+    await page.waitForTimeout(2000);
+    
+    // Agregar producto al carrito
+    const addToCartButton = page.locator('button:has-text("Agregar al carrito")');
+    if (await addToCartButton.isVisible()) {
+      await addToCartButton.click();
+      await page.waitForTimeout(2000);
+      
+      // Abrir modal del carrito
+      await page.click('[data-testid="cart-icon"]');
+      await page.waitForSelector('[data-testid="cart-item"]', { timeout: 5000 });
+      
+      // Verificar que el producto se muestra correctamente
+      const cartItems = page.locator('[data-testid="cart-item"]');
+      await expect(cartItems.first()).toBeVisible();
+      
+      // Verificar altura del área de scroll
+      const scrollHeight = await page.evaluate(() => {
+        const scrollElement = document.querySelector('.flex-1.overflow-y-auto, [class*="overflow-y-auto"]');
+        if (!scrollElement) return 0;
+        return scrollElement.getBoundingClientRect().height;
+      });
+      
+      // La altura debe ser al menos 280px para mostrar productos
+      expect(scrollHeight).toBeGreaterThanOrEqual(280);
+      
+      // Verificar que el producto no se deforma
+      const firstItem = cartItems.first();
+      const itemBox = await firstItem.boundingBox();
+      expect(itemBox).not.toBeNull();
+      
+      if (itemBox) {
+        // Verificar dimensiones razonables
+        expect(itemBox.width).toBeGreaterThan(300);
+        expect(itemBox.height).toBeGreaterThan(50);
+      }
+    }
+  });
 });

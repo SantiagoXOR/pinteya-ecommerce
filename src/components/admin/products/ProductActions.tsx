@@ -137,35 +137,30 @@ export function ProductActions({
   const hasSelection = selectedCount > 0
 
   const handleBulkDelete = async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-entry',message:'handleBulkDelete iniciado',data:{selectedProductsCount:selectedProducts.length,selectedProductIds:selectedProducts.map(p => p.id),onBulkDeleteDefined:!!onBulkDelete},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     
     if (onBulkDelete && selectedProducts.length > 0) {
       try {
         const productIds = selectedProducts.map(p => p.id)
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-before-call',message:'Antes de llamar onBulkDelete',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         await onBulkDelete(productIds)
         
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-after-call',message:'Después de llamar onBulkDelete',data:{productIds},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         
         notifications.showBulkActionSuccess({ selectedCount: selectedProducts.length, action: 'delete' })
         setShowDeleteConfirm(false)
       } catch (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-error',message:'Error en handleBulkDelete',data:{error:error instanceof Error ? error.message : String(error),selectedProductIds:selectedProducts.map(p => p.id)},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         notifications.showBulkActionError('eliminar productos', error instanceof Error ? error.message : 'Error desconocido')
       }
     } else {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleBulkDelete-no-handler',message:'onBulkDelete no definido o sin productos seleccionados',data:{onBulkDeleteDefined:!!onBulkDelete,selectedProductsCount:selectedProducts.length},timestamp:Date.now(),sessionId:'debug-session',runId:'initial-run',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     }
   }
 
@@ -875,27 +870,13 @@ export function ProductRowActions({
       const isInteractiveElement = target?.closest('button, a, input, select, textarea, [role="button"]')
       const isInsideDropdown = target?.closest('.absolute.right-0.top-full') // El dropdown del menú
       
-      // #region agent log
-      try {
-        const targetInfo = target ? {
-          tagName: target.tagName || 'unknown',
-          className: typeof target.className === 'string' ? target.className.substring(0, 50) : String(target.className || '').substring(0, 50),
-          isOverlay,
-          isInsideMenu: !!isInsideMenu,
-          isInteractiveElement: !!isInteractiveElement,
-          isInsideDropdown: !!isInsideDropdown
-        } : { tagName: 'null', className: 'null' }
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:handleClickOutside',message:'Click outside detected',data:{productId:product.id,...targetInfo},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'E'})}).catch(()=>{});
-      } catch (e) {
-        // Ignorar errores de serialización
-      }
-      // #endregion
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
       
       // Solo cerrar si no está dentro del menú, no es el overlay, y no es un elemento interactivo del dropdown
       if (!isInsideMenu && !isOverlay && !isInsideDropdown) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:closing-menu',message:'Closing menu from click outside',data:{productId:product.id},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         setShowActions(false)
         setOverlayActive(false)
       }
@@ -907,11 +888,8 @@ export function ProductRowActions({
     }
   }, [showActions, product.id])
 
-  // #region agent log
-  useEffect(() => {
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:showActions-change',message:'showActions state changed',data:{showActions,productId:product.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-  }, [showActions, product.id]);
-  // #endregion
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
   return (
     <div className='relative product-actions-menu'>
@@ -919,26 +897,22 @@ export function ProductRowActions({
         ref={buttonRef}
         type='button'
         onMouseEnter={() => {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:button-mouseenter',message:'Button mouseenter',data:{productId:product.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
+          // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         }}
         onMouseDown={(e) => {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:button-mousedown',message:'Button mousedown',data:{productId:product.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
+          // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
           e.stopPropagation()
         }}
         onClick={(e) => {
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:button-click',message:'Button clicked',data:{productId:product.id,currentShowActions:showActions},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
+          // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
           e.stopPropagation()
           e.preventDefault()
           const newValue = !showActions
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:setShowActions',message:'Setting showActions',data:{productId:product.id,newValue,oldValue:showActions},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
+          // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
           setShowActions(newValue)
           if (newValue) {
             // Activar el overlay después de un delay más largo para evitar que capture el mismo click
@@ -963,9 +937,8 @@ export function ProductRowActions({
             <div 
               className='fixed inset-0 z-[60] product-actions-overlay' 
               onMouseDown={(e) => {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ProductActions.tsx:overlay-mousedown',message:'Overlay mousedown - closing menu',data:{productId:product.id},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
+                // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
                 e.preventDefault()
                 setShowActions(false)
                 setOverlayActive(false)

@@ -139,19 +139,50 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
         {/* Carrusel Horizontal de productos - ancho igual que grid */}
         <div className='relative'>
           {/* Controles de navegación - A los costados del carrusel, mitad y mitad */}
+          {/* ⚡ FASE 8: Optimizado - reemplazar border-color animado por opacity */}
           <button
             onClick={() => scroll('left')}
-            className='hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-gray-400 transition-colors shadow-lg'
+            className='hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center shadow-lg relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity para border effect
+              opacity: 0.9,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              const border = e.currentTarget.querySelector('.hover-border') as HTMLElement
+              if (border) border.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.9'
+              const border = e.currentTarget.querySelector('.hover-border') as HTMLElement
+              if (border) border.style.opacity = '0'
+            }}
             aria-label='Anterior'
           >
-            <ChevronLeft className='w-5 h-5' />
+            <span className="absolute inset-0 rounded-full border-2 border-gray-400 opacity-0 hover-border transition-opacity duration-300 pointer-events-none" />
+            <ChevronLeft className='w-5 h-5 relative z-10' />
           </button>
           <button
             onClick={() => scroll('right')}
-            className='hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-gray-400 transition-colors shadow-lg'
+            className='hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center shadow-lg relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity para border effect
+              opacity: 0.9,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              const border = e.currentTarget.querySelector('.hover-border') as HTMLElement
+              if (border) border.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.9'
+              const border = e.currentTarget.querySelector('.hover-border') as HTMLElement
+              if (border) border.style.opacity = '0'
+            }}
             aria-label='Siguiente'
           >
-            <ChevronRight className='w-5 h-5' />
+            <span className="absolute inset-0 rounded-full border-2 border-gray-400 opacity-0 hover-border transition-opacity duration-300 pointer-events-none" />
+            <ChevronRight className='w-5 h-5 relative z-10' />
           </button>
 
           {/* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll fluido a 60fps */}

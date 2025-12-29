@@ -1,10 +1,10 @@
 // ===================================
-// PINTEYA E-COMMERCE - TESTS PARA SIMPLIFIEDCHECKOUT COMPONENT
+// PINTEYA E-COMMERCE - TESTS PARA CHECKOUTEXPRESS COMPONENT
 // ===================================
 
 import React from 'react'
 import { screen, fireEvent, waitFor, act } from '@testing-library/react'
-import SimplifiedCheckout from '@/components/Checkout/SimplifiedCheckout'
+import CheckoutExpress from '@/components/Checkout/CheckoutExpress'
 import { renderWithProviders, createMockCartState, createMockAuthState } from '@/__tests__/utils/test-utils'
 
 // Mock next/navigation
@@ -20,7 +20,7 @@ jest.mock('next/navigation', () => ({
     forward: jest.fn(),
     refresh: jest.fn(),
   })),
-  usePathname: jest.fn(() => '/checkout'),
+  usePathname: jest.fn(() => '/checkout/express'),
   useSearchParams: jest.fn(() => ({
     get: jest.fn(),
     getAll: jest.fn(),
@@ -75,7 +75,8 @@ const mockUseCheckout = {
   updateBillingData: jest.fn(),
   updateShippingData: jest.fn(),
   updateFormData: jest.fn(),
-  processCheckout: jest.fn().mockResolvedValue({
+  processCheckout: jest.fn(),
+  processExpressCheckout: jest.fn().mockResolvedValue({
     success: true,
     init_point: 'https://mercadopago.com/checkout',
   }),
@@ -109,6 +110,13 @@ jest.mock('@/components/Analytics/SimpleAnalyticsProvider', () => ({
   })),
 }))
 
+// Mock MercadoPagoWallet
+jest.mock('@/components/Checkout/MercadoPagoWallet', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mercadopago-wallet">MercadoPago Wallet</div>,
+  MercadoPagoWalletFallback: () => <div data-testid="mercadopago-wallet-fallback">Fallback</div>,
+}))
+
 beforeEach(() => {
   jest.clearAllMocks()
   mockPush.mockClear()
@@ -133,8 +141,8 @@ beforeEach(() => {
   mockUseCheckout.finalTotal = 10000
 })
 
-describe('SimplifiedCheckout Component', () => {
-  it('should render simplified checkout form', async () => {
+describe('CheckoutExpress Component', () => {
+  it('should render express checkout form', async () => {
     const cartState = createMockCartState([
       {
         id: '1',
@@ -147,17 +155,17 @@ describe('SimplifiedCheckout Component', () => {
     ])
 
     await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
+      renderWithProviders(<CheckoutExpress />, {
         reduxState: cartState,
         authState: 'unauthenticated',
       })
     })
 
-    // Verificar que se renderiza el formulario simplificado
-    expect(screen.getByRole('heading', { name: /checkout|pago|finalizar/i })).toBeInTheDocument()
+    // Verificar que se renderiza el formulario express
+    expect(screen.getByRole('heading', { name: /checkout|express|pago rápido/i })).toBeInTheDocument()
   })
 
-  it('should display cart summary', async () => {
+  it('should display cart items in summary', async () => {
     const cartState = createMockCartState([
       {
         id: '1',
@@ -169,17 +177,17 @@ describe('SimplifiedCheckout Component', () => {
     ])
 
     await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
+      renderWithProviders(<CheckoutExpress />, {
         reduxState: cartState,
         authState: 'unauthenticated',
       })
     })
 
-    // Verificar que se muestra el resumen del carrito
+    // Verificar que se muestran los items del carrito
     expect(screen.getByText('Pintura Blanca')).toBeInTheDocument()
   })
 
-  it('should display total price', async () => {
+  it('should display total price correctly', async () => {
     mockUseCheckout.finalTotal = 10000
 
     const cartState = createMockCartState([
@@ -193,69 +201,24 @@ describe('SimplifiedCheckout Component', () => {
     ])
 
     await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
+      renderWithProviders(<CheckoutExpress />, {
         reduxState: cartState,
         authState: 'unauthenticated',
       })
     })
 
     // Buscar el total usando texto o formato de precio
-    const totalElements = screen.queryAllByText(/\$10\.?000|\$10,000|10\.?000|10,000|total/i)
+    const totalElements = screen.queryAllByText(/\$10\.?000|\$10,000|10\.?000|10,000/)
     expect(totalElements.length).toBeGreaterThan(0)
   })
 
-  it('should handle form input changes', async () => {
-    const cartState = createMockCartState([
-      {
-        id: '1',
-        title: 'Pintura Blanca',
-        price: 5000,
-        discountedPrice: 5000,
-        quantity: 2,
-      },
-    ])
-
-    await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
-        reduxState: cartState,
-        authState: 'unauthenticated',
-      })
-    })
-
-    // Buscar campos de entrada
-    const emailInput = screen.queryByLabelText(/email|correo/i)
-    const nameInput = screen.queryByLabelText(/nombre|name/i)
-    const phoneInput = screen.queryByLabelText(/teléfono|phone/i)
-
-    if (emailInput) {
-      await act(async () => {
-        fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
-      })
-      expect(mockUseCheckout.updateBillingData).toHaveBeenCalled()
-    }
-
-    if (nameInput) {
-      await act(async () => {
-        fireEvent.change(nameInput, { target: { value: 'Test User' } })
-      })
-      expect(mockUseCheckout.updateBillingData).toHaveBeenCalled()
-    }
-
-    if (phoneInput) {
-      await act(async () => {
-        fireEvent.change(phoneInput, { target: { value: '1234567890' } })
-      })
-      expect(mockUseCheckout.updateBillingData).toHaveBeenCalled()
-    }
-  })
-
   it('should handle form submission', async () => {
-    const mockProcessCheckout = jest.fn().mockResolvedValue({
+    const mockProcessExpressCheckout = jest.fn().mockResolvedValue({
       success: true,
       init_point: 'https://mercadopago.com/checkout',
     })
 
-    mockUseCheckout.processCheckout = mockProcessCheckout
+    mockUseCheckout.processExpressCheckout = mockProcessExpressCheckout
 
     const cartState = createMockCartState([
       {
@@ -268,7 +231,7 @@ describe('SimplifiedCheckout Component', () => {
     ])
 
     await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
+      renderWithProviders(<CheckoutExpress />, {
         reduxState: cartState,
         authState: 'unauthenticated',
       })
@@ -283,12 +246,12 @@ describe('SimplifiedCheckout Component', () => {
       })
 
       await waitFor(() => {
-        expect(mockProcessCheckout).toHaveBeenCalled()
+        expect(mockProcessExpressCheckout).toHaveBeenCalled()
       })
     }
   })
 
-  it('should display loading state', async () => {
+  it('should display loading state during checkout', async () => {
     mockUseCheckout.isLoading = true
 
     const cartState = createMockCartState([
@@ -302,7 +265,7 @@ describe('SimplifiedCheckout Component', () => {
     ])
 
     await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
+      renderWithProviders(<CheckoutExpress />, {
         reduxState: cartState,
         authState: 'unauthenticated',
       })
@@ -330,7 +293,7 @@ describe('SimplifiedCheckout Component', () => {
     ])
 
     await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
+      renderWithProviders(<CheckoutExpress />, {
         reduxState: cartState,
         authState: 'unauthenticated',
       })
@@ -345,7 +308,6 @@ describe('SimplifiedCheckout Component', () => {
       firstName: 'Nombre es requerido',
       email: 'Email es requerido',
       phone: 'Teléfono es requerido',
-      streetAddress: 'Dirección es requerida',
     }
 
     const cartState = createMockCartState([
@@ -359,7 +321,7 @@ describe('SimplifiedCheckout Component', () => {
     ])
 
     await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
+      renderWithProviders(<CheckoutExpress />, {
         reduxState: cartState,
         authState: 'unauthenticated',
       })
@@ -368,73 +330,6 @@ describe('SimplifiedCheckout Component', () => {
     expect(screen.getByText('Nombre es requerido')).toBeInTheDocument()
     expect(screen.getByText('Email es requerido')).toBeInTheDocument()
     expect(screen.getByText('Teléfono es requerido')).toBeInTheDocument()
-    expect(screen.getByText('Dirección es requerida')).toBeInTheDocument()
-  })
-
-  it('should redirect when cart is empty', async () => {
-    mockUseCheckout.cartItems = []
-
-    await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
-        reduxState: createMockCartState([]),
-        authState: 'unauthenticated',
-      })
-    })
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/cart')
-    })
-  })
-
-  it('should display shipping cost', async () => {
-    mockUseCheckout.shippingCost = 2500
-
-    const cartState = createMockCartState([
-      {
-        id: '1',
-        title: 'Pintura Blanca',
-        price: 5000,
-        discountedPrice: 5000,
-        quantity: 2,
-      },
-    ])
-
-    await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
-        reduxState: cartState,
-        authState: 'unauthenticated',
-      })
-    })
-
-    // Buscar información de envío
-    const shippingElements = screen.queryAllByText(/envío|shipping/i)
-    expect(shippingElements.length).toBeGreaterThan(0)
-  })
-
-  it('should show free shipping for large orders', async () => {
-    mockUseCheckout.shippingCost = 0
-    mockUseCheckout.totalPrice = 50000
-
-    const cartState = createMockCartState([
-      {
-        id: '1',
-        title: 'Pintura Blanca',
-        price: 50000,
-        discountedPrice: 50000,
-        quantity: 1,
-      },
-    ])
-
-    await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
-        reduxState: cartState,
-        authState: 'unauthenticated',
-      })
-    })
-
-    // Buscar indicadores de envío gratis
-    const freeShippingElements = screen.queryAllByText(/gratis|free|sin costo/i)
-    expect(freeShippingElements.length).toBeGreaterThan(0)
   })
 
   it('should handle authenticated user', async () => {
@@ -451,7 +346,7 @@ describe('SimplifiedCheckout Component', () => {
     ])
 
     await act(async () => {
-      renderWithProviders(<SimplifiedCheckout />, {
+      renderWithProviders(<CheckoutExpress />, {
         reduxState: cartState,
         authState: 'authenticated',
         session,
@@ -459,6 +354,73 @@ describe('SimplifiedCheckout Component', () => {
     })
 
     // Verificar que el componente se renderiza correctamente para usuarios autenticados
-    expect(screen.getByRole('heading', { name: /checkout|pago/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /checkout|express|pago/i })).toBeInTheDocument()
+  })
+
+  it('should redirect when cart is empty', async () => {
+    mockUseCheckout.cartItems = []
+
+    await act(async () => {
+      renderWithProviders(<CheckoutExpress />, {
+        reduxState: createMockCartState([]),
+        authState: 'unauthenticated',
+      })
+    })
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/cart')
+    })
+  })
+
+  it('should display shipping information', async () => {
+    mockUseCheckout.shippingCost = 2500
+
+    const cartState = createMockCartState([
+      {
+        id: '1',
+        title: 'Pintura Blanca',
+        price: 5000,
+        discountedPrice: 5000,
+        quantity: 2,
+      },
+    ])
+
+    await act(async () => {
+      renderWithProviders(<CheckoutExpress />, {
+        reduxState: cartState,
+        authState: 'unauthenticated',
+      })
+    })
+
+    // Buscar información de envío
+    const shippingElements = screen.queryAllByText(/envío|shipping/i)
+    expect(shippingElements.length).toBeGreaterThan(0)
+  })
+
+  it('should show free shipping for orders over threshold', async () => {
+    mockUseCheckout.shippingCost = 0
+    mockUseCheckout.totalPrice = 50000
+
+    const cartState = createMockCartState([
+      {
+        id: '1',
+        title: 'Pintura Blanca',
+        price: 50000,
+        discountedPrice: 50000,
+        quantity: 1,
+      },
+    ])
+
+    await act(async () => {
+      renderWithProviders(<CheckoutExpress />, {
+        reduxState: cartState,
+        authState: 'unauthenticated',
+      })
+    })
+
+    // Buscar indicadores de envío gratis
+    const freeShippingElements = screen.queryAllByText(/gratis|free|sin costo/i)
+    expect(freeShippingElements.length).toBeGreaterThan(0)
   })
 })
+
