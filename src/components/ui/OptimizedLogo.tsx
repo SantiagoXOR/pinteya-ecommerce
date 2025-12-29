@@ -48,30 +48,13 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   onClick,
   'data-testid': testId,
 }) => {
-  // #region agent log
-  React.useEffect(() => {
-    const logData = {
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'A',
-      location: 'OptimizedLogo.tsx:render',
-      message: 'OptimizedLogo rendered',
-      data: {
-        variant,
-        format,
-        testId,
-        timestamp: Date.now(),
-        renderCount: performance.now()
-      },
-      timestamp: Date.now()
-    }
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(logData)
-    }).catch(() => {})
-  }, [variant, format, testId])
-  // #endregion
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción para mejorar rendimiento
+  // Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+  // React.useEffect(() => {
+  //   if (process.env.NODE_ENV === 'development') {
+  //     // Debug logging solo en desarrollo
+  //   }
+  // }, [variant, format, testId])
 
   const logoProps = getLogoProps(variant, format)
 
@@ -90,6 +73,14 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   const logoSrc = React.useMemo(() => logoProps.src, [logoProps.src])
   
   if (isSVG) {
+    // ⚡ FASE 3: Dimensiones explícitas para evitar CLS - calcular width basado en height y aspect ratio
+    const logoDimensions = {
+      desktop: { width: 160, height: 40 }, // Aspect ratio aproximado del logo
+      mobile: { width: 48, height: 48 },
+      hero: { width: 200, height: 80 },
+    }
+    const dimensions = logoDimensions[variant]
+    
     return (
       <img
         src={logoSrc}
@@ -97,6 +88,9 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
         className={combinedClassName}
         onClick={onClick}
         data-testid={testId}
+        // ⚡ FASE 3: Atributos HTML width y height explícitos para evitar CLS
+        width={dimensions.width}
+        height={dimensions.height}
         // ⚡ FIX: Key estable para evitar re-mounts innecesarios
         key={`logo-${variant}-${testId}`}
         style={{
@@ -172,30 +166,12 @@ export const HeaderLogo: React.FC<{
   className?: string
   onClick?: () => void
 }> = React.memo(({ isMobile = false, className, onClick }) => {
-  // #region agent log
-  React.useEffect(() => {
-    const logData = {
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'B',
-      location: 'HeaderLogo.tsx:render',
-      message: 'HeaderLogo rendered',
-      data: {
-        isMobile,
-        className,
-        hasOnClick: !!onClick,
-        timestamp: Date.now(),
-        renderCount: performance.now()
-      },
-      timestamp: Date.now()
-    }
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(logData)
-    }).catch(() => {})
-  }, [isMobile, className, onClick])
-  // #endregion
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+  // React.useEffect(() => {
+  //   if (process.env.NODE_ENV === 'development') {
+  //     // Debug logging solo en desarrollo
+  //   }
+  // }, [isMobile, className, onClick])
 
   return (
     <OptimizedLogo

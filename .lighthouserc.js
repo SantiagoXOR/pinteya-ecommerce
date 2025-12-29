@@ -4,7 +4,17 @@ module.exports = {
       url: ['https://www.pinteya.com'],
       numberOfRuns: 3,
       settings: {
-        preset: 'mobile',
+        throttlingMethod: 'simulate',
+        throttling: {
+          cpuSlowdownMultiplier: 4,
+          rttMs: 150,
+          throughputKbps: 1600,
+        },
+        screenEmulation: {
+          mobile: true,
+          width: 412,
+          height: 915,
+        },
       },
     },
     assert: {

@@ -40,117 +40,16 @@ const Header = () => {
   // ⚡ OPTIMIZACIÓN: Detectar scroll activo para deshabilitar efectos costosos
   const { isScrolling } = useScrollActive()
   
-  // #region agent log
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+  // Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
   const cartModalContext = useCartModalContext()
   const { openCartModal } = cartModalContext
-  React.useEffect(() => {
-    const logData = {
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'E',
-      location: 'Header.tsx:useCartModalContext',
-      message: 'CartModalContext changed',
-      data: {
-        hasOpenCartModal: !!openCartModal,
-        timestamp: Date.now()
-      },
-      timestamp: Date.now()
-    }
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(logData)
-    }).catch(() => {})
-  }, [openCartModal])
   
   const cartAnimation = useCartAnimation()
   const { isAnimating } = cartAnimation
-  React.useEffect(() => {
-    const logData = {
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'F',
-      location: 'Header.tsx:useCartAnimation',
-      message: 'CartAnimation changed',
-      data: {
-        isAnimating,
-        timestamp: Date.now()
-      },
-      timestamp: Date.now()
-    }
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(logData)
-    }).catch(() => {})
-  }, [isAnimating])
   
   const auth = useAuth()
   const { isSignedIn } = auth
-  React.useEffect(() => {
-    const logData = {
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'G',
-      location: 'Header.tsx:useAuth',
-      message: 'Auth changed',
-      data: {
-        isSignedIn,
-        timestamp: Date.now()
-      },
-      timestamp: Date.now()
-    }
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(logData)
-    }).catch(() => {})
-  }, [isSignedIn])
-  // #endregion
-
-  // #region agent log
-  const renderCountRef = useRef(0)
-  const prevStateRef = useRef({ isSticky, isScrollingUp, isSearchExpanded, isMounted })
-  
-  useEffect(() => {
-    renderCountRef.current += 1
-    const prevState = prevStateRef.current
-    
-    // Solo loggear si el estado realmente cambió
-    const stateChanged = 
-      prevState.isSticky !== isSticky ||
-      prevState.isScrollingUp !== isScrollingUp ||
-      prevState.isSearchExpanded !== isSearchExpanded ||
-      prevState.isMounted !== isMounted
-    
-    if (stateChanged || renderCountRef.current <= 5) {
-      const logData = {
-        sessionId: 'debug-session',
-        runId: 'run1',
-        hypothesisId: 'C',
-        location: 'Header.tsx:render',
-        message: 'Header rendered',
-        data: {
-          renderCount: renderCountRef.current,
-          isSticky,
-          isScrollingUp,
-          isSearchExpanded,
-          isMounted,
-          stateChanged,
-          timestamp: Date.now()
-        },
-        timestamp: Date.now()
-      }
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(logData)
-      }).catch(() => {})
-      
-      prevStateRef.current = { isSticky, isScrollingUp, isSearchExpanded, isMounted }
-    }
-  }, [isSticky, isScrollingUp, isSearchExpanded, isMounted])
-  // #endregion
 
   // ⚡ PERFORMANCE: Hook de geolocalización diferido (no bloquea FCP)
   // Solo se inicializa después de 2 segundos del mount
