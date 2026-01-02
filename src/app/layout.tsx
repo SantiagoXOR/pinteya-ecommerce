@@ -316,9 +316,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⚡ OPTIMIZACIÓN: Next.js con optimizeCss: true inlina CSS crítico automáticamente */}
         {/* NOTA: El script de interceptación CSS está al INICIO del head para máxima efectividad */}
         {/* Los archivos CSS no críticos (hero-carousel, checkout-transition) se cargan diferidamente via DeferredCSS */}
-        `,
-          }}
-        />
         
         {/* ⚡ CRITICAL: Script para dividir tareas largas y mejorar interactividad */}
         {/* ⚡ FASE 10: Optimización agresiva para reducir 8 tareas largas (492ms) del chunk 78c1cbcf709aa237.js */}
