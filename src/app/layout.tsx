@@ -42,7 +42,98 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='es' className={euclidCircularA.variable} suppressHydrationWarning>
       <head>
-        {/* ⚡ FASE 7: Preconnect al dominio propio DEBE estar PRIMERO - Antes de cualquier otro recurso */}
+        {/* ⚡ CRITICAL: Script de interceptación CSS DEBE estar PRIMERO - Antes de cualquier otro recurso */}
+        {/* Esto intercepta CSS ANTES de que Next.js lo inserte en el DOM */}
+        {/* ⚡ FASE 1 MEJORADA: Ejecutar INMEDIATAMENTE al inicio del head */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              // ⚡ CRITICAL: Interceptar CSS ANTES de que Next.js lo inserte
+              // Ejecutar INMEDIATAMENTE al inicio del head para máxima efectividad
+              if (document.head && typeof document.head.appendChild === 'function') {
+                const originalAppendChild = document.head.appendChild.bind(document.head);
+                const originalInsertBefore = document.head.insertBefore.bind(document.head);
+                
+                function processCSSLink(link) {
+                  const href = link.getAttribute('href') || '';
+                  // ⚡ DETECCIÓN UNIVERSAL: Cualquier CSS de Next.js
+                  const isNextJSCSS = href.includes('_next/static/css') || 
+                                      href.includes('/chunks/') || 
+                                      href.includes('.css') && (href.includes('_next') || href.includes('dpl_'));
+                  
+                  if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
+                    link.setAttribute('data-non-blocking', 'true');
+                    const originalMedia = link.media || 'all';
+                    // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE
+                    link.media = 'print';
+                    
+                    // Preload para descarga paralela
+                    const preload = document.createElement('link');
+                    preload.rel = 'preload';
+                    preload.as = 'style';
+                    preload.href = href;
+                    preload.setAttribute('fetchpriority', 'high');
+                    const firstChild = document.head.firstChild;
+                    if (firstChild) {
+                      document.head.insertBefore(preload, firstChild);
+                    } else {
+                      document.head.appendChild(preload);
+                    }
+                    
+                    // Restaurar cuando esté listo
+                    link.onload = function() {
+                      requestAnimationFrame(function() {
+                        link.media = originalMedia;
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      });
+                    };
+                    
+                    link.onerror = function() {
+                      requestAnimationFrame(function() {
+                        link.media = originalMedia;
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      });
+                    };
+                    
+                    // Fallback ultra-rápido (5ms)
+                    setTimeout(function() {
+                      if (link.media === 'print') {
+                        link.media = originalMedia;
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      }
+                    }, 5);
+                  }
+                }
+                
+                // Interceptar appendChild
+                document.head.appendChild = function(node) {
+                  if (node && node.nodeType === 1 && node.tagName === 'LINK') {
+                    const rel = node.getAttribute('rel') || node.rel;
+                    if (rel === 'stylesheet') {
+                      processCSSLink(node);
+                    }
+                  }
+                  return originalAppendChild(node);
+                };
+                
+                // Interceptar insertBefore
+                document.head.insertBefore = function(newNode, referenceNode) {
+                  if (newNode && newNode.nodeType === 1 && newNode.tagName === 'LINK') {
+                    const rel = newNode.getAttribute('rel') || newNode.rel;
+                    if (rel === 'stylesheet') {
+                      processCSSLink(newNode);
+                    }
+                  }
+                  return originalInsertBefore(newNode, referenceNode);
+                };
+              }
+            })();
+            `,
+          }}
+        />
+        
+        {/* ⚡ FASE 7: Preconnect al dominio propio - Después del script de interceptación */}
         {/* Esto establece la conexión antes de que se necesiten los recursos (fuentes, CSS, imágenes) */}
         {/* Ahorro estimado: -500-800ms en latencia de fuentes (reduce bottleneck de 1,795ms) */}
         <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
@@ -323,15 +414,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 let converted = false;
                 stylesheets.forEach(function(link) {
                   const href = link.getAttribute('href') || '';
-                  // ⚡ FASE 21: Detección más agresiva del CSS bloqueante
-                  // Detectar TODOS los CSS de Next.js, incluyendo el chunk específico que está bloqueando
-                  // ⚡ FASE 22: Detección más agresiva - convertir TODOS los CSS bloqueantes
-                  // Incluir el chunk específico que está bloqueando (8976ffb1399428d1.css)
+                  // ⚡ DETECCIÓN UNIVERSAL: Cualquier CSS de Next.js (sin depender de hash específico)
+                  // Detectar TODOS los CSS de Next.js, incluyendo cualquier chunk
                   const isNextJSCSS = href.includes('_next/static/css') || 
                                       href.includes('/chunks/') || 
-                                      href.includes('8976ffb1399428d1') ||
-                                      (href.includes('.css') && href.includes('_next')) ||
-                                      (href.includes('.css') && !href.includes('print'));
+                                      (href.includes('.css') && (href.includes('_next') || href.includes('dpl_'))) ||
+                                      (href.includes('.css') && !href.includes('print') && !href.includes('euclid-fonts'));
                   
                   if (isNextJSCSS) {
                     // ⚡ FASE 22: Marcar inmediatamente para evitar procesamiento múltiple
@@ -415,11 +503,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         const rel = link.getAttribute('rel');
                         if (rel === 'stylesheet' || link.rel === 'stylesheet') {
                           const href = link.getAttribute('href') || '';
+                          // ⚡ DETECCIÓN UNIVERSAL: Cualquier CSS de Next.js
                           const isNextJSCSS = href.includes('_next/static/css') || 
                                               href.includes('/chunks/') || 
-                                              href.includes('8976ffb1399428d1') ||
-                                              (href.includes('.css') && href.includes('_next')) ||
-                                              (href.includes('.css') && !href.includes('print'));
+                                              (href.includes('.css') && (href.includes('_next') || href.includes('dpl_'))) ||
+                                              (href.includes('.css') && !href.includes('print') && !href.includes('euclid-fonts'));
                           
                           if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
                             // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE cuando se detecta
