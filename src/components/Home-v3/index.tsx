@@ -277,8 +277,9 @@ const LazyBestSeller = React.memo(({ delay = 0 }: { delay?: number }) => {
 
   // ✅ FIX CRÍTICO: BestSeller debe cargarse SIEMPRE, sin progressive loading
   // Renderizar inmediatamente sin esperar a ser visible
+  // ⚡ FASE 3: min-height para prevenir CLS
   return (
-    <div className='mt-4 sm:mt-6 product-section'>
+    <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}>
       <BestSeller />
     </div>
   )
@@ -328,7 +329,7 @@ const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
 
   if (!shouldRender) {
     return (
-      <div className='mt-1 sm:mt-1.5'>
+      <div className='mt-1 sm:mt-1.5' style={{ minHeight: '40px' }}>
         <div className='flex gap-2 px-4 overflow-x-auto'>
           {[...Array(5)].map((_, i) => (
             <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
@@ -339,7 +340,7 @@ const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
   }
 
   return (
-    <div className='mt-1 sm:mt-1.5'>
+    <div className='mt-1 sm:mt-1.5' style={{ minHeight: '40px' }}>
       <CategoryTogglePillsWithSearch />
     </div>
   )
@@ -485,7 +486,8 @@ const HomeV3 = () => {
       )}
 
       {/* 4. Productos Destacados (Combos) - Optimizado igual que HeroOptimized */}
-      <div className='mt-4 sm:mt-6 product-section'>
+      {/* ⚡ FASE 3: min-height para prevenir CLS */}
+      <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}>
         <CombosOptimized />
       </div>
 

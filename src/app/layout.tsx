@@ -235,6 +235,87 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
             (function() {
+              // ⚡ FASE 1: INTERCEPTACIÓN PROACTIVA - Interceptar CSS ANTES de inserción
+              // Sobrescribir appendChild e insertBefore del document.head para interceptar CSS
+              // Esto es más efectivo que MutationObserver porque intercepta ANTES de que se inserte
+              if (document.head && typeof document.head.appendChild === 'function') {
+                const originalAppendChild = document.head.appendChild.bind(document.head);
+                const originalInsertBefore = document.head.insertBefore.bind(document.head);
+                
+                function processCSSLink(link) {
+                  const href = link.getAttribute('href') || '';
+                  const isNextJSCSS = href.includes('_next/static/css') || 
+                                      href.includes('/chunks/') || 
+                                      href.includes('8976ffb1399428d1') ||
+                                      (href.includes('.css') && href.includes('_next')) ||
+                                      (href.includes('.css') && !href.includes('print'));
+                  
+                  if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
+                    link.setAttribute('data-non-blocking', 'true');
+                    const originalMedia = link.media || 'all';
+                    link.media = 'print';
+                    
+                    // Preload para descarga paralela
+                    const preload = document.createElement('link');
+                    preload.rel = 'preload';
+                    preload.as = 'style';
+                    preload.href = href;
+                    preload.setAttribute('fetchpriority', 'high');
+                    const firstChild = document.head.firstChild;
+                    if (firstChild) {
+                      document.head.insertBefore(preload, firstChild);
+                    } else {
+                      document.head.appendChild(preload);
+                    }
+                    
+                    // Restaurar cuando esté listo
+                    link.onload = function() {
+                      requestAnimationFrame(function() {
+                        link.media = originalMedia;
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      });
+                    };
+                    
+                    link.onerror = function() {
+                      requestAnimationFrame(function() {
+                        link.media = originalMedia;
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      });
+                    };
+                    
+                    // Fallback ultra-rápido
+                    setTimeout(function() {
+                      if (link.media === 'print') {
+                        link.media = originalMedia;
+                        if (preload.parentNode) preload.parentNode.removeChild(preload);
+                      }
+                    }, 10);
+                  }
+                }
+                
+                // Interceptar appendChild
+                document.head.appendChild = function(node) {
+                  if (node && node.nodeType === 1 && node.tagName === 'LINK') {
+                    const rel = node.getAttribute('rel') || node.rel;
+                    if (rel === 'stylesheet') {
+                      processCSSLink(node);
+                    }
+                  }
+                  return originalAppendChild(node);
+                };
+                
+                // Interceptar insertBefore
+                document.head.insertBefore = function(newNode, referenceNode) {
+                  if (newNode && newNode.nodeType === 1 && newNode.tagName === 'LINK') {
+                    const rel = newNode.getAttribute('rel') || newNode.rel;
+                    if (rel === 'stylesheet') {
+                      processCSSLink(newNode);
+                    }
+                  }
+                  return originalInsertBefore(newNode, referenceNode);
+                };
+              }
+              
               // ⚡ EJECUCIÓN INMEDIATA: No esperar DOMContentLoaded
               // Ejecutar inmediatamente para convertir CSS antes de que Next.js lo inserte
               function convertCSSToNonBlocking() {

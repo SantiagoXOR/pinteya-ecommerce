@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 // Esto reduce Script Evaluation inicial (no se carga hasta que se necesita)
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
+import { useDeferredHydration } from '@/hooks/useDeferredHydration'
 
 // ⚡ PERFORMANCE: Providers críticos (carga inmediata - solo los esenciales)
 import { ReduxProvider } from '@/redux/provider'
@@ -104,6 +105,74 @@ const NextAuthWrapper = React.memo(({ children }: { children: React.ReactNode })
   return <SessionProvider>{children}</SessionProvider>
 })
 
+// ⚡ FASE 4: Componente wrapper para diferir providers no críticos después del LCP
+const DeferredProviders = React.memo(({ 
+  children, 
+  isAdminRoute, 
+  isCheckoutRoute, 
+  isAuthRoute 
+}: { 
+  children: React.ReactNode
+  isAdminRoute: boolean
+  isCheckoutRoute: boolean
+  isAuthRoute: boolean
+}) => {
+  // ⚡ FASE 4: Diferir hidratación de providers no críticos después del LCP
+  const shouldHydrate = useDeferredHydration({
+    minDelay: 3000, // Esperar 3s después del LCP
+    maxDelay: 5000,
+    useIdleCallback: true,
+  })
+
+  if (!shouldHydrate) {
+    // Renderizar sin providers no críticos para reducir TBT
+    return <>{children}</>
+  }
+
+  return (
+    <MonitoringProvider
+      autoStart={process.env.NODE_ENV === 'production'}
+      enableErrorBoundary={true}
+    >
+      <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
+        <AnalyticsProvider>
+          {children}
+        </AnalyticsProvider>
+      </NetworkErrorProvider>
+    </MonitoringProvider>
+  )
+})
+DeferredProviders.displayName = 'DeferredProviders'
+
+// ⚡ FASE 4: Componente wrapper para diferir componentes UI no críticos después del LCP
+const DeferredComponents = React.memo(({ 
+  isAdminRoute, 
+  isAuthRoute 
+}: { 
+  isAdminRoute: boolean
+  isAuthRoute: boolean
+}) => {
+  // ⚡ FASE 4: Diferir hidratación de componentes UI no críticos después del LCP
+  const shouldHydrate = useDeferredHydration({
+    minDelay: 2000, // Esperar 2s después del LCP
+    maxDelay: 4000,
+    useIdleCallback: true,
+  })
+
+  if (!shouldHydrate) {
+    return null
+  }
+
+  return (
+    <>
+      <ScrollToTop />
+      {!isAdminRoute && !isAuthRoute && <MercadoLibreBottomNav />}
+      <Toaster />
+    </>
+  )
+})
+DeferredComponents.displayName = 'DeferredComponents'
+
 export default function Providers({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
@@ -164,51 +233,31 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 <ModalProvider>
                   <CartModalProvider>
                     <PreviewSliderProvider>
-                      {/* ⚡ Providers lazy - No bloquean FCP */}
-                      <MonitoringProvider
-                        autoStart={process.env.NODE_ENV === 'production'}
-                        enableErrorBoundary={true}
+                      {/* ⚡ FASE 4: Providers diferidos después del LCP para reducir TBT */}
+                      <DeferredProviders
+                        isAdminRoute={isAdminRoute}
+                        isCheckoutRoute={isCheckoutRoute}
+                        isAuthRoute={isAuthRoute}
                       >
-                        <NetworkErrorProvider enableDebugMode={process.env.NODE_ENV === 'development'}>
-                          <AnalyticsProvider>
-                            {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
-                            {!isAdminRoute && !isAuthRoute && <MemoizedHeader />}
+                        {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
+                        {!isAdminRoute && !isAuthRoute && <MemoizedHeader />}
 
-                            {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
-                            {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
-                            <PreviewSliderModal />
-                            <ScrollToTop />
+                        {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
+                        {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
+                        <PreviewSliderModal />
+                        
+                        {/* ⚡ FASE 4: Componentes diferidos después del LCP */}
+                        <DeferredComponents
+                          isAdminRoute={isAdminRoute}
+                          isAuthRoute={isAuthRoute}
+                        />
 
-                            {/* Contenido principal */}
-                            {children}
+                        {/* Contenido principal */}
+                        {children}
 
-                            {/* Footer solo para rutas públicas - Memoizado */}
-                            {!isAdminRoute && !isAuthRoute && <MemoizedFooter />}
-
-                            {/* Navegación móvil inferior estilo MercadoLibre - Visible en mobile y desktop */}
-                            {!isAdminRoute && !isAuthRoute && (
-                                <MercadoLibreBottomNav />
-                            )}
-
-                            {/* Botones flotantes - DESACTIVADOS: Reemplazados por bottom navigation estilo MercadoLibre */}
-                            {/* {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingCartButton />} */}
-                            {/* {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <FloatingWhatsAppButton />} */}
-
-                            {/* Notificación del carrito deshabilitada por requerimiento */}
-                            {/* {!isAdminRoute && (
-                                <CartNotification
-                                  show={notification.show}
-                                  productName={notification.productName}
-                                  productImage={notification.productImage}
-                                  onClose={hideNotification}
-                                />
-                              )} */}
-
-                            {/* Toaster para notificaciones - Lazy loaded */}
-                            <Toaster />
-                          </AnalyticsProvider>
-                        </NetworkErrorProvider>
-                      </MonitoringProvider>
+                        {/* Footer solo para rutas públicas - Memoizado */}
+                        {!isAdminRoute && !isAuthRoute && <MemoizedFooter />}
+                      </DeferredProviders>
                     </PreviewSliderProvider>
                   </CartModalProvider>
                 </ModalProvider>

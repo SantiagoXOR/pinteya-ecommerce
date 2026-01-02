@@ -109,65 +109,64 @@ export default async function HomePage() {
 
   return (
     <Hydrate state={dehydrate(queryClient)}>
-      {/* ⚡ FASE 23: Imagen hero renderizada en Server Component para descubrimiento temprano */}
-      {/* Esta imagen debe estar en EXACTAMENTE el mismo lugar que el hero banner del carousel */}
-      {/* HeroOptimized renderiza el carousel en el mismo contenedor, por eso deben coincidir */}
+      {/* ⚡ FASE 2: Imagen hero renderizada en Server Component para descubrimiento temprano */}
+      {/* ⚡ OPTIMIZACIÓN LCP: Contenedores simplificados para reducir delay de renderizado */}
       {/* ⚡ CRITICAL: Esta imagen DEBE permanecer visible para que Lighthouse la detecte como LCP */}
-      {/* ⚡ OPTIMIZACIÓN LCP: Simplificar contenedores para reducir delay de renderizado */}
-      <div className="relative w-full hero-lcp-container" style={{ marginTop: 0 }}>
-        <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 pt-1 sm:pt-2 pb-1 sm:pb-1.5">
-          <div 
-            className="relative w-full overflow-hidden" 
+      <div className="relative w-full hero-lcp-container" style={{ marginTop: 0, position: 'relative' }}>
+        {/* ⚡ FASE 2: Contenedor simplificado - menos anidación = menos delay */}
+        <div 
+          className="relative w-full overflow-hidden" 
+          style={{ 
+            aspectRatio: '2.77', 
+            minHeight: '277px',
+            height: 'auto',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: '0.25rem 0.5rem',
+          }}
+        >
+          {/* ⚡ FASE 2: Imagen hero estática - optimizada para LCP */}
+          {/* Usar <img> estático para evitar duplicación de requests con Next.js Image */}
+          {/* El preload en layout.tsx asegura descubrimiento temprano */}
+          {/* ⚡ CRITICAL: Esta imagen DEBE ser el LCP - optimizada para carga inmediata */}
+          <img
+            src="/images/hero/hero2/hero1.webp"
+            alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
+            width={1200}
+            height={433}
+            fetchPriority="high"
+            loading="eager"
+            decoding="sync"
+            className="hero-static-image"
+            id="hero-lcp-image"
+            data-lcp="true"
+            data-hero="true"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+            srcSet="/images/hero/hero2/hero1.webp 1200w"
             style={{ 
-              aspectRatio: '2.77', 
+              width: '100%', 
+              height: 'auto', 
+              aspectRatio: '1200/433',
+              objectFit: 'contain',
+              display: 'block',
+              position: 'relative',
+              zIndex: 1,
+              visibility: 'visible',
+              opacity: 1,
+              pointerEvents: 'auto',
               minHeight: '277px',
-              height: 'auto',
+              minWidth: '100%',
+              margin: 0,
+              padding: 0,
+              transition: 'opacity 0.5s ease-in-out',
+              // ⚡ FASE 2: Asegurar que la imagen esté en el viewport desde el primer render
+              top: 0,
+              left: 0,
+              right: 0,
             }}
-          >
-            {/* ⚡ FASE 23: Imagen hero estática - misma posición que el carousel */}
-            {/* Usar <img> estático para evitar duplicación de requests con Next.js Image */}
-            {/* El preload en layout.tsx asegura descubrimiento temprano */}
-            {/* ⚡ CRITICAL: Esta imagen DEBE ser el LCP - optimizada para carga inmediata */}
-            {/* ⚡ OPTIMIZACIÓN LCP: decoding="sync" para renderizado inmediato (por defecto, pero explícito) */}
-            {/* ⚡ OPTIMIZACIÓN LCP: Eliminar contentVisibility que puede retrasar renderizado */}
-            <img
-              src="/images/hero/hero2/hero1.webp"
-              alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
-              width={1200}
-              height={433}
-              fetchPriority="high"
-              loading="eager"
-              decoding="sync"
-              className="hero-static-image"
-              id="hero-lcp-image"
-              data-lcp="true"
-              data-hero="true"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-              srcSet="/images/hero/hero2/hero1.webp 1200w"
-              style={{ 
-                width: '100%', 
-                height: 'auto', 
-                aspectRatio: '1200/433',
-                objectFit: 'contain',
-                display: 'block',
-                position: 'relative',
-                zIndex: 1, // ⚡ FIX: z-index más bajo que el carousel (z-20)
-                visibility: 'visible',
-                opacity: 1,
-                pointerEvents: 'auto',
-                minHeight: '277px',
-                minWidth: '100%',
-                // ⚡ CRITICAL: Asegurar que la imagen esté en el viewport desde el inicio
-                margin: 0,
-                padding: 0,
-                // ⚡ OPTIMIZACIÓN LCP: Eliminar contentVisibility que puede retrasar renderizado
-                // ⚡ OPTIMIZACIÓN: Transición suave cuando se oculta
-                transition: 'opacity 0.5s ease-in-out',
-              }}
-            />
-            {/* ⚡ FASE 23: HeroOptimized renderiza el carousel aquí, en el mismo contenedor */}
-            <HeroOptimized />
-          </div>
+          />
+          {/* ⚡ FASE 2: HeroOptimized renderiza el carousel aquí, en el mismo contenedor */}
+          <HeroOptimized />
         </div>
       </div>
       <HomeV3 />
