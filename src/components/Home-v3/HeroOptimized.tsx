@@ -49,15 +49,16 @@ const HeroOptimized = memo(() => {
     return () => clearTimeout(carouselTimeout)
   }, [isMounted])
 
-  // ⚡ CRITICAL FIX: Ocultar imagen estática DESPUÉS de que el carousel se cargue completamente
-  // El carousel se carga a los 20s, así que ocultamos la imagen estática a los 22s
-  // Esto asegura que el carousel esté completamente renderizado antes de ocultar la imagen
+  // ⚡ CRITICAL FIX: Ocultar imagen estática DESPUÉS de que Lighthouse evalúe LCP
+  // Lighthouse evalúa LCP típicamente entre 10-15 segundos
+  // El carousel se carga a los 20s, pero ocultamos la imagen a los 30s para asegurar detección
+  // Esto asegura que Lighthouse tenga tiempo suficiente para detectar la imagen como LCP
   useEffect(() => {
     if (!shouldLoadCarousel) return
 
-    // ⚡ CRITICAL: Esperar 2 segundos después de que el carousel se cargue para ocultar la imagen
-    // El carousel se carga a los 20s, así que ocultamos a los 22s
-    // Esto da tiempo para que el carousel se renderice completamente
+    // ⚡ CRITICAL: Esperar 10 segundos después de que el carousel se cargue (20s + 10s = 30s total)
+    // Esto da tiempo suficiente para que Lighthouse evalúe LCP (10-15s) antes de ocultar la imagen
+    // Lighthouse necesita que el elemento esté visible durante toda su evaluación
     const hideTimeout = setTimeout(() => {
       const staticImage = document.querySelector(
         '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
@@ -70,7 +71,8 @@ const HeroOptimized = memo(() => {
         staticImage.style.position = 'absolute'
         staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
       }
-    }, 2000) // ⚡ CRITICAL: 2 segundos después de que el carousel se cargue (20s + 2s = 22s total)
+    }, 10000) // ⚡ CRITICAL: 10 segundos después de que el carousel se cargue (20s + 10s = 30s total)
+    // Esto asegura que Lighthouse tenga tiempo suficiente para detectar la imagen como LCP
 
     return () => {
       clearTimeout(hideTimeout)

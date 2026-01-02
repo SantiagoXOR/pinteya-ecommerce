@@ -256,17 +256,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     // ⚡ FASE 22: Marcar inmediatamente para evitar procesamiento múltiple
                     link.setAttribute('data-non-blocking', 'true');
                     
-                    // ⚡ FASE 22: Si ya está cargado, aplicar media="print" inmediatamente
-                    // Esto evita que bloquee el renderizado incluso si ya está cargado
+                    // ⚡ CRITICAL FIX: Aplicar media="print" INMEDIATAMENTE sin esperar
+                    // Esto evita que bloquee el renderizado desde el momento en que se detecta
+                    const originalMedia = link.media || 'all';
+                    if (originalMedia !== 'print') {
+                      link.media = 'print';
+                    }
+                    
+                    // ⚡ FASE 22: Si ya está cargado, restaurar inmediatamente
                     if (link.sheet && link.sheet.cssRules && link.sheet.cssRules.length > 0) {
-                      const originalMedia = link.media || 'all';
-                      if (originalMedia !== 'print') {
-                        link.media = 'print';
-                        // ⚡ FASE 22: Usar requestAnimationFrame para aplicar cambio inmediatamente
-                        requestAnimationFrame(function() {
-                          link.media = originalMedia;
-                        });
-                      }
+                      // Ya está cargado, restaurar inmediatamente
+                      requestAnimationFrame(function() {
+                        link.media = originalMedia;
+                      });
                       return;
                     }
                     
@@ -288,11 +290,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       document.head.appendChild(preload);
                     }
                     
-                    const originalMedia = link.media || 'all';
-                    // ⚡ FASE 22: Aplicar media="print" ANTES de que el CSS se cargue
-                    // Esto evita que bloquee el renderizado desde el inicio
-                    link.media = 'print';
-                    
                     // ⚡ FASE 22: Usar onload para restaurar media cuando esté listo
                     link.onload = function() {
                       requestAnimationFrame(function() {
@@ -308,8 +305,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       });
                     };
                     
-                    // ⚡ CRITICAL FIX: Fallback ultra-rápido (50ms) para conversión inmediata
-                    // Reducir a 50ms para eliminar el bloqueo de 301ms lo más rápido posible
+                    // ⚡ CRITICAL FIX: Fallback ultra-rápido (10ms) para conversión inmediata
+                    // Reducir a 10ms para eliminar el bloqueo de 304ms lo más rápido posible
                     // Aplicar inmediatamente sin esperar para evitar cualquier bloqueo
                     setTimeout(function() {
                       if (link.media === 'print') {
@@ -317,7 +314,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         link.media = originalMedia;
                         if (preload.parentNode) preload.parentNode.removeChild(preload);
                       }
-                    }, 50); // ⚡ CRITICAL: Reducido a 50ms para conversión ultra-rápida y eliminar bloqueo
+                    }, 10); // ⚡ CRITICAL: Reducido a 10ms para conversión ultra-rápida y eliminar bloqueo
                   }
                 });
                 return converted;
@@ -325,6 +322,71 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               
               // Ejecutar inmediatamente
               convertCSSToNonBlocking();
+              
+              // ⚡ CRITICAL FIX: Interceptar CSS ANTES de que se inserte usando MutationObserver
+              // Esto es más efectivo que el intervalo porque detecta el CSS en el momento exacto de inserción
+              if (typeof MutationObserver !== 'undefined') {
+                const cssObserver = new MutationObserver(function(mutations) {
+                  mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                      if (node.nodeType === 1 && node.tagName === 'LINK') {
+                        const link = node;
+                        const rel = link.getAttribute('rel');
+                        if (rel === 'stylesheet' || link.rel === 'stylesheet') {
+                          const href = link.getAttribute('href') || '';
+                          const isNextJSCSS = href.includes('_next/static/css') || 
+                                              href.includes('/chunks/') || 
+                                              href.includes('8976ffb1399428d1') ||
+                                              (href.includes('.css') && href.includes('_next')) ||
+                                              (href.includes('.css') && !href.includes('print'));
+                          
+                          if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
+                            // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE cuando se detecta
+                            link.setAttribute('data-non-blocking', 'true');
+                            const originalMedia = link.media || 'all';
+                            link.media = 'print';
+                            
+                            // Preload para descarga paralela
+                            const preload = document.createElement('link');
+                            preload.rel = 'preload';
+                            preload.as = 'style';
+                            preload.href = href;
+                            preload.setAttribute('fetchpriority', 'high');
+                            const firstChild = document.head.firstChild;
+                            if (firstChild) {
+                              document.head.insertBefore(preload, firstChild);
+                            } else {
+                              document.head.appendChild(preload);
+                            }
+                            
+                            // Restaurar cuando esté listo
+                            link.onload = function() {
+                              requestAnimationFrame(function() {
+                                link.media = originalMedia;
+                                if (preload.parentNode) preload.parentNode.removeChild(preload);
+                              });
+                            };
+                            
+                            // Fallback ultra-rápido
+                            setTimeout(function() {
+                              if (link.media === 'print') {
+                                link.media = originalMedia;
+                                if (preload.parentNode) preload.parentNode.removeChild(preload);
+                              }
+                            }, 10);
+                          }
+                        }
+                      }
+                    });
+                  });
+                });
+                
+                // Observar el head para detectar CSS que se inserta
+                cssObserver.observe(document.head, {
+                  childList: true,
+                  subtree: false
+                });
+              }
               
               // ⚡ CRITICAL FIX: Intervalo ultra-agresivo (1ms) para detección inmediata
               // Ejecutar múltiples veces para capturar CSS que se inserta después
