@@ -83,14 +83,13 @@ const nextConfig = {
       'swiper',
       'swiper/react',
     ],
-    // ⚡ OPTIMIZACIÓN CSS: Inline de CSS crítico automático (reduce render-blocking)
-    // - Extrae e inlinea CSS crítico en el <head> automáticamente
-    // - Reduce render-blocking en ~400-600ms
-    // - Mejora FCP y LCP significativamente
-    // ⚡ NOTA: optimizeCss no funciona completamente con App Router (Critters no soporta streaming)
-    // Usamos inlineCss como alternativa que inlina todo el CSS en el head
+    // ⚡ OPTIMIZACIÓN CSS: Deshabilitado inlineCss para reducir tamaño HTML inicial
+    // - inlineCss: true inlina TODO el CSS, aumentando el tamaño del HTML inicial
+    // - Esto aumenta el parse time y afecta negativamente el Speed Index (SI)
+    // - Usamos el script de interceptación CSS en layout.tsx que hace CSS no bloqueante
+    // - El script aplica media="print" a los links CSS para evitar render-blocking
     // optimizeCss: true, // ⚡ DESHABILITADO: No funciona con App Router
-    inlineCss: true, // ⚡ ALTERNATIVA: Inlina CSS en el head (experimental)
+    // inlineCss: true, // ⚡ DESHABILITADO: Aumenta tamaño HTML y parse time, afecta SI negativamente
     
     optimisticClientCache: true, // Cache optimista para navegación más rápida
     
