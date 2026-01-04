@@ -107,6 +107,12 @@ export default async function HomePage() {
     categories
   )
 
+  // ⚡ OPTIMIZACIÓN: Prefetching removido del servidor
+  // Los hooks optimizados (useFilteredProducts, useBestSellerProducts) ya manejan el cache
+  // y no harán peticiones duplicadas gracias a refetchOnMount: false y staleTime aumentado
+  // El prefetching en el servidor requiere URLs absolutas y no es necesario ya que React Query
+  // manejará el cache automáticamente en el cliente
+
   return (
     <Hydrate state={dehydrate(queryClient)}>
       {/* ⚡ FASE 2: Imagen hero renderizada en Server Component para descubrimiento temprano */}
@@ -119,7 +125,6 @@ export default async function HomePage() {
         style={{ 
           marginTop: 0, 
           position: 'relative',
-          height: '277px', // ⚡ FIX CLS: Altura fija en lugar de minHeight
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '0.25rem 0.5rem',
@@ -128,12 +133,11 @@ export default async function HomePage() {
           scrollMarginTop: '0px',
         }}
       >
-        {/* ⚡ FIX CLS: Contenedor interno con dimensiones fijas */}
+        {/* ⚡ FIX CLS: Contenedor interno con dimensiones fijas basadas en aspectRatio */}
         <div 
           className="relative w-full" 
           style={{ 
             aspectRatio: '1200/433', 
-            height: '277px', // ⚡ FIX CLS: Altura fija
             width: '100%',
             position: 'relative',
             overflow: 'hidden',
@@ -141,6 +145,7 @@ export default async function HomePage() {
         >
           {/* ⚡ FIX CLS + LCP: Imagen hero con dimensiones explícitas y fijas */}
           {/* ⚡ CRITICAL: Dimensiones fijas previenen layout shifts y aseguran detección LCP */}
+          {/* ⚡ OPTIMIZACIÓN PRODUCCIÓN: Asegurar que la imagen se carga inmediatamente sin bloqueos */}
           <img
             src="/images/hero/hero2/hero1.webp"
             alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
@@ -148,7 +153,7 @@ export default async function HomePage() {
             height={433}
             fetchPriority="high"
             loading="eager"
-            decoding="sync"
+            decoding="async"
             className="hero-static-image"
             id="hero-lcp-image"
             data-lcp="true"
@@ -158,7 +163,7 @@ export default async function HomePage() {
             srcSet="/images/hero/hero2/hero1.webp 1200w"
             style={{ 
               width: '100%', 
-              height: '277px', // ⚡ FIX CLS: Altura fija en lugar de auto
+              height: 'auto', // ⚡ FIX: Usar auto para respetar aspectRatio
               aspectRatio: '1200/433',
               objectFit: 'cover', // ⚡ FIX CLS: cover en lugar de contain para evitar shifts
               display: 'block',
@@ -174,8 +179,6 @@ export default async function HomePage() {
               right: 0,
               clipPath: 'none',
               clip: 'auto',
-              // ⚡ FIX LCP: Remover contentVisibility que puede retrasar renderizado
-              // contentVisibility: 'auto',
             }}
           />
           {/* ⚡ FASE 2: HeroOptimized renderiza el carousel aquí, en el mismo contenedor */}
