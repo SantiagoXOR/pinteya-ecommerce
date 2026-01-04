@@ -42,29 +42,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='es' className={euclidCircularA.variable} suppressHydrationWarning>
       <head>
-        {/* ⚡ CRITICAL: Preload de imagen hero LCP - DEBE estar PRIMERO antes de cualquier otro recurso */}
-        {/* Esto asegura que la imagen se descargue inmediatamente sin esperar CSS o JS */}
-        <link
-          rel="preload"
-          as="image"
-          href="/images/hero/hero2/hero1.webp"
-          fetchPriority="high"
-          type="image/webp"
-          imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-          imagesrcset="/images/hero/hero2/hero1.webp 1200w"
-          crossOrigin="anonymous"
-        />
-        
-        {/* ⚡ CRITICAL: Script de interceptación CSS - SOLUCIÓN MEJORADA */}
-        {/* ⚡ ESTRATEGIA: Script bloqueante que intercepta CSS ANTES de que el navegador lo procese */}
-        {/* Este script se ejecuta síncronamente y modifica los links CSS antes de que bloqueen el render */}
+        {/* ⚡ CRITICAL: Script de interceptación CSS - DEBE estar PRIMERO */}
+        {/* ⚡ ESTRATEGIA RADICAL: Script bloqueante que intercepta CSS ANTES de cualquier otro recurso */}
+        {/* Este script se ejecuta síncronamente ANTES de que el navegador procese CSS */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
             (function() {
               // ⚡ CRITICAL: Interceptar CSS ANTES de que Next.js lo inserte
               // Ejecutar INMEDIATAMENTE sin ningún delay para máxima efectividad
-              // ⚡ MEJORA: Interceptar métodos ANTES de que se usen
+              // ⚡ ESTRATEGIA RADICAL: Interceptar métodos ANTES de que se usen
               
               function processCSSLink(link) {
                 if (!link || !link.href) return;
@@ -80,16 +67,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 
                 if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
                   link.setAttribute('data-non-blocking', 'true');
-                  const originalMedia = link.media || 'all';
+                  const originalMedia = link.media || link.getAttribute('media') || 'all';
                   
                   // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE sin verificar estado
                   // Esto previene que bloquee el renderizado incluso si ya comenzó a descargarse
                   // ⚡ FIX: Forzar aplicación incluso si el link ya tiene media definido
+                  // ⚡ MEJORA: Intentar múltiples métodos para asegurar que se aplique
                   try {
                     link.media = 'print';
+                    link.setAttribute('media', 'print');
                   } catch(e) {
                     // Fallback si media no se puede cambiar
-                    link.setAttribute('media', 'print');
+                    try {
+                      link.setAttribute('media', 'print');
+                    } catch(e2) {
+                      // Último recurso: usar setAttributeNS
+                      try {
+                        link.setAttributeNS(null, 'media', 'print');
+                      } catch(e3) {
+                        // Si todo falla, al menos marcar como procesado
+                      }
+                    }
                   }
                   
                   // Preload para descarga paralela (solo si no existe ya)
@@ -160,13 +158,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // Next.js inserta CSS directamente en el HTML durante SSR
               // Este script debe ejecutarse ANTES de que el navegador procese los links CSS
               function processExistingCSS() {
-                // Usar getElementsByTagName para máxima velocidad (más rápido que querySelector)
+                // ⚡ MEJORA: Usar múltiples métodos para capturar todos los links
+                // Método 1: getElementsByTagName (más rápido)
                 const links = document.head.getElementsByTagName('link');
                 for (let i = 0; i < links.length; i++) {
                   const link = links[i];
-                  if (link.rel === 'stylesheet' || link.getAttribute('rel') === 'stylesheet') {
+                  const rel = link.rel || link.getAttribute('rel') || '';
+                  const href = link.href || link.getAttribute('href') || '';
+                  // ⚡ FIX: Detectar también por href si rel no está disponible
+                  if (rel === 'stylesheet' || (href.includes('.css') && (href.includes('_next') || href.includes('chunks')))) {
                     processCSSLink(link);
                   }
+                }
+                
+                // ⚡ MEJORA ADICIONAL: querySelectorAll como fallback
+                try {
+                  const stylesheets = document.head.querySelectorAll('link[rel="stylesheet"]');
+                  for (let i = 0; i < stylesheets.length; i++) {
+                    const link = stylesheets[i];
+                    if (!link.hasAttribute('data-non-blocking')) {
+                      processCSSLink(link);
+                    }
+                  }
+                } catch(e) {
+                  // Ignorar errores de querySelector
                 }
               }
               
@@ -650,3 +665,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
+
