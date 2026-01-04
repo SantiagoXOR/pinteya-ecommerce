@@ -53,9 +53,15 @@ module.exports = {
                 // - src/components/Header/header-animations.css
                 // - src/app/auth/auth-page.css
                 // - tailwind.config.ts (animaciones personalizadas)
+                // ⚡ OPTIMIZACIÓN: discardUnused deshabilitado por seguridad con code-splitting
+                // Sin embargo, podemos usar otras técnicas para reducir CSS sin usar
                 discardUnused: false, // ⚡ DESHABILITADO: Inseguro con CSS code-splitting de Next.js
                 discardEmpty: true, // Eliminar reglas vacías (seguro)
                 discardDuplicates: true, // Eliminar reglas duplicadas (seguro)
+                // ⚡ OPTIMIZACIÓN: Mejorar minificación de selectores y valores
+                normalizeUrl: true, // Normalizar URLs en CSS
+                reduceTransforms: true, // Optimizar transformaciones CSS
+                svgo: false, // No optimizar SVG en CSS (puede romper algunos SVGs)
                 // Configuración conservadora para evitar romper estilos
                 calc: false, // No optimizar calc() automáticamente
                 zindex: false, // No modificar z-index (puede romper jerarquía)

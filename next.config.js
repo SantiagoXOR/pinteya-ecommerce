@@ -55,6 +55,18 @@ const nextConfig = {
     '@radix-ui/react-icons': {
       transform: '@radix-ui/react-icons/dist/{{member}}',
     },
+    // ⚡ OPTIMIZACIÓN: Imports modulares de lodash-es para tree shaking
+    'lodash-es': {
+      transform: 'lodash-es/{{member}}',
+    },
+    // ⚡ OPTIMIZACIÓN: Imports modulares para librerías comunes que pueden tener mucho código sin usar
+    'date-fns': {
+      transform: 'date-fns/{{member}}',
+    },
+    'recharts': {
+      transform: 'recharts/lib/{{member}}',
+      skipDefaultConversion: true,
+    },
   },
 
   // ⚡ PERFORMANCE: Configuración experimental optimizada

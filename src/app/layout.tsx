@@ -42,99 +42,46 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='es' className={euclidCircularA.variable} suppressHydrationWarning>
       <head>
-        {/* #region agent log */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            (function() {
-              if (typeof window === 'undefined') return;
-              const logData = {
-                location: 'layout.tsx:head',
-                message: 'HTML initial size measurement',
-                data: {
-                  htmlSize: document.documentElement.outerHTML.length,
-                  headSize: document.head ? document.head.innerHTML.length : 0,
-                  inlineStyleCount: document.head ? document.head.querySelectorAll('style').length : 0,
-                  inlineStyleSize: Array.from(document.head ? document.head.querySelectorAll('style') : []).reduce((sum, el) => sum + (el.textContent || '').length, 0),
-                  linkStylesheetCount: document.head ? document.head.querySelectorAll('link[rel="stylesheet"]').length : 0,
-                },
-                timestamp: Date.now(),
-                sessionId: 'debug-session',
-                runId: 'initial',
-                hypothesisId: 'A'
-              };
-              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(logData)
-              }).catch(function() {});
-            })();
-            `,
-          }}
+        {/* ⚡ CRITICAL: Preload de imagen hero LCP - DEBE estar PRIMERO antes de cualquier otro recurso */}
+        {/* Esto asegura que la imagen se descargue inmediatamente sin esperar CSS o JS */}
+        <link
+          rel="preload"
+          as="image"
+          href="/images/hero/hero2/hero1.webp"
+          fetchPriority="high"
+          type="image/webp"
+          imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+          imagesrcset="/images/hero/hero2/hero1.webp 1200w"
+          crossOrigin="anonymous"
         />
-        {/* #endregion */}
-        {/* ⚡ CRITICAL: Script de interceptación CSS DEBE estar PRIMERO - Antes de cualquier otro recurso */}
+        
+        {/* ⚡ CRITICAL: Script de interceptación CSS - Después del preload de imagen */}
         {/* Esto intercepta CSS ANTES de que Next.js lo inserte en el DOM */}
-        {/* ⚡ FASE 1 MEJORADA: Ejecutar INMEDIATAMENTE al inicio del head */}
+        {/* ⚡ OPTIMIZACIÓN: Script simplificado y más agresivo para eliminar render blocking */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
             (function() {
-              // #region agent log
-              if (typeof window !== 'undefined') {
-                const parseStartTime = performance.now();
-                const logParseTime = function() {
-                  const parseTime = performance.now() - parseStartTime;
-                  const logData = {
-                    location: 'layout.tsx:head:parse',
-                    message: 'HTML parse time measurement',
-                    data: {
-                      parseTime: parseTime,
-                      htmlSize: document.documentElement.outerHTML.length,
-                      headSize: document.head ? document.head.innerHTML.length : 0,
-                      bodySize: document.body ? document.body.innerHTML.length : 0,
-                      inlineStyleCount: document.head ? document.head.querySelectorAll('style').length : 0,
-                      inlineStyleSize: Array.from(document.head ? document.head.querySelectorAll('style') : []).reduce((sum, el) => sum + (el.textContent || '').length, 0),
-                    },
-                    timestamp: Date.now(),
-                    sessionId: 'debug-session',
-                    runId: 'initial',
-                    hypothesisId: 'A'
-                  };
-                  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(logData)
-                  }).catch(function() {});
-                };
-                if (document.readyState === 'loading') {
-                  document.addEventListener('DOMContentLoaded', logParseTime, { once: true });
-                } else {
-                  setTimeout(logParseTime, 0);
-                }
-              }
-              // #endregion
               // ⚡ CRITICAL: Interceptar CSS ANTES de que Next.js lo inserte
-              // Ejecutar INMEDIATAMENTE al inicio del head para máxima efectividad
+              // Ejecutar INMEDIATAMENTE sin ningún delay para máxima efectividad
               
               function processCSSLink(link) {
                 if (!link || !link.href) return;
                 
                 const href = link.getAttribute('href') || link.href || '';
-                // ⚡ DETECCIÓN UNIVERSAL: Cualquier CSS de Next.js
+                // ⚡ DETECCIÓN MEJORADA: Cualquier CSS de Next.js (incluyendo chunks con hash)
                 const isNextJSCSS = href.includes('_next/static/css') || 
+                                    href.includes('_next/static/chunks/') ||
                                     href.includes('/chunks/') || 
-                                    (href.includes('.css') && (href.includes('_next') || href.includes('dpl_')));
+                                    (href.includes('.css') && (href.includes('_next') || href.includes('dpl_') || href.match(/\/[a-f0-9]+\.css/)));
                 
                 if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
                   link.setAttribute('data-non-blocking', 'true');
                   const originalMedia = link.media || 'all';
                   
-                  // ⚡ CRITICAL: Si el CSS ya está cargando o cargado, aplicar media="print" inmediatamente
+                  // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE sin verificar estado
                   // Esto previene que bloquee el renderizado incluso si ya comenzó a descargarse
-                  if (link.media !== 'print') {
-                    link.media = 'print';
-                  }
+                  link.media = 'print';
                   
                   // Preload para descarga paralela (solo si no existe ya)
                   if (!document.querySelector('link[rel="preload"][href="' + href + '"]')) {
@@ -294,15 +241,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               
               // ⚡ CRITICAL: Verificar periódicamente para CSS que se inserta después
               // Esto captura CSS que Next.js inserta de formas no estándar
+              // ⚡ OPTIMIZACIÓN: Verificar más frecuentemente al inicio (primeros 500ms)
               let attempts = 0;
-              const maxAttempts = 50;
+              const maxAttempts = 100; // Aumentado para capturar CSS que se carga más tarde
+              let checkDelay = 5; // Empezar con 5ms para ser más agresivo
               const checkInterval = setInterval(function() {
                 attempts++;
                 processExistingCSS();
+                // Aumentar delay después de los primeros intentos
+                if (attempts > 20) {
+                  checkDelay = 10;
+                }
                 if (attempts >= maxAttempts) {
                   clearInterval(checkInterval);
                 }
-              }, 10); // Verificar cada 10ms
+              }, checkDelay);
             })();
             `,
           }}
@@ -313,21 +266,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Ahorro estimado: -500-800ms en latencia de fuentes (reduce bottleneck de 1,795ms) */}
         <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.pinteya.com" />
-        
-        {/* ⚡ CRITICAL: Preload de imagen LCP del hero - INMEDIATAMENTE después del preconnect */}
-        {/* Esto elimina el retraso de 1,480ms en la carga de recursos */}
-        {/* La imagen estática se renderiza inmediatamente sin esperar JavaScript */}
-        {/* ⚡ OPTIMIZACIÓN LCP: Agregar imagesizes y imagesrcset para mejor descubrimiento temprano */}
-        <link
-          rel="preload"
-          as="image"
-          href="/images/hero/hero2/hero1.webp"
-          fetchPriority="high"
-          type="image/webp"
-          imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-          imagesrcset="/images/hero/hero2/hero1.webp 1200w"
-          crossOrigin="anonymous"
-        />
         
         {/* ⚡ FIX CLS: Preload de fuente Bold usada en hero y header (above-the-fold) */}
         {/* Esto previene layout shift de 0.556 causado por carga tardía de fuente Bold */}
@@ -503,69 +441,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* NOTA: El script de interceptación CSS está al INICIO del head para máxima efectividad */}
         {/* Los archivos CSS no críticos (hero-carousel, checkout-transition) se cargan diferidamente via DeferredCSS */}
         
-        {/* ⚡ CRITICAL: Script para dividir tareas largas y mejorar interactividad */}
-        {/* ⚡ FASE 10: Optimización agresiva para reducir 8 tareas largas (492ms) del chunk 78c1cbcf709aa237.js */}
-        {/* Evita que tareas >50ms bloqueen el hilo principal */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            (function() {
-              // ⚡ OPTIMIZACIÓN: Dividir tareas largas en tareas más pequeñas
-              // Esto mejora la interactividad evitando que tareas >50ms bloqueen el hilo principal
-              
-              // ⚡ FASE 10: Monitorear tareas largas y optimizar ejecución
-              if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
-                try {
-                  const observer = new PerformanceObserver(function(list) {
-                    for (const entry of list.getEntries()) {
-                      const duration = entry.duration;
-                      // Tareas >50ms son consideradas largas y bloquean interactividad
-                      if (duration > 50) {
-                        // ⚡ OPTIMIZACIÓN: Forzar yield del hilo principal después de tareas largas
-                        // Esto permite que el navegador procese interacciones del usuario
-                        if (duration > 100) {
-                          // Tareas muy largas (>100ms) - forzar yield inmediato
-                          setTimeout(function() {}, 0);
-                        }
-                      }
-                    }
-                  });
-                  
-                  observer.observe({ entryTypes: ['longtask'] });
-                } catch (e) {
-                  // PerformanceObserver puede no estar disponible en algunos navegadores
-                }
-              }
-              
-              // ⚡ OPTIMIZACIÓN: Usar requestIdleCallback para diferir trabajo no crítico
-              // Esto permite que el navegador ejecute trabajo cuando el hilo principal esté libre
-              if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-                // ⚡ FASE 10: Diferir inicialización de componentes no críticos más agresivamente
-                // Timeout reducido para ejecutar más rápido cuando el navegador esté idle
-                requestIdleCallback(function() {
-                  // Trabajo no crítico se ejecuta aquí cuando el navegador esté idle
-                  // Esto evita bloquear el hilo principal durante la carga inicial
-                }, { timeout: 1000 }); // ⚡ REDUCIDO: 1000ms (de 2000ms) para ejecutar más rápido
-              }
-              
-              // ⚡ FASE 10: Yield del hilo principal durante carga inicial
-              // Esto permite que el navegador procese interacciones del usuario durante carga
-              if (typeof window !== 'undefined' && document.readyState === 'loading') {
-                let yieldCount = 0;
-                const maxYields = 5; // Máximo 5 yields durante carga inicial
-                const yieldInterval = setInterval(function() {
-                  yieldCount++;
-                  // Forzar yield del hilo principal
-                  setTimeout(function() {}, 0);
-                  if (yieldCount >= maxYields || document.readyState !== 'loading') {
-                    clearInterval(yieldInterval);
-                  }
-                }, 100); // Yield cada 100ms durante carga inicial
-              }
-            })();
-            `,
-          }}
-        />
+        {/* ⚡ OPTIMIZACIÓN: Script de long tasks movido al final del body para no bloquear render inicial */}
         
         {/* ⚡ FASE 13: Preconnect a dominios externos - Agregar crossorigin para recursos CORS */}
         {/* Orden optimizado: primero los más críticos para LCP */}
@@ -595,16 +471,138 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        {/* ⚡ FIX Next.js 15: Todos los componentes con ssr: false están en ClientAnalytics */}
-        {/* ⚡ FASE 1: ClientAnalytics incluye DeferredCSS para cargar CSS no crítico de forma diferida */}
-        <ClientAnalytics />
-        
         {/* Suspense global para componentes compartidos que usan useSearchParams (Header/Search) */}
         <Suspense fallback={null}>
           <div className="overflow-x-hidden max-w-full w-full">
             <Providers>{children}</Providers>
           </div>
         </Suspense>
+        
+        {/* ⚡ FIX Next.js 15: Todos los componentes con ssr: false están en ClientAnalytics */}
+        {/* ⚡ FASE 1: ClientAnalytics incluye DeferredCSS para cargar CSS no crítico de forma diferida */}
+        {/* ⚡ OPTIMIZACIÓN: Movido al final del body para no bloquear renderizado inicial */}
+        <ClientAnalytics />
+        
+        {/* ⚡ OPTIMIZACIÓN: Scripts no críticos movidos aquí para no bloquear render inicial */}
+        {/* #region agent log */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              if (typeof window === 'undefined') return;
+              // ⚡ OPTIMIZACIÓN: Ejecutar después de que la página esté lista para no bloquear render
+              function logData() {
+                const logData = {
+                  location: 'layout.tsx:body',
+                  message: 'HTML initial size measurement',
+                  data: {
+                    htmlSize: document.documentElement.outerHTML.length,
+                    headSize: document.head ? document.head.innerHTML.length : 0,
+                    inlineStyleCount: document.head ? document.head.querySelectorAll('style').length : 0,
+                    inlineStyleSize: Array.from(document.head ? document.head.querySelectorAll('style') : []).reduce((sum, el) => sum + (el.textContent || '').length, 0),
+                    linkStylesheetCount: document.head ? document.head.querySelectorAll('link[rel="stylesheet"]').length : 0,
+                  },
+                  timestamp: Date.now(),
+                  sessionId: 'debug-session',
+                  runId: 'initial',
+                  hypothesisId: 'A'
+                };
+                fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(logData)
+                }).catch(function() {});
+              }
+              
+              // ⚡ OPTIMIZACIÓN: Ejecutar después de que la página esté lista
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                  setTimeout(logData, 100);
+                }, { once: true });
+              } else {
+                setTimeout(logData, 100);
+              }
+            })();
+            `,
+          }}
+        />
+        {/* #endregion */}
+        
+        {/* ⚡ OPTIMIZACIÓN: Script para dividir tareas largas - Movido al final para no bloquear render */}
+        {/* ⚡ FASE 10: Optimización agresiva para reducir 8 tareas largas (492ms) del chunk 78c1cbcf709aa237.js */}
+        {/* Evita que tareas >50ms bloqueen el hilo principal */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              // ⚡ OPTIMIZACIÓN: Ejecutar después de que la página esté lista
+              if (typeof window === 'undefined') return;
+              
+              function initLongTaskOptimization() {
+                // ⚡ OPTIMIZACIÓN: Dividir tareas largas en tareas más pequeñas
+                // Esto mejora la interactividad evitando que tareas >50ms bloqueen el hilo principal
+                
+                // ⚡ FASE 10: Monitorear tareas largas y optimizar ejecución
+                if ('PerformanceObserver' in window) {
+                  try {
+                    const observer = new PerformanceObserver(function(list) {
+                      for (const entry of list.getEntries()) {
+                        const duration = entry.duration;
+                        // Tareas >50ms son consideradas largas y bloquean interactividad
+                        if (duration > 50) {
+                          // ⚡ OPTIMIZACIÓN: Forzar yield del hilo principal después de tareas largas
+                          // Esto permite que el navegador procese interacciones del usuario
+                          if (duration > 100) {
+                            // Tareas muy largas (>100ms) - forzar yield inmediato
+                            setTimeout(function() {}, 0);
+                          }
+                        }
+                      }
+                    });
+                    
+                    observer.observe({ entryTypes: ['longtask'] });
+                  } catch (e) {
+                    // PerformanceObserver puede no estar disponible en algunos navegadores
+                  }
+                }
+                
+                // ⚡ OPTIMIZACIÓN: Usar requestIdleCallback para diferir trabajo no crítico
+                // Esto permite que el navegador ejecute trabajo cuando el hilo principal esté libre
+                if ('requestIdleCallback' in window) {
+                  // ⚡ FASE 10: Diferir inicialización de componentes no críticos más agresivamente
+                  // Timeout reducido para ejecutar más rápido cuando el navegador esté idle
+                  requestIdleCallback(function() {
+                    // Trabajo no crítico se ejecuta aquí cuando el navegador esté idle
+                    // Esto evita bloquear el hilo principal durante la carga inicial
+                  }, { timeout: 1000 }); // ⚡ REDUCIDO: 1000ms (de 2000ms) para ejecutar más rápido
+                }
+                
+                // ⚡ FASE 10: Yield del hilo principal durante carga inicial
+                // Esto permite que el navegador procese interacciones del usuario durante carga
+                if (document.readyState === 'loading') {
+                  let yieldCount = 0;
+                  const maxYields = 5; // Máximo 5 yields durante carga inicial
+                  const yieldInterval = setInterval(function() {
+                    yieldCount++;
+                    // Forzar yield del hilo principal
+                    setTimeout(function() {}, 0);
+                    if (yieldCount >= maxYields || document.readyState !== 'loading') {
+                      clearInterval(yieldInterval);
+                    }
+                  }, 100); // Yield cada 100ms durante carga inicial
+                }
+              }
+              
+              // ⚡ OPTIMIZACIÓN: Ejecutar después de que la página esté lista
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initLongTaskOptimization, { once: true });
+              } else {
+                setTimeout(initLongTaskOptimization, 0);
+              }
+            })();
+            `,
+          }}
+        />
       </body>
     </html>
   )

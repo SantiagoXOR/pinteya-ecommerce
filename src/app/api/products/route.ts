@@ -76,7 +76,14 @@ export async function GET(request: NextRequest) {
           success: false,
           error: `Parámetros inválidos: ${validationResult.error}`,
         }
-        return NextResponse.json(errorResponse, { status: 400 })
+        // ⚡ OPTIMIZACIÓN: Agregar headers de compresión también en respuestas de error
+        return NextResponse.json(errorResponse, { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Vary': 'Accept-Encoding',
+          },
+        })
       }
 
       const filters = validationResult.data!
@@ -364,7 +371,14 @@ export async function GET(request: NextRequest) {
           success: false,
           error: error.message || 'Error obteniendo productos de la base de datos',
         }
-        return NextResponse.json(errorResponse, { status: 500 })
+        // ⚡ OPTIMIZACIÓN: Agregar headers de compresión también en respuestas de error
+        return NextResponse.json(errorResponse, { 
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Vary': 'Accept-Encoding',
+          },
+        })
       }
 
       // Enriquecer productos con información de variantes
@@ -603,11 +617,15 @@ export async function GET(request: NextRequest) {
         message: `${enrichedProducts?.length || 0} productos encontrados`,
       }
 
-      // Agregar headers de cache para mejorar performance
+      // ⚡ OPTIMIZACIÓN: Agregar headers de cache y compresión para mejorar performance
+      // Next.js comprime automáticamente en producción, pero estos headers aseguran compatibilidad
       return NextResponse.json(response, {
         headers: {
           'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+          // ⚡ OPTIMIZACIÓN: Headers para indicar que el contenido es comprimible
+          // Next.js maneja la compresión automáticamente en producción (Gzip/Brotli)
+          'Vary': 'Accept-Encoding',
         },
       })
     } catch (error: any) {
@@ -623,7 +641,14 @@ export async function GET(request: NextRequest) {
         error: error.message || 'Error interno del servidor',
       }
 
-      return NextResponse.json(errorResponse, { status: 500 })
+      // ⚡ OPTIMIZACIÓN: Agregar headers de compresión también en respuestas de error
+      return NextResponse.json(errorResponse, { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Vary': 'Accept-Encoding',
+        },
+      })
     }
   })
 
@@ -768,7 +793,14 @@ export async function POST(request: NextRequest) {
         error: error.message || 'Error interno del servidor',
       }
 
-      return NextResponse.json(errorResponse, { status: 500 })
+      // ⚡ OPTIMIZACIÓN: Agregar headers de compresión también en respuestas de error
+      return NextResponse.json(errorResponse, { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Vary': 'Accept-Encoding',
+        },
+      })
     }
   })
 

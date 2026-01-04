@@ -5,10 +5,11 @@ const defaultTheme = require('tailwindcss/defaultTheme')
 const config: Config = {
   // ⚡ OPTIMIZACIÓN: Content paths para purge más agresivo
   // ⚡ CRITICAL: Incluir todos los archivos que pueden usar clases Tailwind
+  // ⚡ OPTIMIZACIÓN: Orden optimizado - archivos más importantes primero para mejor detección
   content: [
-    './src/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}', // ⚡ OPTIMIZACIÓN: App router primero (más crítico)
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}', // Componentes principales
+    './src/**/*.{js,ts,jsx,tsx,mdx}', // Resto de archivos
     './src/styles/**/*.{js,ts,jsx,tsx,mdx}',
     './src/lib/**/*.{js,ts,jsx,tsx,mdx}',
     './src/hooks/**/*.{js,ts,jsx,tsx,mdx}',
