@@ -55,25 +55,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
         
-        {/* ⚡ CRITICAL: Script de interceptación CSS - Después del preload de imagen */}
-        {/* Esto intercepta CSS ANTES de que Next.js lo inserte en el DOM */}
-        {/* ⚡ OPTIMIZACIÓN: Script simplificado y más agresivo para eliminar render blocking */}
+        {/* ⚡ CRITICAL: Script de interceptación CSS - SOLUCIÓN MEJORADA */}
+        {/* ⚡ ESTRATEGIA: Script bloqueante que intercepta CSS ANTES de que el navegador lo procese */}
+        {/* Este script se ejecuta síncronamente y modifica los links CSS antes de que bloqueen el render */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
             (function() {
               // ⚡ CRITICAL: Interceptar CSS ANTES de que Next.js lo inserte
               // Ejecutar INMEDIATAMENTE sin ningún delay para máxima efectividad
+              // ⚡ MEJORA: Interceptar métodos ANTES de que se usen
               
               function processCSSLink(link) {
                 if (!link || !link.href) return;
                 
                 const href = link.getAttribute('href') || link.href || '';
                 // ⚡ DETECCIÓN MEJORADA: Cualquier CSS de Next.js (incluyendo chunks con hash)
+                // ⚡ FIX: Detectar también URLs relativas que Next.js genera
                 const isNextJSCSS = href.includes('_next/static/css') || 
                                     href.includes('_next/static/chunks/') ||
                                     href.includes('/chunks/') || 
-                                    (href.includes('.css') && (href.includes('_next') || href.includes('dpl_') || href.match(/\/[a-f0-9]+\.css/)));
+                                    href.includes('_next') ||
+                                    (href.includes('.css') && (href.includes('_next') || href.includes('dpl_') || /\/[a-f0-9]{16,}\.css/.test(href)));
                 
                 if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
                   link.setAttribute('data-non-blocking', 'true');
@@ -81,7 +84,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   
                   // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE sin verificar estado
                   // Esto previene que bloquee el renderizado incluso si ya comenzó a descargarse
-                  link.media = 'print';
+                  // ⚡ FIX: Forzar aplicación incluso si el link ya tiene media definido
+                  try {
+                    link.media = 'print';
+                  } catch(e) {
+                    // Fallback si media no se puede cambiar
+                    link.setAttribute('media', 'print');
+                  }
                   
                   // Preload para descarga paralela (solo si no existe ya)
                   if (!document.querySelector('link[rel="preload"][href="' + href + '"]')) {
@@ -191,16 +200,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Promise.resolve().then(processExistingCSS);
               }
               
-              // Interceptar métodos de inserción para CSS dinámico
+              // ⚡ CRITICAL: Interceptar métodos de inserción ANTES de que se usen
+              // Esto captura CSS que Next.js inserta durante SSR o hidratación
               if (document.head && typeof document.head.appendChild === 'function') {
                 const originalAppendChild = document.head.appendChild.bind(document.head);
                 const originalInsertBefore = document.head.insertBefore.bind(document.head);
+                const originalInsertAdjacentElement = document.head.insertAdjacentElement ? document.head.insertAdjacentElement.bind(document.head) : null;
                 
                 // Interceptar appendChild
                 document.head.appendChild = function(node) {
                   if (node && node.nodeType === 1 && node.tagName === 'LINK') {
-                    const rel = node.getAttribute('rel') || node.rel;
-                    if (rel === 'stylesheet') {
+                    const rel = node.getAttribute('rel') || node.rel || node.getAttribute('data-rel');
+                    if (rel === 'stylesheet' || node.href && node.href.includes('.css')) {
                       processCSSLink(node);
                     }
                   }
@@ -210,52 +221,84 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 // Interceptar insertBefore
                 document.head.insertBefore = function(newNode, referenceNode) {
                   if (newNode && newNode.nodeType === 1 && newNode.tagName === 'LINK') {
-                    const rel = newNode.getAttribute('rel') || newNode.rel;
-                    if (rel === 'stylesheet') {
+                    const rel = newNode.getAttribute('rel') || newNode.rel || newNode.getAttribute('data-rel');
+                    if (rel === 'stylesheet' || newNode.href && newNode.href.includes('.css')) {
                       processCSSLink(newNode);
                     }
                   }
                   return originalInsertBefore(newNode, referenceNode);
                 };
+                
+                // Interceptar insertAdjacentElement (si existe)
+                if (originalInsertAdjacentElement) {
+                  document.head.insertAdjacentElement = function(position, element) {
+                    if (element && element.nodeType === 1 && element.tagName === 'LINK') {
+                      const rel = element.getAttribute('rel') || element.rel || element.getAttribute('data-rel');
+                      if (rel === 'stylesheet' || element.href && element.href.includes('.css')) {
+                        processCSSLink(element);
+                      }
+                    }
+                    return originalInsertAdjacentElement(position, element);
+                  };
+                }
               }
               
               // ⚡ CRITICAL: MutationObserver para CSS que se inserta de otras formas
+              // ⚡ MEJORA: Observer más agresivo que captura cambios inmediatamente
               if (typeof MutationObserver !== 'undefined' && document.head) {
                 const observer = new MutationObserver(function(mutations) {
                   mutations.forEach(function(mutation) {
                     mutation.addedNodes.forEach(function(node) {
                       if (node.nodeType === 1 && node.tagName === 'LINK') {
-                        const rel = node.getAttribute('rel') || node.rel;
-                        if (rel === 'stylesheet') {
+                        const rel = node.getAttribute('rel') || node.rel || node.getAttribute('data-rel');
+                        const href = node.getAttribute('href') || node.href || '';
+                        // ⚡ FIX: Detectar también por href si rel no está disponible
+                        if (rel === 'stylesheet' || (href.includes('.css') && href.includes('_next'))) {
+                          // ⚡ CRITICAL: Procesar inmediatamente sin delay
                           processCSSLink(node);
                         }
                       }
                     });
                   });
                 });
+                // ⚡ MEJORA: Observar también subtree para capturar cambios en elementos anidados
                 observer.observe(document.head, {
                   childList: true,
-                  subtree: false
+                  subtree: true, // ⚡ CAMBIO: subtree: true para capturar más casos
+                  attributes: false,
+                  attributeOldValue: false
                 });
               }
               
               // ⚡ CRITICAL: Verificar periódicamente para CSS que se inserta después
               // Esto captura CSS que Next.js inserta de formas no estándar
-              // ⚡ OPTIMIZACIÓN: Verificar más frecuentemente al inicio (primeros 500ms)
+              // ⚡ OPTIMIZACIÓN: Verificar MUY frecuentemente al inicio (primeros 200ms críticos)
               let attempts = 0;
-              const maxAttempts = 100; // Aumentado para capturar CSS que se carga más tarde
-              let checkDelay = 5; // Empezar con 5ms para ser más agresivo
+              const maxAttempts = 200; // ⚡ AUMENTADO: Más intentos para capturar CSS tardío
+              let checkDelay = 2; // ⚡ REDUCIDO: 2ms para ser extremadamente agresivo al inicio
               const checkInterval = setInterval(function() {
                 attempts++;
                 processExistingCSS();
-                // Aumentar delay después de los primeros intentos
-                if (attempts > 20) {
-                  checkDelay = 10;
+                // ⚡ ESTRATEGIA: Verificar muy frecuentemente al inicio, luego reducir frecuencia
+                if (attempts <= 50) {
+                  checkDelay = 2; // Primeros 100ms: cada 2ms
+                } else if (attempts <= 100) {
+                  checkDelay = 5; // Siguientes 250ms: cada 5ms
+                } else {
+                  checkDelay = 10; // Resto: cada 10ms
                 }
                 if (attempts >= maxAttempts) {
                   clearInterval(checkInterval);
                 }
               }, checkDelay);
+              
+              // ⚡ MEJORA ADICIONAL: Forzar procesamiento después de delays específicos
+              // Esto captura CSS que se inserta justo después de que el script se ejecuta
+              setTimeout(processExistingCSS, 1);
+              setTimeout(processExistingCSS, 5);
+              setTimeout(processExistingCSS, 10);
+              setTimeout(processExistingCSS, 20);
+              setTimeout(processExistingCSS, 50);
             })();
             `,
           }}
