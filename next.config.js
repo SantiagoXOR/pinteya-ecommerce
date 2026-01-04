@@ -155,9 +155,9 @@ const nextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 30000, // ⚡ FASE 2: REDUCIDO a 30 KB para chunks más pequeños y menos main thread work
-          minSize: 10000, // ⚡ FASE 2: Reducido a 10 KB mínimo para más granularidad
-          maxAsyncRequests: 80, // ⚡ FASE 1B: AUMENTADO a 80 para permitir más chunks pequeños
+          maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB para chunks más pequeños y menos main thread work
+          minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
+          maxAsyncRequests: 100, // ⚡ FASE 1 PLAN 90+: AUMENTADO a 100 para permitir más chunks pequeños
           maxInitialRequests: 50, // ⚡ FASE 1B: AUMENTADO a 50 para permitir más chunks iniciales
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
@@ -166,7 +166,25 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
               name: 'framework',
               priority: 40,
-              maxSize: 60000, // ⚡ FASE 2: REDUCIDO a 60 KB para reducir main thread work
+              maxSize: 50000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 50 KB para reducir main thread work
+              reuseExistingChunk: true,
+            },
+            // ⚡ React Query - Separado para mejor code splitting
+            reactQuery: {
+              test: /[\\/]node_modules[\\/]@tanstack[\\/]react-query[\\/]/,
+              name: 'react-query',
+              priority: 35,
+              chunks: 'async', // ⚡ FASE 1 PLAN 90+: Solo cargar cuando se necesita
+              maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB
+              reuseExistingChunk: true,
+            },
+            // ⚡ Redux - Separado para mejor code splitting
+            redux: {
+              test: /[\\/]node_modules[\\/](@reduxjs|redux)[\\/]/,
+              name: 'redux',
+              priority: 35,
+              chunks: 'async', // ⚡ FASE 1 PLAN 90+: Solo cargar cuando se necesita
+              maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB
               reuseExistingChunk: true,
             },
             // ⚡ Framer Motion - Separado para lazy loading async
@@ -175,7 +193,7 @@ const nextConfig = {
               name: 'framer-motion',
               priority: 35,
               chunks: 'async', // ⚡ CRITICAL: Solo cargar cuando se necesita
-              maxSize: 50000, // ⚡ FASE 2: REDUCIDO a 50 KB
+              maxSize: 30000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 30 KB
               reuseExistingChunk: true,
             },
             // ⚡ Radix UI - Separado para mejor tree shaking
@@ -183,7 +201,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
               name: 'radix-ui',
               priority: 35,
-              maxSize: 80000, // ⚡ FASE 2: REDUCIDO a 80 KB
+              maxSize: 50000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 50 KB
               reuseExistingChunk: true,
             },
             // ⚡ Swiper - Separado para lazy loading async
@@ -192,7 +210,7 @@ const nextConfig = {
               name: 'swiper',
               priority: 30,
               chunks: 'async', // ⚡ CRITICAL: Solo cargar cuando se necesita
-              maxSize: 50000, // ⚡ FASE 2: REDUCIDO a 50 KB
+              maxSize: 30000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 30 KB
               reuseExistingChunk: true,
             },
             // ⚡ Recharts - Separado para lazy loading
@@ -205,11 +223,11 @@ const nextConfig = {
             },
             // ⚡ Vendor libraries - Chunks más pequeños para mejor tree shaking
             vendor: {
-              test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts)[\\/])/,
+              test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts|@tanstack|redux)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 30000, // ⚡ FASE 2: REDUCIDO a 30 KB para reducir main thread work
-              minSize: 10000, // ⚡ FASE 2: Reducido a 10 KB mínimo para más granularidad
+              maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB para reducir main thread work
+              minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
               reuseExistingChunk: true,
             },
             // ⚡ FASE 1B: Chunk separado para componentes de HomeV3 con tamaño reducido
@@ -217,8 +235,8 @@ const nextConfig = {
               test: /[\\/]src[\\/]components[\\/]Home-v3[\\/]/,
               name: 'home-v3',
               priority: 25,
-              maxSize: 30000, // ⚡ FASE 2: REDUCIDO a 30 KB
-              minSize: 10000, // ⚡ FASE 2: Reducido a 10 KB
+              maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB
+              minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB
               reuseExistingChunk: true,
             },
             // ⚡ FASE 19: Chunk separado para componentes de página (Home, etc.)
@@ -226,8 +244,8 @@ const nextConfig = {
               test: /[\\/]src[\\/](app|components[\\/]Home)[\\/]/,
               name: 'pages',
               priority: 20,
-              maxSize: 30000, // ⚡ FASE 2: REDUCIDO a 30 KB para reducir main thread work
-              minSize: 10000, // ⚡ FASE 2: Reducido a 10 KB mínimo para más granularidad
+              maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB para reducir main thread work
+              minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
               reuseExistingChunk: true,
             },
           },
