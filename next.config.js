@@ -155,9 +155,9 @@ const nextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB para chunks más pequeños y menos main thread work
+          maxSize: 15000, // ⚡ FASE 3.2: REDUCIDO a 15 KB para chunks aún más pequeños
           minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
-          maxAsyncRequests: 100, // ⚡ FASE 1 PLAN 90+: AUMENTADO a 100 para permitir más chunks pequeños
+          maxAsyncRequests: 120, // ⚡ FASE 3.2: AUMENTADO a 120 para permitir más chunks paralelos
           maxInitialRequests: 50, // ⚡ FASE 1B: AUMENTADO a 50 para permitir más chunks iniciales
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
@@ -193,7 +193,7 @@ const nextConfig = {
               name: 'framer-motion',
               priority: 35,
               chunks: 'async', // ⚡ CRITICAL: Solo cargar cuando se necesita
-              maxSize: 30000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 30 KB
+              maxSize: 20000, // ⚡ FASE 3.2: REDUCIDO a 20 KB
               reuseExistingChunk: true,
             },
             // ⚡ Radix UI - Separado para mejor tree shaking
@@ -201,7 +201,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
               name: 'radix-ui',
               priority: 35,
-              maxSize: 50000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 50 KB
+              maxSize: 30000, // ⚡ FASE 3.2: REDUCIDO a 30 KB
               reuseExistingChunk: true,
             },
             // ⚡ Swiper - Separado para lazy loading async
@@ -210,7 +210,7 @@ const nextConfig = {
               name: 'swiper',
               priority: 30,
               chunks: 'async', // ⚡ CRITICAL: Solo cargar cuando se necesita
-              maxSize: 30000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 30 KB
+              maxSize: 20000, // ⚡ FASE 3.2: REDUCIDO a 20 KB
               reuseExistingChunk: true,
             },
             // ⚡ Recharts - Separado para lazy loading
@@ -226,7 +226,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts|@tanstack|redux)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB para reducir main thread work
+              maxSize: 15000, // ⚡ FASE 3.2: REDUCIDO a 15 KB para reducir main thread work
               minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
               reuseExistingChunk: true,
             },
@@ -235,7 +235,7 @@ const nextConfig = {
               test: /[\\/]src[\\/]components[\\/]Home-v3[\\/]/,
               name: 'home-v3',
               priority: 25,
-              maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB
+              maxSize: 15000, // ⚡ FASE 3.2: REDUCIDO a 15 KB
               minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB
               reuseExistingChunk: true,
             },
@@ -244,7 +244,7 @@ const nextConfig = {
               test: /[\\/]src[\\/](app|components[\\/]Home)[\\/]/,
               name: 'pages',
               priority: 20,
-              maxSize: 20000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 20 KB para reducir main thread work
+              maxSize: 15000, // ⚡ FASE 3.2: REDUCIDO a 15 KB para reducir main thread work
               minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
               reuseExistingChunk: true,
             },

@@ -17,10 +17,11 @@ import type { Metadata } from 'next'
 // Estos componentes se cargan después del FCP para no bloquear la carga inicial
 import dynamic from 'next/dynamic'
 
-// ⚡ PERFORMANCE: Componentes críticos (carga inmediata)
-// Solo componentes esenciales para render inicial
+// ⚡ FASE 1.1: Lazy load de StructuredData - No crítico para render inicial
+// Structured data se carga después del FCP para reducir Script Evaluation
 const StructuredData = dynamic(() => import('@/components/SEO/StructuredData'), {
-  ssr: true, // SSR para SEO
+  ssr: true, // SSR para SEO (necesario para crawlers)
+  loading: () => null, // No mostrar loading, no afecta render inicial
 })
 
 // ⚡ FIX Next.js 15: Componentes con ssr: false deben estar en Client Components
@@ -58,6 +59,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         
         {/* ⚡ FASE 1.3: Resource Hints para producción - Mejorar descubrimiento de recursos */}
         {/* Preconnect al dominio propio para reducir latencia de DNS y conexión */}
+        <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.pinteya.com" />
+        
+        {/* ⚡ FASE 2.1: Preconnect a dominio de imágenes para reducir latencia LCP */}
         <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.pinteya.com" />
         
