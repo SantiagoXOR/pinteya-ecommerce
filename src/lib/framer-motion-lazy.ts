@@ -33,8 +33,9 @@ const dynamicComponentsCache = new Map<string, any>()
 const MotionPlaceholder = React.forwardRef((props: any, ref: any) => {
   const Component = (props.as || 'div') as keyof JSX.IntrinsicElements
   // Remover props de framer-motion que no son válidas para elementos HTML
-  const { as, initial, animate, exit, transition, whileHover, whileTap, whileFocus, whileTap: _, ...htmlProps } = props
-  return <Component {...htmlProps} ref={ref} />
+  const { as, initial, animate, exit, transition, whileHover, whileTap, whileFocus, ...htmlProps } = props
+  // Usar React.createElement porque Component es una variable string
+  return React.createElement(Component, { ...htmlProps, ref })
 })
 MotionPlaceholder.displayName = 'MotionPlaceholder'
 
@@ -71,7 +72,7 @@ export const motion = new Proxy({} as any, {
         loading: () => {
           // Mientras carga, renderizar el elemento HTML normal sin animaciones
           const Component = prop as keyof JSX.IntrinsicElements
-          return <Component />
+          return React.createElement(Component)
         }
       }
     )
