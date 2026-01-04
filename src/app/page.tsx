@@ -133,17 +133,22 @@ export default async function HomePage() {
           scrollMarginTop: '0px',
         }}
       >
-        {/* ⚡ FIX CLS: Contenedor interno con dimensiones fijas basadas en aspectRatio */}
+        {/* ⚡ FIX CLS CRÍTICO: Contenedor con dimensiones ABSOLUTAS fijas desde el inicio */}
+        {/* ⚡ CRITICAL: Altura fija calculada para prevenir cualquier layout shift */}
         <div 
           className="relative w-full" 
           style={{ 
             aspectRatio: '1200/433', 
             width: '100%',
+            height: 'clamp(277px, calc(100vw * 433 / 1200), 433px)', // ⚡ FIX CLS: Altura fija calculada
+            minHeight: '277px', // Mobile: mínimo 277px
+            maxHeight: '433px', // Desktop: máximo 433px
             position: 'relative',
             overflow: 'hidden',
+            display: 'block', // ⚡ FIX CLS: display block explícito
           }}
         >
-          {/* ⚡ FIX CLS + LCP: Imagen hero con dimensiones explícitas y fijas */}
+          {/* ⚡ FIX CLS + LCP: Imagen hero con dimensiones ABSOLUTAS fijas */}
           {/* ⚡ CRITICAL: Dimensiones fijas previenen layout shifts y aseguran detección LCP */}
           {/* ⚡ OPTIMIZACIÓN PRODUCCIÓN: Asegurar que la imagen se carga inmediatamente sin bloqueos */}
           <img
@@ -163,20 +168,21 @@ export default async function HomePage() {
             srcSet="/images/hero/hero2/hero1.webp 1200w"
             style={{ 
               width: '100%', 
-              height: 'auto', // ⚡ FIX: Usar auto para respetar aspectRatio
+              height: '100%', // ⚡ FIX CLS CRÍTICO: height 100% en lugar de auto
               aspectRatio: '1200/433',
               objectFit: 'cover', // ⚡ FIX CLS: cover en lugar de contain para evitar shifts
               display: 'block',
-              position: 'relative',
+              position: 'absolute', // ⚡ FIX CLS: absolute para no afectar layout
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               zIndex: 1,
               visibility: 'visible',
               opacity: 1,
               pointerEvents: 'auto',
               margin: 0,
               padding: 0,
-              top: 0,
-              left: 0,
-              right: 0,
               clipPath: 'none',
               clip: 'auto',
             }}

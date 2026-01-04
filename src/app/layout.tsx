@@ -458,9 +458,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           
           /* ⚡ CRITICAL: @font-face inline completo para eliminar dependencia del CSS externo */
           /* Esto reduce la latencia de ruta crítica de 2,124 ms */
-          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
-          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
-          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
+          /* ⚡ FIX CLS: font-display: optional para prevenir layout shifts por fuentes */
+          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:optional;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
+          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:optional;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
+          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:optional;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
           @font-face{font-family:'Euclid Circular A Fallback';ascent-override:93.26%;descent-override:24.99%;line-gap-override:0.00%;size-adjust:107.23%;src:local('Arial')}
           
           /* ⚡ LEGIBILIDAD: Textos oscuros por defecto en contenedores blancos - EXCLUYENDO product cards */

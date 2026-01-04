@@ -12,13 +12,19 @@ import BestSeller from './BestSeller/index'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
 // ⚡ PERFORMANCE: Loading states para componentes críticos
+// ⚡ FIX CLS: Skeleton con dimensiones ABSOLUTAS fijas para prevenir layout shifts
 const HeroCarousel = dynamic(() => import('./HeroCarousel/index'), {
   loading: () => (
-    <div className="relative w-full">
+    <div className="relative w-full" style={{ minHeight: '277px', height: 'clamp(277px, calc(100vw * 433 / 1200), 433px)' }}>
       <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
         <div 
           className="relative w-full overflow-hidden skeleton-loading"
-          style={{ aspectRatio: '2.77' }}
+          style={{ 
+            aspectRatio: '1200/433',
+            height: 'clamp(277px, calc(100vw * 433 / 1200), 433px)',
+            minHeight: '277px',
+            maxHeight: '433px'
+          }}
         />
       </div>
     </div>
