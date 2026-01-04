@@ -68,17 +68,16 @@ export const metadata: Metadata = {
     },
   },
   // ⚡ CRITICAL FIX: Favicons optimizados - Solo SVG para mejor performance
-  // El favicon.png de 996KB estaba causando 2.9MB de transferencia innecesaria
+  // El favicon.png de 996KB y favicon.ico de 499KB estaban causando transferencia innecesaria
   // SVG es escalable, ligero (5KB) y se renderiza perfectamente en todos los navegadores
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' }, // ⚡ SVG primero (5KB vs 996KB)
-      { url: '/favicon.ico', type: 'image/x-icon' }, // Fallback para navegadores antiguos
+      { url: '/favicon.svg', type: 'image/svg+xml' }, // ⚡ SVG primero (5KB vs 499KB .ico)
     ],
     shortcut: '/favicon.svg', // ⚡ Cambiado de PNG a SVG
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    // ⚡ REMOVIDO: favicon.ico (499KB) - Los navegadores modernos usan SVG
     // ⚡ REMOVIDO: other icons duplicados que causaban múltiples descargas
-    // Los navegadores modernos usan SVG, los antiguos usan .ico
   },
   manifest: '/manifest.json',
   other: {
