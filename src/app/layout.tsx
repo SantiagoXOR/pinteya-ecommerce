@@ -53,7 +53,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               // Ejecutar INMEDIATAMENTE al inicio del head para máxima efectividad
               
               function processCSSLink(link) {
-                const href = link.getAttribute('href') || '';
+                if (!link || !link.href) return;
+                
+                const href = link.getAttribute('href') || link.href || '';
                 // ⚡ DETECCIÓN UNIVERSAL: Cualquier CSS de Next.js
                 const isNextJSCSS = href.includes('_next/static/css') || 
                                     href.includes('/chunks/') || 
@@ -62,57 +64,119 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
                   link.setAttribute('data-non-blocking', 'true');
                   const originalMedia = link.media || 'all';
-                  // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE
-                  link.media = 'print';
                   
-                  // Preload para descarga paralela
-                  const preload = document.createElement('link');
-                  preload.rel = 'preload';
-                  preload.as = 'style';
-                  preload.href = href;
-                  preload.setAttribute('fetchpriority', 'high');
-                  const firstChild = document.head.firstChild;
-                  if (firstChild) {
-                    document.head.insertBefore(preload, firstChild);
-                  } else {
-                    document.head.appendChild(preload);
+                  // ⚡ CRITICAL: Si el CSS ya está cargando o cargado, aplicar media="print" inmediatamente
+                  // Esto previene que bloquee el renderizado incluso si ya comenzó a descargarse
+                  if (link.media !== 'print') {
+                    link.media = 'print';
+                  }
+                  
+                  // Preload para descarga paralela (solo si no existe ya)
+                  if (!document.querySelector('link[rel="preload"][href="' + href + '"]')) {
+                    const preload = document.createElement('link');
+                    preload.rel = 'preload';
+                    preload.as = 'style';
+                    preload.href = href;
+                    preload.setAttribute('fetchpriority', 'high');
+                    const firstChild = document.head.firstChild;
+                    if (firstChild) {
+                      document.head.insertBefore(preload, firstChild);
+                    } else {
+                      document.head.appendChild(preload);
+                    }
                   }
                   
                   // Restaurar cuando esté listo
-                  link.onload = function() {
+                  if (!link.onload) {
+                    link.onload = function() {
+                      requestAnimationFrame(function() {
+                        if (link.media === 'print') {
+                          link.media = originalMedia;
+                        }
+                        const preload = document.querySelector('link[rel="preload"][href="' + href + '"]');
+                        if (preload && preload.parentNode) {
+                          preload.parentNode.removeChild(preload);
+                        }
+                      });
+                    };
+                  }
+                  
+                  if (!link.onerror) {
+                    link.onerror = function() {
+                      requestAnimationFrame(function() {
+                        if (link.media === 'print') {
+                          link.media = originalMedia;
+                        }
+                        const preload = document.querySelector('link[rel="preload"][href="' + href + '"]');
+                        if (preload && preload.parentNode) {
+                          preload.parentNode.removeChild(preload);
+                        }
+                      });
+                    };
+                  }
+                  
+                  // ⚡ CRITICAL: Si el CSS ya está cargado, restaurar inmediatamente
+                  if (link.sheet && link.sheet.cssRules && link.sheet.cssRules.length > 0) {
                     requestAnimationFrame(function() {
                       link.media = originalMedia;
-                      if (preload.parentNode) preload.parentNode.removeChild(preload);
                     });
-                  };
-                  
-                  link.onerror = function() {
-                    requestAnimationFrame(function() {
-                      link.media = originalMedia;
-                      if (preload.parentNode) preload.parentNode.removeChild(preload);
-                    });
-                  };
-                  
-                  // Fallback ultra-rápido (5ms)
-                  setTimeout(function() {
-                    if (link.media === 'print') {
-                      link.media = originalMedia;
-                      if (preload.parentNode) preload.parentNode.removeChild(preload);
-                    }
-                  }, 5);
+                  } else {
+                    // Fallback ultra-rápido (1ms) para CSS que se carga rápidamente
+                    setTimeout(function() {
+                      if (link.media === 'print' && link.sheet && link.sheet.cssRules && link.sheet.cssRules.length > 0) {
+                        link.media = originalMedia;
+                        const preload = document.querySelector('link[rel="preload"][href="' + href + '"]');
+                        if (preload && preload.parentNode) {
+                          preload.parentNode.removeChild(preload);
+                        }
+                      }
+                    }, 1);
+                  }
                 }
               }
               
               // ⚡ CRITICAL: Procesar CSS que ya está en el HTML inicial (SSR)
-              // Next.js puede insertar CSS directamente en el HTML, no solo vía appendChild
+              // Next.js inserta CSS directamente en el HTML durante SSR
+              // Este script debe ejecutarse ANTES de que el navegador procese los links CSS
               function processExistingCSS() {
-                const stylesheets = document.querySelectorAll('head link[rel="stylesheet"]:not([data-non-blocking])');
-                stylesheets.forEach(processCSSLink);
+                // Usar getElementsByTagName para máxima velocidad (más rápido que querySelector)
+                const links = document.head.getElementsByTagName('link');
+                for (let i = 0; i < links.length; i++) {
+                  const link = links[i];
+                  if (link.rel === 'stylesheet' || link.getAttribute('rel') === 'stylesheet') {
+                    processCSSLink(link);
+                  }
+                }
               }
               
-              // Ejecutar inmediatamente para CSS en HTML inicial
+              // ⚡ CRITICAL: Ejecutar INMEDIATAMENTE - no esperar nada
+              // El script está al inicio del head, pero el CSS puede estar después
+              // Procesar inmediatamente cuando el script se ejecuta
+              // Usar múltiples estrategias para asegurar que se ejecute lo más temprano posible
+              
+              // Estrategia 1: Ejecutar inmediatamente si head existe
               if (document.head) {
                 processExistingCSS();
+              }
+              
+              // Estrategia 2: Ejecutar en el siguiente tick (síncrono)
+              if (typeof setImmediate !== 'undefined') {
+                setImmediate(processExistingCSS);
+              } else {
+                setTimeout(processExistingCSS, 0);
+              }
+              
+              // Estrategia 3: Ejecutar cuando el DOM esté listo
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', processExistingCSS, { once: true, passive: true });
+              } else if (document.readyState === 'interactive' || document.readyState === 'complete') {
+                // Si ya está cargado, ejecutar inmediatamente
+                processExistingCSS();
+              }
+              
+              // Estrategia 4: Ejecutar después de un microtask (más rápido que setTimeout)
+              if (typeof Promise !== 'undefined' && Promise.resolve) {
+                Promise.resolve().then(processExistingCSS);
               }
               
               // Interceptar métodos de inserción para CSS dinámico
