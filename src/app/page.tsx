@@ -113,33 +113,32 @@ export default async function HomePage() {
       {/* ⚡ OPTIMIZACIÓN LCP: Contenedores simplificados para reducir delay de renderizado */}
       {/* ⚡ CRITICAL: Esta imagen DEBE permanecer visible para que Lighthouse la detecte como LCP */}
       {/* ⚡ LCP FIX: Contenedor simplificado con altura mínima para prevenir CLS y asegurar visibilidad */}
+      {/* ⚡ FIX CLS: Contenedor con dimensiones fijas para prevenir layout shifts */}
       <div 
         className="relative w-full hero-lcp-container" 
         style={{ 
           marginTop: 0, 
           position: 'relative',
-          minHeight: '277px',
+          height: '277px', // ⚡ FIX CLS: Altura fija en lugar de minHeight
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '0.25rem 0.5rem',
+          overflow: 'hidden', // ⚡ FIX CLS: Prevenir overflow que cause shifts
         }}
       >
-        {/* ⚡ FASE 2: Contenedor simplificado - menos anidación = menos delay */}
+        {/* ⚡ FIX CLS: Contenedor interno con dimensiones fijas */}
         <div 
-          className="relative w-full overflow-hidden" 
+          className="relative w-full" 
           style={{ 
-            aspectRatio: '2.77', 
-            minHeight: '277px',
-            height: 'auto',
+            aspectRatio: '1200/433', 
+            height: '277px', // ⚡ FIX CLS: Altura fija
             width: '100%',
             position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          {/* ⚡ FASE 2: Imagen hero estática - optimizada para LCP */}
-          {/* Usar <img> estático para evitar duplicación de requests con Next.js Image */}
-          {/* El preload en layout.tsx asegura descubrimiento temprano */}
-          {/* ⚡ CRITICAL: Esta imagen DEBE ser el LCP - optimizada para carga inmediata */}
-          {/* ⚡ LCP FIX: Asegurar que la imagen esté visible y en el viewport desde el primer render */}
+          {/* ⚡ FIX CLS + LCP: Imagen hero con dimensiones explícitas y fijas */}
+          {/* ⚡ CRITICAL: Dimensiones fijas previenen layout shifts y aseguran detección LCP */}
           <img
             src="/images/hero/hero2/hero1.webp"
             alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
@@ -157,30 +156,24 @@ export default async function HomePage() {
             srcSet="/images/hero/hero2/hero1.webp 1200w"
             style={{ 
               width: '100%', 
-              height: 'auto', 
+              height: '277px', // ⚡ FIX CLS: Altura fija en lugar de auto
               aspectRatio: '1200/433',
-              objectFit: 'contain',
+              objectFit: 'cover', // ⚡ FIX CLS: cover en lugar de contain para evitar shifts
               display: 'block',
               position: 'relative',
               zIndex: 1,
               visibility: 'visible',
               opacity: 1,
               pointerEvents: 'auto',
-              minHeight: '277px',
-              minWidth: '100%',
               margin: 0,
               padding: 0,
-              // ⚡ LCP FIX: Remover transition que puede retrasar la visibilidad
-              // transition: 'opacity 0.5s ease-in-out',
-              // ⚡ LCP FIX: Asegurar que la imagen esté en el viewport desde el primer render
               top: 0,
               left: 0,
               right: 0,
-              // ⚡ LCP FIX: Asegurar que no esté oculta por CSS
               clipPath: 'none',
               clip: 'auto',
-              // ⚡ LCP FIX: Asegurar que la imagen tenga contenido visible
-              contentVisibility: 'auto',
+              // ⚡ FIX LCP: Remover contentVisibility que puede retrasar renderizado
+              // contentVisibility: 'auto',
             }}
           />
           {/* ⚡ FASE 2: HeroOptimized renderiza el carousel aquí, en el mismo contenedor */}
