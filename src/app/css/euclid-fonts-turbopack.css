@@ -29,6 +29,7 @@
 }
 
 /* 3. Bold (700) - Usado en CTAs y encabezados principales */
+/* ⚡ FIX CLS: Preload crítico para elementos above-the-fold (hero, header) */
 @font-face {
   font-family: 'Euclid Circular A';
   src: url('/fonts/EuclidCircularA-Bold.woff2') format('woff2');
@@ -39,6 +40,7 @@
 }
 
 /* Fallback con ajuste para reducir layout shift */
+/* ⚡ FIX CLS: Fallback mejorado para coincidir mejor con dimensiones de fuente Bold */
 @font-face {
   font-family: 'Euclid Circular A Fallback';
   ascent-override: 93.26%;
@@ -46,5 +48,16 @@
   line-gap-override: 0.00%;
   size-adjust: 107.23%;
   src: local('Arial');
+}
+
+/* ⚡ FIX CLS: Fallback específico para Bold (700) con dimensiones ajustadas */
+@font-face {
+  font-family: 'Euclid Circular A Fallback';
+  font-weight: 700;
+  ascent-override: 95%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+  size-adjust: 105%;
+  src: local('Arial Bold');
 }
 

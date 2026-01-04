@@ -113,7 +113,7 @@ export default async function HomePage() {
       {/* ⚡ OPTIMIZACIÓN LCP: Contenedores simplificados para reducir delay de renderizado */}
       {/* ⚡ CRITICAL: Esta imagen DEBE permanecer visible para que Lighthouse la detecte como LCP */}
       {/* ⚡ LCP FIX: Contenedor simplificado con altura mínima para prevenir CLS y asegurar visibilidad */}
-      {/* ⚡ FIX CLS: Contenedor con dimensiones fijas para prevenir layout shifts */}
+      {/* ⚡ FIX CLS + LCP: Contenedor con dimensiones fijas y posición en viewport */}
       <div 
         className="relative w-full hero-lcp-container" 
         style={{ 
@@ -124,6 +124,8 @@ export default async function HomePage() {
           margin: '0 auto',
           padding: '0.25rem 0.5rem',
           overflow: 'hidden', // ⚡ FIX CLS: Prevenir overflow que cause shifts
+          // ⚡ FIX LCP: Asegurar que esté en el viewport inicialmente
+          scrollMarginTop: '0px',
         }}
       >
         {/* ⚡ FIX CLS: Contenedor interno con dimensiones fijas */}
@@ -187,19 +189,45 @@ export default async function HomePage() {
           __html: `
           (function() {
             if (typeof window === 'undefined') return;
+            const logEndpoint = 'http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d';
+            function log(data) {
+              const payload = {
+                location: data.location || 'unknown',
+                message: data.message || 'unknown',
+                data: data.data || {},
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'lcp-cls-investigation',
+                hypothesisId: data.hypothesisId || 'unknown'
+              };
+              fetch(logEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              }).catch(function() {});
+            }
+            // Log inicial para verificar que el script se ejecuta
+            log({location: 'page.tsx:script:init', message: 'Script initialized', data: {timeSincePageLoad: performance.now()}, hypothesisId: 'INIT'});
+            // H1: Verificar visibilidad inicial de imagen hero
             function logHeroImageData(message, hypothesisId) {
               const img = document.getElementById('hero-lcp-image');
-              if (!img) return;
+              if (!img) {
+                log({location: 'page.tsx:script:heroImage', message: 'Hero image not found', data: {}, hypothesisId: hypothesisId});
+                return;
+              }
               const rect = img.getBoundingClientRect();
               const styles = window.getComputedStyle(img);
-              const logData = {
+              const container = img.closest('.hero-lcp-container');
+              const containerRect = container ? container.getBoundingClientRect() : null;
+              log({
                 location: 'page.tsx:script:heroImage',
                 message: message,
                 data: {
-                  timestamp: Date.now(),
                   timeSincePageLoad: performance.now(),
                   isVisible: img.offsetWidth > 0 && img.offsetHeight > 0,
                   inViewport: rect.top >= 0 && rect.left >= 0 && rect.bottom <= window.innerHeight && rect.right <= window.innerWidth,
+                  viewportHeight: window.innerHeight,
+                  viewportWidth: window.innerWidth,
                   opacity: styles.opacity,
                   zIndex: styles.zIndex,
                   position: styles.position,
@@ -209,53 +237,234 @@ export default async function HomePage() {
                   height: rect.height,
                   top: rect.top,
                   left: rect.left,
+                  bottom: rect.bottom,
+                  right: rect.right,
                   complete: img.complete,
                   naturalWidth: img.naturalWidth,
                   naturalHeight: img.naturalHeight,
+                  containerTop: containerRect ? containerRect.top : null,
+                  containerHeight: containerRect ? containerRect.height : null,
+                  elementsAbove: document.elementsFromPoint(rect.left + rect.width/2, rect.top + rect.height/2).filter(el => el !== img && el !== container).map(el => ({tag: el.tagName, id: el.id, className: el.className})).slice(0, 5)
                 },
-                timestamp: Date.now(),
-                sessionId: 'debug-session',
-                runId: 'initial',
                 hypothesisId: hypothesisId
-              };
-              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(logData)
-              }).catch(function() {});
+              });
             }
-            function checkHeroImageVisibility() {
-              logHeroImageData('Hero image visibility check', 'B');
+            // H2: Verificar preload y tiempo de carga
+            function logPreloadStatus() {
+              const preloads = Array.from(document.querySelectorAll('link[rel="preload"][as="image"]'));
+              const heroPreload = preloads.find(p => p.href && p.href.includes('hero1.webp'));
+              log({
+                location: 'page.tsx:script:preload',
+                message: 'Preload status check',
+                data: {
+                  timeSincePageLoad: performance.now(),
+                  heroPreloadExists: !!heroPreload,
+                  heroPreloadHref: heroPreload ? heroPreload.href : null,
+                  allPreloads: preloads.map(p => ({href: p.href, as: p.as}))
+                },
+                hypothesisId: 'H2'
+              });
             }
-            function initHeroImageMonitoring() {
+            // H3: Detectar otros candidatos LCP
+            function logLCPCandidates() {
+              const images = Array.from(document.querySelectorAll('img'));
+              const textElements = Array.from(document.querySelectorAll('h1, h2, h3, p, span')).filter(el => {
+                const rect = el.getBoundingClientRect();
+                return rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.top < window.innerHeight;
+              });
+              const candidates = [];
+              images.forEach(img => {
+                const rect = img.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.top < window.innerHeight) {
+                  candidates.push({
+                    type: 'image',
+                    src: img.src,
+                    id: img.id,
+                    size: rect.width * rect.height,
+                    top: rect.top,
+                    left: rect.left
+                  });
+                }
+              });
+              textElements.slice(0, 10).forEach(el => {
+                const rect = el.getBoundingClientRect();
+                candidates.push({
+                  type: 'text',
+                  tag: el.tagName,
+                  text: el.textContent.substring(0, 50),
+                  size: rect.width * rect.height,
+                  top: rect.top,
+                  left: rect.left
+                });
+              });
+              candidates.sort((a, b) => b.size - a.size);
+              log({
+                location: 'page.tsx:script:lcpCandidates',
+                message: 'LCP candidates detected',
+                data: {
+                  timeSincePageLoad: performance.now(),
+                  candidates: candidates.slice(0, 5),
+                  heroImageRank: candidates.findIndex(c => c.id === 'hero-lcp-image')
+                },
+                hypothesisId: 'H3'
+              });
+            }
+            // H4: Verificar elementos que cubren la imagen
+            function logCoveringElements() {
+              const img = document.getElementById('hero-lcp-image');
+              if (!img) return;
+              const rect = img.getBoundingClientRect();
+              const centerX = rect.left + rect.width / 2;
+              const centerY = rect.top + rect.height / 2;
+              const elements = document.elementsFromPoint(centerX, centerY);
+              const covering = elements.filter(el => {
+                if (el === img || el === document.body || el === document.documentElement) return false;
+                const elRect = el.getBoundingClientRect();
+                const styles = window.getComputedStyle(el);
+                return elRect.width > 0 && elRect.height > 0 && 
+                       styles.opacity !== '0' && 
+                       styles.visibility !== 'hidden' &&
+                       styles.display !== 'none' &&
+                       parseInt(styles.zIndex || '0') >= parseInt(window.getComputedStyle(img).zIndex || '1');
+              });
+              log({
+                location: 'page.tsx:script:coveringElements',
+                message: 'Elements covering hero image',
+                data: {
+                  timeSincePageLoad: performance.now(),
+                  coveringElements: covering.map(el => ({
+                    tag: el.tagName,
+                    id: el.id,
+                    className: el.className,
+                    zIndex: window.getComputedStyle(el).zIndex,
+                    opacity: window.getComputedStyle(el).opacity,
+                    position: window.getComputedStyle(el).position
+                  }))
+                },
+                hypothesisId: 'H4'
+              });
+            }
+            // H5: Verificar dimensiones y posición
+            function logDimensions() {
+              const img = document.getElementById('hero-lcp-image');
+              if (!img) return;
+              const rect = img.getBoundingClientRect();
+              const styles = window.getComputedStyle(img);
+              log({
+                location: 'page.tsx:script:dimensions',
+                message: 'Hero image dimensions check',
+                data: {
+                  timeSincePageLoad: performance.now(),
+                  computedWidth: styles.width,
+                  computedHeight: styles.height,
+                  actualWidth: rect.width,
+                  actualHeight: rect.height,
+                  naturalWidth: img.naturalWidth,
+                  naturalHeight: img.naturalHeight,
+                  aspectRatio: rect.width / rect.height,
+                  expectedAspectRatio: 1200 / 433,
+                  isOffscreen: rect.bottom < 0 || rect.top > window.innerHeight || rect.right < 0 || rect.left > window.innerWidth
+                },
+                hypothesisId: 'H5'
+              });
+            }
+            // CLS: Rastrear cambios de layout
+            let lastLayoutHeight = 0;
+            const clsObserver = new PerformanceObserver((list) => {
+              for (const entry of list.getEntries()) {
+                if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
+                  log({
+                    location: 'page.tsx:script:cls',
+                    message: 'Layout shift detected',
+                    data: {
+                      timeSincePageLoad: performance.now(),
+                      value: entry.value,
+                      sources: entry.sources.map(s => ({
+                        node: s.node ? s.node.tagName + (s.node.id ? '#' + s.node.id : '') + (s.node.className ? '.' + s.node.className.split(' ')[0] : '') : 'unknown',
+                        previousRect: s.previousRect,
+                        currentRect: s.currentRect
+                      }))
+                    },
+                    hypothesisId: 'CLS1'
+                  });
+                }
+              }
+            });
+            try {
+              clsObserver.observe({entryTypes: ['layout-shift']});
+            } catch(e) {}
+            // CLS: Monitorear cambios de minHeight en componentes lazy
+            function monitorLazyComponents() {
+              const lazyContainers = Array.from(document.querySelectorAll('[style*="min-height"]'));
+              lazyContainers.forEach(container => {
+                const observer = new MutationObserver((mutations) => {
+                  mutations.forEach(mutation => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                      const newStyle = container.getAttribute('style');
+                      const oldMinHeight = mutation.oldValue ? (mutation.oldValue.match(/min-height[^;]*/) || [null])[0] : null;
+                      const newMinHeight = newStyle ? (newStyle.match(/min-height[^;]*/) || [null])[0] : null;
+                      if (oldMinHeight !== newMinHeight) {
+                        log({
+                          location: 'page.tsx:script:lazyComponent',
+                          message: 'Lazy component minHeight changed',
+                          data: {
+                            timeSincePageLoad: performance.now(),
+                            element: container.tagName + (container.id ? '#' + container.id : '') + (container.className ? '.' + container.className.split(' ')[0] : ''),
+                            oldMinHeight: oldMinHeight,
+                            newMinHeight: newMinHeight,
+                            rect: container.getBoundingClientRect()
+                          },
+                          hypothesisId: 'CLS1'
+                        });
+                      }
+                    }
+                  });
+                });
+                observer.observe(container, {attributes: true, attributeOldValue: true});
+              });
+            }
+            // Inicialización
+            function initMonitoring() {
+              log({location: 'page.tsx:script:initMonitoring', message: 'initMonitoring called', data: {readyState: document.readyState, timeSincePageLoad: performance.now()}, hypothesisId: 'INIT'});
               const img = document.getElementById('hero-lcp-image');
               if (!img) {
-                setTimeout(initHeroImageMonitoring, 100);
+                log({location: 'page.tsx:script:initMonitoring', message: 'Hero image not found, retrying', data: {timeSincePageLoad: performance.now()}, hypothesisId: 'INIT'});
+                setTimeout(initMonitoring, 100);
                 return;
               }
-              // Log cuando la imagen se carga
+              log({location: 'page.tsx:script:initMonitoring', message: 'Hero image found, starting monitoring', data: {timeSincePageLoad: performance.now(), imgComplete: img.complete}, hypothesisId: 'INIT'});
+              // LCP monitoring
+              logHeroImageData('Hero image initial check', 'H1');
+              logPreloadStatus();
+              setTimeout(logLCPCandidates, 100);
+              setTimeout(logCoveringElements, 200);
+              setTimeout(logDimensions, 300);
+              // CLS monitoring
+              monitorLazyComponents();
+              // Verificaciones periódicas
+              [100, 500, 1000, 2000, 5000, 10000, 15000].forEach(delay => {
+                setTimeout(() => {
+                  logHeroImageData('Hero image periodic check', 'H1');
+                  logLCPCandidates();
+                  logCoveringElements();
+                }, delay);
+              });
+              // Monitorear carga de imagen
               if (img.complete) {
-                logHeroImageData('Hero image already loaded', 'B');
+                logHeroImageData('Hero image already loaded', 'H2');
               } else {
-                img.addEventListener('load', function() {
-                  logHeroImageData('Hero image loaded', 'B');
-                }, { once: true });
-                img.addEventListener('error', function() {
-                  logHeroImageData('Hero image load error', 'B');
-                }, { once: true });
+                img.addEventListener('load', () => logHeroImageData('Hero image loaded', 'H2'), { once: true });
+                img.addEventListener('error', () => logHeroImageData('Hero image load error', 'H2'), { once: true });
               }
-              // Verificaciones periódicas de visibilidad
-              setTimeout(checkHeroImageVisibility, 100);
-              setTimeout(checkHeroImageVisibility, 1000);
-              setTimeout(checkHeroImageVisibility, 5000);
-              setTimeout(checkHeroImageVisibility, 10000);
-              setTimeout(checkHeroImageVisibility, 15000);
             }
+            // Ejecutar inmediatamente y también cuando el DOM esté listo
             if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', initHeroImageMonitoring, { once: true });
+              document.addEventListener('DOMContentLoaded', initMonitoring, { once: true });
             } else {
-              setTimeout(initHeroImageMonitoring, 0);
+              setTimeout(initMonitoring, 0);
             }
+            // También intentar inmediatamente
+            setTimeout(initMonitoring, 0);
           })();
           `,
         }}

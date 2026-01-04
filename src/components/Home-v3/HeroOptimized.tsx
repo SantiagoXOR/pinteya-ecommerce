@@ -31,6 +31,28 @@ const HeroOptimized = memo(() => {
   // ⚡ FIX: Marcar como montado después del primer render
   useEffect(() => {
     setIsMounted(true)
+    // #region agent log
+    if (typeof window !== 'undefined') {
+      (window as any).__heroMountTime = performance.now();
+      const logData = {
+        location: 'HeroOptimized.tsx:useEffect:mount',
+        message: 'HeroOptimized mounted',
+        data: {
+          timestamp: Date.now(),
+          timeSincePageLoad: performance.now(),
+        },
+        timestamp: Date.now(),
+        sessionId: 'debug-session',
+        runId: 'initial',
+        hypothesisId: 'C'
+      };
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logData)
+      }).catch(function() {});
+    }
+    // #endregion
   }, [])
 
   // ⚡ FASE 2: Cargar carousel DESPUÉS de que Lighthouse evalúe LCP (25 segundos)
@@ -44,6 +66,29 @@ const HeroOptimized = memo(() => {
     // 25 segundos da margen más que suficiente sin afectar la experiencia del usuario
     const carouselTimeout = setTimeout(() => {
       setShouldLoadCarousel(true)
+      // #region agent log
+      if (typeof window !== 'undefined') {
+        (window as any).__carouselLoadTime = performance.now();
+        const logData = {
+          location: 'HeroOptimized.tsx:useEffect:carouselLoad',
+          message: 'Carousel loading started',
+          data: {
+            timestamp: Date.now(),
+            timeSincePageLoad: performance.now(),
+            timeSinceMount: performance.now() - (window as any).__heroMountTime || 0,
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'initial',
+          hypothesisId: 'C'
+        };
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logData)
+        }).catch(function() {});
+      }
+      // #endregion
     }, 25000) // ⚡ FASE 2: 25 segundos - después de evaluación completa de Lighthouse
 
     return () => clearTimeout(carouselTimeout)
@@ -64,6 +109,32 @@ const HeroOptimized = memo(() => {
         '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
       )
       if (staticImage && staticImage instanceof HTMLElement) {
+        // #region agent log
+        if (typeof window !== 'undefined') {
+          const rect = staticImage.getBoundingClientRect();
+          const logData = {
+            location: 'HeroOptimized.tsx:useEffect:hideImage',
+            message: 'Hiding static hero image',
+            data: {
+              timestamp: Date.now(),
+              timeSincePageLoad: performance.now(),
+              timeSinceCarouselLoad: performance.now() - (window as any).__carouselLoadTime || 0,
+              imageVisibleBefore: window.getComputedStyle(staticImage).opacity !== '0',
+              imageInViewport: rect.top >= 0 && rect.left >= 0 && rect.bottom <= window.innerHeight && rect.right <= window.innerWidth,
+              imageSize: { width: rect.width, height: rect.height },
+            },
+            timestamp: Date.now(),
+            sessionId: 'debug-session',
+            runId: 'initial',
+            hypothesisId: 'A'
+          };
+          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(logData)
+          }).catch(function() {});
+        }
+        // #endregion
         // ⚡ FASE 2: Ocultar imagen estática cuando el carousel está listo
         // Usar opacity: 0 en lugar de visibility para mejor transición
         staticImage.style.opacity = '0'

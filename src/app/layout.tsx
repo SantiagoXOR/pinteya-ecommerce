@@ -42,6 +42,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='es' className={euclidCircularA.variable} suppressHydrationWarning>
       <head>
+        {/* #region agent log */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              if (typeof window === 'undefined') return;
+              const logData = {
+                location: 'layout.tsx:head',
+                message: 'HTML initial size measurement',
+                data: {
+                  htmlSize: document.documentElement.outerHTML.length,
+                  headSize: document.head ? document.head.innerHTML.length : 0,
+                  inlineStyleCount: document.head ? document.head.querySelectorAll('style').length : 0,
+                  inlineStyleSize: Array.from(document.head ? document.head.querySelectorAll('style') : []).reduce((sum, el) => sum + (el.textContent || '').length, 0),
+                  linkStylesheetCount: document.head ? document.head.querySelectorAll('link[rel="stylesheet"]').length : 0,
+                },
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'initial',
+                hypothesisId: 'A'
+              };
+              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(logData)
+              }).catch(function() {});
+            })();
+            `,
+          }}
+        />
+        {/* #endregion */}
         {/* ⚡ CRITICAL: Script de interceptación CSS DEBE estar PRIMERO - Antes de cualquier otro recurso */}
         {/* Esto intercepta CSS ANTES de que Next.js lo inserte en el DOM */}
         {/* ⚡ FASE 1 MEJORADA: Ejecutar INMEDIATAMENTE al inicio del head */}
@@ -49,6 +80,40 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `
             (function() {
+              // #region agent log
+              if (typeof window !== 'undefined') {
+                const parseStartTime = performance.now();
+                const logParseTime = function() {
+                  const parseTime = performance.now() - parseStartTime;
+                  const logData = {
+                    location: 'layout.tsx:head:parse',
+                    message: 'HTML parse time measurement',
+                    data: {
+                      parseTime: parseTime,
+                      htmlSize: document.documentElement.outerHTML.length,
+                      headSize: document.head ? document.head.innerHTML.length : 0,
+                      bodySize: document.body ? document.body.innerHTML.length : 0,
+                      inlineStyleCount: document.head ? document.head.querySelectorAll('style').length : 0,
+                      inlineStyleSize: Array.from(document.head ? document.head.querySelectorAll('style') : []).reduce((sum, el) => sum + (el.textContent || '').length, 0),
+                    },
+                    timestamp: Date.now(),
+                    sessionId: 'debug-session',
+                    runId: 'initial',
+                    hypothesisId: 'A'
+                  };
+                  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(logData)
+                  }).catch(function() {});
+                };
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', logParseTime, { once: true });
+                } else {
+                  setTimeout(logParseTime, 0);
+                }
+              }
+              // #endregion
               // ⚡ CRITICAL: Interceptar CSS ANTES de que Next.js lo inserte
               // Ejecutar INMEDIATAMENTE al inicio del head para máxima efectividad
               
@@ -262,6 +327,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
           imagesrcset="/images/hero/hero2/hero1.webp 1200w"
           crossOrigin="anonymous"
+        />
+        
+        {/* ⚡ FIX CLS: Preload de fuente Bold usada en hero y header (above-the-fold) */}
+        {/* Esto previene layout shift de 0.556 causado por carga tardía de fuente Bold */}
+        <link
+          rel="preload"
+          as="font"
+          href="/fonts/EuclidCircularA-Bold.woff2"
+          type="font/woff2"
+          crossOrigin="anonymous"
+          fetchPriority="high"
         />
         
         {/* ⚡ CRITICAL CSS - Inline para FCP rápido (-0.2s) */}

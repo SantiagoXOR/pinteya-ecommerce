@@ -161,8 +161,35 @@ const LazyPromoBanner = React.memo(({ bannerId }: { bannerId: number }) => {
     return isVisible ? <PromoBanners bannerId={bannerId} /> : null
   }, [isVisible, bannerId])
 
+  // ⚡ FIX CLS: minHeight realista basado en altura esperada del banner (48px para banners compactos)
+  // Esto previene layout shift cuando el componente se vuelve visible
+  const minHeight = isVisible ? 'auto' : '48px';
+  // #region agent log
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'Home-v3/index.tsx:LazyPromoBanner',
+          message: 'LazyPromoBanner visibility changed',
+          data: {
+            timeSincePageLoad: performance.now(),
+            bannerId: bannerId,
+            isVisible: isVisible,
+            minHeight: minHeight // ⚡ FIX: Usar el valor real calculado
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'lcp-cls-investigation',
+          hypothesisId: 'CLS1'
+        })
+      }).catch(() => {});
+    }
+  }, [isVisible, bannerId, minHeight]);
+  // #endregion
   return (
-    <div ref={ref} style={{ minHeight: isVisible ? 'auto' : '1px' }}>
+    <div ref={ref} style={{ minHeight: minHeight }}>
       {content}
     </div>
   )
@@ -181,8 +208,33 @@ const LazyNewArrivals = React.memo(() => {
     return isVisible ? <NewArrivals /> : null
   }, [isVisible])
 
+  // ⚡ FIX CLS: minHeight realista basado en altura esperada (500px según Home-v2)
+  const minHeight = isVisible ? 'auto' : '500px';
+  // #region agent log
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'Home-v3/index.tsx:LazyNewArrivals',
+          message: 'LazyNewArrivals visibility changed',
+          data: {
+            timeSincePageLoad: performance.now(),
+            isVisible: isVisible,
+            minHeight: minHeight // ⚡ FIX: Usar el valor real calculado
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'lcp-cls-investigation',
+          hypothesisId: 'CLS1'
+        })
+      }).catch(() => {});
+    }
+  }, [isVisible, minHeight]);
+  // #endregion
   return (
-    <div ref={ref} style={{ minHeight: isVisible ? 'auto' : '1px' }}>
+    <div ref={ref} style={{ minHeight: minHeight }}>
       {content}
     </div>
   )
@@ -200,8 +252,33 @@ const LazyTrendingSearches = React.memo(() => {
     return isVisible ? <TrendingSearches /> : null
   }, [isVisible])
 
+  // ⚡ FIX CLS: minHeight realista basado en altura esperada (~100px para trending searches)
+  const minHeight = isVisible ? 'auto' : '100px';
+  // #region agent log
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'Home-v3/index.tsx:LazyTrendingSearches',
+          message: 'LazyTrendingSearches visibility changed',
+          data: {
+            timeSincePageLoad: performance.now(),
+            isVisible: isVisible,
+            minHeight: minHeight // ⚡ FIX: Usar el valor real calculado
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'lcp-cls-investigation',
+          hypothesisId: 'CLS1'
+        })
+      }).catch(() => {});
+    }
+  }, [isVisible, minHeight]);
+  // #endregion
   return (
-    <div ref={ref} style={{ minHeight: isVisible ? 'auto' : '1px' }}>
+    <div ref={ref} style={{ minHeight: minHeight }}>
       {content}
     </div>
   )
@@ -219,8 +296,33 @@ const LazyTestimonials = React.memo(() => {
     return isVisible ? <Testimonials /> : null
   }, [isVisible])
 
+  // ⚡ FIX CLS: minHeight realista basado en altura esperada (~200px para testimonials)
+  const minHeight = isVisible ? 'auto' : '200px';
+  // #region agent log
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'Home-v3/index.tsx:LazyTestimonials',
+          message: 'LazyTestimonials visibility changed',
+          data: {
+            timeSincePageLoad: performance.now(),
+            isVisible: isVisible,
+            minHeight: minHeight // ⚡ FIX: Usar el valor real calculado
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'lcp-cls-investigation',
+          hypothesisId: 'CLS1'
+        })
+      }).catch(() => {});
+    }
+  }, [isVisible, minHeight]);
+  // #endregion
   return (
-    <div ref={ref} style={{ minHeight: isVisible ? 'auto' : '1px' }}>
+    <div ref={ref} style={{ minHeight: minHeight }}>
       {content}
     </div>
   )
@@ -278,6 +380,31 @@ const LazyBestSeller = React.memo(({ delay = 0 }: { delay?: number }) => {
   // ✅ FIX CRÍTICO: BestSeller debe cargarse SIEMPRE, sin progressive loading
   // Renderizar inmediatamente sin esperar a ser visible
   // ⚡ FASE 3: min-height para prevenir CLS
+  // #region agent log
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && shouldRender) {
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: 'Home-v3/index.tsx:LazyBestSeller',
+          message: 'LazyBestSeller render state changed',
+          data: {
+            timeSincePageLoad: performance.now(),
+            shouldRender: shouldRender,
+            isHydrated: isHydrated,
+            hasRendered: hasRendered,
+            delay: delay
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'lcp-cls-investigation',
+          hypothesisId: 'CLS2'
+        })
+      }).catch(() => {});
+    }
+  }, [shouldRender, isHydrated, hasRendered, delay]);
+  // #endregion
   return (
     <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}>
       <BestSeller />
