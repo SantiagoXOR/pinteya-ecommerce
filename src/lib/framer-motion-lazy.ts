@@ -90,28 +90,18 @@ export const AnimatePresence = dynamic(
   { ssr: false }
 ) as any
 
-// Lazy load de hooks - estos necesitan ser usados dentro de componentes
-export const useAnimation = () => {
-  const [controls, setControls] = React.useState<any>(null)
-  
-  React.useEffect(() => {
-    getFramerMotion().then((mod) => {
-      setControls(mod.useAnimation())
-    })
-  }, [])
-  
-  return controls || (() => {})
-}
+// ⚡ IMPORTANTE: Los hooks NO pueden ser lazy-loaded porque deben ejecutarse en el cuerpo del componente
+// Los hooks se usan inmediatamente cuando el componente se renderiza, así que los importamos directamente
+// Solo los componentes (motion.*, AnimatePresence) se cargan de manera lazy
+// 
+// NOTA: Esto significa que los hooks cargarán framer-motion de manera eager, pero esto es necesario
+// porque los hooks de React deben ejecutarse inmediatamente y no pueden esperar a que se cargue un módulo
 
-export const useMotionValue = (initial: any) => {
-  const [value, setValue] = React.useState<any>(null)
-  
-  React.useEffect(() => {
-    getFramerMotion().then((mod) => {
-      setValue(mod.useMotionValue(initial))
-    })
-  }, [initial])
-  
-  return value
-}
+// Importar hooks directamente desde framer-motion
+// Estos se cargan de manera eager porque se necesitan inmediatamente
+import { useAnimation as useAnimationOriginal, useMotionValue as useMotionValueOriginal } from 'framer-motion'
+
+// Re-exportar hooks directamente
+export const useAnimation = useAnimationOriginal
+export const useMotionValue = useMotionValueOriginal
 
