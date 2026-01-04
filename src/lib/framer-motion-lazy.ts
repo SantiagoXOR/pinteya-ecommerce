@@ -10,25 +10,76 @@ import dynamic from 'next/dynamic'
 
 // Cargar framer-motion de manera lazy
 let framerMotionPromise: Promise<any> | null = null
+let framerMotionModule: any = null
 
-const getFramerMotion = () => {
+const getFramerMotion = async () => {
   if (!framerMotionPromise) {
-    framerMotionPromise = import('framer-motion')
+    framerMotionPromise = import('framer-motion').then((mod) => {
+      framerMotionModule = mod
+      return mod
+    }).catch((error) => {
+      console.error('Error loading framer-motion:', error)
+      framerMotionPromise = null // Reset para permitir reintento
+      throw error
+    })
   }
   return framerMotionPromise
 }
 
-// Proxy para motion que carga framer-motion cuando se accede a cualquier propiedad
+// Cache de componentes dinámicos para evitar recrearlos
+const dynamicComponentsCache = new Map<string, any>()
+
+// Componente placeholder que se muestra mientras carga
+const MotionPlaceholder = React.forwardRef((props: any, ref: any) => {
+  const Component = (props.as || 'div') as keyof JSX.IntrinsicElements
+  // Remover props de framer-motion que no son válidas para elementos HTML
+  const { as, initial, animate, exit, transition, whileHover, whileTap, whileFocus, whileTap: _, ...htmlProps } = props
+  return <Component {...htmlProps} ref={ref} />
+})
+MotionPlaceholder.displayName = 'MotionPlaceholder'
+
+// Proxy mejorado para motion que cachea componentes dinámicos
 export const motion = new Proxy({} as any, {
   get: (_target, prop: string) => {
-    // Crear un componente dinámico para cada elemento HTML (div, button, etc.)
-    return dynamic(
+    // Si ya tenemos el módulo cargado, devolver el componente directamente
+    if (framerMotionModule && framerMotionModule.motion[prop]) {
+      return framerMotionModule.motion[prop]
+    }
+    
+    // Verificar si ya creamos este componente dinámico
+    if (dynamicComponentsCache.has(prop)) {
+      return dynamicComponentsCache.get(prop)
+    }
+    
+    // Crear un componente dinámico que carga framer-motion
+    const DynamicMotionComponent = dynamic(
       () => getFramerMotion().then((mod) => {
         const MotionComponent = mod.motion[prop as keyof typeof mod.motion]
+        if (!MotionComponent) {
+          // Si el componente no existe, devolver un placeholder
+          console.warn(`Framer Motion component 'motion.${prop}' not found, using placeholder`)
+          return { default: MotionPlaceholder }
+        }
         return { default: MotionComponent }
+      }).catch((error) => {
+        console.error(`Error loading framer-motion component 'motion.${prop}':`, error)
+        // En caso de error, devolver placeholder
+        return { default: MotionPlaceholder }
       }),
-      { ssr: false }
+      { 
+        ssr: false,
+        loading: () => {
+          // Mientras carga, renderizar el elemento HTML normal sin animaciones
+          const Component = prop as keyof JSX.IntrinsicElements
+          return <Component />
+        }
+      }
     )
+    
+    // Cachear el componente
+    dynamicComponentsCache.set(prop, DynamicMotionComponent)
+    
+    return DynamicMotionComponent
   }
 })
 
