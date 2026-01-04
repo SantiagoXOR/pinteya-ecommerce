@@ -51,60 +51,74 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             (function() {
               // ⚡ CRITICAL: Interceptar CSS ANTES de que Next.js lo inserte
               // Ejecutar INMEDIATAMENTE al inicio del head para máxima efectividad
+              
+              function processCSSLink(link) {
+                const href = link.getAttribute('href') || '';
+                // ⚡ DETECCIÓN UNIVERSAL: Cualquier CSS de Next.js
+                const isNextJSCSS = href.includes('_next/static/css') || 
+                                    href.includes('/chunks/') || 
+                                    (href.includes('.css') && (href.includes('_next') || href.includes('dpl_')));
+                
+                if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
+                  link.setAttribute('data-non-blocking', 'true');
+                  const originalMedia = link.media || 'all';
+                  // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE
+                  link.media = 'print';
+                  
+                  // Preload para descarga paralela
+                  const preload = document.createElement('link');
+                  preload.rel = 'preload';
+                  preload.as = 'style';
+                  preload.href = href;
+                  preload.setAttribute('fetchpriority', 'high');
+                  const firstChild = document.head.firstChild;
+                  if (firstChild) {
+                    document.head.insertBefore(preload, firstChild);
+                  } else {
+                    document.head.appendChild(preload);
+                  }
+                  
+                  // Restaurar cuando esté listo
+                  link.onload = function() {
+                    requestAnimationFrame(function() {
+                      link.media = originalMedia;
+                      if (preload.parentNode) preload.parentNode.removeChild(preload);
+                    });
+                  };
+                  
+                  link.onerror = function() {
+                    requestAnimationFrame(function() {
+                      link.media = originalMedia;
+                      if (preload.parentNode) preload.parentNode.removeChild(preload);
+                    });
+                  };
+                  
+                  // Fallback ultra-rápido (5ms)
+                  setTimeout(function() {
+                    if (link.media === 'print') {
+                      link.media = originalMedia;
+                      if (preload.parentNode) preload.parentNode.removeChild(preload);
+                    }
+                  }, 5);
+                }
+              }
+              
+              // ⚡ CRITICAL: Procesar CSS que ya está en el HTML inicial (SSR)
+              // Next.js puede insertar CSS directamente en el HTML, no solo vía appendChild
+              function processExistingCSS() {
+                const stylesheets = document.querySelectorAll('head link[rel="stylesheet"]:not([data-non-blocking])');
+                stylesheets.forEach(processCSSLink);
+              }
+              
+              // Ejecutar inmediatamente para CSS en HTML inicial
+              if (document.head) {
+                processExistingCSS();
+              }
+              
+              // Interceptar métodos de inserción para CSS dinámico
               if (document.head && typeof document.head.appendChild === 'function') {
                 const originalAppendChild = document.head.appendChild.bind(document.head);
                 const originalInsertBefore = document.head.insertBefore.bind(document.head);
-                
-                function processCSSLink(link) {
-                  const href = link.getAttribute('href') || '';
-                  // ⚡ DETECCIÓN UNIVERSAL: Cualquier CSS de Next.js
-                  const isNextJSCSS = href.includes('_next/static/css') || 
-                                      href.includes('/chunks/') || 
-                                      href.includes('.css') && (href.includes('_next') || href.includes('dpl_'));
-                  
-                  if (isNextJSCSS && !link.hasAttribute('data-non-blocking')) {
-                    link.setAttribute('data-non-blocking', 'true');
-                    const originalMedia = link.media || 'all';
-                    // ⚡ CRITICAL: Aplicar media="print" INMEDIATAMENTE
-                    link.media = 'print';
-                    
-                    // Preload para descarga paralela
-                    const preload = document.createElement('link');
-                    preload.rel = 'preload';
-                    preload.as = 'style';
-                    preload.href = href;
-                    preload.setAttribute('fetchpriority', 'high');
-                    const firstChild = document.head.firstChild;
-                    if (firstChild) {
-                      document.head.insertBefore(preload, firstChild);
-                    } else {
-                      document.head.appendChild(preload);
-                    }
-                    
-                    // Restaurar cuando esté listo
-                    link.onload = function() {
-                      requestAnimationFrame(function() {
-                        link.media = originalMedia;
-                        if (preload.parentNode) preload.parentNode.removeChild(preload);
-                      });
-                    };
-                    
-                    link.onerror = function() {
-                      requestAnimationFrame(function() {
-                        link.media = originalMedia;
-                        if (preload.parentNode) preload.parentNode.removeChild(preload);
-                      });
-                    };
-                    
-                    // Fallback ultra-rápido (5ms)
-                    setTimeout(function() {
-                      if (link.media === 'print') {
-                        link.media = originalMedia;
-                        if (preload.parentNode) preload.parentNode.removeChild(preload);
-                      }
-                    }, 5);
-                  }
-                }
                 
                 // Interceptar appendChild
                 document.head.appendChild = function(node) {
@@ -128,6 +142,38 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   return originalInsertBefore(newNode, referenceNode);
                 };
               }
+              
+              // ⚡ CRITICAL: MutationObserver para CSS que se inserta de otras formas
+              if (typeof MutationObserver !== 'undefined' && document.head) {
+                const observer = new MutationObserver(function(mutations) {
+                  mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                      if (node.nodeType === 1 && node.tagName === 'LINK') {
+                        const rel = node.getAttribute('rel') || node.rel;
+                        if (rel === 'stylesheet') {
+                          processCSSLink(node);
+                        }
+                      }
+                    });
+                  });
+                });
+                observer.observe(document.head, {
+                  childList: true,
+                  subtree: false
+                });
+              }
+              
+              // ⚡ CRITICAL: Verificar periódicamente para CSS que se inserta después
+              // Esto captura CSS que Next.js inserta de formas no estándar
+              let attempts = 0;
+              const maxAttempts = 50;
+              const checkInterval = setInterval(function() {
+                attempts++;
+                processExistingCSS();
+                if (attempts >= maxAttempts) {
+                  clearInterval(checkInterval);
+                }
+              }, 10); // Verificar cada 10ms
             })();
             `,
           }}

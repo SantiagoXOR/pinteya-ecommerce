@@ -171,3 +171,4 @@ Este comando configurará automáticamente el servidor MCP para Cursor.
 
 
 
+
