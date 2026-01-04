@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useRef } from 'react'
 import { Product } from '@/types/product'
 import { getProducts } from '@/lib/api/products'
 import { adaptApiProductsToLegacy } from '@/lib/adapters/productAdapter'
@@ -69,14 +68,12 @@ export const useProductsByCategory = ({
   enableCache = true,
 }: UseProductsByCategoryOptions): UseProductsByCategoryReturn => {
   
-  const hasMountedRef = useRef(false)
-  
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['products', 'categories', categorySlug ?? 'free-shipping', limit ?? 12] as const,
     queryFn: async (): Promise<Product[]> => {
       // Construir filtros
       const filters: any = {
-        limit: 100, // Traer más productos para luego filtrar
+        limit: 30, // ⚡ OPTIMIZACIÓN: Reducir límite de 100 a 30 para reducir tamaño de respuesta
         sortBy: categorySlug ? 'created_at' : 'price',
         sortOrder: 'desc',
       }
@@ -112,26 +109,17 @@ export const useProductsByCategory = ({
       // Limitar resultados según el parámetro limit
       return finalProducts.slice(0, limit)
     },
-    // ✅ FIX CRÍTICO: staleTime en 0 para forzar ejecución en primer mount
-    staleTime: 0, // Forzar ejecución en primer render
+    // ⚡ OPTIMIZACIÓN: staleTime de 10 minutos para reducir refetches innecesarios
+    staleTime: 10 * 60 * 1000, // 10 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
-    refetchOnMount: 'always', // ✅ FIX CRÍTICO: Siempre ejecutar en mount, incluso con datos frescos
+    refetchOnMount: false, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
     refetchOnReconnect: true,
   })
 
-  // ✅ FIX CRÍTICO: Forzar ejecución en el primer mount del cliente
-  useEffect(() => {
-    if (!hasMountedRef.current && typeof window !== 'undefined') {
-      hasMountedRef.current = true
-      // Forzar refetch en el primer mount del cliente
-      if (!data && !error) {
-        refetch()
-      }
-    }
-  }, [data, error, refetch])
+  // ⚡ OPTIMIZACIÓN: Eliminado useEffect que fuerza refetch - React Query maneja esto automáticamente
 
   // ✅ FIX CRÍTICO: Determinar loading de forma más confiable
   // Si hay datos, no mostrar loading aunque isLoading sea true

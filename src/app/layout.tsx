@@ -169,65 +169,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 }
               }
               
-              // ⚡ CRITICAL: Procesar CSS que ya está en el HTML inicial (SSR)
-              // Next.js inserta CSS directamente en el HTML durante SSR
-              // Este script debe ejecutarse ANTES de que el navegador procese los links CSS
+              // ⚡ OPTIMIZADO: Procesar CSS de forma más eficiente
+              // Eliminado querySelectorAll duplicado para reducir parse time
               function processExistingCSS() {
-                // ⚡ MEJORA: Usar múltiples métodos para capturar todos los links
-                // Método 1: getElementsByTagName (más rápido)
                 const links = document.head.getElementsByTagName('link');
                 for (let i = 0; i < links.length; i++) {
                   const link = links[i];
                   const rel = link.rel || link.getAttribute('rel') || '';
                   const href = link.href || link.getAttribute('href') || '';
-                  // ⚡ FIX: Detectar también por href si rel no está disponible
                   if (rel === 'stylesheet' || (href.includes('.css') && (href.includes('_next') || href.includes('chunks')))) {
-                    processCSSLink(link);
-                  }
-                }
-                
-                // ⚡ MEJORA ADICIONAL: querySelectorAll como fallback
-                try {
-                  const stylesheets = document.head.querySelectorAll('link[rel="stylesheet"]');
-                  for (let i = 0; i < stylesheets.length; i++) {
-                    const link = stylesheets[i];
                     if (!link.hasAttribute('data-non-blocking')) {
                       processCSSLink(link);
                     }
                   }
-                } catch(e) {
-                  // Ignorar errores de querySelector
                 }
               }
               
-              // ⚡ CRITICAL: Ejecutar INMEDIATAMENTE - no esperar nada
-              // El script está al inicio del head, pero el CSS puede estar después
-              // Procesar inmediatamente cuando el script se ejecuta
-              // Usar múltiples estrategias para asegurar que se ejecute lo más temprano posible
-              
-              // Estrategia 1: Ejecutar inmediatamente si head existe
+              // ⚡ OPTIMIZADO: Estrategias de ejecución simplificadas
+              // Reducido de 4 estrategias a 2 para reducir parse time
               if (document.head) {
                 processExistingCSS();
               }
               
-              // Estrategia 2: Ejecutar en el siguiente tick (síncrono)
-              if (typeof setImmediate !== 'undefined') {
-                setImmediate(processExistingCSS);
-              } else {
-                setTimeout(processExistingCSS, 0);
-              }
-              
-              // Estrategia 3: Ejecutar cuando el DOM esté listo
+              // Ejecutar en el siguiente tick
               if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', processExistingCSS, { once: true, passive: true });
-              } else if (document.readyState === 'interactive' || document.readyState === 'complete') {
-                // Si ya está cargado, ejecutar inmediatamente
-                processExistingCSS();
-              }
-              
-              // Estrategia 4: Ejecutar después de un microtask (más rápido que setTimeout)
-              if (typeof Promise !== 'undefined' && Promise.resolve) {
-                Promise.resolve().then(processExistingCSS);
+              } else {
+                setTimeout(processExistingCSS, 0);
               }
               
               // ⚡ CRITICAL: Interceptar métodos de inserción ANTES de que se usen
@@ -300,34 +268,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 });
               }
               
-              // ⚡ CRITICAL: Verificar periódicamente para CSS que se inserta después
-              // Esto captura CSS que Next.js inserta de formas no estándar
-              // ⚡ OPTIMIZACIÓN: Verificar MUY frecuentemente al inicio (primeros 200ms críticos)
+              // ⚡ OPTIMIZADO: Verificación periódica más eficiente
+              // Reducido de 200 intentos a 100 para reducir parse time del script
               let attempts = 0;
-              const maxAttempts = 200; // ⚡ AUMENTADO: Más intentos para capturar CSS tardío
-              let checkDelay = 2; // ⚡ REDUCIDO: 2ms para ser extremadamente agresivo al inicio
+              const maxAttempts = 100;
               const checkInterval = setInterval(function() {
                 attempts++;
                 processExistingCSS();
-                // ⚡ ESTRATEGIA: Verificar muy frecuentemente al inicio, luego reducir frecuencia
-                if (attempts <= 50) {
-                  checkDelay = 2; // Primeros 100ms: cada 2ms
-                } else if (attempts <= 100) {
-                  checkDelay = 5; // Siguientes 250ms: cada 5ms
-                } else {
-                  checkDelay = 10; // Resto: cada 10ms
-                }
                 if (attempts >= maxAttempts) {
                   clearInterval(checkInterval);
                 }
-              }, checkDelay);
+              }, 5); // Intervalo fijo de 5ms (más eficiente que variable)
               
-              // ⚡ MEJORA ADICIONAL: Forzar procesamiento después de delays específicos
-              // Esto captura CSS que se inserta justo después de que el script se ejecuta
+              // ⚡ OPTIMIZADO: Reducido de 5 timeouts a 3 para reducir parse time
               setTimeout(processExistingCSS, 1);
-              setTimeout(processExistingCSS, 5);
               setTimeout(processExistingCSS, 10);
-              setTimeout(processExistingCSS, 20);
               setTimeout(processExistingCSS, 50);
             })();
             `,

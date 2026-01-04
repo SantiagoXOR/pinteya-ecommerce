@@ -49,10 +49,10 @@ function shouldRetryError(error: any): boolean {
 export const queryClientConfig = {
   defaultOptions: {
     queries: {
-      // Cache por 5 minutos para datos de productos
-      staleTime: 5 * 60 * 1000,
-      // Mantener en cache por 10 minutos
-      gcTime: 10 * 60 * 1000,
+      // ⚡ OPTIMIZACIÓN: Cache por 15 minutos para datos de productos (aumentado de 5 a 15)
+      staleTime: 15 * 60 * 1000,
+      // ⚡ OPTIMIZACIÓN: Mantener en cache por 1 hora (aumentado de 10 minutos a 1 hora)
+      gcTime: 60 * 60 * 1000,
       // Retry logic inteligente con manejo de errores de red
       retry: (failureCount: number, error: any) => {
         // No retry para errores 4xx (cliente) excepto 408 (timeout)
@@ -77,12 +77,12 @@ export const queryClientConfig = {
         // Delay normal para otros errores
         return Math.min(1000 * 2 ** attemptIndex, 30000)
       },
-      // Refetch en focus para datos críticos
+      // ⚡ OPTIMIZACIÓN: No refetch en focus para mejor performance
       refetchOnWindowFocus: false,
       // Refetch en reconexión
       refetchOnReconnect: true,
-      // ✅ FIX CRÍTICO: Siempre refetch en mount para asegurar ejecución en primer render
-      refetchOnMount: true,
+      // ⚡ OPTIMIZACIÓN: No forzar refetch en mount - React Query maneja el cache automáticamente
+      refetchOnMount: false,
       // Configuración de red más robusta
       networkMode: 'online',
     },

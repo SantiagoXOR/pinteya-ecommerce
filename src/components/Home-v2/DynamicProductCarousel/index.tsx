@@ -5,6 +5,8 @@ import Image from 'next/image'
 import ProductItem from '@/components/Common/ProductItem'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
 import { useProductsByCategory } from '@/hooks/useProductsByCategory'
+import { useFilteredProducts } from '@/hooks/useFilteredProducts'
+import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
 import { ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
@@ -45,14 +47,34 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   // Icono: usar el de la categoría real si existe, sino el del config
   const categoryIcon = currentCategory?.image_url || categoryConfig.iconUrl
   
-  // Fetch productos - Si freeShippingOnly es true, pasar null como categorySlug
-  const { products: rawProducts, isLoading, error } = useProductsByCategory({
-    categorySlug: freeShippingOnly ? null : selectedCategory,
+  // ⚡ OPTIMIZACIÓN: Si freeShippingOnly es true, usar useFilteredProducts para compartir cache con FreeShippingSection
+  // Esto evita peticiones duplicadas a /api/products con los mismos filtros
+  const freeShippingQuery = useFilteredProducts({
+    limit: 30, // ⚡ OPTIMIZACIÓN: Mismo límite que FreeShippingSection para compartir cache
+    sortBy: 'price',
+    sortOrder: 'desc',
+  })
+  
+  // Fetch productos - Si freeShippingOnly es true, usar useFilteredProducts; sino usar useProductsByCategory
+  const categoryQuery = useProductsByCategory({
+    categorySlug: selectedCategory,
     limit: maxProducts,
   })
-
-  // Los productos ya vienen adaptados del hook, no necesitamos adaptarlos nuevamente
-  const products = Array.isArray(rawProducts) ? rawProducts : []
+  
+  // Seleccionar el hook apropiado según el modo
+  const isLoading = freeShippingOnly ? freeShippingQuery.isLoading : categoryQuery.isLoading
+  const error = freeShippingOnly ? freeShippingQuery.error : categoryQuery.error
+  
+  // Adaptar productos según el hook usado
+  let products: any[] = []
+  if (freeShippingOnly) {
+    // Usar productos de useFilteredProducts y adaptarlos
+    const rawProducts = freeShippingQuery.data?.data || []
+    products = adaptApiProductsToComponents(rawProducts)
+  } else {
+    // Los productos ya vienen adaptados del hook useProductsByCategory
+    products = Array.isArray(categoryQuery.products) ? categoryQuery.products : []
+  }
   
   // ⚡ OPTIMIZACIÓN: Scroll con requestAnimationFrame para 60fps
   const scroll = (direction: 'left' | 'right') => {

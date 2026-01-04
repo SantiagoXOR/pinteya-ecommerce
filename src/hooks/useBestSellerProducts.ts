@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useRef } from 'react'
 import { Product } from '@/types/product'
 import { getProducts } from '@/lib/api/products'
 import { adaptApiProductsToLegacy } from '@/lib/adapters/productAdapter'
-import { productQueryKeys } from './queries/productQueryKeys'
+import { productQueryKeys, normalizeProductFilters } from './queries/productQueryKeys'
 
 // ===================================
 // HOOK: useBestSellerProducts
@@ -68,39 +67,52 @@ export const useBestSellerProducts = ({
     isClient: typeof window !== 'undefined'
   })
   
-  const hasMountedRef = useRef(false)
-  
   // ✅ FIX: Usar el mismo formato que useProductsByCategory para evitar errores de TypeScript
+  // ⚡ OPTIMIZACIÓN: Normalizar filtros para compartir cache con useFilteredProducts
+  const filters = {
+    limit: categorySlug ? 20 : 30,
+    sortBy: categorySlug ? 'created_at' : 'price',
+    sortOrder: 'desc' as const,
+    ...(categorySlug ? { category: categorySlug } : {}),
+  }
+  const normalizedFilters = normalizeProductFilters(filters)
+  
+  // ⚡ OPTIMIZACIÓN: Si no hay categoría, usar la misma queryKey que useFilteredProducts
+  // para compartir cache entre componentes
+  const queryKey = categorySlug 
+    ? ['products', 'bestsellers', normalizedFilters] as const
+    : ['filtered-products', normalizedFilters] as const
+  
   const { data, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ['products', 'bestsellers', categorySlug ?? null] as const,
+    queryKey,
     queryFn: async (): Promise<Product[]> => {
       console.log('🟡 [useBestSellerProducts] INICIANDO QUERY', { categorySlug })
       try {
-        // Construir filtros según si hay categoría o no
-        const filters: any = {
-          limit: categorySlug ? 50 : 100,
-          sortBy: categorySlug ? 'created_at' : 'price',
-          sortOrder: 'desc',
-        }
-        
-        if (categorySlug) {
-          filters.category = categorySlug
-        }
+        // ⚡ OPTIMIZACIÓN: Usar los mismos filtros normalizados que se usaron en queryKey
+        // Esto asegura consistencia y permite compartir cache con useFilteredProducts
+        const filters: any = normalizedFilters
 
         // Fetch productos usando la función de API existente
         console.log('🟡 [useBestSellerProducts] Llamando getProducts con filters:', filters)
         const response = await getProducts(filters)
+        
+        // ✅ FIX: Verificar que response existe antes de acceder a sus propiedades
+        if (!response) {
+          throw new Error('Respuesta vacía del servidor')
+        }
+        
         console.log('🟡 [useBestSellerProducts] Respuesta recibida:', {
-          success: response.success,
-          hasData: !!response.data,
-          dataLength: Array.isArray(response.data) ? response.data.length : 'NO ARRAY',
-          message: response.message
+          success: response?.success,
+          hasData: !!response?.data,
+          dataLength: Array.isArray(response?.data) ? response.data.length : 'NO ARRAY',
+          message: response?.message
         })
         
         // ✅ FIX CRÍTICO: Si la respuesta no es exitosa, lanzar error para que la query se complete
-        if (!response.success) {
-          console.error('🟡 [useBestSellerProducts] ❌ Respuesta no exitosa:', response.message || response.error)
-          throw new Error(response.message || response.error || 'Error al cargar productos')
+        if (!response || !response.success) {
+          const errorMessage = response?.message || response?.error || 'Error al cargar productos'
+          console.error('🟡 [useBestSellerProducts] ❌ Respuesta no exitosa:', errorMessage)
+          throw new Error(errorMessage)
         }
 
         // ✅ FIX: Verificar que hay datos antes de procesar
@@ -135,53 +147,41 @@ export const useBestSellerProducts = ({
         })
         return finalProducts
       } catch (err) {
-        // ✅ FIX: Asegurar que siempre se lance un error para que la query se complete
-        const errorMessage = err instanceof Error ? err.message : 'Error inesperado al cargar productos'
+        // ✅ FIX: Asegurar que siempre se lance un error válido para que la query se complete
+        let errorMessage = 'Error inesperado al cargar productos'
+        
+        if (err instanceof Error) {
+          errorMessage = err.message || errorMessage
+        } else if (typeof err === 'string') {
+          errorMessage = err
+        } else if (err && typeof err === 'object' && 'message' in err) {
+          errorMessage = String((err as any).message) || errorMessage
+        }
+        
+        // Asegurar que el mensaje no sea undefined o vacío
+        if (!errorMessage || errorMessage.trim() === '') {
+          errorMessage = 'Error inesperado al cargar productos'
+        }
+        
         console.error('🟡 [useBestSellerProducts] ❌ Error en queryFn:', errorMessage, err)
         throw new Error(errorMessage)
       }
     },
     // ✅ FIX: Asegurar que la query siempre se ejecute
     enabled: true,
-    // ✅ FIX CRÍTICO: staleTime en 0 para forzar ejecución en primer mount
-    // Esto asegura que la query se ejecute incluso si hay datos en caché
-    staleTime: 0, // Forzar ejecución en primer render
+    // ⚡ OPTIMIZACIÓN: staleTime de 10 minutos para reducir refetches innecesarios
+    staleTime: 10 * 60 * 1000, // 10 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos en caché
     retry: 1, // Reducir retries para evitar esperas largas
     retryDelay: 2000, // 2 segundos entre retries
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
-    refetchOnMount: 'always', // ✅ FIX CRÍTICO: Siempre ejecutar en mount, incluso con datos frescos
+    refetchOnMount: false, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
     refetchOnReconnect: true, // Refetch si se reconecta
   })
 
-  // ✅ FIX CRÍTICO: Forzar ejecución en el primer mount del cliente
-  useEffect(() => {
-    if (!hasMountedRef.current && typeof window !== 'undefined') {
-      hasMountedRef.current = true
-      console.log('🟡 [useBestSellerProducts] Primer mount detectado, forzando refetch si es necesario', {
-        hasData: !!data,
-        hasError: !!error
-      })
-      // Forzar refetch en el primer mount del cliente
-      if (!data && !error) {
-        console.log('🟡 [useBestSellerProducts] Ejecutando refetch() manual')
-        refetch()
-      }
-    }
-  }, [data, error, refetch])
-
-  // ✅ LOG: Estado de la query
-  useEffect(() => {
-    console.log('🟡 [useBestSellerProducts] Estado de la query cambió:', {
-      isLoading,
-      isFetching,
-      hasData: !!data,
-      dataLength: Array.isArray(data) ? data.length : 0,
-      hasError: !!error,
-      errorMessage: error ? (error instanceof Error ? error.message : String(error)) : null
-    })
-  }, [isLoading, isFetching, data, error])
+  // ⚡ OPTIMIZACIÓN: Eliminado useEffect que fuerza refetch - React Query maneja esto automáticamente
+  // ⚡ OPTIMIZACIÓN: Eliminado useEffect de logging - no es necesario para producción
 
   // ✅ FIX CRÍTICO: Determinar loading de forma más confiable
   // isLoading puede quedarse en true si la query nunca se completa

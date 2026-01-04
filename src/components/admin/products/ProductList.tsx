@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion, AnimatePresence } from '@/lib/framer-motion-lazy'
 import { AdminDataTable } from '../ui/AdminDataTable'
 import { ProductFilters } from './ProductFilters'
 import { ProductActions, ProductRowActions } from './ProductActions'

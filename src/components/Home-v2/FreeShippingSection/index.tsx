@@ -13,7 +13,7 @@ const FreeShippingSection = () => {
 
   // Obtener productos con precio > 50000 (califican para envío gratis)
   const { data, isLoading } = useFilteredProducts({
-    limit: 100, // Aumentado para obtener todos los productos que califican
+    limit: 30, // ⚡ OPTIMIZACIÓN: Reducido de 100 a 30 para reducir tamaño de respuesta
     sortBy: 'price',
     sortOrder: 'desc',
   })

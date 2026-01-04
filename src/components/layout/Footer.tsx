@@ -51,7 +51,7 @@ const Footer = () => {
                 width={140}
                 height={55}
                 className='h-12 w-auto drop-shadow-[0_8px_25px_rgba(0,0,0,0.25)]'
-                priority
+                loading="lazy"
               />
             </div>
           </article>
@@ -69,7 +69,7 @@ const Footer = () => {
                 width={105}
                 height={85}
                 className='w-20 h-auto drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)] translate-y-1 -mb-2'
-                priority
+                loading="lazy"
               />
             </div>
           </article>
@@ -135,7 +135,7 @@ const Footer = () => {
               width={150}
               height={45}
               className='h-9 w-auto drop-shadow-[0_6px_18px_rgba(0,0,0,0.25)]'
-              priority
+              loading="lazy"
             />
             <div>
               <p className='font-semibold text-white'>Córdoba, Argentina</p>

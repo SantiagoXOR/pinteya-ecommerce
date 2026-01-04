@@ -17,7 +17,7 @@ const BestSeller: React.FC = () => {
   // Obtener productos y ordenarlos por precio alto; sin stock al final
   const { data, isLoading, error } = useFilteredProducts({
     categories: filters.categories.length > 0 ? filters.categories : undefined,
-    limit: 50,
+    limit: 20, // ⚡ OPTIMIZACIÓN: Reducido de 50 a 20 para reducir tamaño de respuesta
     sortBy: 'price',
     sortOrder: 'desc',
   })

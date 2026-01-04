@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useEffect, useCallback, useMemo, useRef } from 'react'
-import { motion, AnimatePresence, useAnimation, useMotionValue } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion, AnimatePresence, useAnimation, useMotionValue } from '@/lib/framer-motion-lazy'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 

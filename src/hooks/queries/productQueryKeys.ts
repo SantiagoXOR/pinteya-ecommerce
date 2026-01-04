@@ -3,6 +3,37 @@
 // ===================================
 // Centraliza todas las keys para facilitar invalidación y mantenimiento
 
+// ⚡ OPTIMIZACIÓN: Función para normalizar filtros y generar queryKeys consistentes
+// Esto permite que React Query comparta el cache entre componentes con filtros equivalentes
+export function normalizeProductFilters(filters: Record<string, any>): Record<string, any> {
+  const normalized: Record<string, any> = {}
+  
+  // Ordenar claves para que filtros equivalentes generen la misma key
+  const sortedKeys = Object.keys(filters).sort()
+  
+  for (const key of sortedKeys) {
+    const value = filters[key]
+    
+    // Ignorar valores undefined, null o vacíos
+    if (value === undefined || value === null || value === '') {
+      continue
+    }
+    
+    // Normalizar arrays: ordenar y filtrar vacíos
+    if (Array.isArray(value)) {
+      if (value.length > 0) {
+        normalized[key] = [...value].sort()
+      }
+      continue
+    }
+    
+    // Normalizar valores primitivos
+    normalized[key] = value
+  }
+  
+  return normalized
+}
+
 export const productQueryKeys = {
   // Base key para todos los productos
   all: ['products'] as const,
