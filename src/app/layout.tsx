@@ -44,15 +44,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* ⚡ CRITICAL: Preload de imagen hero LCP - MÁXIMA PRIORIDAD */}
         {/* ⚡ DEBE estar PRIMERO para descubrimiento inmediato sin esperar CSS o JS */}
-        {/* Esto reduce el LCP de 25.1s a <2.5s al permitir que la imagen se descargue inmediatamente */}
+        {/* ⚡ FIX LCP 13.6s: Preload con URL absoluta para producción */}
         <link
           rel="preload"
           as="image"
-          href="/images/hero/hero2/hero1.webp"
+          href="https://www.pinteya.com/images/hero/hero2/hero1.webp"
           fetchPriority="high"
           type="image/webp"
           imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-          imagesrcset="/images/hero/hero2/hero1.webp 1200w"
+          imagesrcset="https://www.pinteya.com/images/hero/hero2/hero1.webp 1200w"
           crossOrigin="anonymous"
         />
         

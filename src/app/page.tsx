@@ -151,8 +151,11 @@ export default async function HomePage() {
           {/* ⚡ FIX CLS + LCP: Imagen hero con dimensiones ABSOLUTAS fijas */}
           {/* ⚡ CRITICAL: Dimensiones fijas previenen layout shifts y aseguran detección LCP */}
           {/* ⚡ OPTIMIZACIÓN PRODUCCIÓN: Asegurar que la imagen se carga inmediatamente sin bloqueos */}
+          {/* ⚡ CRITICAL FIX LCP 13.6s: Usar URL absoluta en producción para evitar problemas de descubrimiento */}
           <img
-            src="/images/hero/hero2/hero1.webp"
+            src={process.env.NODE_ENV === 'production' 
+              ? 'https://www.pinteya.com/images/hero/hero2/hero1.webp'
+              : '/images/hero/hero2/hero1.webp'}
             alt="Pintá rápido, fácil y cotiza al instante - Pinteya"
             width={1200}
             height={433}
@@ -165,7 +168,9 @@ export default async function HomePage() {
             data-hero="true"
             data-largest-contentful-paint="true"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-            srcSet="/images/hero/hero2/hero1.webp 1200w"
+            srcSet={process.env.NODE_ENV === 'production'
+              ? 'https://www.pinteya.com/images/hero/hero2/hero1.webp 1200w'
+              : '/images/hero/hero2/hero1.webp 1200w'}
             style={{ 
               width: '100%', 
               height: '100%', // ⚡ FIX CLS CRÍTICO: height 100% en lugar de auto
