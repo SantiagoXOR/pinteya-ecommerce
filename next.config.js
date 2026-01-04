@@ -87,7 +87,10 @@ const nextConfig = {
     // - Extrae e inlinea CSS crítico en el <head> automáticamente
     // - Reduce render-blocking en ~400-600ms
     // - Mejora FCP y LCP significativamente
-    optimizeCss: true,
+    // ⚡ NOTA: optimizeCss no funciona completamente con App Router (Critters no soporta streaming)
+    // Usamos inlineCss como alternativa que inlina todo el CSS en el head
+    // optimizeCss: true, // ⚡ DESHABILITADO: No funciona con App Router
+    inlineCss: true, // ⚡ ALTERNATIVA: Inlina CSS en el head (experimental)
     
     optimisticClientCache: true, // Cache optimista para navegación más rápida
     
