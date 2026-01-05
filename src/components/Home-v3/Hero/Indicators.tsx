@@ -19,13 +19,14 @@ const Indicators: React.FC<IndicatorProps> = memo(
             <button
               key={index}
               onClick={() => onIndicatorClick(index)}
-              className="relative rounded-full bg-white/60 h-2 sm:h-2.5 w-2 sm:w-2.5 transition-opacity duration-500"
+              className={`relative rounded-full bg-white/60 transition-all duration-500 ${
+                isActive 
+                  ? 'h-2 sm:h-2.5 w-8 sm:w-10' // Pill cuando está activo
+                  : 'h-2 sm:h-2.5 w-2 sm:w-2.5' // Círculo cuando no está activo
+              }`}
               style={{
                 opacity: isActive ? 1 : 0.6,
-                transform: isActive
-                  ? 'scaleX(4) translateZ(0)'
-                  : 'scaleX(1) translateZ(0)',
-                willChange: 'transform, opacity',
+                willChange: 'width, opacity',
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
               }}

@@ -5,8 +5,9 @@
 
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo, memo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { useSwipeGestures } from '@/hooks/useSwipeGestures'
 import Slide from './Slide'
 import NavigationButtons from './NavigationButtons'
 import Indicators from './Indicators'
@@ -101,6 +102,14 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
       return () => clearInterval(interval)
     }, [isAutoPlaying, autoPlayInterval, goToNext, slides.length])
 
+    // ⚡ FIX: Configurar gestos táctiles para mobile (igual que CombosSection)
+    const swipeRef = useSwipeGestures({
+      onSwipeLeft: goToNext, // Deslizar izquierda = siguiente slide
+      onSwipeRight: goToPrevious, // Deslizar derecha = slide anterior
+      threshold: 50, // Distancia mínima de 50px para detectar swipe
+      preventDefaultTouchmove: false, // No interferir con scroll vertical
+    })
+
     // ⚡ FIX: Manejar el loop infinito con mejor manejo de estados
     useEffect(() => {
       if (!isTransitioning || extendedSlides.length === 0) return
@@ -153,6 +162,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
       >
         {/* Slides */}
         <div
+          ref={swipeRef as React.RefObject<HTMLDivElement>}
           className={`flex h-full ${
             isTransitioning ? 'transition-transform duration-1000 ease-in-out' : ''
           }`}
