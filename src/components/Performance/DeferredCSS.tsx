@@ -132,10 +132,13 @@ export function DeferredCSS() {
         }
 
         link.onerror = () => {
+          // ⚡ FIX: No rechazar errores de CSS no críticos para evitar que se propaguen
+          // Los CSS diferidos son opcionales y no deberían causar errores críticos
           if (process.env.NODE_ENV === 'development') {
-            console.warn(`⚠️ Failed to load CSS: ${cssPath}`)
+            console.warn(`⚠️ Failed to load optional CSS: ${cssPath} - This is not critical`)
           }
-          reject()
+          // Resolver en lugar de rechazar para no causar errores no manejados
+          resolve()
         }
 
         document.head.appendChild(link)

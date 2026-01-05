@@ -180,6 +180,24 @@ export function MonitoringProvider({
       const src = (target as any).src || (target as any).href
 
       if (src && ['img', 'script', 'link', 'iframe'].includes(tagName)) {
+        // ⚡ FIX: No reportar errores de CSS no críticos como errores críticos
+        // Los CSS diferidos (como hero-carousel.css, home-v2-animations.css) son opcionales
+        const isOptionalCSS = 
+          tagName === 'link' && 
+          (src.includes('hero-carousel.css') || 
+           src.includes('home-v2-animations.css') ||
+           src.includes('checkout-transition.css') ||
+           src.includes('mobile-modals.css') ||
+           src.includes('collapsible.css'))
+
+        if (isOptionalCSS) {
+          // Solo loguear en desarrollo, no reportar como error crítico
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`⚠️ Optional CSS failed to load: ${src} - This is not critical`)
+          }
+          return // No reportar como error
+        }
+
         try {
           await proactiveMonitoring.reportError(
             new Error(`Resource loading failed: ${tagName} - ${src}`),

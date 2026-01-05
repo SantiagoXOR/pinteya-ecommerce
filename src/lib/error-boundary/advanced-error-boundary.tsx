@@ -173,7 +173,9 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   ): ErrorBoundaryState['recoveryStrategy'] {
     switch (errorType) {
       case 'chunk':
-        return 'reload' // Recargar para obtener chunks actualizados
+        // ⚡ FIX: Cambiar de 'reload' a 'retry' para evitar recargas automáticas
+        // El usuario puede recargar manualmente si es necesario
+        return 'retry' // Reintentar en lugar de recargar automáticamente
       case 'network':
         return 'retry' // Reintentar operación de red
       case 'component':
@@ -191,13 +193,22 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     const { recoveryTimeout = 5000 } = this.props
     const { recoveryStrategy } = this.state
 
+    // ⚡ FIX: Solo activar auto-recovery si está explícitamente habilitado
+    // y la estrategia no es 'reload' (para evitar recargas automáticas molestas)
+    if (recoveryStrategy === 'reload') {
+      console.warn('⚠️ Auto-recovery con estrategia "reload" deshabilitada para evitar recargas automáticas')
+      console.warn('   El usuario puede recargar manualmente si es necesario')
+      return
+    }
+
     this.recoveryTimeoutId = setTimeout(() => {
       switch (recoveryStrategy) {
         case 'retry':
           this.handleRetry()
           break
         case 'reload':
-          window.location.reload()
+          // ⚡ FIX: No recargar automáticamente - solo loguear
+          console.warn('⚠️ Auto-reload deshabilitado. El usuario debe recargar manualmente si es necesario.')
           break
         case 'redirect':
           window.location.href = '/'

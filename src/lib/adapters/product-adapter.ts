@@ -11,10 +11,15 @@ import { ProductWithCategory } from '@/types/api'
  * @returns Product - Producto en formato de componente
  */
 export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Product => {
-  console.group(`🔄 [ProductAdapter] Adaptando producto: ${apiProduct.name}`);
-  console.log('📦 API Product original:', apiProduct);
-  console.log('🖼️ Imágenes originales:', apiProduct.images);
-  console.log('🎨 Variantes:', apiProduct.variants);
+  // ⚡ OPTIMIZACIÓN: Solo loguear en desarrollo y cuando sea necesario
+  const shouldLog = process.env.NODE_ENV === 'development' && process.env.DEBUG_PRODUCT_ADAPTER === 'true'
+  
+  if (shouldLog) {
+    console.group(`🔄 [ProductAdapter] Adaptando producto: ${apiProduct.name}`);
+    console.log('📦 API Product original:', apiProduct);
+    console.log('🖼️ Imágenes originales:', apiProduct.images);
+    console.log('🎨 Variantes:', apiProduct.variants);
+  }
   
   // ✅ PRIORIDAD DE IMAGEN: image_url desde product_images > Variante por defecto > Producto padre
   let firstImage = '/images/products/placeholder.svg'
@@ -65,8 +70,10 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
               : ['/images/products/placeholder.svg']
 
     firstImage = normalizedImages[0] || '/images/products/placeholder.svg'
-    console.log('🎯 Usando imagen de producto padre:', firstImage);
-    console.log('📸 Imágenes normalizadas:', normalizedImages);
+    if (shouldLog) {
+      console.log('🎯 Usando imagen de producto padre:', firstImage);
+      console.log('📸 Imágenes normalizadas:', normalizedImages);
+    }
   }
 
   const adaptedProduct: Product = {
@@ -102,9 +109,11 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
     }
   };
 
-  console.log('✅ Producto adaptado:', adaptedProduct);
-  console.log('🖼️ URL final de imagen:', adaptedProduct.image);
-  console.groupEnd();
+  if (shouldLog) {
+    console.log('✅ Producto adaptado:', adaptedProduct);
+    console.log('🖼️ URL final de imagen:', adaptedProduct.image);
+    console.groupEnd();
+  }
 
   return adaptedProduct;
 };

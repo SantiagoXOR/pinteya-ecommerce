@@ -190,14 +190,17 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         }
       }
 
-      const stack = new Error().stack
-      console.log('🔄 CategoryTogglePills re-rendered', {
-        renderNumber: prevProps ? 'SUBSEQUENT' : 'INITIAL',
-        changes,
-        props: currentProps,
-        timestamp: Date.now(),
-        caller: stack?.split('\n')[2]?.trim() || 'unknown',
-      })
+      // ⚡ OPTIMIZACIÓN: Solo loguear en desarrollo y cuando sea necesario
+      if (process.env.NODE_ENV === 'development' && process.env.DEBUG_CATEGORY_PILLS === 'true') {
+        const stack = new Error().stack
+        console.log('🔄 CategoryTogglePills re-rendered', {
+          renderNumber: prevProps ? 'SUBSEQUENT' : 'INITIAL',
+          changes,
+          props: currentProps,
+          timestamp: Date.now(),
+          caller: stack?.split('\n')[2]?.trim() || 'unknown',
+        })
+      }
 
       prevPropsRef.current = currentProps
     })

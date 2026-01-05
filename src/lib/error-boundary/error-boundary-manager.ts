@@ -511,11 +511,16 @@ class ErrorBoundaryManager {
 
     console.warn(`📦 Resource loading error (${resourceType}):`, src)
 
-    // Intentar recargar recursos críticos
+    // ⚡ FIX: Deshabilitar auto-reload para evitar recargas molestas
+    // Los recursos no críticos (como CSS) pueden fallar sin afectar la funcionalidad
+    // Solo loguear el error, no recargar automáticamente
     if (resourceType === 'script' && src.includes('chunk')) {
-      setTimeout(() => {
-        window.location.reload()
-      }, 2000)
+      console.warn('⚠️ Script chunk failed to load, but auto-reload is disabled to prevent annoying reloads')
+      console.warn('   User can manually reload if needed')
+      // ⚡ FIX: No recargar automáticamente
+      // setTimeout(() => {
+      //   window.location.reload()
+      // }, 2000)
     }
   }
 

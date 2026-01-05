@@ -118,10 +118,12 @@ const DeferredProviders = React.memo(({
   isAuthRoute: boolean
 }) => {
   // ⚡ FASE 4: Diferir hidratación de providers no críticos después del LCP
+  // ⚡ FIX: En desarrollo, hidratar inmediatamente para evitar recargas molestas
+  // En producción, mantener la hidratación diferida para mejor performance
   const shouldHydrate = useDeferredHydration({
-    minDelay: 3000, // Esperar 3s después del LCP
-    maxDelay: 5000,
-    useIdleCallback: true,
+    minDelay: process.env.NODE_ENV === 'development' ? 0 : 1000, // Inmediato en dev, 1s en prod
+    maxDelay: process.env.NODE_ENV === 'development' ? 0 : 2000, // Inmediato en dev, 2s en prod
+    useIdleCallback: process.env.NODE_ENV === 'production', // Solo usar idle callback en prod
   })
 
   if (!shouldHydrate) {
@@ -153,10 +155,11 @@ const DeferredComponents = React.memo(({
   isAuthRoute: boolean
 }) => {
   // ⚡ FASE 4: Diferir hidratación de componentes UI no críticos después del LCP
+  // ⚡ FIX: En desarrollo, hidratar inmediatamente para evitar recargas molestas
   const shouldHydrate = useDeferredHydration({
-    minDelay: 2000, // Esperar 2s después del LCP
-    maxDelay: 4000,
-    useIdleCallback: true,
+    minDelay: process.env.NODE_ENV === 'development' ? 0 : 500, // Inmediato en dev, 500ms en prod
+    maxDelay: process.env.NODE_ENV === 'development' ? 0 : 1000, // Inmediato en dev, 1s en prod
+    useIdleCallback: process.env.NODE_ENV === 'production', // Solo usar idle callback en prod
   })
 
   if (!shouldHydrate) {
@@ -220,8 +223,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           context='RootApplication'
           enableRetry={true}
           maxRetries={3}
-          enableAutoRecovery={true}
+          enableAutoRecovery={false}
           enableReporting={true}
+          recoveryTimeout={10000}
         >
           {/* 1. Query client - Crítico para data fetching */}
           <QueryClientProvider>
