@@ -485,15 +485,24 @@ const HomeV3 = () => {
       {/* ⚡ FASE 23: Contenedor hero-lcp-container con imagen estática y carousel */}
       {/* ⚡ FIX: Eliminar duplicación - solo una imagen estática, no dos */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
-      <section className='w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pt-1 sm:pt-2 overflow-hidden bg-black'>
+      <section 
+        className='w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pt-1 sm:pt-2 overflow-hidden bg-black'
+        style={{
+          width: '100vw !important',
+          maxWidth: '100vw !important',
+          marginLeft: 'calc(-50vw + 50%) !important',
+          marginRight: 'calc(-50vw + 50%) !important',
+        }}
+      >
         <div 
           className="hero-lcp-container relative w-full overflow-hidden bg-black"
           style={{ 
-            width: '100vw',
-            maxWidth: '100vw',
+            width: '100vw !important',
+            maxWidth: '100vw !important',
             aspectRatio: '1200/433',
             height: 'auto',
             minHeight: '277px',
+            display: 'block',
           }}
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
