@@ -387,22 +387,34 @@ const HomeV3 = () => {
   const categoryToggleDelay = shouldLoadAfterLCP ? 0 : (shouldDelay ? 2000 : 0)
   const bestSellerDelay = shouldLoadAfterLCP ? 0 : (shouldDelay ? 3000 : 0)
   
-  // ⚡ FIX: Eliminar duplicados de imágenes estáticas y carousels en producción
+  // ⚡ FIX: Eliminar duplicados de imágenes estáticas y carousels SOLO en producción
   // Esto previene que se rendericen dos imágenes estáticas o dos carousels
+  // ⚡ IMPORTANTE: Solo ejecutar en producción para no interferir con desarrollo
   useEffect(() => {
+    // Solo ejecutar en producción
+    if (process.env.NODE_ENV !== 'production') {
+      return
+    }
+
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return
     }
 
     // Función para eliminar duplicados
     const removeDuplicates = () => {
+      // Esperar a que React termine de hidratar completamente
+      // Verificar que el DOM esté estable antes de eliminar
+      if (document.readyState !== 'complete') {
+        return
+      }
+
       // Eliminar imágenes estáticas duplicadas (mantener solo la primera)
       const heroImages = document.querySelectorAll('#hero-lcp-image')
       if (heroImages.length > 1) {
         // Mantener la primera, eliminar las demás
         for (let i = 1; i < heroImages.length; i++) {
           const img = heroImages[i]
-          if (img && img.parentNode) {
+          if (img && img.parentNode && img.isConnected) {
             img.parentNode.removeChild(img)
           }
         }
@@ -414,7 +426,7 @@ const HomeV3 = () => {
         // Mantener el primero, eliminar los demás
         for (let i = 1; i < containers.length; i++) {
           const container = containers[i]
-          if (container && container.parentNode) {
+          if (container && container.parentNode && container.isConnected) {
             container.parentNode.removeChild(container)
           }
         }
@@ -426,26 +438,28 @@ const HomeV3 = () => {
         // Mantener el primero, eliminar los demás
         for (let i = 1; i < carousels.length; i++) {
           const carousel = carousels[i]
-          if (carousel && carousel.parentNode) {
+          if (carousel && carousel.parentNode && carousel.isConnected) {
             carousel.parentNode.removeChild(carousel)
           }
         }
       }
     }
 
-    // Ejecutar después de un pequeño delay para asegurar que React haya terminado de renderizar
-    const timeout = setTimeout(removeDuplicates, 100)
+    // Ejecutar después de que la página esté completamente cargada y React haya hidratado
+    // Usar un delay más largo para asegurar que la hidratación esté completa
+    const timeout = setTimeout(() => {
+      if (document.readyState === 'complete') {
+        removeDuplicates()
+      }
+    }, 500) // Delay más largo para producción
     
-    // También ejecutar después de que la página esté completamente cargada
-    if (document.readyState === 'complete') {
-      removeDuplicates()
-    } else {
-      window.addEventListener('load', removeDuplicates, { once: true })
-    }
+    // También ejecutar después del evento load
+    window.addEventListener('load', () => {
+      setTimeout(removeDuplicates, 200)
+    }, { once: true })
 
     return () => {
       clearTimeout(timeout)
-      window.removeEventListener('load', removeDuplicates)
     }
   }, [])
 
