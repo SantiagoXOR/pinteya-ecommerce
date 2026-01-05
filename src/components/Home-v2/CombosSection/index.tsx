@@ -232,7 +232,7 @@ const slides: Slide[] = [
           </button>
 
           {/* Indicadores (dots) - Estilo Mercado Libre */}
-          {/* ⚡ OPTIMIZACIÓN: Animaciones compositables (transform + opacity) en lugar de width/background-color/box-shadow */}
+          {/* ⚡ FIX: Usar width en lugar de scaleX para crear pill en lugar de elipse */}
           <div className='absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-2 sm:gap-3'>
             {slides.map((_, index) => {
               let realIndex = currentIndex - 1
@@ -245,12 +245,14 @@ const slides: Slide[] = [
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className="relative rounded-full bg-white/60 h-2 sm:h-2.5 w-2 sm:w-2.5 transition-opacity duration-500"
+                  className={`relative rounded-full bg-white/60 transition-all duration-500 ${
+                    isActive 
+                      ? 'h-2 sm:h-2.5 w-8 sm:w-10' // Pill cuando está activo
+                      : 'h-2 sm:h-2.5 w-2 sm:w-2.5' // Círculo cuando no está activo
+                  }`}
                   style={{
                     opacity: isActive ? 1 : 0.6,
-                    // ⚡ FASE 8: Reemplazar width animado por transform: scaleX() (propiedad compositable)
-                    transform: isActive ? 'scaleX(4) translateZ(0)' : 'scaleX(1) translateZ(0)',
-                    willChange: 'transform, opacity',
+                    willChange: 'width, opacity',
                     backfaceVisibility: 'hidden',
                     WebkitBackfaceVisibility: 'hidden',
                   }}
