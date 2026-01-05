@@ -485,17 +485,15 @@ const HomeV3 = () => {
       {/* ⚡ FASE 23: Contenedor hero-lcp-container con imagen estática y carousel */}
       {/* ⚡ FIX: Eliminar duplicación - solo una imagen estática, no dos */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
-      <div className='pt-1 sm:pt-2 w-full overflow-hidden'>
+      <section className='w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pt-1 sm:pt-2 overflow-hidden'>
         <div 
           className="hero-lcp-container relative w-full overflow-hidden"
           style={{ 
-            aspectRatio: '2.77',
             width: '100vw',
             maxWidth: '100vw',
-            minHeight: '277px',
-            height: 'clamp(277px, calc(100vw / 2.77), 433px)',
-            marginLeft: 'calc(-50vw + 50%)',
-            marginRight: 'calc(-50vw + 50%)',
+            minHeight: '320px',
+            height: 'clamp(320px, calc(100vw * 433 / 1200), 433px)',
+            aspectRatio: '1200/433',
           }}
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
@@ -516,13 +514,13 @@ const HomeV3 = () => {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              objectPosition: 'center',
+              objectPosition: 'center center',
               zIndex: 1, // Detrás del carousel cuando se carga
             }}
           />
           <HeroOptimized />
         </div>
-      </div>
+      </section>
 
       {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
       <React.Suspense
