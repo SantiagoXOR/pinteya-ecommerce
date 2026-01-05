@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { OptimizedCartIcon } from '@/components/ui/optimized-cart-icon'
@@ -148,25 +148,35 @@ const Header = () => {
     }
   }, [])
 
-  // ⚡ FIX: Usar selectores memoizados con shallowEqual para evitar re-renders innecesarios
-  const product = useAppSelector(state => state.cartReducer.items, (prev, next) => {
-    if (prev.length !== next.length) return false
-    // Solo re-renderizar si cambió la cantidad de items o sus IDs/cantidades
-    return prev.every((item, index) => {
-      const nextItem = next[index]
-      return nextItem && item.id === nextItem.id && item.quantity === nextItem.quantity
-    })
-  })
-  
-  const totalPrice = useSelector(selectTotalPrice, (prev, next) => prev === next)
-
-  // Efecto para animar el carrito cuando se agregan productos
-  useEffect(() => {
-    if (product.length > 0) {
-      setCartShake(true)
-      setTimeout(() => setCartShake(false), 500)
+  // ⚡ OPTIMIZACIÓN: Usar selectores memoizados con shallowEqual para evitar re-renders innecesarios
+  // Solo rerenderizar si cambió la cantidad de items o sus IDs/cantidades
+  const product = useAppSelector(
+    state => state.cartReducer.items,
+    (prev, next) => {
+      if (prev.length !== next.length) return false
+      // Comparación profunda solo si la longitud es la misma
+      return prev.every((item, index) => {
+        const nextItem = next[index]
+        return nextItem && item.id === nextItem.id && item.quantity === nextItem.quantity
+      })
     }
-  }, [product.length])
+  )
+  
+  // ⚡ OPTIMIZACIÓN: Memoizar selector de totalPrice para evitar rerenders innecesarios
+  const totalPrice = useSelector(selectTotalPrice, (prev, next) => prev === next)
+  
+  // ⚡ OPTIMIZACIÓN: Memoizar longitud del producto para evitar rerenders en el efecto
+  const productLength = useMemo(() => product.length, [product.length])
+
+  // ⚡ OPTIMIZACIÓN: Efecto para animar el carrito cuando se agregan productos
+  // Usar productLength memoizado para evitar rerenders innecesarios
+  useEffect(() => {
+    if (productLength > 0) {
+      setCartShake(true)
+      const timer = setTimeout(() => setCartShake(false), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [productLength])
 
   // Geolocalización automática desactivada por ser intrusiva
   // Los usuarios pueden activar manualmente la ubicación desde el TopBar

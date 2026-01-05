@@ -208,7 +208,8 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  // Permitir cámara para el visualizador de pintura (camera=(self)), mantener bloqueados micrófono y geolocalización
+  response.headers.set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()')
 
   // HSTS (solo en HTTPS)
   if (process.env.NODE_ENV === 'production') {

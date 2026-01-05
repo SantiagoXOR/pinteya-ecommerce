@@ -200,25 +200,52 @@ export const useGeolocation = () => {
 
   // Verificar permisos al montar el componente
   useEffect(() => {
-    if ('permissions' in navigator) {
-      navigator.permissions
-        .query({ name: 'geolocation' })
-        .then(result => {
-          setState(prev => ({ ...prev, permissionStatus: result.state as any }))
+    // ⚡ OPTIMIZACIÓN: Diferir verificación de permisos para no bloquear el render inicial
+    const checkPermissions = () => {
+      if ('permissions' in navigator) {
+        navigator.permissions
+          .query({ name: 'geolocation' })
+          .then(result => {
+            // ⚡ OPTIMIZACIÓN: Solo actualizar si el estado realmente cambió
+            setState(prev => {
+              if (prev.permissionStatus === result.state) {
+                return prev // No actualizar si no cambió
+              }
+              return { ...prev, permissionStatus: result.state as any }
+            })
 
-          // Si ya tiene permisos, solicitar ubicación automáticamente
-          if (result.state === 'granted') {
-            // No solicitar automáticamente para evitar bucles infinitos
-          } else if (result.state === 'prompt') {
-            // No solicitar automáticamente si es 'prompt' para evitar popup inesperado
-          } else {
+            // Si ya tiene permisos, solicitar ubicación automáticamente
+            if (result.state === 'granted') {
+              // No solicitar automáticamente para evitar bucles infinitos
+            } else if (result.state === 'prompt') {
+              // No solicitar automáticamente si es 'prompt' para evitar popup inesperado
+            } else {
+            }
+          })
+          .catch(error => {
+            setState(prev => {
+              if (prev.permissionStatus === 'unknown') {
+                return prev // No actualizar si ya es 'unknown'
+              }
+              return { ...prev, permissionStatus: 'unknown' }
+            })
+          })
+      } else {
+        setState(prev => {
+          if (prev.permissionStatus === 'unknown') {
+            return prev // No actualizar si ya es 'unknown'
           }
+          return { ...prev, permissionStatus: 'unknown' }
         })
-        .catch(error => {
-          setState(prev => ({ ...prev, permissionStatus: 'unknown' }))
-        })
+      }
+    }
+
+    // ⚡ OPTIMIZACIÓN: Diferir verificación usando requestIdleCallback
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(checkPermissions, { timeout: 3000 })
     } else {
-      setState(prev => ({ ...prev, permissionStatus: 'unknown' }))
+      // Fallback para navegadores que no soportan requestIdleCallback
+      setTimeout(checkPermissions, 500)
     }
   }, []) // Sin dependencias para evitar bucles
 

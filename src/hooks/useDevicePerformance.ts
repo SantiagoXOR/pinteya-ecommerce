@@ -24,37 +24,53 @@ export function useDevicePerformance(): PerformanceLevel {
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    // ⚡ FIX: Marcar como hidratado primero para evitar cambios durante la hidratación
-    setIsHydrated(true)
-    
-    // Detectar preferencia de usuario
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    
-    // Detectar hardware
-    const cores = navigator.hardwareConcurrency || 4
-    const memory = (navigator as any).deviceMemory || 4 // GB
-    const connection = (navigator as any).connection?.effectiveType || '4g'
-    
-    // Calcular nivel de rendimiento
-    let score = 0
-    if (cores >= 8) score += 2
-    else if (cores >= 4) score += 1
-    
-    if (memory >= 8) score += 2
-    else if (memory >= 4) score += 1
-    
-    if (connection === '4g') score += 1
-    
-    // Si el usuario prefiere menos movimiento, considerar como bajo rendimiento
-    if (prefersReducedMotion) score -= 2
-    
-    const performanceLevel: PerformanceLevel = 
-      score >= 4 ? 'high' : 
-      score >= 2 ? 'medium' : 
-      'low'
-    
-    // ⚡ FIX: Solo actualizar después de la hidratación para evitar mismatch
-    setLevel(performanceLevel)
+    // ⚡ OPTIMIZACIÓN: Usar requestIdleCallback para diferir la detección y evitar bloquear el render inicial
+    const detectPerformance = () => {
+      // Detectar preferencia de usuario
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      
+      // Detectar hardware
+      const cores = navigator.hardwareConcurrency || 4
+      const memory = (navigator as any).deviceMemory || 4 // GB
+      const connection = (navigator as any).connection?.effectiveType || '4g'
+      
+      // Calcular nivel de rendimiento
+      let score = 0
+      if (cores >= 8) score += 2
+      else if (cores >= 4) score += 1
+      
+      if (memory >= 8) score += 2
+      else if (memory >= 4) score += 1
+      
+      if (connection === '4g') score += 1
+      
+      // Si el usuario prefiere menos movimiento, considerar como bajo rendimiento
+      if (prefersReducedMotion) score -= 2
+      
+      const performanceLevel: PerformanceLevel = 
+        score >= 4 ? 'high' : 
+        score >= 2 ? 'medium' : 
+        'low'
+      
+      // ⚡ OPTIMIZACIÓN: Solo actualizar si el nivel cambió para evitar rerenders innecesarios
+      setLevel(prevLevel => {
+        if (prevLevel !== performanceLevel) {
+          return performanceLevel
+        }
+        return prevLevel
+      })
+      
+      // Marcar como hidratado después de la detección
+      setIsHydrated(true)
+    }
+
+    // ⚡ OPTIMIZACIÓN: Diferir la detección usando requestIdleCallback para no bloquear el render inicial
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(detectPerformance, { timeout: 2000 })
+    } else {
+      // Fallback para navegadores que no soportan requestIdleCallback
+      setTimeout(detectPerformance, 100)
+    }
   }, [])
 
   // ⚡ FIX: Retornar 'medium' hasta que se complete la hidratación para consistencia SSR/cliente
