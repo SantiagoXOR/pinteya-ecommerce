@@ -1,240 +1,1830 @@
-<testsuites id="" name="" tests="4" failures="2" skipped="0" errors="0" time="83.51457099999999">
-<testsuite name="rerender-verification-complete.spec.ts" timestamp="2026-01-05T15:45:33.942Z" hostname="ui-public" tests="4" failures="2" skipped="0" time="43.276" errors="0">
-<testcase name="Verificación Completa de Re-renders › Verificar re-renders durante carga inicial" classname="rerender-verification-complete.spec.ts" time="12.971">
-<failure message="rerender-verification-complete.spec.ts:34:7 Verificar re-renders durante carga inicial" type="FAILURE">
-<![CDATA[  [ui-public] › rerender-verification-complete.spec.ts:34:7 › Verificación Completa de Re-renders › Verificar re-renders durante carga inicial 
+<testsuites id="" name="" tests="20" failures="20" skipped="0" errors="0" time="598.4456799999999">
+<testsuite name="paint-visualizer.spec.ts" timestamp="2026-01-05T17:55:22.303Z" hostname="ui-public" tests="4" failures="4" skipped="0" time="108.506" errors="0">
+<testcase name="Paint Visualizer › debería abrir el modal del Paint Visualizer" classname="paint-visualizer.spec.ts" time="27.754">
+<failure message="paint-visualizer.spec.ts:11:7 debería abrir el modal del Paint Visualizer" type="FAILURE">
+<![CDATA[  [ui-public] › paint-visualizer.spec.ts:11:7 › Paint Visualizer › debería abrir el modal del Paint Visualizer 
 
-    Error: expect(received).toBeLessThan(expected)
+    Error: expect(locator).toBeVisible() failed
 
-    Expected: < 30
-    Received:   175
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
 
-      172 |     
-      173 |     // Assertions
-    > 174 |     expect(totalRenders).toBeLessThan(30) // No debería haber más de 30 re-renders en carga inicial
-          |                          ^
-      175 |     
-      176 |     // Verificar componentes críticos
-      177 |     const headerRenders = rendersByComponent['Header'] || browserMetrics.componentRenders['Header'] || 0
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\rerender-verification-complete.spec.ts:174:26
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public\test-failed-1.png
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public\video.webm
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public\error-context.md
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(received).toBeLessThan(expected)
+    Error: expect(locator).toBeVisible() failed
 
-    Expected: < 30
-    Received:   163
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
 
-      172 |     
-      173 |     // Assertions
-    > 174 |     expect(totalRenders).toBeLessThan(30) // No debería haber más de 30 re-renders en carga inicial
-          |                          ^
-      175 |     
-      176 |     // Verificar componentes críticos
-      177 |     const headerRenders = rendersByComponent['Header'] || browserMetrics.componentRenders['Header'] || 0
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\rerender-verification-complete.spec.ts:174:26
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\test-failed-1.png
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\video.webm
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\error-context.md
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\trace.zip
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-📊 ANÁLISIS DE RE-RENDERS:
-Tiempo de navegación: 4161ms
-Total de re-renders detectados: 175
-Re-renders desde métricas del navegador: 114
-First Paint: 344.00ms
-First Contentful Paint: 344.00ms
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public\test-failed-1.png]]
 
-📋 Re-renders por componente (console logs):
-  ProductAdapter: 60 re-renders
-  2: 55 re-renders
-  1: 44 re-renders
-  CombosOptimized: 6 re-renders
-  CategoryTogglePills: 5 re-renders
-  CategoryTogglePillsWithSearch: 4 re-renders
-  Unknown: 1 re-renders
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public\video.webm]]
 
-📋 Re-renders por componente (métricas del navegador):
-  2: 55 re-renders
-  1: 44 re-renders
-  object Object: 15 re-renders
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public\error-context.md]]
 
-[[ATTACHMENT|..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public\video.webm]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\video.webm]]
 
-[[ATTACHMENT|..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public\error-context.md]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\error-context.md]]
 
-📊 ANÁLISIS DE RE-RENDERS:
-Tiempo de navegación: 3354ms
-Total de re-renders detectados: 163
-Re-renders desde métricas del navegador: 114
-First Paint: 396.00ms
-First Contentful Paint: 396.00ms
-
-📋 Re-renders por componente (console logs):
-  2: 55 re-renders
-  ProductAdapter: 48 re-renders
-  1: 44 re-renders
-  CombosOptimized: 6 re-renders
-  CategoryTogglePills: 5 re-renders
-  CategoryTogglePillsWithSearch: 4 re-renders
-  Unknown: 1 re-renders
-
-📋 Re-renders por componente (métricas del navegador):
-  2: 55 re-renders
-  1: 44 re-renders
-  object Object: 15 re-renders
-
-[[ATTACHMENT|..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\test-failed-1.png]]
-
-[[ATTACHMENT|..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\rerender-verification-comp-8b8e4-nders-durante-carga-inicial-ui-public-retry1\trace.zip]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-ui-public-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Verificación Completa de Re-renders › Verificar re-renders durante interacciones del usuario" classname="rerender-verification-complete.spec.ts" time="19.061">
-<failure message="rerender-verification-complete.spec.ts:197:7 Verificar re-renders durante interacciones del usuario" type="FAILURE">
-<![CDATA[  [ui-public] › rerender-verification-complete.spec.ts:197:7 › Verificación Completa de Re-renders › Verificar re-renders durante interacciones del usuario 
+<testcase name="Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento" classname="paint-visualizer.spec.ts" time="25.722">
+<failure message="paint-visualizer.spec.ts:37:7 flujo completo: selección de producto, color, cámara y procesamiento" type="FAILURE">
+<![CDATA[  [ui-public] › paint-visualizer.spec.ts:37:7 › Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento 
 
-    Error: expect(received).toBeLessThan(expected)
+    Error: expect(locator).toBeVisible() failed
 
-    Expected: < 10
-    Received:   90
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
 
-      253 |     // Assertions
-      254 |     const rendersDuringScroll = rendersAfterScroll - rendersBefore
-    > 255 |     expect(rendersDuringScroll).toBeLessThan(10) // Scroll no debería causar más de 10 re-renders
-          |                                 ^
-      256 |
-      257 |     const rendersDuringSearch = rendersAfterSearch - rendersAfterScroll
-      258 |     expect(rendersDuringSearch).toBeLessThan(15) // Búsqueda no debería causar más de 15 re-renders
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\rerender-verification-complete.spec.ts:255:33
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      43 |       page.getByText('Probar PinteYa ColorMate').first()
+      44 |     )
+    > 45 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      46 |     await paintVisualizerCard.click()
+      47 |
+      48 |     // Esperar a que el modal se abra
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:45:39
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public\test-failed-1.png
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public\video.webm
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public\error-context.md
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public\error-context.md
 
     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
 
-    Error: expect(received).toBeLessThan(expected)
+    Error: expect(locator).toBeVisible() failed
 
-    Expected: < 10
-    Received:   90
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
 
-      253 |     // Assertions
-      254 |     const rendersDuringScroll = rendersAfterScroll - rendersBefore
-    > 255 |     expect(rendersDuringScroll).toBeLessThan(10) // Scroll no debería causar más de 10 re-renders
-          |                                 ^
-      256 |
-      257 |     const rendersDuringSearch = rendersAfterSearch - rendersAfterScroll
-      258 |     expect(rendersDuringSearch).toBeLessThan(15) // Búsqueda no debería causar más de 15 re-renders
-        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\rerender-verification-complete.spec.ts:255:33
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      43 |       page.getByText('Probar PinteYa ColorMate').first()
+      44 |     )
+    > 45 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      46 |     await paintVisualizerCard.click()
+      47 |
+      48 |     // Esperar a que el modal se abra
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:45:39
 
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\test-failed-1.png
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\video.webm
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\video.webm
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    Error Context: ..\..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\error-context.md
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\error-context.md
 
     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
-    ..\..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\trace.zip
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace ..\..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\trace.zip
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[
-📊 RE-RENDERS DURANTE INTERACCIONES:
-Re-renders antes de interacciones: 107
-Re-renders después de scroll: 90
-Re-renders después de búsqueda: 1
-Re-renders después de carrito: 24
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public\test-failed-1.png]]
 
-[[ATTACHMENT|..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public\video.webm]]
 
-[[ATTACHMENT|..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public\video.webm]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public\error-context.md]]
 
-[[ATTACHMENT|..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public\error-context.md]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\test-failed-1.png]]
 
-📊 RE-RENDERS DURANTE INTERACCIONES:
-Re-renders antes de interacciones: 108
-Re-renders después de scroll: 90
-Re-renders después de búsqueda: 0
-Re-renders después de carrito: 24
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\video.webm]]
 
-[[ATTACHMENT|..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\test-failed-1.png]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\error-context.md]]
 
-[[ATTACHMENT|..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\video.webm]]
-
-[[ATTACHMENT|..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\error-context.md]]
-
-[[ATTACHMENT|..\test-results\rerender-verification-comp-3899d-e-interacciones-del-usuario-ui-public-retry1\trace.zip]]
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-ui-public-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Verificación Completa de Re-renders › Verificar que React.memo y optimizaciones funcionan" classname="rerender-verification-complete.spec.ts" time="5.662">
+<testcase name="Paint Visualizer › el modal debería estar por encima del header y bottom bar" classname="paint-visualizer.spec.ts" time="27.028">
+<failure message="paint-visualizer.spec.ts:118:7 el modal debería estar por encima del header y bottom bar" type="FAILURE">
+<![CDATA[  [ui-public] › paint-visualizer.spec.ts:118:7 › Paint Visualizer › el modal debería estar por encima del header y bottom bar 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
 <system-out>
 <![CDATA[
-🔍 COMPONENTES MEMOIZADOS:
-Componentes memoizados encontrados: 0
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-ui-public-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Verificación Completa de Re-renders › Verificar performance de renderizado" classname="rerender-verification-complete.spec.ts" time="5.582">
+<testcase name="Paint Visualizer › debería cerrar el modal correctamente" classname="paint-visualizer.spec.ts" time="28.002">
+<failure message="paint-visualizer.spec.ts:168:7 debería cerrar el modal correctamente" type="FAILURE">
+<![CDATA[  [ui-public] › paint-visualizer.spec.ts:168:7 › Paint Visualizer › debería cerrar el modal correctamente 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
 <system-out>
 <![CDATA[
-📈 MÉTRICAS DE PERFORMANCE:
-DOM Content Loaded: 0.40ms
-Load Complete: 0.00ms
-First Paint: 336.00ms
-First Contentful Paint: 336.00ms
-Largest Contentful Paint: undefinedms
-Long Tasks: 0
-Total Long Task Duration: 0.00ms
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-ui-public-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="paint-visualizer.spec.ts" timestamp="2026-01-05T17:55:22.303Z" hostname="firefox" tests="4" failures="4" skipped="0" time="104.804" errors="0">
+<testcase name="Paint Visualizer › debería abrir el modal del Paint Visualizer" classname="paint-visualizer.spec.ts" time="34.193">
+<failure message="paint-visualizer.spec.ts:11:7 debería abrir el modal del Paint Visualizer" type="FAILURE">
+<![CDATA[  [firefox] › paint-visualizer.spec.ts:11:7 › Paint Visualizer › debería abrir el modal del Paint Visualizer 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-firefox-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento" classname="paint-visualizer.spec.ts" time="10.505">
+<failure message="paint-visualizer.spec.ts:37:7 flujo completo: selección de producto, color, cámara y procesamiento" type="FAILURE">
+<![CDATA[  [firefox] › paint-visualizer.spec.ts:37:7 › Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento 
+
+    Error: browserContext.grantPermissions: Unknown permission: camera
+
+      37 |   test('flujo completo: selección de producto, color, cámara y procesamiento', async ({ page, context }) => {
+      38 |     // Otorgar permisos de cámara
+    > 39 |     await context.grantPermissions(['camera'])
+         |                   ^
+      40 |
+      41 |     // Buscar y abrir el modal
+      42 |     const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:39:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserContext.grantPermissions: Unknown permission: camera
+
+      37 |   test('flujo completo: selección de producto, color, cámara y procesamiento', async ({ page, context }) => {
+      38 |     // Otorgar permisos de cámara
+    > 39 |     await context.grantPermissions(['camera'])
+         |                   ^
+      40 |
+      41 |     // Buscar y abrir el modal
+      42 |     const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:39:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-firefox-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › el modal debería estar por encima del header y bottom bar" classname="paint-visualizer.spec.ts" time="30.183">
+<failure message="paint-visualizer.spec.ts:118:7 el modal debería estar por encima del header y bottom bar" type="FAILURE">
+<![CDATA[  [firefox] › paint-visualizer.spec.ts:118:7 › Paint Visualizer › el modal debería estar por encima del header y bottom bar 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-firefox-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › debería cerrar el modal correctamente" classname="paint-visualizer.spec.ts" time="29.923">
+<failure message="paint-visualizer.spec.ts:168:7 debería cerrar el modal correctamente" type="FAILURE">
+<![CDATA[  [firefox] › paint-visualizer.spec.ts:168:7 › Paint Visualizer › debería cerrar el modal correctamente 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-firefox-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="paint-visualizer.spec.ts" timestamp="2026-01-05T17:55:22.303Z" hostname="webkit" tests="4" failures="4" skipped="0" time="76.928" errors="0">
+<testcase name="Paint Visualizer › debería abrir el modal del Paint Visualizer" classname="paint-visualizer.spec.ts" time="18.391">
+<failure message="paint-visualizer.spec.ts:11:7 debería abrir el modal del Paint Visualizer" type="FAILURE">
+<![CDATA[  [webkit] › paint-visualizer.spec.ts:11:7 › Paint Visualizer › debería abrir el modal del Paint Visualizer 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: page.waitForLoadState: Target page, context or browser has been closed
+
+       6 |     await page.goto('http://localhost:3000')
+       7 |     // Esperar a que la página cargue completamente
+    >  8 |     await page.waitForLoadState('networkidle')
+         |                ^
+       9 |   })
+      10 |
+      11 |   test('debería abrir el modal del Paint Visualizer', async ({ page }) => {
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:8:16
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-webkit-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento" classname="paint-visualizer.spec.ts" time="5.332">
+<failure message="paint-visualizer.spec.ts:37:7 flujo completo: selección de producto, color, cámara y procesamiento" type="FAILURE">
+<![CDATA[  [webkit] › paint-visualizer.spec.ts:37:7 › Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento 
+
+    Error: browserContext.grantPermissions: Unknown permission: camera
+
+      37 |   test('flujo completo: selección de producto, color, cámara y procesamiento', async ({ page, context }) => {
+      38 |     // Otorgar permisos de cámara
+    > 39 |     await context.grantPermissions(['camera'])
+         |                   ^
+      40 |
+      41 |     // Buscar y abrir el modal
+      42 |     const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:39:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserContext.grantPermissions: Unknown permission: camera
+
+      37 |   test('flujo completo: selección de producto, color, cámara y procesamiento', async ({ page, context }) => {
+      38 |     // Otorgar permisos de cámara
+    > 39 |     await context.grantPermissions(['camera'])
+         |                   ^
+      40 |
+      41 |     // Buscar y abrir el modal
+      42 |     const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:39:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-webkit-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › el modal debería estar por encima del header y bottom bar" classname="paint-visualizer.spec.ts" time="26.308">
+<failure message="paint-visualizer.spec.ts:118:7 el modal debería estar por encima del header y bottom bar" type="FAILURE">
+<![CDATA[  [webkit] › paint-visualizer.spec.ts:118:7 › Paint Visualizer › el modal debería estar por encima del header y bottom bar 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-webkit-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › debería cerrar el modal correctamente" classname="paint-visualizer.spec.ts" time="26.897">
+<failure message="paint-visualizer.spec.ts:168:7 debería cerrar el modal correctamente" type="FAILURE">
+<![CDATA[  [webkit] › paint-visualizer.spec.ts:168:7 › Paint Visualizer › debería cerrar el modal correctamente 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-webkit-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="paint-visualizer.spec.ts" timestamp="2026-01-05T17:55:22.303Z" hostname="Mobile Chrome" tests="4" failures="4" skipped="0" time="108.841" errors="0">
+<testcase name="Paint Visualizer › debería abrir el modal del Paint Visualizer" classname="paint-visualizer.spec.ts" time="27.633">
+<failure message="paint-visualizer.spec.ts:11:7 debería abrir el modal del Paint Visualizer" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › paint-visualizer.spec.ts:11:7 › Paint Visualizer › debería abrir el modal del Paint Visualizer 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Chrome-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento" classname="paint-visualizer.spec.ts" time="27.03">
+<failure message="paint-visualizer.spec.ts:37:7 flujo completo: selección de producto, color, cámara y procesamiento" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › paint-visualizer.spec.ts:37:7 › Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      43 |       page.getByText('Probar PinteYa ColorMate').first()
+      44 |     )
+    > 45 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      46 |     await paintVisualizerCard.click()
+      47 |
+      48 |     // Esperar a que el modal se abra
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:45:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      43 |       page.getByText('Probar PinteYa ColorMate').first()
+      44 |     )
+    > 45 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      46 |     await paintVisualizerCard.click()
+      47 |
+      48 |     // Esperar a que el modal se abra
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:45:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Chrome-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › el modal debería estar por encima del header y bottom bar" classname="paint-visualizer.spec.ts" time="27.167">
+<failure message="paint-visualizer.spec.ts:118:7 el modal debería estar por encima del header y bottom bar" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › paint-visualizer.spec.ts:118:7 › Paint Visualizer › el modal debería estar por encima del header y bottom bar 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Chrome-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › debería cerrar el modal correctamente" classname="paint-visualizer.spec.ts" time="27.011">
+<failure message="paint-visualizer.spec.ts:168:7 debería cerrar el modal correctamente" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › paint-visualizer.spec.ts:168:7 › Paint Visualizer › debería cerrar el modal correctamente 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Chrome-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="paint-visualizer.spec.ts" timestamp="2026-01-05T17:55:22.303Z" hostname="Mobile Safari" tests="4" failures="4" skipped="0" time="83.65" errors="0">
+<testcase name="Paint Visualizer › debería abrir el modal del Paint Visualizer" classname="paint-visualizer.spec.ts" time="26.218">
+<failure message="paint-visualizer.spec.ts:11:7 debería abrir el modal del Paint Visualizer" type="FAILURE">
+<![CDATA[  [Mobile Safari] › paint-visualizer.spec.ts:11:7 › Paint Visualizer › debería abrir el modal del Paint Visualizer 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      17 |
+      18 |     // Verificar que el card existe
+    > 19 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+         |                                       ^
+      20 |
+      21 |     // Hacer clic para abrir el modal
+      22 |     await paintVisualizerCard.click()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:19:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-6af0a--modal-del-Paint-Visualizer-Mobile-Safari-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento" classname="paint-visualizer.spec.ts" time="6.32">
+<failure message="paint-visualizer.spec.ts:37:7 flujo completo: selección de producto, color, cámara y procesamiento" type="FAILURE">
+<![CDATA[  [Mobile Safari] › paint-visualizer.spec.ts:37:7 › Paint Visualizer › flujo completo: selección de producto, color, cámara y procesamiento 
+
+    Error: browserContext.grantPermissions: Unknown permission: camera
+
+      37 |   test('flujo completo: selección de producto, color, cámara y procesamiento', async ({ page, context }) => {
+      38 |     // Otorgar permisos de cámara
+    > 39 |     await context.grantPermissions(['camera'])
+         |                   ^
+      40 |
+      41 |     // Buscar y abrir el modal
+      42 |     const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:39:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserContext.grantPermissions: Unknown permission: camera
+
+      37 |   test('flujo completo: selección de producto, color, cámara y procesamiento', async ({ page, context }) => {
+      38 |     // Otorgar permisos de cámara
+    > 39 |     await context.grantPermissions(['camera'])
+         |                   ^
+      40 |
+      41 |     // Buscar y abrir el modal
+      42 |     const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:39:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-a5555-olor-cámara-y-procesamiento-Mobile-Safari-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › el modal debería estar por encima del header y bottom bar" classname="paint-visualizer.spec.ts" time="24.906">
+<failure message="paint-visualizer.spec.ts:118:7 el modal debería estar por encima del header y bottom bar" type="FAILURE">
+<![CDATA[  [Mobile Safari] › paint-visualizer.spec.ts:118:7 › Paint Visualizer › el modal debería estar por encima del header y bottom bar 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      121 |       page.getByText('Probar PinteYa ColorMate').first()
+      122 |     )
+    > 123 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      124 |     await paintVisualizerCard.click()
+      125 |
+      126 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:123:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-5e51c-ima-del-header-y-bottom-bar-Mobile-Safari-retry1\trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Paint Visualizer › debería cerrar el modal correctamente" classname="paint-visualizer.spec.ts" time="26.206">
+<failure message="paint-visualizer.spec.ts:168:7 debería cerrar el modal correctamente" type="FAILURE">
+<![CDATA[  [Mobile Safari] › paint-visualizer.spec.ts:168:7 › Paint Visualizer › debería cerrar el modal correctamente 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari\error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="paint-visualizer-card"]').or(getByText('Probar PinteYa ColorMate').first())
+
+
+      171 |       page.getByText('Probar PinteYa ColorMate').first()
+      172 |     )
+    > 173 |     await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+          |                                       ^
+      174 |     await paintVisualizerCard.click()
+      175 |
+      176 |     const modal = page.locator('[role="dialog"]').first()
+        at C:\Users\marti\Desktop\DESARROLLOSW\BOILERPLATTE E-COMMERCE\tests\e2e\paint-visualizer.spec.ts:173:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\video.webm]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\error-context.md]]
+
+[[ATTACHMENT|..\test-results\paint-visualizer-Paint-Vis-c7879-rrar-el-modal-correctamente-Mobile-Safari-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>

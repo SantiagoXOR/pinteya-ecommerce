@@ -383,27 +383,33 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
               return (
                 <div
                   key={product.id}
-                  onClick={() => handleProductSelect(product)}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleProductSelect(product)
+                  }}
                   className={cn(
-                    'cursor-pointer transition-all',
+                    'cursor-pointer transition-all relative',
                     isSelected && 'ring-2 ring-blue-500 rounded-lg'
                   )}
                 >
-                  <CommercialProductCard
-                    image={product.image}
-                    title={product.name}
-                    brand={product.brand}
-                    price={undefined}
-                    productId={product.id}
-                    onAddToCart={() => {
-                      // No-op: en modo selección no agregamos al carrito
-                    }}
-                    variants={product.colors.map((c, idx) => ({
-                      id: idx,
-                      color_name: c.name,
-                      color_hex: c.hex,
-                    }))}
-                  />
+                  <div style={{ pointerEvents: 'none' }}>
+                    <CommercialProductCard
+                      image={product.image}
+                      title={product.name}
+                      brand={product.brand}
+                      price={undefined}
+                      productId={product.id}
+                      onAddToCart={() => {
+                        // No-op: en modo selección no agregamos al carrito
+                      }}
+                      variants={product.colors.map((c, idx) => ({
+                        id: idx,
+                        color_name: c.name,
+                        color_hex: c.hex,
+                      }))}
+                    />
+                  </div>
                 </div>
               )
             })}
