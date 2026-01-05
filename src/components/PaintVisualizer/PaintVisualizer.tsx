@@ -8,9 +8,11 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog'
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    DialogDescription,
+  } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import {
   Camera,
@@ -634,6 +636,12 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
         )}
         size='4xl'
       >
+        <DialogTitle className='sr-only'>
+          Visualizador de Pintura PinteYa ColorMate
+        </DialogTitle>
+        <DialogDescription className='sr-only'>
+          Selecciona un producto de pintura, elige un color y visualiza cómo se verá en tu espacio usando la cámara de tu dispositivo.
+        </DialogDescription>
         {viewMode === 'selection' && renderSelectionView()}
         {viewMode === 'camera' && renderCameraView()}
         {viewMode === 'result' && renderResultView()}
