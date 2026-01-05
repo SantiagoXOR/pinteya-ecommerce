@@ -6,6 +6,7 @@ import { useInfiniteProductsQuery } from '@/hooks/useInfiniteProductsQuery'
 import { Loader2 } from '@/lib/optimized-imports'
 import dynamic from 'next/dynamic'
 import HelpCard from '@/components/Home-v2/BestSeller/HelpCard'
+import { PaintVisualizerCard } from '@/components/PaintVisualizer'
 
 // Lazy load de los carruseles para mejor performance
 const HeroCarousel = dynamic(() => import('@/components/Home-v2/HeroCarousel'), {
@@ -124,13 +125,15 @@ export const ProductGridInfinite: React.FC<ProductGridInfiniteProps> = ({
               ))}
               {/* HelpCard al final, ocupando el último slot disponible */}
               <HelpCard />
+              <PaintVisualizerCard />
             </div>
           )
         } else {
-          // Si no hay productos restantes, mostrar solo el HelpCard en una nueva fila
+          // Si no hay productos restantes, mostrar solo los cards en una nueva fila
           return (
             <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
               <HelpCard />
+              <PaintVisualizerCard />
             </div>
           )
         }

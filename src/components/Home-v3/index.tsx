@@ -536,16 +536,21 @@ const HomeV3 = () => {
       {/* 0. Hero Optimized - Imagen estática inicial, carousel después del FCP */}
       {/* ⚡ FASE 23: Contenedor hero-lcp-container con imagen estática y carousel */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
-      {/* ⚡ FIX: Usar key única para prevenir duplicación en producción */}
-      <div className='pt-1 sm:pt-2' key="hero-container-wrapper">
+      {/* ⚡ FIX: Full width con estilos correctos */}
+      <div className='pt-1 sm:pt-2 w-full' key="hero-container-wrapper" style={{ width: '100%', maxWidth: '100%' }}>
         <div 
           className="hero-lcp-container relative w-full overflow-hidden"
-          style={{ aspectRatio: '2.77' }}
+          style={{ 
+            aspectRatio: '2.77',
+            width: '100%',
+            maxWidth: '100%',
+            margin: '0 auto',
+          }}
           key="hero-lcp-container"
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
           {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
-          {/* ⚡ FIX: Usar key única y verificar que no hay duplicados */}
+          {/* ⚡ FIX: Full width con object-fit cover para mejor visualización */}
           <img
             id="hero-lcp-image"
             key="hero-lcp-image-static"
@@ -554,14 +559,14 @@ const HomeV3 = () => {
             fetchPriority="high"
             loading="eager"
             decoding="async"
-            className="object-contain"
+            className="object-cover"
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               width: '100%',
               height: '100%',
-              objectFit: 'contain',
+              objectFit: 'cover',
             }}
           />
           <HeroOptimized key="hero-optimized-component" />

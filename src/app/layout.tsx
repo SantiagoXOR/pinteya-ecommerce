@@ -405,9 +405,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           @media(max-width:639px){.hero-carousel{min-height:420px}}
           @media(min-width:1024px){.hero-carousel{min-height:500px}}
           
-          /* ⚡ FIX: Hero banner full width - Forzar ancho completo en producción */
-          .hero-lcp-container,.hero-lcp-container *{max-width:100vw!important;width:100vw!important}
-          section.hero-fullwidth,section[class*="hero"]{width:100vw!important;max-width:100vw!important;margin-left:calc(-50vw + 50%)!important;margin-right:calc(-50vw + 50%)!important;left:50%!important;right:50%!important;transform:translateX(-50%)!important;position:relative!important}
+          /* ⚡ FIX: Hero banner full width - Asegurar ancho completo */
+          .hero-lcp-container{width:100%!important;max-width:100%!important;margin-left:0!important;margin-right:0!important}
+          .hero-lcp-container img{width:100%!important;height:100%!important;object-fit:cover!important}
           
           /* Hero Skeleton Animation */
           .hero-skeleton{animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite}

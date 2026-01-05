@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from './HelpCard'
+import { PaintVisualizerCard } from '@/components/PaintVisualizer'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
 // ⚡ OPTIMIZACIÓN: Componente memoizado para evitar re-renders innecesarios
@@ -104,6 +105,7 @@ const BestSeller: React.FC = React.memo(() => {
                   <ProductItem key={`${item.id}-${index}`} product={item} />
                 ))}
                 {shouldShowHelpCard && <HelpCard categoryName={selectedCategory} />}
+                {shouldShowHelpCard && <PaintVisualizerCard />}
               </>
             ) : (
             <div className='col-span-full'>

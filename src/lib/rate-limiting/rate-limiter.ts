@@ -141,6 +141,13 @@ export const RATE_LIMIT_CONFIGS = {
     maxRequests: isDevelopment ? 1000 : 100, // 1000 en dev, 100 en prod
     message: 'Límite de webhooks excedido. Intente en 1 minuto.',
   },
+
+  // Paint Visualizer API - límites moderados (usa Gemini API)
+  paintVisualizer: {
+    windowMs: isDevelopment ? 60 * 1000 : 5 * 60 * 1000, // 1 minuto en dev, 5 minutos en prod
+    maxRequests: isDevelopment ? 50 : 10, // 50 en dev, 10 en prod
+    message: 'Límite de visualizaciones excedido. Intente en 5 minutos.',
+  },
 } as const
 
 // ===================================
