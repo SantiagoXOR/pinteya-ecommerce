@@ -459,6 +459,7 @@ const HomeV3 = () => {
 
       {/* 0. Hero Optimized - Imagen estática inicial, carousel después del FCP */}
       {/* ⚡ FASE 23: Contenedor hero-lcp-container con imagen estática y carousel */}
+      {/* ⚡ FIX: Eliminar duplicación - solo una imagen estática, no dos */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
       <div className='pt-1 sm:pt-2'>
         <div 
@@ -466,6 +467,7 @@ const HomeV3 = () => {
           style={{ aspectRatio: '2.77' }}
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
+          {/* ⚡ FIX: Solo renderizar UNA imagen estática, no duplicar con HeroImageStatic */}
           {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
           <img
             id="hero-lcp-image"
@@ -482,6 +484,7 @@ const HomeV3 = () => {
               width: '100%',
               height: '100%',
               objectFit: 'contain',
+              zIndex: 1, // Detrás del carousel cuando se carga
             }}
           />
           <HeroOptimized />
