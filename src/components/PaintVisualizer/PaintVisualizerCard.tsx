@@ -13,9 +13,10 @@ export function PaintVisualizerCard({ className }: PaintVisualizerCardProps) {
 
   return (
     <>
-      <div
-        className={cn(
-          'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer',
+        <div
+          data-testid="paint-visualizer-card"
+          className={cn(
+            'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer',
           'h-[300px] sm:h-[360px]',
           'md:h-[450px] lg:h-[500px]',
           'md:rounded-2xl',
