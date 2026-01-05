@@ -150,20 +150,12 @@ const HeroOptimized = memo(() => {
       {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
       {/* ⚡ FIX: Verificar que no hay otro carousel ya renderizado para prevenir duplicación */}
       {isMounted && shouldLoadCarousel && (() => {
-        // ⚡ FIX MEJORADO: Verificar múltiples veces y usar ref para prevenir duplicación
+        // ⚡ FIX: Verificar que no hay otro carousel ya renderizado
         // Esto previene duplicación en producción donde React puede renderizar dos veces
         if (typeof window !== 'undefined') {
-          // Verificar inmediatamente
           const existingCarousels = document.querySelectorAll('[data-hero-optimized]')
           if (existingCarousels.length > 0) {
             // Ya hay un carousel renderizado, no renderizar otro
-            return null
-          }
-          
-          // ⚡ MEJORA: Verificar también contenedores duplicados
-          const containers = document.querySelectorAll('.hero-lcp-container')
-          if (containers.length > 1) {
-            // Hay contenedores duplicados, esperar a que se limpien
             return null
           }
         }
@@ -172,7 +164,6 @@ const HeroOptimized = memo(() => {
           <div
             className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100"
             data-hero-optimized="true"
-            data-hero-carousel-unique="true"
             style={{
               position: 'absolute',
               top: 0,

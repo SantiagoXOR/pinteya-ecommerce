@@ -389,7 +389,6 @@ const HomeV3 = () => {
   
   // ⚡ FIX: Eliminar duplicados de imágenes estáticas y carousels en producción
   // Esto previene que se rendericen dos imágenes estáticas o dos carousels
-  // ⚡ MEJORA: Usar MutationObserver para detectar duplicados en tiempo real
   useEffect(() => {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return
@@ -434,21 +433,8 @@ const HomeV3 = () => {
       }
     }
 
-    // ⚡ MEJORA: Ejecutar múltiples veces con diferentes timings para producción
-    // Esto asegura que funcione incluso con hidratación lenta
-    const timeouts: NodeJS.Timeout[] = []
-    
-    // Ejecutar inmediatamente
-    requestAnimationFrame(() => {
-      removeDuplicates()
-    })
-    
-    // Ejecutar después de delays progresivos
-    timeouts.push(setTimeout(removeDuplicates, 50))
-    timeouts.push(setTimeout(removeDuplicates, 100))
-    timeouts.push(setTimeout(removeDuplicates, 200))
-    timeouts.push(setTimeout(removeDuplicates, 500))
-    timeouts.push(setTimeout(removeDuplicates, 1000))
+    // Ejecutar después de un pequeño delay para asegurar que React haya terminado de renderizar
+    const timeout = setTimeout(removeDuplicates, 100)
     
     // También ejecutar después de que la página esté completamente cargada
     if (document.readyState === 'complete') {
@@ -457,21 +443,9 @@ const HomeV3 = () => {
       window.addEventListener('load', removeDuplicates, { once: true })
     }
 
-    // ⚡ MEJORA: MutationObserver para detectar duplicados en tiempo real
-    const observer = new MutationObserver(() => {
-      removeDuplicates()
-    })
-
-    // Observar cambios en el body para detectar cuando se agregan elementos duplicados
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    })
-
     return () => {
-      timeouts.forEach(timeout => clearTimeout(timeout))
+      clearTimeout(timeout)
       window.removeEventListener('load', removeDuplicates)
-      observer.disconnect()
     }
   }, [])
 
@@ -557,7 +531,7 @@ const HomeV3 = () => {
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
           {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
-          {/* ⚡ FIX: El useEffect con MutationObserver eliminará duplicados automáticamente */}
+          {/* ⚡ FIX: Usar key única y verificar que no hay duplicados */}
           <img
             id="hero-lcp-image"
             key="hero-lcp-image-static"
