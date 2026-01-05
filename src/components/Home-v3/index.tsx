@@ -490,10 +490,12 @@ const HomeV3 = () => {
           className="hero-lcp-container relative w-full overflow-hidden"
           style={{ 
             aspectRatio: '2.77',
-            width: '100%',
-            maxWidth: '100%',
+            width: '100vw',
+            maxWidth: '100vw',
             minHeight: '277px',
-            height: 'clamp(277px, calc(100vw / 2.77), 433px)'
+            height: 'clamp(277px, calc(100vw / 2.77), 433px)',
+            marginLeft: 'calc(-50vw + 50%)',
+            marginRight: 'calc(-50vw + 50%)',
           }}
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
@@ -506,14 +508,15 @@ const HomeV3 = () => {
             fetchPriority="high"
             loading="eager"
             decoding="async"
-            className="object-contain w-full h-full"
+            className="w-full h-full"
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               width: '100%',
               height: '100%',
-              objectFit: 'contain',
+              objectFit: 'cover',
+              objectPosition: 'center',
               zIndex: 1, // Detrás del carousel cuando se carga
             }}
           />

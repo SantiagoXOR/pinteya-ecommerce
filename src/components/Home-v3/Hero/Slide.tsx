@@ -29,7 +29,8 @@ const Slide: React.FC<SlideProps> = memo(({ slide, index, isTransitioning }) => 
         priority={false}
         loading="lazy"
         fetchPriority="auto"
-        className="object-contain"
+        className="object-cover"
+        style={{ objectPosition: 'center' }}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
         quality={75}
         decoding="async"
