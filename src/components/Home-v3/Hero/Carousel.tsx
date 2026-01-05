@@ -13,9 +13,13 @@ import Indicators from './Indicators'
 import type { HeroCarouselProps, HeroSlide } from './types'
 
 // ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia
-// ⚡ FASE 23: hero1.webp NO se incluye aquí porque ya está renderizado como imagen estática
-// ⚡ FASE 23: Solo usar hero2 y hero3 - eliminar hero4, hero5, hero6 para reducir carga
+// ⚡ FIX: Incluir las 3 imágenes del hero (hero1, hero2, hero3)
 const DEFAULT_SLIDES: HeroSlide[] = [
+  {
+    id: 'hero-1',
+    image: '/images/hero/hero2/hero1.webp',
+    alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad - Pinteya',
+  },
   {
     id: 'hero-2',
     image: '/images/hero/hero2/hero2.webp',
@@ -34,8 +38,8 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
     const performanceLevel = useDevicePerformance()
     const isLowPerformance = performanceLevel === 'low'
 
-    // ⚡ FASE 23: Empezar en índice 1 (primera slide real del carousel, que es hero2.webp)
-    // Índice 0 es el clone de la última, índice 1 es hero2.webp (primera real)
+    // ⚡ FIX: Empezar en índice 1 (primera slide real del carousel, que es hero1.webp)
+    // Índice 0 es el clone de la última, índice 1 es hero1.webp (primera real)
     const [currentIndex, setCurrentIndex] = useState(startIndex)
     const [isTransitioning, setIsTransitioning] = useState(false)
     const [isAutoPlaying, setIsAutoPlaying] = useState(false)
@@ -45,12 +49,12 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
       setIsAutoPlaying(!isLowPerformance)
     }, [isLowPerformance])
 
-    // ⚡ FASE 23: Array extendido sin hero1.webp para loop infinito
+    // ⚡ FIX: Array extendido con todas las slides para loop infinito
     const extendedSlides = useMemo(() => {
       if (slides.length === 0) return []
       return [
         slides[slides.length - 1], // Clone de la última
-        ...slides, // Slides originales
+        ...slides, // Slides originales (hero1, hero2, hero3)
         slides[0], // Clone de la primera
       ]
     }, [slides])
