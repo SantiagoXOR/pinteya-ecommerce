@@ -356,11 +356,35 @@ const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
 })
 DelayedCategoryToggle.displayName = 'DelayedCategoryToggle'
 
+// ⚡ FIX: Prevenir duplicación del hero - verificar si ya existe un contenedor hero
+const hasHeroContainer = typeof window !== 'undefined' && document.querySelector('.hero-lcp-container')
+
 const HomeV3 = () => {
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo para aplicar optimizaciones adaptativas
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
   const isMediumPerformance = performanceLevel === 'medium'
+  
+  // ⚡ FIX: Prevenir renderizado duplicado del hero durante hidratación
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Esperar un frame para que la hidratación complete
+      requestAnimationFrame(() => {
+        const containers = document.querySelectorAll('.hero-lcp-container')
+        if (containers.length > 1) {
+          console.warn('[HomeV3] Múltiples contenedores hero detectados:', containers.length)
+          // Eliminar contenedores duplicados (mantener solo el primero)
+          for (let i = 1; i < containers.length; i++) {
+            const container = containers[i] as HTMLElement | null
+            if (container && container.parentNode) {
+              console.warn('[HomeV3] Eliminando contenedor hero duplicado #', i + 1)
+              container.parentNode.removeChild(container)
+            }
+          }
+        }
+      })
+    }
+  }, [])
   
   // ⚡ FASE 1B: Detectar LCP para diferir componentes no críticos después del LCP
   const { shouldLoad: shouldLoadAfterLCP } = useLCPDetection({

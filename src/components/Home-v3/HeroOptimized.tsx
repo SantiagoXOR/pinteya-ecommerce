@@ -18,12 +18,17 @@ const HeroCarousel = dynamic(() => import('./Hero/Carousel'), {
  * 
  * Impacto esperado: -1.5s a -2.0s en Speed Index, -1,000 ms a -1,570 ms en retraso LCP
  */
+// ⚡ FIX: Variable global para prevenir duplicación durante hidratación
+let heroInstanceCount = 0
+const MAX_HERO_INSTANCES = 1
+
 const HeroOptimized = memo(() => {
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   // ⚡ FIX: Prevenir duplicación durante hidratación usando ref
   const hasRenderedRef = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const instanceIdRef = useRef<string | null>(null)
   
   // #region agent log
   useEffect(() => {
@@ -52,18 +57,27 @@ const HeroOptimized = memo(() => {
 
   // ⚡ FIX: Marcar como montado después del primer render y verificar duplicación
   useEffect(() => {
+    // ⚡ FIX: Prevenir duplicación durante hidratación - verificar antes de montar
+    if (typeof window !== 'undefined') {
+      // Verificar si ya hay otro HeroOptimized renderizado en el DOM
+      const existingHeroes = document.querySelectorAll('[data-hero-optimized]')
+      const existingContainers = document.querySelectorAll('.hero-lcp-container')
+      
+      // Si ya hay un hero renderizado Y este componente aún no tiene ref, no montar
+      if (existingHeroes.length > 0 && !containerRef.current) {
+        console.warn('[HeroOptimized] Duplicación detectada, no montando segunda instancia')
+        return
+      }
+      
+      // Si hay múltiples contenedores, algo está mal
+      if (existingContainers.length > 1) {
+        console.warn('[HeroOptimized] Múltiples contenedores hero-lcp-container detectados:', existingContainers.length)
+      }
+    }
+    
     // ⚡ FIX: Prevenir duplicación durante hidratación
     if (hasRenderedRef.current) {
       return // Ya se renderizó, no hacer nada
-    }
-    
-    // ⚡ FIX: Verificar si ya hay otro HeroOptimized renderizado
-    if (typeof window !== 'undefined') {
-      const existingHero = document.querySelectorAll('[data-hero-optimized]')
-      // Si ya hay un hero renderizado (y no es este), no montar este
-      if (existingHero.length > 0 && !containerRef.current) {
-        return
-      }
     }
     
     hasRenderedRef.current = true
@@ -191,8 +205,9 @@ const HeroOptimized = memo(() => {
         // ⚡ FIX: Verificar que no hay otro carousel ya renderizado
         if (typeof window !== 'undefined') {
           const existingCarousels = document.querySelectorAll('[data-hero-optimized]')
-          // Si ya hay un carousel renderizado, no renderizar otro
-          if (existingCarousels.length > 0) {
+          // Si ya hay un carousel renderizado Y este componente no tiene el ref, no renderizar
+          if (existingCarousels.length > 0 && !containerRef.current) {
+            console.warn('[HeroOptimized] Carousel duplicado detectado, no renderizando')
             return null
           }
         }
