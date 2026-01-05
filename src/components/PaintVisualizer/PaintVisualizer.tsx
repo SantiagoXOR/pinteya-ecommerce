@@ -92,8 +92,16 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        await videoRef.current.play()
-        setIsCameraActive(true)
+        try {
+          await videoRef.current.play()
+          setIsCameraActive(true)
+          setCameraError(null)
+        } catch (playError) {
+          console.error('Error al reproducir video:', playError)
+          // Detener el stream si hay error al reproducir
+          stream.getTracks().forEach(track => track.stop())
+          throw playError
+        }
       }
     } catch (error: any) {
       console.error('Error accediendo a la cámara:', error)
@@ -335,11 +343,13 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
   // Continuar a vista de cámara
   const handleContinueToCamera = async () => {
     if (selectedProduct && selectedColor) {
-      // Cambiar a vista de cámara primero
-      setViewMode('camera')
-      // Intentar iniciar la cámara directamente desde el gesto del usuario
-      // Esto es necesario porque getUserMedia debe ser llamado desde un gesto del usuario
       try {
+        // Cambiar a vista de cámara primero
+        setViewMode('camera')
+        // Pequeño delay para asegurar que el DOM se actualice
+        await new Promise(resolve => setTimeout(resolve, 100))
+        // Intentar iniciar la cámara directamente desde el gesto del usuario
+        // Esto es necesario porque getUserMedia debe ser llamado desde un gesto del usuario
         await startCamera()
       } catch (error) {
         // El error ya está manejado en startCamera
@@ -452,7 +462,7 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
 
   // Vista de cámara
   const renderCameraView = () => (
-    <div className='absolute inset-0 bg-black w-full h-full overflow-hidden'>
+    <div className='relative bg-black w-full h-full overflow-hidden' style={{ minHeight: '100vh', minWidth: '100%' }}>
       {/* Video de fondo */}
       <video
         ref={videoRef}
@@ -656,15 +666,14 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
   )
 
   // Handler para prevenir que el modal se cierre cuando hay un error de cámara
-  const handleDialogOpenChange = (open: boolean) => {
-    // Si se intenta cerrar pero hay un error de cámara, no cerrar
-    // Permitir que el usuario use la galería o reintente
-    if (!open && cameraError && viewMode === 'camera') {
-      // No cerrar el modal si hay error de cámara
-      return
+  const handleDialogOpenChange = useCallback((open: boolean) => {
+    // Solo cerrar si realmente se quiere cerrar (no por errores)
+    if (!open) {
+      // Si estamos en vista de cámara y hay error, no cerrar automáticamente
+      // Pero permitir cerrar si el usuario hace click en el overlay o en el botón X
+      onClose()
     }
-    onClose()
-  }
+  }, [onClose])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
@@ -672,7 +681,7 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
         className={cn(
           'p-0 overflow-hidden',
           viewMode === 'camera'
-            ? 'md:max-w-4xl md:max-h-[90vh] md:rounded-lg'
+            ? 'max-w-full max-h-[90vh] h-[90vh] md:max-w-4xl md:max-h-[90vh] md:rounded-lg'
             : 'max-w-4xl max-h-[90vh]'
         )}
         size='4xl'
