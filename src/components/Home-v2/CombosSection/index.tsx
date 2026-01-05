@@ -113,19 +113,18 @@ const slides: Slide[] = [
    }, [router])
 
   return (
-    <div className="relative w-full CombosSection" style={{ width: '100%', maxWidth: '100%' }}>
+    <div className="relative w-full h-full CombosSection" style={{ width: '100%', maxWidth: '100%', height: '100%' }}>
       {/* Contenedor del carrusel con aspect ratio preservado - Igual que HeroCarousel */}
-      {/* ⚡ FIX: Full width con estilos correctos (igual que hero) */}
-      <div className="w-full px-2 sm:px-4 lg:px-6 py-2 sm:py-3" style={{ width: '100%', maxWidth: '100%' }}>
-        <div 
-          className="relative w-full overflow-hidden"
-          style={{ 
-            aspectRatio: '2.77',
-            width: '100%',
-            maxWidth: '100%',
-            margin: '0 auto',
-          }}
-        >
+      {/* ⚡ FIX: Full width sin padding (el padding está en CombosOptimized) */}
+      <div 
+        className="relative w-full h-full overflow-hidden"
+        style={{ 
+          aspectRatio: '2.77',
+          width: '100%',
+          maxWidth: '100%',
+          height: '100%',
+        }}
+      >
           {/* ⚡ FIX: Skeleton placeholder mientras carga - se oculta completamente cuando las imágenes cargan */}
           {!imagesLoaded && (
             <div 
@@ -271,7 +270,6 @@ const slides: Slide[] = [
             })}
           </div>
         </div>
-      </div>
     </div>
   )
  }
