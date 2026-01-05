@@ -1,7 +1,7 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import React, { useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
@@ -164,30 +164,6 @@ const LazyPromoBanner = React.memo(({ bannerId }: { bannerId: number }) => {
   // ⚡ FIX CLS: minHeight realista basado en altura esperada del banner (48px para banners compactos)
   // Esto previene layout shift cuando el componente se vuelve visible
   const minHeight = isVisible ? 'auto' : '48px';
-  // #region agent log
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'Home-v3/index.tsx:LazyPromoBanner',
-          message: 'LazyPromoBanner visibility changed',
-          data: {
-            timeSincePageLoad: performance.now(),
-            bannerId: bannerId,
-            isVisible: isVisible,
-            minHeight: minHeight // ⚡ FIX: Usar el valor real calculado
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'lcp-cls-investigation',
-          hypothesisId: 'CLS1'
-        })
-      }).catch(() => {});
-    }
-  }, [isVisible, bannerId, minHeight]);
-  // #endregion
   return (
     <div ref={ref} style={{ minHeight: minHeight }}>
       {content}
@@ -210,29 +186,6 @@ const LazyNewArrivals = React.memo(() => {
 
   // ⚡ FIX CLS: minHeight realista basado en altura esperada (500px según Home-v2)
   const minHeight = isVisible ? 'auto' : '500px';
-  // #region agent log
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'Home-v3/index.tsx:LazyNewArrivals',
-          message: 'LazyNewArrivals visibility changed',
-          data: {
-            timeSincePageLoad: performance.now(),
-            isVisible: isVisible,
-            minHeight: minHeight // ⚡ FIX: Usar el valor real calculado
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'lcp-cls-investigation',
-          hypothesisId: 'CLS1'
-        })
-      }).catch(() => {});
-    }
-  }, [isVisible, minHeight]);
-  // #endregion
   return (
     <div ref={ref} style={{ minHeight: minHeight }}>
       {content}
@@ -254,29 +207,6 @@ const LazyTrendingSearches = React.memo(() => {
 
   // ⚡ FIX CLS: minHeight realista basado en altura esperada (~100px para trending searches)
   const minHeight = isVisible ? 'auto' : '100px';
-  // #region agent log
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'Home-v3/index.tsx:LazyTrendingSearches',
-          message: 'LazyTrendingSearches visibility changed',
-          data: {
-            timeSincePageLoad: performance.now(),
-            isVisible: isVisible,
-            minHeight: minHeight // ⚡ FIX: Usar el valor real calculado
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'lcp-cls-investigation',
-          hypothesisId: 'CLS1'
-        })
-      }).catch(() => {});
-    }
-  }, [isVisible, minHeight]);
-  // #endregion
   return (
     <div ref={ref} style={{ minHeight: minHeight }}>
       {content}
@@ -298,29 +228,6 @@ const LazyTestimonials = React.memo(() => {
 
   // ⚡ FIX CLS: minHeight realista basado en altura esperada (~200px para testimonials)
   const minHeight = isVisible ? 'auto' : '200px';
-  // #region agent log
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'Home-v3/index.tsx:LazyTestimonials',
-          message: 'LazyTestimonials visibility changed',
-          data: {
-            timeSincePageLoad: performance.now(),
-            isVisible: isVisible,
-            minHeight: minHeight // ⚡ FIX: Usar el valor real calculado
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'lcp-cls-investigation',
-          hypothesisId: 'CLS1'
-        })
-      }).catch(() => {});
-    }
-  }, [isVisible, minHeight]);
-  // #endregion
   return (
     <div ref={ref} style={{ minHeight: minHeight }}>
       {content}
@@ -380,31 +287,6 @@ const LazyBestSeller = React.memo(({ delay = 0 }: { delay?: number }) => {
   // ✅ FIX CRÍTICO: BestSeller debe cargarse SIEMPRE, sin progressive loading
   // Renderizar inmediatamente sin esperar a ser visible
   // ⚡ FASE 3: min-height para prevenir CLS
-  // #region agent log
-  React.useEffect(() => {
-    if (typeof window !== 'undefined' && shouldRender) {
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'Home-v3/index.tsx:LazyBestSeller',
-          message: 'LazyBestSeller render state changed',
-          data: {
-            timeSincePageLoad: performance.now(),
-            shouldRender: shouldRender,
-            isHydrated: isHydrated,
-            hasRendered: hasRendered,
-            delay: delay
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'lcp-cls-investigation',
-          hypothesisId: 'CLS2'
-        })
-      }).catch(() => {});
-    }
-  }, [shouldRender, isHydrated, hasRendered, delay]);
-  // #endregion
   return (
     <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}>
       <BestSeller />
@@ -576,10 +458,34 @@ const HomeV3 = () => {
       {/* NUEVO ORDEN OPTIMIZADO CON GLASSMORPHISM */}
 
       {/* 0. Hero Optimized - Imagen estática inicial, carousel después del FCP */}
-      {/* ⚡ FASE 2: Imagen hero ahora se renderiza en Server Component (page.tsx) para descubrimiento temprano */}
-      {/* HeroOptimized solo maneja el carousel que se carga después del LCP */}
+      {/* ⚡ FASE 23: Contenedor hero-lcp-container con imagen estática y carousel */}
+      {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
       <div className='pt-1 sm:pt-2'>
-        <HeroOptimized />
+        <div 
+          className="hero-lcp-container relative w-full overflow-hidden"
+          style={{ aspectRatio: '2.77' }}
+        >
+          {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
+          {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
+          <img
+            id="hero-lcp-image"
+            src="/images/hero/hero2/hero1.webp"
+            alt="Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad - Pinteya"
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+            className="object-contain"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+          />
+          <HeroOptimized />
+        </div>
       </div>
 
       {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
@@ -613,18 +519,14 @@ const HomeV3 = () => {
       )}
 
       {/* 4. Productos Destacados (Combos) - Optimizado igual que HeroOptimized */}
-      {/* ⚡ FASE 3: min-height para prevenir CLS */}
-      <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}>
+      {/* ⚡ FASE 3: min-height para prevenir CLS - Reducido para eliminar espacio innecesario */}
+      <div className='mt-4 sm:mt-6 product-section'>
         <CombosOptimized />
       </div>
 
       {/* 5. Carrusel Dinámico - Solo Envío Gratis */}
-      {/* ⚡ FASE 1B: Diferir después del LCP para reducir main thread work */}
-      {shouldLoadAfterLCP && (
-        <div className='product-section' style={{ minHeight: '350px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
-          <DynamicProductCarousel freeShippingOnly={true} />
-        </div>
-      )}
+      {/* ⚡ FIX: Eliminar el div wrapper innecesario que causa espacio. El DynamicProductCarousel ya tiene su propio section con padding */}
+      <DynamicProductCarousel freeShippingOnly={true} />
 
       {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded - Subido más arriba y más separado de Nuevos Productos */}
       <div 

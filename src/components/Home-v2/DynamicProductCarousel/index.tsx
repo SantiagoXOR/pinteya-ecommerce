@@ -65,12 +65,94 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   const isLoading = freeShippingOnly ? freeShippingQuery.isLoading : categoryQuery.isLoading
   const error = freeShippingOnly ? freeShippingQuery.error : categoryQuery.error
   
+  // Helper function: Obtener precio efectivo de una variante (price_sale || price_list)
+  const getVariantEffectivePrice = (variant: any): number => {
+    if (!variant) return 0
+    return Number(variant.price_sale) || Number(variant.price_list) || 0
+  }
+
+  // Helper function: Encontrar la variante más costosa de un producto
+  const getMostExpensiveVariant = (product: any): any => {
+    if (!product.variants || product.variants.length === 0) return null
+    
+    return product.variants.reduce((mostExpensive: any, current: any) => {
+      const currentPrice = getVariantEffectivePrice(current)
+      const mostExpensivePrice = getVariantEffectivePrice(mostExpensive)
+      return currentPrice > mostExpensivePrice ? current : mostExpensive
+    }, product.variants[0])
+  }
+
+  // Helper function: Actualizar producto con la variante más costosa
+  const updateProductWithMostExpensiveVariant = (product: any): any => {
+    const mostExpensiveVariant = getMostExpensiveVariant(product)
+    
+    if (mostExpensiveVariant) {
+      const variantPrice = getVariantEffectivePrice(mostExpensiveVariant)
+      const variantListPrice = Number(mostExpensiveVariant.price_list) || variantPrice
+      
+      // Actualizar default_variant para que ProductItem use la variante más cara por defecto
+      const updatedVariants = product.variants ? [...product.variants] : []
+      const mostExpensiveVariantIndex = updatedVariants.findIndex((v: any) => v.id === mostExpensiveVariant.id)
+      
+      return {
+        ...product,
+        price: variantListPrice,
+        discountedPrice: variantPrice,
+        medida: mostExpensiveVariant.measure || product.medida,
+        color: mostExpensiveVariant.color_name || product.color, // Actualizar color con el de la variante más cara
+        // Actualizar también originalPrice si existe
+        originalPrice: variantListPrice,
+        // Establecer la variante más cara como default_variant
+        default_variant: mostExpensiveVariant,
+        // Asegurarse de que la variante más cara esté al inicio del array para que sea la seleccionada por defecto
+        variants: mostExpensiveVariantIndex > 0 
+          ? [mostExpensiveVariant, ...updatedVariants.filter((v: any) => v.id !== mostExpensiveVariant.id)]
+          : updatedVariants,
+      }
+    }
+    
+    return product
+  }
+
   // Adaptar productos según el hook usado
   let products: any[] = []
   if (freeShippingOnly) {
     // Usar productos de useFilteredProducts y adaptarlos
-    const rawProducts = freeShippingQuery.data?.data || []
-    products = adaptApiProductsToComponents(rawProducts)
+    // ⚡ FIX: freeShippingQuery.data puede ser PaginatedResponse (data.data) o array directamente
+    // Manejar ambos casos: si es array, usarlo directamente; si es objeto, usar data.data
+    let rawProducts: any[] = []
+    if (Array.isArray(freeShippingQuery.data)) {
+      rawProducts = freeShippingQuery.data
+    } else if (freeShippingQuery.data?.data) {
+      rawProducts = Array.isArray(freeShippingQuery.data.data) ? freeShippingQuery.data.data : []
+    }
+    
+    const adaptedProducts = adaptApiProductsToComponents(rawProducts)
+    
+    // ⚡ PASO 1: Actualizar cada producto con su variante más costosa
+    const productsWithMostExpensiveVariants = adaptedProducts.map(updateProductWithMostExpensiveVariant)
+    
+    // ⚡ PASO 2: Filtrar productos con precio > 50000 - Envío gratis solo para compras mayores
+    const freeShippingProducts = productsWithMostExpensiveVariants.filter(p => {
+      const price = Number(p.price) || 0
+      const discountedPrice = Number(p.discountedPrice) || price
+      const finalPrice = discountedPrice > 0 ? discountedPrice : price
+      return finalPrice > 50000
+    })
+    
+    // ⚡ PASO 3: Si no hay productos con precio > 50000, mostrar los más caros
+    if (freeShippingProducts.length === 0) {
+      // Ordenar por precio descendente y tomar los primeros productos
+      products = productsWithMostExpensiveVariants
+        .sort((a, b) => {
+          const priceA = Number(b.discountedPrice) || Number(b.price) || 0
+          const priceB = Number(a.discountedPrice) || Number(a.price) || 0
+          return priceA - priceB
+        })
+        .slice(0, 12) // Limitar a 12 productos más caros
+    } else {
+      products = freeShippingProducts
+    }
   } else {
     // Los productos ya vienen adaptados del hook useProductsByCategory
     products = Array.isArray(categoryQuery.products) ? categoryQuery.products : []
@@ -124,7 +206,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   return (
     <section
       id={freeShippingOnly ? 'envio-gratis-carousel' : 'dynamic-carousel'}
-      className={`py-4 bg-gradient-to-br ${categoryConfig.bgGradient} scroll-mt-20 category-transition`}
+      className={`${freeShippingOnly ? 'pt-4 pb-4' : 'py-4'} bg-gradient-to-br ${categoryConfig.bgGradient} scroll-mt-20 category-transition`}
     >
       <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8'>
         {/* Header Dinámico - 2 líneas máximo */}
