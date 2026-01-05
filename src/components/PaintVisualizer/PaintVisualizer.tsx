@@ -102,17 +102,20 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
       let errorMsg = 'No se pudo acceder a la cámara'
       
       if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-        errorMsg = 'Permiso de cámara denegado. Por favor, permite el acceso en la configuración del navegador.'
+        errorMsg = 'Permiso de cámara denegado. Puedes usar la galería para seleccionar una imagen.'
       } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-        errorMsg = 'No se encontró ninguna cámara en tu dispositivo'
+        errorMsg = 'No se encontró ninguna cámara en tu dispositivo. Puedes usar la galería para seleccionar una imagen.'
       } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-        errorMsg = 'La cámara está siendo usada por otra aplicación'
+        errorMsg = 'La cámara está siendo usada por otra aplicación. Puedes usar la galería para seleccionar una imagen.'
       } else if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
-        errorMsg = 'Las restricciones de la cámara no se pueden satisfacer'
+        errorMsg = 'Las restricciones de la cámara no se pueden satisfacer. Puedes usar la galería para seleccionar una imagen.'
       }
       
       setCameraError(errorMsg)
-      toast.error(errorMsg)
+      // No mostrar toast para errores de permisos, solo mostrar el mensaje en la UI
+      if (error.name !== 'NotAllowedError' && error.name !== 'PermissionDeniedError') {
+        toast.error(errorMsg)
+      }
     }
   }, [checkCameraSupport])
 
@@ -330,9 +333,18 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
   }
 
   // Continuar a vista de cámara
-  const handleContinueToCamera = () => {
+  const handleContinueToCamera = async () => {
     if (selectedProduct && selectedColor) {
+      // Cambiar a vista de cámara primero
       setViewMode('camera')
+      // Intentar iniciar la cámara directamente desde el gesto del usuario
+      // Esto es necesario porque getUserMedia debe ser llamado desde un gesto del usuario
+      try {
+        await startCamera()
+      } catch (error) {
+        // El error ya está manejado en startCamera
+        console.error('Error al iniciar cámara:', error)
+      }
     } else {
       toast.error('Selecciona un producto y un color primero')
     }
@@ -358,16 +370,17 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
   }, [isOpen, stopCamera])
 
   useEffect(() => {
-    if (viewMode === 'camera' && selectedColor) {
-      startCamera()
-    } else {
+    // Solo detener la cámara cuando cambiamos de vista
+    // NO iniciar automáticamente desde useEffect porque getUserMedia debe llamarse
+    // desde un gesto del usuario (como un click)
+    if (viewMode !== 'camera') {
       stopCamera()
     }
 
     return () => {
       stopCamera()
     }
-  }, [viewMode, selectedColor, startCamera, stopCamera])
+  }, [viewMode, stopCamera])
 
   // Vista de selección
   const renderSelectionView = () => (
@@ -534,12 +547,26 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
       {/* Error de cámara */}
       {cameraError && (
         <div className='absolute inset-0 flex items-center justify-center bg-black/80 z-30'>
-          <div className='text-center text-white p-6'>
+          <div className='text-center text-white p-6 max-w-md mx-auto'>
             <Camera className='w-16 h-16 mx-auto mb-4 opacity-50' />
-            <p className='text-sm mb-4'>{cameraError}</p>
-            <Button onClick={startCamera} variant='outline' className='text-white border-white hover:bg-white/20'>
-              Reintentar
-            </Button>
+            <p className='text-sm mb-6'>{cameraError}</p>
+            <div className='flex flex-col gap-3'>
+              <Button 
+                onClick={handleGalleryClick} 
+                variant='outline' 
+                className='text-white border-white hover:bg-white/20'
+              >
+                <Photo className='w-4 h-4 mr-2' />
+                Usar Galería
+              </Button>
+              <Button 
+                onClick={startCamera} 
+                variant='outline' 
+                className='text-white border-white hover:bg-white/20'
+              >
+                Reintentar Cámara
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -547,7 +574,10 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
       {/* Loading */}
       {!isCameraActive && !cameraError && (
         <div className='absolute inset-0 flex items-center justify-center bg-black/50 z-30'>
-          <Loader2 className='w-12 h-12 text-white animate-spin' />
+          <div className='text-center text-white'>
+            <Loader2 className='w-12 h-12 mx-auto mb-4 animate-spin' />
+            <p className='text-sm'>Solicitando acceso a la cámara...</p>
+          </div>
         </div>
       )}
 
@@ -625,8 +655,19 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
     </div>
   )
 
+  // Handler para prevenir que el modal se cierre cuando hay un error de cámara
+  const handleDialogOpenChange = (open: boolean) => {
+    // Si se intenta cerrar pero hay un error de cámara, no cerrar
+    // Permitir que el usuario use la galería o reintente
+    if (!open && cameraError && viewMode === 'camera') {
+      // No cerrar el modal si hay error de cámara
+      return
+    }
+    onClose()
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent
         className={cn(
           'p-0 overflow-hidden',
