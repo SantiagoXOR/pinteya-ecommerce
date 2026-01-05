@@ -486,23 +486,29 @@ const HomeV3 = () => {
       {/* ⚡ FIX: Eliminar duplicación - solo una imagen estática, no dos */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
       <section 
-        className='w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] pt-1 sm:pt-2 overflow-hidden bg-black'
+        className='relative pt-1 sm:pt-2 overflow-hidden bg-black'
         style={{
-          width: '100vw !important',
-          maxWidth: '100vw !important',
-          marginLeft: 'calc(-50vw + 50%) !important',
-          marginRight: 'calc(-50vw + 50%) !important',
+          position: 'relative',
+          width: '100vw',
+          maxWidth: '100vw',
+          marginLeft: 'calc(-50vw + 50%)',
+          marginRight: 'calc(-50vw + 50%)',
+          left: '50%',
+          right: '50%',
+          transform: 'translateX(-50%)',
         }}
       >
         <div 
-          className="hero-lcp-container relative w-full overflow-hidden bg-black"
+          className="hero-lcp-container relative overflow-hidden bg-black"
           style={{ 
-            width: '100vw !important',
-            maxWidth: '100vw !important',
+            width: '100vw',
+            maxWidth: '100vw',
             aspectRatio: '1200/433',
             height: 'auto',
             minHeight: '277px',
             display: 'block',
+            margin: 0,
+            padding: 0,
           }}
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
