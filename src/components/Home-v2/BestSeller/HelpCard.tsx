@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, HelpCircle } from 'lucide-react'
+import { MessageCircle } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 interface HelpCardProps {
@@ -48,15 +49,24 @@ const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Sección superior - Imagen/Icono (similar a CommercialProductCard) */}
-      <div className='relative w-full h-[140px] sm:h-[160px] md:h-[200px] bg-gradient-to-br from-orange-50 via-yellow-50 to-orange-50 rounded-t-xl md:rounded-t-2xl flex items-center justify-center overflow-hidden'>
-        {/* Icono principal */}
-        <div className='w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-lg'>
-          <HelpCircle className='w-8 h-8 md:w-10 md:h-10 text-white' />
-        </div>
+      {/* Sección superior - Imagen de fondo (similar a CommercialProductCard) */}
+      <div className='relative w-full h-[140px] sm:h-[160px] md:h-[200px] rounded-t-xl md:rounded-t-2xl overflow-hidden'>
+        {/* Imagen de fondo optimizada */}
+        <Image
+          src='https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/promo/asesoramiento.webp'
+          alt='Asesoramiento 24/7'
+          fill
+          className='object-cover'
+          sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+          priority
+          quality={85}
+        />
+        
+        {/* Overlay sutil para mejorar legibilidad si es necesario */}
+        <div className='absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent' />
         
         {/* Badge de disponibilidad en esquina superior */}
-        <div className='absolute top-2 right-2 md:top-3 md:right-3 flex items-center gap-1.5 bg-green-500 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-medium shadow-md'>
+        <div className='absolute top-2 right-2 md:top-3 md:right-3 z-10 flex items-center gap-1.5 bg-green-500 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-medium shadow-md'>
           <div className='w-1.5 h-1.5 bg-white rounded-full animate-pulse'></div>
           <span>24/7</span>
         </div>
