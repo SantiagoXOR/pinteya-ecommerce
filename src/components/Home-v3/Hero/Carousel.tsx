@@ -137,7 +137,10 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
     return (
       <div
         className="relative w-full h-full overflow-hidden"
-        style={{ aspectRatio: '2.77' }}
+        style={{ 
+          width: '100%',
+          height: '100%',
+        }}
       >
         {/* Slides */}
         <div

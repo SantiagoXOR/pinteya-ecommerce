@@ -214,7 +214,7 @@ const HeroOptimized = memo(() => {
         return (
           <div
             ref={containerRef}
-            className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100"
+            className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100 w-full h-full"
             data-hero-optimized="true"
             style={{
               position: 'absolute',
@@ -222,6 +222,8 @@ const HeroOptimized = memo(() => {
               left: 0,
               right: 0,
               bottom: 0,
+              width: '100%',
+              height: '100%',
             }}
           >
             {/* #region agent log */}
