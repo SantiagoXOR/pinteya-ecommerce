@@ -113,12 +113,18 @@ const slides: Slide[] = [
    }, [router])
 
   return (
-    <div className="relative w-full CombosSection">
+    <div className="relative w-full CombosSection" style={{ width: '100%', maxWidth: '100%' }}>
       {/* Contenedor del carrusel con aspect ratio preservado - Igual que HeroCarousel */}
-      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
+      {/* ⚡ FIX: Full width con estilos correctos (igual que hero) */}
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-2 sm:py-3" style={{ width: '100%', maxWidth: '100%' }}>
         <div 
           className="relative w-full overflow-hidden"
-          style={{ aspectRatio: '2.77' }}
+          style={{ 
+            aspectRatio: '2.77',
+            width: '100%',
+            maxWidth: '100%',
+            margin: '0 auto',
+          }}
         >
           {/* ⚡ FIX: Skeleton placeholder mientras carga - se oculta completamente cuando las imágenes cargan */}
           {!imagesLoaded && (
@@ -159,7 +165,7 @@ const slides: Slide[] = [
                       fill
                       priority={index === 1}
                       fetchPriority={index === 1 ? 'high' : 'auto'}
-                      className="object-contain"
+                      className="object-cover"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
                       quality={80}
                       onLoad={() => {

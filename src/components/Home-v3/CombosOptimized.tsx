@@ -63,12 +63,22 @@ export default function CombosOptimized() {
   // ⚡ OPTIMIZACIÓN: Renderizar ambos componentes y usar transición suave
   // La imagen estática se desvanece cuando el carousel está listo
   // Esto evita el doble render completo del componente
+  // ⚡ FIX: Full width con estilos correctos (igual que hero)
   return (
-    <div className="relative w-full">
-      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '2.77' }}>
+    <div className="relative w-full" style={{ width: '100%', maxWidth: '100%' }}>
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-2 sm:py-3" style={{ width: '100%', maxWidth: '100%' }}>
+        <div 
+          className="relative w-full overflow-hidden" 
+          style={{ 
+            aspectRatio: '2.77',
+            width: '100%',
+            maxWidth: '100%',
+            margin: '0 auto',
+          }}
+        >
           {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
           {/* Se desvanece suavemente cuando el carousel está listo */}
+          {/* ⚡ FIX: Full width con object-cover para mejor visualización */}
           <div 
             className={`absolute inset-0 z-10 transition-opacity duration-500 ${
               showCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
@@ -80,7 +90,7 @@ export default function CombosOptimized() {
               fill
               priority
               fetchPriority="high"
-              className="object-contain"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
               quality={80}
               loading="eager"
