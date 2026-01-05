@@ -89,29 +89,25 @@ const HeroOptimized = memo(() => {
 
   // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel se carga (ocultar inmediatamente para evitar superposición visual)
   // El delay de 3s ya es suficiente para Lighthouse, así que ocultamos inmediatamente cuando el carousel comienza a cargar
-  // ⚡ FIX: Ocultar TODAS las imágenes estáticas, no solo la primera (previene duplicación en producción)
+  // ⚡ FIX: Ocultar SOLO la imagen estática con ID específico, NO las imágenes del carousel
   useEffect(() => {
     if (!shouldLoadCarousel) return
 
     // Usar requestAnimationFrame para ocultar en el siguiente frame (ocultar inmediatamente)
     requestAnimationFrame(() => {
-      // ⚡ FIX: Usar querySelectorAll para ocultar TODAS las imágenes estáticas
-      // Esto previene duplicación en producción donde React puede renderizar dos veces
-      const staticImages = document.querySelectorAll(
-        '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
-      )
+      // ⚡ FIX CRÍTICO: Seleccionar SOLO la imagen estática por su ID específico
+      // NO seleccionar todas las imágenes porque eso afectaría también las del carousel
+      const staticImage = document.getElementById('hero-lcp-image')
       
-      staticImages.forEach((staticImage) => {
-        if (staticImage && staticImage instanceof HTMLElement) {
-          // Ocultar imagen estática cuando el carousel comienza a cargar
-          // Usar opacity: 0 y visibility: hidden para asegurar que no sea visible
-          staticImage.style.opacity = '0'
-          staticImage.style.visibility = 'hidden'
-          staticImage.style.pointerEvents = 'none'
-          staticImage.style.position = 'absolute'
-          staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
-        }
-      })
+      if (staticImage && staticImage instanceof HTMLElement) {
+        // Ocultar imagen estática cuando el carousel comienza a cargar
+        // Usar opacity: 0 y visibility: hidden para asegurar que no sea visible
+        staticImage.style.opacity = '0'
+        staticImage.style.visibility = 'hidden'
+        staticImage.style.pointerEvents = 'none'
+        staticImage.style.position = 'absolute'
+        staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
+      }
     })
   }, [shouldLoadCarousel])
 

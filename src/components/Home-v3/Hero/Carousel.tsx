@@ -101,16 +101,20 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
       return () => clearInterval(interval)
     }, [isAutoPlaying, autoPlayInterval, goToNext, slides.length])
 
-    // ⚡ FASE 23: Manejar el loop infinito
+    // ⚡ FIX: Manejar el loop infinito con mejor manejo de estados
     useEffect(() => {
       if (!isTransitioning || extendedSlides.length === 0) return
 
       // Si estamos en el clone final, saltar sin transición al inicio real (índice 1)
       if (currentIndex === extendedSlides.length - 1) {
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
           setIsTransitioning(false)
-          setCurrentIndex(1)
+          // ⚡ FIX: Usar requestAnimationFrame para asegurar que el cambio ocurra después del render
+          requestAnimationFrame(() => {
+            setCurrentIndex(1)
+          })
         }, 700)
+        return () => clearTimeout(timeout)
       }
 
       // Si estamos en el clone inicial, saltar sin transición al final real
@@ -119,10 +123,14 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
           currentIndex === 0 &&
           extendedSlides[0]?.id === slides[slides.length - 1]?.id
         if (isClone) {
-          setTimeout(() => {
+          const timeout = setTimeout(() => {
             setIsTransitioning(false)
-            setCurrentIndex(slides.length)
+            // ⚡ FIX: Usar requestAnimationFrame para asegurar que el cambio ocurra después del render
+            requestAnimationFrame(() => {
+              setCurrentIndex(slides.length)
+            })
           }, 700)
+          return () => clearTimeout(timeout)
         }
       }
     }, [currentIndex, isTransitioning, extendedSlides, slides])
@@ -153,6 +161,8 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
             willChange: isTransitioning ? 'transform' : 'auto',
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
+            opacity: 1, // ⚡ FIX: Asegurar que siempre sea visible
+            visibility: 'visible', // ⚡ FIX: Asegurar que siempre sea visible
           }}
         >
           {extendedSlides.map((slide, index) => (
