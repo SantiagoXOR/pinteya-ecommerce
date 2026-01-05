@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, memo, useRef } from 'react'
+import { useState, useEffect, memo } from 'react'
 import dynamic from 'next/dynamic'
 
 // ⚡ OPTIMIZACIÓN: Cargar carousel dinámicamente después del LCP
@@ -18,17 +18,9 @@ const HeroCarousel = dynamic(() => import('./Hero/Carousel'), {
  * 
  * Impacto esperado: -1.5s a -2.0s en Speed Index, -1,000 ms a -1,570 ms en retraso LCP
  */
-// ⚡ FIX: Variable global para prevenir duplicación durante hidratación
-let heroInstanceCount = 0
-const MAX_HERO_INSTANCES = 1
-
 const HeroOptimized = memo(() => {
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
-  // ⚡ FIX: Prevenir duplicación durante hidratación usando ref
-  const hasRenderedRef = useRef(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const instanceIdRef = useRef<string | null>(null)
   
   // #region agent log
   useEffect(() => {
@@ -55,32 +47,8 @@ const HeroOptimized = memo(() => {
   }, []);
   // #endregion
 
-  // ⚡ FIX: Marcar como montado después del primer render y verificar duplicación
+  // ⚡ FIX: Marcar como montado después del primer render
   useEffect(() => {
-    // ⚡ FIX: Prevenir duplicación durante hidratación - verificar antes de montar
-    if (typeof window !== 'undefined') {
-      // Verificar si ya hay otro HeroOptimized renderizado en el DOM
-      const existingHeroes = document.querySelectorAll('[data-hero-optimized]')
-      const existingContainers = document.querySelectorAll('.hero-lcp-container')
-      
-      // Si ya hay un hero renderizado Y este componente aún no tiene ref, no montar
-      if (existingHeroes.length > 0 && !containerRef.current) {
-        console.warn('[HeroOptimized] Duplicación detectada, no montando segunda instancia')
-        return
-      }
-      
-      // Si hay múltiples contenedores, algo está mal
-      if (existingContainers.length > 1) {
-        console.warn('[HeroOptimized] Múltiples contenedores hero-lcp-container detectados:', existingContainers.length)
-      }
-    }
-    
-    // ⚡ FIX: Prevenir duplicación durante hidratación
-    if (hasRenderedRef.current) {
-      return // Ya se renderizó, no hacer nada
-    }
-    
-    hasRenderedRef.current = true
     setIsMounted(true)
     // #region agent log
     if (typeof window !== 'undefined') {
@@ -121,49 +89,29 @@ const HeroOptimized = memo(() => {
 
   // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel se carga (ocultar inmediatamente para evitar superposición visual)
   // El delay de 3s ya es suficiente para Lighthouse, así que ocultamos inmediatamente cuando el carousel comienza a cargar
-  // ⚡ FIX: Buscar SOLO la imagen con id hero-lcp-image para evitar duplicados
+  // ⚡ FIX: Ocultar TODAS las imágenes estáticas, no solo la primera (previene duplicación en producción)
   useEffect(() => {
     if (!shouldLoadCarousel) return
 
     // Usar requestAnimationFrame para ocultar en el siguiente frame (ocultar inmediatamente)
     requestAnimationFrame(() => {
-      // ⚡ FIX: Usar getElementById en lugar de querySelector para evitar seleccionar múltiples elementos
-      const staticImage = document.getElementById('hero-lcp-image')
-      if (staticImage && staticImage instanceof HTMLElement) {
-        // #region agent log
-        const opacityBefore = window.getComputedStyle(staticImage).opacity
-        // #endregion
-        // Ocultar imagen estática cuando el carousel comienza a cargar
-        // Usar opacity: 0 y visibility: hidden para asegurar que no sea visible
-        staticImage.style.opacity = '0'
-        staticImage.style.visibility = 'hidden'
-        staticImage.style.pointerEvents = 'none'
-        staticImage.style.position = 'absolute'
-        staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
-        // #region agent log
-        if (typeof window !== 'undefined') {
-          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'HeroOptimized.tsx:hide-static-image',
-              message: 'Hiding static image',
-              data: {
-                timestamp: Date.now(),
-                timeSincePageLoad: performance.now(),
-                opacityBefore,
-                opacityAfter: window.getComputedStyle(staticImage).opacity,
-                imageFound: !!staticImage,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              runId: 'post-fix',
-              hypothesisId: 'H'
-            })
-          }).catch(() => {});
+      // ⚡ FIX: Usar querySelectorAll para ocultar TODAS las imágenes estáticas
+      // Esto previene duplicación en producción donde React puede renderizar dos veces
+      const staticImages = document.querySelectorAll(
+        '.hero-lcp-container img, .hero-lcp-container picture, [id="hero-lcp-image"]'
+      )
+      
+      staticImages.forEach((staticImage) => {
+        if (staticImage && staticImage instanceof HTMLElement) {
+          // Ocultar imagen estática cuando el carousel comienza a cargar
+          // Usar opacity: 0 y visibility: hidden para asegurar que no sea visible
+          staticImage.style.opacity = '0'
+          staticImage.style.visibility = 'hidden'
+          staticImage.style.pointerEvents = 'none'
+          staticImage.style.position = 'absolute'
+          staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
         }
-        // #endregion
-      }
+      })
     })
   }, [shouldLoadCarousel])
 
@@ -198,23 +146,23 @@ const HeroOptimized = memo(() => {
       })()}
       {/* #endregion */}
       {/* ⚡ FASE 23: Carousel carga dinámicamente después del LCP */}
-      {/* ⚡ FIX: Verificar que no hay otro carousel ya renderizado para evitar duplicación */}
       {/* La imagen estática está en el contenedor hero-lcp-container para descubrimiento temprano */}
       {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
+      {/* ⚡ FIX: Verificar que no hay otro carousel ya renderizado para prevenir duplicación */}
       {isMounted && shouldLoadCarousel && (() => {
         // ⚡ FIX: Verificar que no hay otro carousel ya renderizado
+        // Esto previene duplicación en producción donde React puede renderizar dos veces
         if (typeof window !== 'undefined') {
           const existingCarousels = document.querySelectorAll('[data-hero-optimized]')
-          // Si ya hay un carousel renderizado Y este componente no tiene el ref, no renderizar
-          if (existingCarousels.length > 0 && !containerRef.current) {
-            console.warn('[HeroOptimized] Carousel duplicado detectado, no renderizando')
+          if (existingCarousels.length > 0) {
+            // Ya hay un carousel renderizado, no renderizar otro
             return null
           }
         }
+        
         return (
           <div
-            ref={containerRef}
-            className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100 w-full h-full"
+            className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100"
             data-hero-optimized="true"
             style={{
               position: 'absolute',
@@ -222,8 +170,6 @@ const HeroOptimized = memo(() => {
               left: 0,
               right: 0,
               bottom: 0,
-              width: '100%',
-              height: '100%',
             }}
           >
             {/* #region agent log */}

@@ -356,35 +356,11 @@ const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
 })
 DelayedCategoryToggle.displayName = 'DelayedCategoryToggle'
 
-// ⚡ FIX: Prevenir duplicación del hero - verificar si ya existe un contenedor hero
-const hasHeroContainer = typeof window !== 'undefined' && document.querySelector('.hero-lcp-container')
-
 const HomeV3 = () => {
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo para aplicar optimizaciones adaptativas
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
   const isMediumPerformance = performanceLevel === 'medium'
-  
-  // ⚡ FIX: Prevenir renderizado duplicado del hero durante hidratación
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Esperar un frame para que la hidratación complete
-      requestAnimationFrame(() => {
-        const containers = document.querySelectorAll('.hero-lcp-container')
-        if (containers.length > 1) {
-          console.warn('[HomeV3] Múltiples contenedores hero detectados:', containers.length)
-          // Eliminar contenedores duplicados (mantener solo el primero)
-          for (let i = 1; i < containers.length; i++) {
-            const container = containers[i] as HTMLElement | null
-            if (container && container.parentNode) {
-              console.warn('[HomeV3] Eliminando contenedor hero duplicado #', i + 1)
-              container.parentNode.removeChild(container)
-            }
-          }
-        }
-      })
-    }
-  }, [])
   
   // ⚡ FASE 1B: Detectar LCP para diferir componentes no críticos después del LCP
   const { shouldLoad: shouldLoadAfterLCP } = useLCPDetection({
@@ -411,6 +387,68 @@ const HomeV3 = () => {
   const categoryToggleDelay = shouldLoadAfterLCP ? 0 : (shouldDelay ? 2000 : 0)
   const bestSellerDelay = shouldLoadAfterLCP ? 0 : (shouldDelay ? 3000 : 0)
   
+  // ⚡ FIX: Eliminar duplicados de imágenes estáticas y carousels en producción
+  // Esto previene que se rendericen dos imágenes estáticas o dos carousels
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return
+    }
+
+    // Función para eliminar duplicados
+    const removeDuplicates = () => {
+      // Eliminar imágenes estáticas duplicadas (mantener solo la primera)
+      const heroImages = document.querySelectorAll('#hero-lcp-image')
+      if (heroImages.length > 1) {
+        // Mantener la primera, eliminar las demás
+        for (let i = 1; i < heroImages.length; i++) {
+          const img = heroImages[i]
+          if (img && img.parentNode) {
+            img.parentNode.removeChild(img)
+          }
+        }
+      }
+
+      // Eliminar contenedores hero-lcp-container duplicados (mantener solo el primero)
+      const containers = document.querySelectorAll('.hero-lcp-container')
+      if (containers.length > 1) {
+        // Mantener el primero, eliminar los demás
+        for (let i = 1; i < containers.length; i++) {
+          const container = containers[i]
+          if (container && container.parentNode) {
+            container.parentNode.removeChild(container)
+          }
+        }
+      }
+
+      // Eliminar carousels duplicados (mantener solo el primero)
+      const carousels = document.querySelectorAll('[data-hero-optimized]')
+      if (carousels.length > 1) {
+        // Mantener el primero, eliminar los demás
+        for (let i = 1; i < carousels.length; i++) {
+          const carousel = carousels[i]
+          if (carousel && carousel.parentNode) {
+            carousel.parentNode.removeChild(carousel)
+          }
+        }
+      }
+    }
+
+    // Ejecutar después de un pequeño delay para asegurar que React haya terminado de renderizar
+    const timeout = setTimeout(removeDuplicates, 100)
+    
+    // También ejecutar después de que la página esté completamente cargada
+    if (document.readyState === 'complete') {
+      removeDuplicates()
+    } else {
+      window.addEventListener('load', removeDuplicates, { once: true })
+    }
+
+    return () => {
+      clearTimeout(timeout)
+      window.removeEventListener('load', removeDuplicates)
+    }
+  }, [])
+
   // ⚡ OPTIMIZACIÓN: Scroll depth tracking con IntersectionObserver (más eficiente que scroll events)
   useEffect(() => {
     // Guardar SSR/hidratación: evitar acceder a window/document en servidor
@@ -483,47 +521,26 @@ const HomeV3 = () => {
 
       {/* 0. Hero Optimized - Imagen estática inicial, carousel después del FCP */}
       {/* ⚡ FASE 23: Contenedor hero-lcp-container con imagen estática y carousel */}
-      {/* ⚡ FIX: Eliminar duplicación - solo una imagen estática, no dos */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
-      <section 
-        className='hero-fullwidth relative pt-1 sm:pt-2 overflow-hidden bg-black'
-        style={{
-          position: 'relative',
-          width: '100vw',
-          maxWidth: '100vw',
-          marginLeft: 'calc(-50vw + 50%)',
-          marginRight: 'calc(-50vw + 50%)',
-          left: '50%',
-          right: '50%',
-          transform: 'translateX(-50%)',
-          boxSizing: 'border-box',
-        }}
-      >
+      {/* ⚡ FIX: Usar key única para prevenir duplicación en producción */}
+      <div className='pt-1 sm:pt-2' key="hero-container-wrapper">
         <div 
-          className="hero-lcp-container relative overflow-hidden bg-black"
-          style={{ 
-            width: '100vw',
-            maxWidth: '100vw',
-            aspectRatio: '1200/433',
-            height: 'auto',
-            minHeight: '277px',
-            display: 'block',
-            margin: 0,
-            padding: 0,
-            boxSizing: 'border-box',
-          }}
+          className="hero-lcp-container relative w-full overflow-hidden"
+          style={{ aspectRatio: '2.77' }}
+          key="hero-lcp-container"
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
-          {/* ⚡ FIX: Solo renderizar UNA imagen estática, no duplicar con HeroImageStatic */}
           {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
+          {/* ⚡ FIX: Usar key única y verificar que no hay duplicados */}
           <img
             id="hero-lcp-image"
+            key="hero-lcp-image-static"
             src="/images/hero/hero2/hero1.webp"
             alt="Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad - Pinteya"
             fetchPriority="high"
             loading="eager"
             decoding="async"
-            className="w-full h-full"
+            className="object-contain"
             style={{
               position: 'absolute',
               top: 0,
@@ -531,13 +548,11 @@ const HomeV3 = () => {
               width: '100%',
               height: '100%',
               objectFit: 'contain',
-              objectPosition: 'center center',
-              zIndex: 1, // Detrás del carousel cuando se carga
             }}
           />
-          <HeroOptimized />
+          <HeroOptimized key="hero-optimized-component" />
         </div>
-      </section>
+      </div>
 
       {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
       <React.Suspense
