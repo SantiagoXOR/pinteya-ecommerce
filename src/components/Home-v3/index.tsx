@@ -486,7 +486,7 @@ const HomeV3 = () => {
       {/* ⚡ FIX: Eliminar duplicación - solo una imagen estática, no dos */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
       <section 
-        className='relative pt-1 sm:pt-2 overflow-hidden bg-black'
+        className='hero-fullwidth relative pt-1 sm:pt-2 overflow-hidden bg-black'
         style={{
           position: 'relative',
           width: '100vw',
@@ -496,6 +496,7 @@ const HomeV3 = () => {
           left: '50%',
           right: '50%',
           transform: 'translateX(-50%)',
+          boxSizing: 'border-box',
         }}
       >
         <div 
@@ -509,6 +510,7 @@ const HomeV3 = () => {
             display: 'block',
             margin: 0,
             padding: 0,
+            boxSizing: 'border-box',
           }}
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
