@@ -14,7 +14,7 @@ const EmptyCart = () => {
     <div className='text-center py-8 px-4'>
       {/* Icono principal */}
       <div className='mx-auto mb-6 w-24 h-24 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center'>
-        <ShoppingBag className='w-12 h-12' style={{ color: '#ea5a17' }} />
+        <ShoppingBag className='w-12 h-12' style={{ color: '#c2410b' }} />
       </div>
 
       {/* Título principal */}

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart } from '@/lib/optimized-imports'
 
 const PromoBanner = () => {
   return (

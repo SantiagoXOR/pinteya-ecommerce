@@ -14,8 +14,8 @@ import {
   User,
   Percent,
   ClipboardList,
-} from 'lucide-react'
-import { Home } from 'lucide-react'
+} from '@/lib/optimized-imports'
+import { Home } from '@/lib/optimized-imports'
 import { useAppSelector } from '@/redux/store'
 
 const bottomNavigationVariants = cva(
@@ -84,7 +84,7 @@ const defaultItems: BottomNavigationItem[] = [
   {
     id: 'orders',
     label: 'Órdenes',
-    href: '/orders',
+    href: '/mis-ordenes',
     icon: <ClipboardList className='w-5 h-5' strokeWidth={1.5} />,
   },
   {

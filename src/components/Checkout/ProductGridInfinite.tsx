@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react'
 import ProductItem from '@/components/Common/ProductItem'
 import { useInfiniteProductsQuery } from '@/hooks/useInfiniteProductsQuery'
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from '@/lib/optimized-imports'
 import dynamic from 'next/dynamic'
 import HelpCard from '@/components/Home-v2/BestSeller/HelpCard'
 

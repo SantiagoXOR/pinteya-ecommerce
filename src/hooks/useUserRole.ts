@@ -57,6 +57,9 @@ export const useUserRole = (): UseUserRoleReturn => {
   // Ref para rastrear si hay una solicitud en curso y evitar llamadas duplicadas
   const isFetchingRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const lastFetchedEmailRef = useRef<string | null>(null)
+  // Ref para mantener una referencia estable a syncUser
+  const syncUserRef = useRef<((email?: string) => Promise<void>) | null>(null)
 
   const syncUser = useCallback(async () => {
     if (!user?.email) {
@@ -89,19 +92,26 @@ export const useUserRole = (): UseUserRoleReturn => {
 
       const userData = await response.json()
       setUserProfile(userData)
+      // Actualizar el ref después de sincronizar exitosamente
+      lastFetchedEmailRef.current = user.email
 
       console.log('[useUserRole] Usuario sincronizado exitosamente')
     } catch (err) {
       console.error('[useUserRole] Error al sincronizar usuario:', err)
       setError('Error al sincronizar usuario')
+      // NO resetear lastFetchedEmailRef para evitar loops
     } finally {
       setIsLoading(false)
+      isFetchingRef.current = false
     }
   }, [user])
 
-  const fetchUserProfile = useCallback(async () => {
-    if (!user?.email) {
-      console.log('[useUserRole] No hay usuario autenticado')
+  // Actualizar la referencia cada vez que syncUser cambia
+  syncUserRef.current = syncUser
+
+  const fetchUserProfile = useCallback(async (emailToFetch: string) => {
+    if (!emailToFetch) {
+      console.log('[useUserRole] No hay email proporcionado')
       setUserProfile(null)
       setIsLoading(false)
       isFetchingRef.current = false
@@ -111,6 +121,12 @@ export const useUserRole = (): UseUserRoleReturn => {
     // Evitar múltiples llamadas simultáneas usando ref
     if (isFetchingRef.current) {
       console.log('[useUserRole] Ya hay una solicitud en curso, omitiendo...')
+      return
+    }
+
+    // Evitar llamadas duplicadas para el mismo email
+    if (lastFetchedEmailRef.current === emailToFetch) {
+      console.log('[useUserRole] Ya se obtuvo el perfil para este email, omitiendo...')
       return
     }
 
@@ -124,22 +140,13 @@ export const useUserRole = (): UseUserRoleReturn => {
       setIsLoading(true)
       setError(null)
 
-      const email = user.email
-      if (!email) {
-        console.warn('Email no disponible para el usuario')
-        setError('Email no disponible')
-        setIsLoading(false)
-        isFetchingRef.current = false
-        return
-      }
-
       // Crear AbortController para poder cancelar la solicitud
       const abortController = new AbortController()
       abortControllerRef.current = abortController
       const timeoutId = setTimeout(() => abortController.abort(), 10000) // Timeout de 10 segundos
 
       try {
-        const response = await fetch(`/api/admin/users/profile?email=${encodeURIComponent(email)}`, {
+        const response = await fetch(`/api/admin/users/profile?email=${encodeURIComponent(emailToFetch)}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -156,7 +163,12 @@ export const useUserRole = (): UseUserRoleReturn => {
 
         if (response.status === 404) {
           // Usuario no existe, intentar sincronizar
-          await syncUser()
+          // NO resetear lastFetchedEmailRef aquí para evitar loops
+          if (syncUserRef.current) {
+            await syncUserRef.current()
+          }
+          // Actualizar el ref solo después de sincronizar exitosamente
+          lastFetchedEmailRef.current = emailToFetch
           return
         }
 
@@ -164,26 +176,30 @@ export const useUserRole = (): UseUserRoleReturn => {
           // Manejo más específico de errores HTTP
           const errorText = await response.text()
           console.warn(`Error HTTP ${response.status}: ${errorText}`)
-
-          // No lanzar error para errores de red, solo logear
           setError(`Error de conexión (${response.status})`)
-          setIsLoading(false)
-          isFetchingRef.current = false
+          // NO resetear lastFetchedEmailRef para evitar loops infinitos
+          // Solo marcar como cargado para este email (aunque falló)
+          lastFetchedEmailRef.current = emailToFetch
           return
         }
 
         const data = await response.json()
         if (data.success) {
           setUserProfile(data.user)
+          // Solo actualizar el ref cuando la solicitud es exitosa
+          lastFetchedEmailRef.current = emailToFetch
         } else {
           console.warn('Error en respuesta del servidor:', data.error)
           setError(data.error || 'Error del servidor')
+          // NO resetear, solo marcar como procesado para evitar loops
+          lastFetchedEmailRef.current = emailToFetch
         }
       } catch (fetchError) {
         clearTimeout(timeoutId)
         // Ignorar errores de cancelación
         if (fetchError instanceof Error && fetchError.name === 'AbortError') {
           console.log('[useUserRole] Solicitud cancelada')
+          // NO resetear el ref si fue cancelada, para evitar loops
           return
         }
         throw fetchError
@@ -193,13 +209,16 @@ export const useUserRole = (): UseUserRoleReturn => {
       console.warn('Error fetching user profile:', err)
       const errorMessage = err instanceof Error ? err.message : 'Error de conexión'
       setError(errorMessage)
-
-      // No re-lanzar el error para evitar interrumpir otros componentes
+      // NO resetear lastFetchedEmailRef para evitar loops infinitos
+      // Marcar como procesado para este email (aunque falló)
+      lastFetchedEmailRef.current = emailToFetch
     } finally {
       setIsLoading(false)
       isFetchingRef.current = false
     }
-  }, [user, syncUser])
+    // No incluir syncUser en las dependencias, usar syncUserRef en su lugar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const hasPermission = (permissionPath: string[]): boolean => {
     if (!userProfile?.user_roles?.permissions) {
@@ -264,14 +283,27 @@ export const useUserRole = (): UseUserRoleReturn => {
   useEffect(() => {
     // Solo intentar cargar el perfil si el usuario está autenticado y tiene email
     if (isLoaded && isSignedIn && user?.email) {
-      // Evitar múltiples llamadas simultáneas usando un flag de referencia
       const email = user.email
+      
+      // Evitar llamadas duplicadas si ya se está obteniendo el perfil para este email
+      // O si ya se obtuvo el perfil para este email
+      if (isFetchingRef.current) {
+        return
+      }
+
+      // Solo hacer fetch si el email cambió (no se ha obtenido el perfil para este email)
+      if (lastFetchedEmailRef.current === email) {
+        return
+      }
+
+      // Evitar múltiples llamadas simultáneas usando un flag de referencia
       let cancelled = false
 
       const timeoutId = setTimeout(() => {
-        if (!cancelled && !isFetchingRef.current) {
+        // Verificar nuevamente antes de ejecutar (por si el componente se desmontó o cambió el email)
+        if (!cancelled && !isFetchingRef.current && lastFetchedEmailRef.current !== email && user?.email === email) {
           console.log('[useUserRole] Usuario autenticado, obteniendo perfil...', email)
-          fetchUserProfile()
+          fetchUserProfile(email)
         }
       }, 200) // Pequeño delay para evitar llamadas múltiples
 
@@ -289,12 +321,15 @@ export const useUserRole = (): UseUserRoleReturn => {
       setIsLoading(false)
       setError(null)
       isFetchingRef.current = false
+      // Solo resetear el ref cuando el usuario se desautentica
+      lastFetchedEmailRef.current = null
       // Cancelar cualquier solicitud pendiente
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
     }
-  }, [isLoaded, isSignedIn, user?.email, fetchUserProfile])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, isSignedIn, user?.email, fetchUserProfile]) // Incluir fetchUserProfile ya que ahora es estable
 
   return {
     userProfile,

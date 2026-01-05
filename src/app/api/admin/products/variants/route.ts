@@ -3,7 +3,7 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase'
+import { getSupabaseClient, handleSupabaseError, supabaseAdmin } from '@/lib/integrations/supabase'
 import { ApiResponse } from '@/types/api'
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { createSecurityLogger } from '@/lib/logging/security-logger'
@@ -190,22 +190,44 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
       const body = await request.json()
 
-      // Validar campos requeridos
-      const requiredFields = ['product_id', 'aikon_id', 'price_list']
-      for (const field of requiredFields) {
-        if (!body[field]) {
-          return NextResponse.json(
-            {
-              success: false,
-              error: `Campo requerido: ${field}`,
-              data: null,
-            },
-            { status: 400 }
-          )
-        }
+      console.log('📥 [POST Variant] Datos recibidos:', JSON.stringify(body, null, 2))
+
+      // Validar campos requeridos - Usar verificación más estricta
+      if (!body.product_id || (typeof body.product_id !== 'number' && isNaN(parseInt(String(body.product_id))))) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Campo requerido: product_id debe ser un número válido',
+            data: null,
+          },
+          { status: 400 }
+        )
       }
 
-      const supabase = getSupabaseClient()
+      if (!body.aikon_id || typeof body.aikon_id !== 'string' || body.aikon_id.trim() === '') {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Campo requerido: aikon_id debe ser un string no vacío',
+            data: null,
+          },
+          { status: 400 }
+        )
+      }
+
+      if (body.price_list === undefined || body.price_list === null || (typeof body.price_list === 'number' && (isNaN(body.price_list) || body.price_list <= 0))) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Campo requerido: price_list debe ser un número mayor a 0',
+            data: null,
+          },
+          { status: 400 }
+        )
+      }
+
+      // Usar supabaseAdmin para evitar problemas con RLS (Row Level Security)
+      const supabase = supabaseAdmin
 
       // Verificar que el producto existe
       const { data: product, error: productError } = await supabase
@@ -225,18 +247,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         )
       }
 
-      // Verificar que el aikon_id no existe
-      const { data: existingVariant } = await supabase
+      // Verificar que el aikon_id no existe (incluir información del producto que lo usa)
+      const { data: existingVariant, error: existingVariantError } = await supabase
         .from('product_variants')
-        .select('id')
+        .select(`
+          id,
+          product_id,
+          color_name,
+          measure,
+          products!inner(id, name)
+        `)
         .eq('aikon_id', body.aikon_id)
         .single()
 
-      if (existingVariant) {
+      if (existingVariant && !existingVariantError) {
+        const productName = (existingVariant as any).products?.name || 'Producto desconocido'
+        const variantInfo = existingVariant.color_name || existingVariant.measure 
+          ? ` (${[existingVariant.color_name, existingVariant.measure].filter(Boolean).join(', ')})`
+          : ''
+        
         return NextResponse.json(
           {
             success: false,
-            error: 'El código Aikon ya existe',
+            error: `El código Aikon "${body.aikon_id}" ya está en uso por el producto "${productName}"${variantInfo}`,
             data: null,
           },
           { status: 400 }
@@ -265,25 +298,62 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         counter++
       }
 
+      // ✅ Preparar datos de inserción con validación de tipos
+      const insertData: any = {
+        product_id: parseInt(String(body.product_id), 10),
+        aikon_id: String(body.aikon_id).trim(),
+        variant_slug: variantSlug,
+        color_name: body.color_name && typeof body.color_name === 'string' && body.color_name.trim() !== '' ? body.color_name.trim() : null,
+        color_hex: body.color_hex && typeof body.color_hex === 'string' && body.color_hex.trim() !== '' ? body.color_hex.trim() : null,
+        measure: body.measure && typeof body.measure === 'string' && body.measure.trim() !== '' ? body.measure.trim() : null,
+        finish: body.finish && typeof body.finish === 'string' && body.finish.trim() !== '' ? body.finish.trim() : null,
+        price_list: parseFloat(String(body.price_list)),
+        price_sale: body.price_sale && body.price_sale !== null && body.price_sale !== '' ? parseFloat(String(body.price_sale)) : null,
+        stock: body.stock !== undefined && body.stock !== null ? parseInt(String(body.stock), 10) : 0,
+        is_active: body.is_active !== undefined ? Boolean(body.is_active) : true,
+        is_default: body.is_default === true,
+        image_url: body.image_url && typeof body.image_url === 'string' && body.image_url.trim() !== '' ? body.image_url.trim() : null,
+        metadata: body.metadata && typeof body.metadata === 'object' ? body.metadata : {},
+      }
+
+      // Validar que price_list sea válido después del parseFloat
+      if (isNaN(insertData.price_list) || insertData.price_list <= 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'price_list debe ser un número mayor a 0',
+            data: null,
+          },
+          { status: 400 }
+        )
+      }
+
+      console.log('📦 [POST Variant] Datos preparados para insertar:', JSON.stringify(insertData, null, 2))
+
+      // ✅ VALIDACIÓN: Asegurar que color_hex no exceda 7 caracteres (formato #RRGGBB)
+      if (insertData.color_hex && insertData.color_hex.length > 7) {
+        console.warn(`⚠️ [POST Variant] color_hex truncado de ${insertData.color_hex.length} a 7 caracteres: ${insertData.color_hex}`)
+        insertData.color_hex = insertData.color_hex.substring(0, 7)
+      }
+
+      // ✅ VALIDACIÓN: Asegurar que finish no exceda 100 caracteres (por si acaso)
+      if (insertData.finish && insertData.finish.length > 100) {
+        insertData.finish = insertData.finish.substring(0, 100)
+        console.warn(`⚠️ [POST Variant] Finish truncado a 100 caracteres: ${insertData.finish}`)
+      }
+
+      // ✅ DEBUG: Log del valor de finish antes de insertar
+      console.log(`🔍 [POST Variant] Insertando variante con finish:`, {
+        finish: insertData.finish,
+        finishLength: insertData.finish?.length,
+        finishType: typeof insertData.finish,
+        insertDataKeys: Object.keys(insertData),
+      })
+
       // Crear variante
       const { data: variant, error: variantError } = await supabase
         .from('product_variants')
-        .insert({
-          product_id: body.product_id,
-          aikon_id: body.aikon_id,
-          variant_slug: variantSlug,
-          color_name: body.color_name || null,
-          color_hex: body.color_hex || null,
-          measure: body.measure || null,
-          finish: body.finish || null,
-          price_list: parseFloat(body.price_list),
-          price_sale: body.price_sale ? parseFloat(body.price_sale) : null,
-          stock: parseInt(body.stock) || 0,
-          is_active: body.is_active !== false,
-          is_default: body.is_default === true,
-          image_url: body.image_url || null,
-          metadata: body.metadata || {},
-        })
+        .insert(insertData)
         .select()
         .single()
 
@@ -298,14 +368,169 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
           }
         )
 
+        console.error('[API] Error creating variant:', variantError)
+        console.error('[API] Variant error details:', {
+          message: variantError.message,
+          code: variantError.code,
+          details: variantError.details,
+          hint: variantError.hint,
+        })
+        console.error('[API] Variant data being inserted:', JSON.stringify({
+          product_id: body.product_id,
+          aikon_id: body.aikon_id,
+          color_name: body.color_name,
+          color_hex: body.color_hex,
+          measure: body.measure,
+          finish: body.finish,
+          finishLength: body.finish?.length,
+          price_list: body.price_list,
+          price_sale: body.price_sale,
+          stock: body.stock,
+        }, null, 2))
+
         return NextResponse.json(
           {
             success: false,
-            error: 'Error al crear variante',
+            error: variantError.message || 'Error al crear variante',
             data: null,
+            details: variantError.details || null,
           },
           { status: 500 }
         )
+      }
+
+      // ✅ NUEVO: Guardar color en la paleta si no existe (DESPUÉS de crear la variante)
+      if (insertData.color_name && insertData.color_hex) {
+        try {
+          const colorNameLower = insertData.color_name.toLowerCase().trim()
+          
+          // Verificar si el color ya existe en la paleta (case-insensitive)
+          const { data: existingColor } = await supabaseAdmin
+            .from('color_palette')
+            .select('id')
+            .ilike('name', colorNameLower)
+            .maybeSingle()
+
+          // Si no existe, guardarlo
+          if (!existingColor) {
+            // ✅ VALIDACIÓN: Asegurar que hex no exceda 7 caracteres
+            const hexValue = insertData.color_hex.trim().substring(0, 7)
+            const { error: colorError } = await supabaseAdmin
+              .from('color_palette')
+              .insert({
+                name: insertData.color_name.trim(),
+                display_name: insertData.color_name.trim(),
+                hex: hexValue,
+                category: 'Personalizado',
+                family: 'Personalizados',
+                is_popular: false,
+                description: `Color personalizado agregado automáticamente: ${insertData.color_name}`,
+              } as any)
+
+            if (colorError) {
+              console.warn(`⚠️ [POST Variant] No se pudo guardar color en paleta: ${colorError.message}`)
+              // No fallar la creación de la variante si falla el guardado del color
+            } else {
+              console.log(`✅ [POST Variant] Color "${insertData.color_name}" guardado en paleta automáticamente`)
+            }
+          }
+        } catch (error) {
+          console.warn(`⚠️ [POST Variant] Error al verificar/guardar color en paleta:`, error)
+          // No fallar la creación de la variante si falla el guardado del color
+        }
+      }
+
+      // ✅ NUEVO: Guardar medida en la paleta si no existe (DESPUÉS de crear la variante)
+      if (insertData.measure) {
+        try {
+          const measureTrimmed = insertData.measure.trim()
+          const measureLower = measureTrimmed.toLowerCase()
+          
+          // Extraer tipo de unidad de la medida
+          const unitTypeMatch = measureTrimmed.match(/(L|KG|CC|ml|g|Nº|N°|N)/i)
+          const unitType = unitTypeMatch ? unitTypeMatch[1].toUpperCase() : null
+          
+          // Determinar categoría basada en el tipo de unidad
+          let category = 'Personalizado'
+          if (unitType === 'L' || unitType === 'ML' || unitType === 'CC') {
+            category = 'Volumen'
+          } else if (unitType === 'KG' || unitType === 'G') {
+            category = 'Peso'
+          } else if (unitType === 'Nº' || unitType === 'N°' || unitType === 'N') {
+            category = 'Unidad'
+          }
+          
+          // Verificar si la medida ya existe en la paleta (case-insensitive)
+          const { data: existingMeasure } = await supabaseAdmin
+            .from('measure_palette')
+            .select('id')
+            .ilike('measure', measureLower)
+            .maybeSingle()
+
+          // Si no existe, guardarla
+          if (!existingMeasure) {
+            const { error: measureError } = await supabaseAdmin
+              .from('measure_palette')
+              .insert({
+                measure: measureTrimmed,
+                category: category,
+                unit_type: unitType,
+                is_popular: false,
+                description: `Medida personalizada agregada automáticamente: ${measureTrimmed}`,
+              } as any)
+
+            if (measureError) {
+              console.warn(`⚠️ [POST Variant] No se pudo guardar medida en paleta: ${measureError.message}`)
+              // No fallar la creación de la variante si falla el guardado de la medida
+            } else {
+              console.log(`✅ [POST Variant] Medida "${measureTrimmed}" guardada en paleta automáticamente`)
+            }
+          }
+        } catch (error) {
+          console.warn(`⚠️ [POST Variant] Error al verificar/guardar medida en paleta:`, error)
+          // No fallar la creación de la variante si falla el guardado de la medida
+        }
+      }
+
+      // ✅ NUEVO: Guardar terminación en la paleta si no existe (DESPUÉS de crear la variante)
+      if (insertData.finish) {
+        try {
+          const finishTrimmed = insertData.finish.trim()
+          const finishLower = finishTrimmed.toLowerCase()
+          
+          // Determinar categoría basada en el tipo de producto (podría mejorarse con más contexto)
+          // Por ahora, categoría genérica
+          const category = 'General'
+          
+          // Verificar si la terminación ya existe en la paleta (case-insensitive)
+          const { data: existingFinish } = await supabaseAdmin
+            .from('finish_palette')
+            .select('id')
+            .ilike('finish', finishLower)
+            .maybeSingle()
+
+          // Si no existe, guardarla
+          if (!existingFinish) {
+            const { error: finishError } = await supabaseAdmin
+              .from('finish_palette')
+              .insert({
+                finish: finishTrimmed,
+                category: category,
+                is_popular: false,
+                description: `Terminación personalizada agregada automáticamente: ${finishTrimmed}`,
+              } as any)
+
+            if (finishError) {
+              console.warn(`⚠️ [POST Variant] No se pudo guardar terminación en paleta: ${finishError.message}`)
+              // No fallar la creación de la variante si falla el guardado de la terminación
+            } else {
+              console.log(`✅ [POST Variant] Terminación "${finishTrimmed}" guardada en paleta automáticamente`)
+            }
+          }
+        } catch (error) {
+          console.warn(`⚠️ [POST Variant] Error al verificar/guardar terminación en paleta:`, error)
+          // No fallar la creación de la variante si falla el guardado de la terminación
+        }
       }
 
       // Log de éxito - usando console.log para eventos informativos

@@ -1,188 +1,178 @@
-# Footer Component - Pinteya E-commerce
+# Footer
 
-## Descripción
+Componente de pie de página con información de la empresa, métodos de pago, enlaces de navegación y redes sociales.
 
-El componente Footer es un footer completo y profesional diseñado específicamente para Pinteya E-commerce. Incluye toda la información corporativa, enlaces útiles, métodos de pago y redes sociales de la empresa.
+> **Última actualización**: 15 de Diciembre, 2025 - Implementado con diseño moderno, tarjetas de beneficios y enlaces sociales.
 
-## Ubicación
+## 🎯 Características
+
+- **Tarjetas de beneficios** - 3 tarjetas destacando Mercado Pago, Pago al recibir y Envío gratis
+- **Redes sociales** - Enlaces a Google, Facebook e Instagram
+- **Navegación** - Enlaces a páginas principales (tienda, contacto, about, help)
+- **Información de empresa** - Logo, ubicación y copyright
+- **Diseño responsive** - Adaptado para mobile, tablet y desktop
+- **Optimización de imágenes** - Uso de SVG para iconos y Next.js Image para logos
+
+## 📐 Estructura Visual
 
 ```
-src/components/layout/Footer.tsx
+┌─────────────────────────────────────┐
+│ [Mercado Pago] [Pago Recibir] [Envío]│
+│                                      │
+│        [Google] [FB] [Instagram]     │
+│                                      │
+│ [Tienda] [Contacto] [About] [Help]  │
+│                                      │
+│ [Logo] Córdoba, Argentina            │
+│        © 2025 Pinteya — XOR          │
+└─────────────────────────────────────┘
 ```
 
-## Características
+## 🔧 Uso Básico
 
-### 🎨 Diseño Profesional
+```tsx
+import Footer from '@/components/layout/Footer'
 
-- **Layout responsive**: Se adapta perfectamente a mobile, tablet y desktop
-- **Paleta de colores Pinteya**: Utiliza el color primario #ea5a17 (Blaze Orange)
-- **Tipografía consistente**: Mantiene la coherencia con el resto del sitio
-- **Espaciado optimizado**: Diseño limpio y bien estructurado
-
-### 📋 Secciones Incluidas
-
-#### 1. **Información de la Empresa**
-
-- Logo principal de Pinteya (LOGO NEGATIVO.svg) en color naranja
-- Dirección física: Córdoba Capital, Argentina
-- Teléfono de contacto: +54 351 341 1796
-- Email corporativo: info@pinteya.com.ar
-
-#### 2. **Enlaces Útiles**
-
-- **Diseño mobile**: Grid de 2 columnas con fondo gris claro y bordes redondeados
-- **Diseño desktop**: Lista vertical tradicional sin fondo
-- Enlaces: Sobre Nosotros (`/about`), Contacto (`/contact`), Centro de Ayuda (`/help`), Envíos y Devoluciones (`/shipping`), Política de Privacidad (`/privacy`), Términos y Condiciones (`/terms`)
-
-#### 3. **Categorías de Productos**
-
-- **Diseño mobile**: Grid de 2 columnas con fondo gris claro y bordes redondeados
-- **Diseño desktop**: Lista vertical tradicional sin fondo
-- Categorías: Pinturas (`/shop?category=pinturas`), Esmaltes (`/shop?category=esmaltes`), Barnices (`/shop?category=barnices`), Impermeabilizantes (`/shop?category=impermeabilizantes`), Accesorios (`/shop?category=accesorios`)
-- "Ver Todo" (`/shop`) destacado con font-medium
-
-#### 4. **Métodos de Pago**
-
-- Logo oficial de MercadoPago
-- Descripción de métodos aceptados
-- Badges de métodos de pago (Tarjetas, Efectivo, Transferencia)
-
-#### 5. **Redes Sociales**
-
-- Facebook: https://www.facebook.com/pinteya
-- Instagram: https://www.instagram.com/pinteya
-- WhatsApp: https://wa.me/5493513411796
-
-### 🔧 Implementación Técnica
-
-#### Dependencias
-
-```typescript
-import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-```
-
-#### Estructura del Componente
-
-```typescript
-const Footer = () => {
-  const year = new Date().getFullYear();
-
-  return (
-    <footer className="bg-white border-t border-gray-200">
-      {/* Sección principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {/* 4 columnas de contenido */}
-        </div>
-      </div>
-
-      {/* Sección inferior */}
-      <div className="bg-gray-50 border-t border-gray-200">
-        {/* Copyright y métodos de pago */}
-      </div>
-    </footer>
-  );
-};
-```
-
-### 📱 Responsive Design Mobile-First
-
-#### Mobile (320px - 768px) - Versión Compacta
-
-- **Layout**: Diseño completamente diferente y compacto
-- **Espaciado**: `py-6` (muy reducido)
-- **Logo Pinteya**: `h-8` (32px) más pequeño
-- **Contacto**: Solo botones de llamada (naranja) y WhatsApp (verde)
-- **Enlaces**: Solo 4 enlaces principales como tags pequeños
-- **Métodos de pago**: Logo MercadoPago mini (`h-5`) + "y más"
-- **Sin secciones extensas**: Eliminadas listas largas y redes sociales
-- **Información mínima**: Solo ubicación "Córdoba, Argentina"
-
-#### Tablet (768px - 1024px)
-
-- **Layout**: 2 columnas balanceadas
-- **Espaciado**: `gap-8` entre secciones
-- **Elementos**: Tamaños intermedios
-- **Tipografía**: Transición a tamaños desktop
-
-#### Desktop (1024px+)
-
-- **Layout**: 4 columnas completas
-- **Espaciado**: `py-16`, `gap-12` generoso
-- **Logo Pinteya**: `h-14` (56px)
-- **Logo MercadoPago**: `h-10` (40px)
-- **Iconos redes sociales**: `w-10 h-10`
-- **Tipografía**: Títulos `text-lg`, copyright `text-sm`
-- **Badges**: Texto completo
-
-### 🎯 Integración
-
-El footer está integrado en el layout principal a través de `src/app/providers.tsx`:
-
-```typescript
-import Footer from "../components/layout/Footer";
-
-// Dentro del componente AppContent
 <Footer />
 ```
 
-### 🖼️ Recursos Utilizados
+## 📋 Props e Interfaces
 
-#### Logos
+El componente no acepta props. Toda la configuración está hardcodeada:
 
-- **Logo Principal**: `/images/logo/LOGO NEGATIVO.svg` (color naranja #eb6313)
-- **MercadoPago**: `/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg` (tamaño aumentado)
-- **Logo XOR**: `/images/logo/xor.svg` (créditos de desarrollo)
+```typescript
+const socials = [
+  {
+    label: 'Google',
+    href: '/api/auth/signin',
+    wrapperClass: 'bg-white',
+    imageSrc: '/images/icons/Google.svg',
+  },
+  // ...
+]
 
-#### Iconos
-
-- Iconos SVG inline para ubicación, teléfono y email
-- Iconos de redes sociales (Facebook, Instagram, WhatsApp)
-- Emojis para métodos de pago (💳, 💰, 🏦)
-
-### 🎨 Estilos y Clases
-
-#### Colores Principales
-
-- **Primario**: `text-[#ea5a17]` (Blaze Orange)
-- **Texto**: `text-gray-600`, `text-gray-900`
-- **Fondo**: `bg-white`, `bg-gray-50`
-- **Hover**: `hover:text-[#ea5a17]`, `hover:bg-[#ea5a17]`
-
-#### Efectos de Interacción
-
-- Transiciones suaves: `transition-colors`
-- Hover states en enlaces y botones
-- Estados activos en redes sociales
-
-### 📄 Copyright y Créditos
-
-```
-© 2025 Pinteya. Todos los derechos reservados.
-Desarrollado por XOR
+const navLinks = [
+  { label: 'Explorá la tienda', href: '/shop' },
+  // ...
+]
 ```
 
-### 🔗 Enlaces Relacionados
+## 🎨 Estilos y Diseño
 
-- [Design System](../design-system/README.md)
-- [Paleta de Colores](../design-system/colors.md)
-- [Componentes Layout](../components/layout.md)
-- [Guía de Responsive Design](../guides/responsive.md)
+### Colores
 
-### 📝 Notas de Desarrollo
+- **Fondo principal**: `bg-[#eb6313]` (Naranja Pinteya)
+- **Tarjetas**: `bg-white/10` con `backdrop-blur`
+- **Texto**: `text-white` con variaciones de opacidad
+- **Bordes**: `border-white/20` y `border-white/15`
 
-1. **Accesibilidad**: Todos los enlaces tienen `aria-label` apropiados
-2. **SEO**: Enlaces internos optimizados para navegación
-3. **Performance**: Imágenes optimizadas con Next.js Image
-4. **Mantenibilidad**: Código modular y bien documentado
-5. **Escalabilidad**: Fácil agregar nuevas secciones o enlaces
+### Tarjetas de Beneficios
 
-### 🚀 Próximas Mejoras
+Cada tarjeta tiene:
+- **Fondo**: `bg-white/10` con `backdrop-blur`
+- **Sombra**: `shadow-lg shadow-black/10`
+- **Padding**: `p-5 sm:p-6`
+- **Border radius**: `rounded-2xl`
 
-- [ ] Agregar newsletter signup
-- [ ] Implementar mapa interactivo
-- [ ] Agregar certificaciones de seguridad
-- [ ] Integrar chat en vivo
-- [ ] Agregar testimonios destacados
+### Layout Responsive
+
+- **Grid de tarjetas**: `grid-cols-1 md:grid-cols-3`
+- **Padding**: `px-4 sm:px-6 py-10 sm:py-14 pb-24`
+- **Footer inferior**: `flex-col md:flex-row`
+
+## 🔄 Flujo de Datos
+
+1. **Renderizado estático**: Todo el contenido está hardcodeado
+2. **Año dinámico**: `new Date().getFullYear()` para copyright
+3. **Enlaces externos**: Target `_blank` y `rel="noopener noreferrer"` para URLs externas
+4. **Imágenes**: Next.js Image para logos, `<img>` para SVG pequeños
+
+## 🧪 Testing
+
+### Casos de Prueba
+
+- ✅ Renderizado de todas las secciones
+- ✅ Enlaces de navegación funcionan
+- ✅ Enlaces de redes sociales abren en nueva pestaña
+- ✅ Año del copyright se actualiza correctamente
+- ✅ Responsive en diferentes tamaños
+- ✅ Imágenes se cargan correctamente
+- ✅ Accesibilidad (ARIA labels)
+
+## 📝 Notas de Desarrollo
+
+### Estructura del Componente
+
+El Footer está dividido en secciones:
+
+1. **Tarjetas de beneficios** (Grid de 3)
+   - Mercado Pago
+   - Pago al recibir
+   - Envío gratis
+
+2. **Redes sociales** (Centrado)
+   - Google (autenticación)
+   - Facebook
+   - Instagram
+
+3. **Navegación** (Centrado)
+   - Explorá la tienda
+   - Chateá con nosotros
+   - Conocé nuestra historia
+   - Necesitás ayuda?
+
+4. **Información de empresa** (Footer inferior)
+   - Logo Pinteya
+   - Ubicación (Córdoba, Argentina)
+   - Copyright dinámico
+
+### Optimizaciones
+
+1. **SVG para iconos pequeños**: Usa `<img>` en lugar de Next.js Image para SVG (más eficiente)
+2. **Priority loading**: Logos principales con `priority={true}`
+3. **Lazy loading**: Iconos sociales con `loading="lazy"`
+4. **Backdrop blur**: Efecto visual moderno en tarjetas
+
+### Enlaces Configurados
+
+#### Redes Sociales
+
+- **Google**: `/api/auth/signin` (interno, no abre nueva pestaña)
+- **Facebook**: `https://facebook.com/pinteya` (externo, nueva pestaña)
+- **Instagram**: `https://www.instagram.com/pinteya.app/` (externo, nueva pestaña)
+
+#### Navegación
+
+- **Explorá la tienda**: `/shop`
+- **Chateá con nosotros**: `/contact`
+- **Conocé nuestra historia**: `/about`
+- **Necesitás ayuda?**: `/help`
+
+## 🔗 Archivos Relacionados
+
+- `src/components/layout/Footer.tsx` - Implementación del componente
+- `public/images/logo/LOGO POSITIVO.svg` - Logo de Pinteya
+- `public/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg` - Logo Mercado Pago
+- `public/images/checkout/pagoalrecibir.png` - Imagen "Pago al recibir"
+- `public/images/icons/icon-envio.svg` - Icono de envío
+- `public/images/icons/Google.svg` - Icono Google
+- `public/images/icons/fb.svg` - Icono Facebook
+- `public/images/icons/instagram.svg` - Icono Instagram
+
+## 🐛 Troubleshooting
+
+### Los enlaces de redes sociales no funcionan
+
+**Solución**: Verifica que las URLs estén correctas y que los enlaces externos tengan `target="_blank"` y `rel="noopener noreferrer"`.
+
+### Las imágenes no se cargan
+
+**Solución**: Verifica que las rutas de las imágenes sean correctas y que los archivos existan en `public/images/`. Para SVG, asegúrate de usar `<img>` en lugar de Next.js Image.
+
+### El año del copyright no se actualiza
+
+**Solución**: El año se calcula con `new Date().getFullYear()`. Si no se actualiza, verifica que el componente se esté renderizando en el cliente (`'use client'`).
+
+### El diseño no es responsive
+
+**Solución**: Verifica que las clases Tailwind responsive estén aplicadas correctamente (`sm:`, `md:`, `lg:`). El componente usa `grid-cols-1 md:grid-cols-3` para el grid de tarjetas.

@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import ProductItem from '@/components/Common/ProductItem'
 import { useFilteredProducts } from '@/hooks/useFilteredProducts'
 import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
@@ -13,7 +13,7 @@ const FreeShippingSection = () => {
 
   // Obtener productos con precio > 50000 (califican para envío gratis)
   const { data, isLoading } = useFilteredProducts({
-    limit: 100, // Aumentado para obtener todos los productos que califican
+    limit: 30, // ⚡ OPTIMIZACIÓN: Reducido de 100 a 30 para reducir tamaño de respuesta
     sortBy: 'price',
     sortOrder: 'desc',
   })
@@ -43,12 +43,12 @@ const FreeShippingSection = () => {
 
   if (isLoading) {
     return (
-      <section className='py-3 bg-white/40 backdrop-blur-sm'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8'>
+      <section className='py-3 overflow-hidden'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8 overflow-hidden'>
           <div className='animate-pulse mb-4'>
             <div className='h-8 bg-gray-200 rounded w-64'></div>
           </div>
-          <ProductSkeletonCarousel count={5} itemClassName='min-w-[250px]' />
+          <ProductSkeletonCarousel count={5} itemClassName='w-[calc(50%-0.5rem)] md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)]' />
         </div>
       </section>
     )
@@ -57,7 +57,7 @@ const FreeShippingSection = () => {
   if (freeShippingProducts.length === 0) return null
 
   return (
-    <section id='envio-gratis' className='py-3 bg-white/40 backdrop-blur-sm scroll-mt-20'>
+    <section id='envio-gratis' className='py-3 scroll-mt-20'>
       <div className='max-w-7xl mx-auto px-4 sm:px-4 lg:px-8'>
         {/* Header */}
         <div className='flex items-center justify-between mb-4'>
@@ -74,10 +74,10 @@ const FreeShippingSection = () => {
               />
             </div>
             <div>
-              <h2 className='text-2xl md:text-3xl font-bold text-green-700'>
+              <h2 className='text-2xl md:text-3xl font-bold text-white'>
                 Envío Gratis
               </h2>
-              <p className='text-sm text-gray-600'>
+              <p className='text-sm text-white/80'>
                 En compras superiores a $50.000
               </p>
             </div>
@@ -87,28 +87,57 @@ const FreeShippingSection = () => {
         {/* Carousel Horizontal - Sin badge de envío gratis */}
         <div className='relative mb-4'>
           {/* Controles de navegación - A los costados del carrusel, mitad y mitad */}
+          {/* ⚡ FASE 8: Optimizado - reemplazar color y border-color animados por opacity y transform */}
           <button
             onClick={() => scroll('left')}
-            className='hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-green-500 hover:text-green-500 transition-colors shadow-lg'
+            className='hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center shadow-lg relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity para color y transform para border
+              color: '#10b981', // green-500
+              opacity: 0.7,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              e.currentTarget.style.transform = 'scale(1.05) translateY(-50%)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.7'
+              e.currentTarget.style.transform = 'translateY(-50%)'
+            }}
             aria-label='Anterior'
           >
-            <ChevronLeft className='w-5 h-5' />
+            <span className="absolute inset-0 rounded-full border-2 border-green-500 opacity-0 transition-opacity duration-300 pointer-events-none" style={{ transform: 'scale(1.1)' }} />
+            <ChevronLeft className='w-5 h-5 relative z-10' />
           </button>
           <button
             onClick={() => scroll('right')}
-            className='hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center hover:border-green-500 hover:text-green-500 transition-colors shadow-lg'
+            className='hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center shadow-lg relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity para color y transform para border
+              color: '#10b981', // green-500
+              opacity: 0.7,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+              e.currentTarget.style.transform = 'scale(1.05) translateY(-50%)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.7'
+              e.currentTarget.style.transform = 'translateY(-50%)'
+            }}
             aria-label='Siguiente'
           >
-            <ChevronRight className='w-5 h-5' />
+            <span className="absolute inset-0 rounded-full border-2 border-green-500 opacity-0 transition-opacity duration-300 pointer-events-none" style={{ transform: 'scale(1.1)' }} />
+            <ChevronRight className='w-5 h-5 relative z-10' />
           </button>
 
           <div
             ref={scrollRef}
-            className='flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4'
+            className='flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4'
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {freeShippingProducts.map((product, idx) => (
-              <div key={idx} className='min-w-[250px] flex-shrink-0'>
+              <div key={idx} className='w-[calc(50%-0.5rem)] md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] flex-shrink-0 flex flex-col'>
                 <ProductItem product={product} />
               </div>
             ))}

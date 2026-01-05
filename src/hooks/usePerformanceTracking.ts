@@ -23,16 +23,20 @@ interface TrackingOptions {
   includeUserAgent?: boolean
   includeConnection?: boolean
   enableProductionMonitoring?: boolean
+  sampleRate?: number // ⚡ OPTIMIZACIÓN: Muestreo probabilístico
+  enableDetailedTracking?: boolean // ⚡ OPTIMIZACIÓN: Habilitar observers no críticos
 }
 
 const defaultOptions: TrackingOptions = {
   enabled: true,
   endpoint: '/api/admin/performance/metrics',
   batchSize: 10,
-  flushInterval: 30000, // 30 segundos
+  flushInterval: 60000, // ⚡ OPTIMIZACIÓN: 60 segundos (reducido de 30s)
   includeUserAgent: true,
   includeConnection: true,
   enableProductionMonitoring: process.env.NODE_ENV === 'production',
+  sampleRate: 0.1, // ⚡ OPTIMIZACIÓN: 10% de muestreo por defecto
+  enableDetailedTracking: process.env.ENABLE_DETAILED_PERFORMANCE_TRACKING === 'true', // ⚡ OPTIMIZACIÓN: Deshabilitado por defecto
 }
 
 /**
@@ -94,6 +98,12 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
   // Función para agregar métrica a la cola
   const queueMetric = useCallback(
     (metric: PerformanceData) => {
+      // ⚡ OPTIMIZACIÓN: Aplicar muestreo probabilístico
+      const sampleRate = config.sampleRate ?? 0.1
+      if (Math.random() >= sampleRate) {
+        return // No trackear esta métrica
+      }
+
       metricsQueue.current.push(metric)
 
       // Send to production monitoring if enabled
@@ -110,7 +120,7 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
         flushMetrics()
       }
     },
-    [config.batchSize, config.enableProductionMonitoring, trackWebVital]
+    [config.batchSize, config.enableProductionMonitoring, config.sampleRate, trackWebVital]
   )
 
   // Función para enviar todas las métricas en cola
@@ -157,39 +167,59 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
         console.warn('FID observer not supported')
       }
 
-      // Observer para CLS (Cumulative Layout Shift)
-      try {
-        let clsValue = 0
-        const clsObserver = new PerformanceObserver(list => {
-          const entries = list.getEntries()
-          entries.forEach((entry: any) => {
-            if (!entry.hadRecentInput) {
-              clsValue += entry.value
-            }
+      // ⚡ OPTIMIZACIÓN: CLS y TTI solo si detailed tracking está habilitado
+      if (config.enableDetailedTracking) {
+        // Observer para CLS (Cumulative Layout Shift)
+        try {
+          let clsValue = 0
+          const clsObserver = new PerformanceObserver(list => {
+            const entries = list.getEntries()
+            entries.forEach((entry: any) => {
+              if (!entry.hadRecentInput) {
+                clsValue += entry.value
+              }
+            })
+            queueMetric({ CLS: clsValue })
           })
-          queueMetric({ CLS: clsValue })
-        })
-        clsObserver.observe({ entryTypes: ['layout-shift'] })
-        observers.current.push(clsObserver)
-      } catch (e) {
-        console.warn('CLS observer not supported')
-      }
+          clsObserver.observe({ entryTypes: ['layout-shift'] })
+          observers.current.push(clsObserver)
+        } catch (e) {
+          console.warn('CLS observer not supported')
+        }
 
-      // Observer para Navigation Timing
-      try {
-        const navObserver = new PerformanceObserver(list => {
-          const entries = list.getEntries()
-          entries.forEach((entry: any) => {
-            queueMetric({
-              FCP: entry.firstContentfulPaint,
-              TTI: entry.domInteractive,
+        // Observer para Navigation Timing (incluye TTI)
+        try {
+          const navObserver = new PerformanceObserver(list => {
+            const entries = list.getEntries()
+            entries.forEach((entry: any) => {
+              queueMetric({
+                FCP: entry.firstContentfulPaint,
+                TTI: entry.domInteractive,
+              })
             })
           })
-        })
-        navObserver.observe({ entryTypes: ['navigation'] })
-        observers.current.push(navObserver)
-      } catch (e) {
-        console.warn('Navigation observer not supported')
+          navObserver.observe({ entryTypes: ['navigation'] })
+          observers.current.push(navObserver)
+        } catch (e) {
+          console.warn('Navigation observer not supported')
+        }
+      } else {
+        // ⚡ OPTIMIZACIÓN: Solo trackear FCP (más crítico) sin TTI
+        try {
+          const navObserver = new PerformanceObserver(list => {
+            const entries = list.getEntries()
+            entries.forEach((entry: any) => {
+              queueMetric({
+                FCP: entry.firstContentfulPaint,
+                // TTI deshabilitado para reducir overhead
+              })
+            })
+          })
+          navObserver.observe({ entryTypes: ['navigation'] })
+          observers.current.push(navObserver)
+        } catch (e) {
+          console.warn('Navigation observer not supported')
+        }
       }
     }
 
@@ -209,7 +239,7 @@ export const usePerformanceTracking = (options: TrackingOptions = {}) => {
       // Flush final
       flushMetrics()
     }
-  }, [config.enabled, config.flushInterval, queueMetric, flushMetrics])
+  }, [config.enabled, config.flushInterval, config.enableDetailedTracking, queueMetric, flushMetrics])
 
   // Función manual para trackear render time
   const trackRenderTime = useCallback(

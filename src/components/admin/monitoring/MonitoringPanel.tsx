@@ -21,7 +21,7 @@ import {
   Eye,
   AlertCircle,
   CheckCircle2,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface MonitoringPanelProps {
   className?: string

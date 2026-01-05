@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Star, Heart, Eye, ShoppingCart } from 'lucide-react'
+import { Star, Heart, Eye, ShoppingCart } from '@/lib/optimized-imports'
 import {
   Card,
   CardHeader,

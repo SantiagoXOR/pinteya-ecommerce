@@ -73,7 +73,7 @@ export const useProductsByCategory = ({
     queryFn: async (): Promise<Product[]> => {
       // Construir filtros
       const filters: any = {
-        limit: 100, // Traer más productos para luego filtrar
+        limit: 30, // ⚡ OPTIMIZACIÓN: Reducir límite de 100 a 30 para reducir tamaño de respuesta
         sortBy: categorySlug ? 'created_at' : 'price',
         sortOrder: 'desc',
       }
@@ -109,19 +109,26 @@ export const useProductsByCategory = ({
       // Limitar resultados según el parámetro limit
       return finalProducts.slice(0, limit)
     },
-    // Configuración optimizada
-    staleTime: enableCache ? 5 * 60 * 1000 : 0, // 5 minutos
+    // ⚡ OPTIMIZACIÓN: staleTime de 10 minutos para reducir refetches innecesarios
+    staleTime: 10 * 60 * 1000, // 10 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: false, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
     refetchOnReconnect: true,
   })
 
+  // ⚡ OPTIMIZACIÓN: Eliminado useEffect que fuerza refetch - React Query maneja esto automáticamente
+
+  // ✅ FIX CRÍTICO: Determinar loading de forma más confiable
+  // Si hay datos, no mostrar loading aunque isLoading sea true
+  // Si hay error, no mostrar loading
+  const isActuallyLoading = isLoading && !data && !error
+
   return {
-    products: data || [],
-    isLoading,
+    products: Array.isArray(data) ? data : [],
+    isLoading: isActuallyLoading,
     // Convertir Error a string para mantener compatibilidad con componentes
     error: error ? (error instanceof Error ? error.message : String(error)) : null,
     refetch: () => {

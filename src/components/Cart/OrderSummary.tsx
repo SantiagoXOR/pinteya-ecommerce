@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { ShoppingCart, CreditCard, Truck } from 'lucide-react'
+import { ShoppingCart, CreditCard, Truck } from '@/lib/optimized-imports'
 import Image from 'next/image'
 import ShippingProgressBar from '@/components/ui/shipping-progress-bar'
 import MercadoPagoLogo from '@/components/ui/mercadopago-logo'
@@ -68,7 +68,7 @@ const OrderSummary = () => {
           <div className='space-y-3 pt-4 border-t border-gray-200'>
             <div className='flex items-center justify-between'>
               <p className='text-gray-600'>Subtotal</p>
-              <p className='font-semibold' style={{ color: '#ea5a17' }}>
+              <p className='font-semibold' style={{ color: '#c2410b' }}>
                 ${totalPrice.toLocaleString()}
               </p>
             </div>
@@ -93,7 +93,7 @@ const OrderSummary = () => {
 
             <div className='flex items-center justify-between pt-3 border-t border-gray-200'>
               <p className='font-bold text-lg text-gray-900'>Total</p>
-              <p className='font-bold text-2xl' style={{ color: '#ea5a17' }}>
+              <p className='font-bold text-2xl' style={{ color: '#c2410b' }}>
                 ${finalTotal.toLocaleString()}
               </p>
             </div>

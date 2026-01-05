@@ -26,7 +26,7 @@ import {
   Calendar,
   User,
   Building,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { TrackingEvent, Shipment, ShipmentStatus } from '@/types/logistics'
 import { useTrackingTimeline, useRealTimeTracking } from '@/hooks/admin/useTrackingEvents'
 import { cn } from '@/lib/core/utils'

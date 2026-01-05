@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { ChevronDown, Tag, Loader2 } from 'lucide-react'
+import { ChevronDown, Tag, Loader2 } from '@/lib/optimized-imports'
 
 interface CategoryItemProps {
   category: {

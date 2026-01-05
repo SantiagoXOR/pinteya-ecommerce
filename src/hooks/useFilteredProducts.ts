@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { ProductWithCategory, PaginatedResponse } from '@/types/api'
 import { safeApiResponseJson } from '@/lib/json-utils'
+import { normalizeProductFilters } from '@/hooks/queries/productQueryKeys'
 
 // ===================================
 // TIPOS PARA FILTROS DE PRODUCTOS
@@ -34,8 +35,11 @@ export interface ProductFilters {
 // ===================================
 
 export const useFilteredProducts = (filters: ProductFilters = {}) => {
+  // ⚡ OPTIMIZACIÓN: Normalizar filtros para compartir cache entre componentes
+  const normalizedFilters = normalizeProductFilters(filters)
+  
   return useQuery({
-    queryKey: ['filtered-products', filters],
+    queryKey: ['filtered-products', normalizedFilters],
     queryFn: async (): Promise<PaginatedResponse<ProductWithCategory>> => {
       // Construir URL con parámetros
       const searchParams = new URLSearchParams()
@@ -103,11 +107,13 @@ export const useFilteredProducts = (filters: ProductFilters = {}) => {
 
       return result.data!
     },
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 10 * 60 * 1000, // ⚡ OPTIMIZACIÓN: 10 minutos para reducir refetches
     gcTime: 10 * 60 * 1000, // 10 minutos
     retry: 2,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     enabled: true, // Siempre habilitado, incluso sin filtros
+    refetchOnMount: false, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
+    refetchOnWindowFocus: false,
   })
 }
 

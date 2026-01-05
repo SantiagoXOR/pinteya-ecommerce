@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { LogIn } from 'lucide-react'
+import { LogIn } from '@/lib/optimized-imports'
 
 interface AuthSectionProps {
   variant?: 'desktop' | 'mobile' | 'topbar'
@@ -53,7 +53,7 @@ const AuthSectionSimple = ({ variant = 'desktop' }: AuthSectionProps) => {
           variant='ghost'
           size='sm'
           asChild
-          className='text-gray-800 hover:text-gray-900 text-xs px-2 py-1 h-auto'
+          className='text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 text-xs px-2 py-1 h-auto'
         >
           <Link href='/api/auth/signin'>Ingresá</Link>
         </Button>

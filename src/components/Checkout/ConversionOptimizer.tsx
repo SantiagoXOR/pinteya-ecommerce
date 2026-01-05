@@ -20,7 +20,7 @@ import {
   TrendingUp,
   Eye,
   Heart,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Componente de Timer de Urgencia Avanzado
 interface UrgencyTimerProps {
@@ -383,24 +383,24 @@ export const SocialProof: React.FC<SocialProofProps> = ({
 
       {/* Testimonios */}
       {showTestimonials && (
-        <Card className='bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200'>
+        <Card className='bg-transparent border-white/20'>
           <CardContent className='p-4'>
             <div className='flex items-start gap-3'>
-              <div className='flex text-yellow-500'>
+              <div className='flex text-orange-500'>
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className='w-4 h-4 fill-current' />
                 ))}
               </div>
               <div className='flex-1'>
-                <p className='text-sm text-yellow-800 italic'>
+                <p className='text-sm text-white italic'>
                   "{testimonials[currentIndex % testimonials.length].text}"
                 </p>
                 <div className='flex items-center gap-2 mt-2'>
-                  <p className='text-sm font-medium text-yellow-800'>
+                  <p className='text-sm font-medium text-white'>
                     {testimonials[currentIndex % testimonials.length].author}
                   </p>
                   {testimonials[currentIndex % testimonials.length].verified && (
-                    <Badge variant='secondary' className='bg-green-100 text-green-700 text-xs'>
+                    <Badge variant='secondary' className='bg-green-500/20 text-green-300 border-green-400/30 text-xs'>
                       <CheckCircle className='w-3 h-3 mr-1' />
                       Verificado
                     </Badge>

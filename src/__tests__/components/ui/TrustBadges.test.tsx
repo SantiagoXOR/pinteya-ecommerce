@@ -13,7 +13,7 @@ import {
   InstantDeliveryBadge,
   TrustBadgeGroup,
 } from '@/components/ui/trust-badges'
-import { Shield } from 'lucide-react'
+import { Shield } from '@/lib/optimized-imports'
 
 describe('TrustBadge', () => {
   it('renders with default props', () => {

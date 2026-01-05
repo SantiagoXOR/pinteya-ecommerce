@@ -30,7 +30,7 @@ import {
   Maximize2,
   RefreshCw,
   Filter,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Shipment, TrackingEvent } from '@/types/logistics'
 import { cn } from '@/lib/core/utils'
 

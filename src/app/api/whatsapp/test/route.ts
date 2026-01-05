@@ -20,8 +20,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar que el usuario sea admin para las pruebas
-    if (session.user.email !== 'santiago@xor.com.ar') {
+    // Verificar que el usuario sea admin para las pruebas usando el rol de la sesión
+    if (session.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Solo administradores pueden ejecutar pruebas' },
         { status: 403 }

@@ -5,7 +5,9 @@
 // =====================================================
 
 import { memo, useMemo, useCallback, lazy, Suspense } from 'react'
-import { debounce, throttle } from 'lodash-es'
+// ⚡ OPTIMIZACIÓN: Imports modulares de lodash-es para tree shaking
+import debounce from 'lodash-es/debounce'
+import throttle from 'lodash-es/throttle'
 
 // =====================================================
 // LAZY LOADING DE COMPONENTES

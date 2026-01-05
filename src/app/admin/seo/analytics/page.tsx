@@ -35,7 +35,7 @@ import {
   RefreshCw,
   Calendar,
   Filter,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // ===================================
 // INTERFACES

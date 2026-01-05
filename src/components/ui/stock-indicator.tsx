@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
-import { Package, AlertTriangle, XCircle, Check } from 'lucide-react'
+import { Package, AlertTriangle, XCircle, Check } from '@/lib/optimized-imports'
 
 const stockIndicatorVariants = cva('flex items-center gap-2 text-sm font-medium', {
   variants: {

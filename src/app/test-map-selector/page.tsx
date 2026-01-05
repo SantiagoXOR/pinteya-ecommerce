@@ -5,7 +5,7 @@ import { AddressMapSelector } from '@/components/ui/AddressMapSelector'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle, AlertCircle, MapPin, TestTube, Navigation } from 'lucide-react'
+import { CheckCircle, AlertCircle, MapPin, TestTube, Navigation } from '@/lib/optimized-imports'
 
 /**
  * Página de prueba para el selector de mapa interactivo

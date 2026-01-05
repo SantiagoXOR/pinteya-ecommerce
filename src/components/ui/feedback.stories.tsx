@@ -12,7 +12,7 @@ import {
 } from './feedback'
 import { Button } from './button'
 import { Card, CardContent } from './card'
-import { ShoppingCart, Heart } from 'lucide-react'
+import { ShoppingCart, Heart } from '@/lib/optimized-imports'
 
 const meta = {
   title: 'UI/Feedback',

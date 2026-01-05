@@ -6,7 +6,7 @@
 // Sistema avanzado de manejo de errores con recuperación automática
 
 import React, { Component, ReactNode, ErrorInfo } from 'react'
-import { AlertTriangle, RefreshCw, Home, Bug, Mail } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Home, Bug, Mail } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'

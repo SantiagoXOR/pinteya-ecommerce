@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { User, Settings, MapPin, Camera } from 'lucide-react'
+import { User, Settings, MapPin, Camera } from '@/lib/optimized-imports'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AvatarUpload } from './AvatarUpload'

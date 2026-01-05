@@ -24,8 +24,8 @@ export async function GET(
       )
     }
 
-    // Verificar que el usuario sea admin
-    if (session.user.email !== 'santiago@xor.com.ar') {
+    // Verificar que el usuario sea admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    if (session.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Permisos insuficientes' },
         { status: 403 }
@@ -187,8 +187,8 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    // Verificar que es admin
-    if (session.user.email !== 'santiago@xor.com.ar') {
+    // Verificar que es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    if (session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 

@@ -11,7 +11,7 @@ import {
   Package,
   Search,
   Filter,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'

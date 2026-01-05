@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Package, BarChart3, TrendingUp, Plus, RefreshCw } from 'lucide-react'
+import { Package, BarChart3, TrendingUp, Plus, RefreshCw } from '@/lib/optimized-imports'
 import { useProductsEnterprise } from '@/hooks/admin/useProductsEnterprise'
 import { ProductList } from '@/components/admin/products/ProductList'
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
@@ -41,8 +41,13 @@ export function ProductsPageClient() {
 
     // Operaciones
     refreshProducts,
+    refreshStats,
     handleBulkOperation,
     handleProductAction,
+    // ✅ NUEVO: Funciones para acciones masivas
+    bulkUpdateStatus,
+    bulkUpdateCategory,
+    bulkDelete,
   } = useProductsEnterprise()
 
   // =====================================================
@@ -73,7 +78,13 @@ export function ProductsPageClient() {
             <div className='flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto'>
           <Button
                 variant='secondary'
-            onClick={refreshProducts}
+            onClick={async () => {
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+              await refreshProducts()
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+            }}
             disabled={isLoading}
                 className='flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-white/20 hover:bg-white/30 text-white border-white/30'
           >
@@ -244,6 +255,12 @@ export function ProductsPageClient() {
                     updateFilters={updateFilters}
                     resetFilters={resetFilters}
                     pagination={pagination}
+                    // ✅ NUEVO: Funciones para acciones masivas
+                    onBulkStatusChange={bulkUpdateStatus}
+                    onBulkCategoryChange={bulkUpdateCategory}
+                    onBulkDelete={bulkDelete}
+                    refreshProducts={refreshProducts}  // ✅ Pasar refreshProducts para refetch directo
+                    refreshStats={refreshStats}        // ✅ Pasar refreshStats para actualizar contadores
                   />
                 </Suspense>
               </ErrorBoundary>
@@ -264,9 +281,15 @@ export function ProductsPageClient() {
                       error={error}
                       onProductAction={handleProductAction}
                       filters={filters}
+                      categories={categories}
                       updateFilters={updateFilters}
                       resetFilters={resetFilters}
                       pagination={pagination}
+                      // ✅ NUEVO: Funciones para acciones masivas
+                      onBulkStatusChange={bulkUpdateStatus}
+                      onBulkCategoryChange={bulkUpdateCategory}
+                      onBulkDelete={bulkDelete}
+                      refreshProducts={refreshProducts}  // ✅ NUEVO: Pasar refreshProducts para refetch directo
                     />
                   </Suspense>
               </ErrorBoundary>
@@ -287,9 +310,15 @@ export function ProductsPageClient() {
                       error={error}
                       onProductAction={handleProductAction}
                       filters={filters}
+                      categories={categories}
                       updateFilters={updateFilters}
                       resetFilters={resetFilters}
                       pagination={pagination}
+                      // ✅ NUEVO: Funciones para acciones masivas
+                      onBulkStatusChange={bulkUpdateStatus}
+                      onBulkCategoryChange={bulkUpdateCategory}
+                      onBulkDelete={bulkDelete}
+                      refreshProducts={refreshProducts}  // ✅ NUEVO: Pasar refreshProducts para refetch directo
                     />
                   </Suspense>
                 </ErrorBoundary>

@@ -17,7 +17,7 @@ import {
   Clock,
   TrendingDown,
   TrendingUp,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { getValidImageUrl } from '@/lib/adapters/product-adapter'

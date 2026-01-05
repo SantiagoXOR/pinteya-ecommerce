@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Plus,
   Download,
@@ -19,9 +19,14 @@ import {
   XCircle,
   FileText,
   BarChart3,
-} from 'lucide-react'
+  X,
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
+import { BrandSelector } from './BrandSelector'
+import { CategorySelector } from './CategorySelector'
+import { MeasureSelector } from './MeasureSelector'
+import { ColorPickerField } from './ColorPickerField'
 
 interface Product {
   id: string
@@ -29,15 +34,22 @@ interface Product {
   status: 'active' | 'inactive' | 'draft'
 }
 
+interface Category {
+  id: number
+  name: string
+  slug?: string
+}
+
 interface ProductActionsProps {
   selectedProducts?: Product[]
+  categories?: Category[] // ✅ NUEVO: Categorías reales desde la BD
   onCreateProduct?: () => void
   onEditProduct?: (productId: string) => void
   onViewProduct?: (productId: string) => void
   onDeleteProduct?: (productId: string) => void
   onBulkDelete?: (productIds: string[]) => void
   onBulkEdit?: (productIds: string[], updates: Partial<Product>) => void
-  onBulkStatusChange?: (productIds: string[], status: Product['status']) => void
+  onBulkStatusChange?: (productIds: string[], status: 'active' | 'inactive' | 'draft') => void
   onBulkCategoryChange?: (productIds: string[], categoryId: number) => void
   onBulkPriceUpdate?: (
     productIds: string[],
@@ -50,10 +62,17 @@ interface ProductActionsProps {
   onGenerateReport?: () => void
   isLoading?: boolean
   className?: string
+  // Prop para controlar el dropdown desde fuera
+  externalShowBulkActions?: boolean
+  onExternalBulkActionsChange?: (show: boolean) => void
+  // Prop para controlar el modal de exportación desde fuera
+  externalShowExportModal?: boolean
+  onExternalExportModalChange?: (show: boolean) => void
 }
 
 export function ProductActions({
   selectedProducts = [],
+  categories = [], // ✅ NUEVO: Recibir categorías reales
   onCreateProduct,
   onEditProduct,
   onViewProduct,
@@ -70,34 +89,82 @@ export function ProductActions({
   onGenerateReport,
   isLoading = false,
   className,
+  externalShowBulkActions,
+  onExternalBulkActionsChange,
+  externalShowExportModal,
+  onExternalExportModalChange,
 }: ProductActionsProps) {
   const notifications = useProductNotifications()
-  const [showBulkActions, setShowBulkActions] = useState(false)
+  const [internalShowBulkActions, setInternalShowBulkActions] = useState(false)
+  const [internalShowExportOptions, setInternalShowExportOptions] = useState(false)
+  
+  // Usar el estado externo si está disponible, sino usar el interno
+  const showBulkActions = externalShowBulkActions !== undefined ? externalShowBulkActions : internalShowBulkActions
+  const setShowBulkActions = (value: boolean) => {
+    if (onExternalBulkActionsChange) {
+      onExternalBulkActionsChange(value)
+    } else {
+      setInternalShowBulkActions(value)
+    }
+  }
+  
+  // Usar el estado externo para el modal de exportación si está disponible
+  const showExportOptions = externalShowExportModal !== undefined ? externalShowExportModal : internalShowExportOptions
+  const setShowExportOptions = (value: boolean) => {
+    if (onExternalExportModalChange) {
+      onExternalExportModalChange(value)
+    } else {
+      setInternalShowExportOptions(value)
+    }
+  }
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showBulkEditModal, setShowBulkEditModal] = useState(false)
-  const [showExportOptions, setShowExportOptions] = useState(false)
   const [bulkEditData, setBulkEditData] = useState({
     status: '',
-    categoryId: '',
+    categoryIds: [] as number[], // ✅ Cambiado a array para multi-select
+    brand: '',
+    stock: '',
+    stockAdjustment: { type: 'set' as 'set' | 'add' | 'subtract', value: '' },
+    price: '',
+    discountedPrice: '',
     priceChange: { type: 'percentage' as const, value: 0 },
+    medidas: [] as string[], // ✅ Cambiado a array
+    color: '',
+    colorHex: '',
   })
 
   const selectedCount = selectedProducts.length
   const hasSelection = selectedCount > 0
 
   const handleBulkDelete = async () => {
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+    
     if (onBulkDelete && selectedProducts.length > 0) {
       try {
-        await onBulkDelete(selectedProducts.map(p => p.id))
+        const productIds = selectedProducts.map(p => p.id)
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        await onBulkDelete(productIds)
+        
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
         notifications.showBulkActionSuccess({ selectedCount: selectedProducts.length, action: 'delete' })
         setShowDeleteConfirm(false)
       } catch (error) {
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         notifications.showBulkActionError('eliminar productos', error instanceof Error ? error.message : 'Error desconocido')
       }
+    } else {
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     }
   }
 
-  const handleBulkStatusChange = async (status: Product['status']) => {
+  const handleBulkStatusChange = async (status: 'active' | 'inactive' | 'draft') => {
     if (onBulkStatusChange && selectedProducts.length > 0) {
       try {
         await onBulkStatusChange(
@@ -130,7 +197,7 @@ export function ProductActions({
         notifications.showProcessingInfo(`Exportando productos en formato ${format.toUpperCase()}...`)
         await onExportProducts(format)
         // Estimamos que exporta todos los productos visibles
-        notifications.showExportSuccess({ format: format.toUpperCase() as 'CSV' | 'Excel' | 'JSON', recordCount: totalProducts || 0 })
+        notifications.showExportSuccess({ format: format.toUpperCase() as 'CSV' | 'Excel' | 'JSON', recordCount: selectedCount || 0 })
         setShowExportOptions(false)
       } catch (error) {
         notifications.showExportError(format.toUpperCase(), error instanceof Error ? error.message : 'Error desconocido')
@@ -164,209 +231,130 @@ export function ProductActions({
 
   return (
     <div className={cn('flex items-center justify-between', className)}>
-      {/* Bulk Actions */}
-      {hasSelection && (
-        <div className='flex items-center space-x-3'>
-          <span className='text-sm text-gray-600 font-medium'>
-            {selectedCount} producto{selectedCount !== 1 ? 's' : ''} seleccionado
-            {selectedCount !== 1 ? 's' : ''}
-          </span>
 
-          <div className='relative'>
-            <button
-              onClick={() => setShowBulkActions(!showBulkActions)}
-              className='flex items-center space-x-2 px-4 py-2 text-sm bg-blaze-orange-100 text-blaze-orange-800 hover:bg-blaze-orange-200 rounded-lg transition-colors font-medium'
-            >
-              <Settings className='w-4 h-4' />
-              <span>Acciones masivas</span>
-            </button>
-
-            {showBulkActions && (
-              <div className='absolute left-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50'>
-                <div className='py-2'>
-                  {/* Status Changes */}
-                  <div className='px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b'>
-                    Cambiar Estado
-                  </div>
-                  <button
-                    onClick={() => handleBulkStatusChange('active')}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    <CheckCircle className='w-4 h-4 text-green-500' />
-                    <span>Activar productos</span>
-                  </button>
-                  <button
-                    onClick={() => handleBulkStatusChange('inactive')}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    <XCircle className='w-4 h-4 text-red-500' />
-                    <span>Desactivar productos</span>
-                  </button>
-                  <button
-                    onClick={() => handleBulkStatusChange('draft')}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    <FileText className='w-4 h-4 text-yellow-500' />
-                    <span>Marcar como borrador</span>
-                  </button>
-
-                  <div className='border-t border-gray-200 my-2'></div>
-
-                  {/* Other Actions */}
-                  <div className='px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b'>
-                    Otras Acciones
-                  </div>
-                  <button
-                    onClick={() => setShowBulkEditModal(true)}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    <Edit className='w-4 h-4 text-blue-500' />
-                    <span>Edición masiva</span>
-                  </button>
-                  <button
-                    onClick={handleBulkArchive}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    <Archive className='w-4 h-4 text-purple-500' />
-                    <span>Archivar productos</span>
-                  </button>
-
-                  <div className='border-t border-gray-200 my-2'></div>
-
-                  {/* Danger Zone */}
-                  <button
-                    onClick={() => {
-                      setShowDeleteConfirm(true)
-                      setShowBulkActions(false)
-                    }}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50'
-                  >
-                    <Trash2 className='w-4 h-4' />
-                    <span>Eliminar seleccionados</span>
-                  </button>
-                </div>
+      {/* Bulk Actions Dropdown - Se activa desde ProductFilters */}
+      {showBulkActions && hasSelection && (
+        <div className='fixed inset-0 z-40' onClick={() => setShowBulkActions(false)}>
+          <div className='absolute right-4 top-20 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50' onClick={(e) => e.stopPropagation()}>
+            <div className='py-2'>
+              {/* Status Changes */}
+              <div className='px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b'>
+                Cambiar Estado
               </div>
-            )}
+              <button
+                onClick={() => {
+                  handleBulkStatusChange('active')
+                  setShowBulkActions(false)
+                }}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+              >
+                <CheckCircle className='w-4 h-4 text-green-500' />
+                <span>Activar productos</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleBulkStatusChange('inactive')
+                  setShowBulkActions(false)
+                }}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+              >
+                <XCircle className='w-4 h-4 text-red-500' />
+                <span>Desactivar productos</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleBulkStatusChange('draft')
+                  setShowBulkActions(false)
+                }}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+              >
+                <FileText className='w-4 h-4 text-yellow-500' />
+                <span>Marcar como borrador</span>
+              </button>
+
+              <div className='border-t border-gray-200 my-2'></div>
+
+              {/* Other Actions */}
+              <div className='px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b'>
+                Otras Acciones
+              </div>
+              <button
+                onClick={() => {
+                  setShowBulkEditModal(true)
+                  setShowBulkActions(false)
+                }}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+              >
+                <Edit className='w-4 h-4 text-blue-500' />
+                <span>Edición masiva</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleBulkArchive()
+                  setShowBulkActions(false)
+                }}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+              >
+                <Archive className='w-4 h-4 text-purple-500' />
+                <span>Archivar productos</span>
+              </button>
+
+              <div className='border-t border-gray-200 my-2'></div>
+
+              {/* Danger Zone */}
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(true)
+                  setShowBulkActions(false)
+                }}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50'
+              >
+                <Trash2 className='w-4 h-4' />
+                <span>Eliminar seleccionados</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Primary Actions */}
-      <div className='flex items-center space-x-3 ml-auto'>
-        {/* Import/Export */}
-        <div className='flex items-center space-x-2'>
-          <button
-            onClick={handleImport}
-            disabled={isLoading}
-            className='flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50'
-          >
-            <Upload className='w-4 h-4' />
-            <span className='hidden sm:inline'>Importar</span>
-          </button>
-
-          <div className='relative'>
+      {/* Export Options Modal */}
+      {showExportOptions && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50' onClick={() => setShowExportOptions(false)}>
+          <div className='bg-white rounded-lg p-6 max-w-md w-full mx-4' onClick={(e) => e.stopPropagation()}>
+            <h3 className='text-lg font-semibold mb-4'>Exportar productos</h3>
+            <div className='space-y-2'>
+              <button
+                onClick={() => handleExport('csv')}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg'
+              >
+                <FileText className='w-4 h-4 text-green-500' />
+                <span>Exportar como CSV</span>
+              </button>
+              <button
+                onClick={() => handleExport('xlsx')}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg'
+              >
+                <Package className='w-4 h-4 text-blue-500' />
+                <span>Exportar como Excel</span>
+              </button>
+              <button
+                onClick={() => handleExport('json')}
+                className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg'
+              >
+                <FileText className='w-4 h-4 text-purple-500' />
+                <span>Exportar como JSON</span>
+              </button>
+            </div>
             <button
-              onClick={() => setShowExportOptions(!showExportOptions)}
-              disabled={isLoading}
-              className='flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50'
+              onClick={() => setShowExportOptions(false)}
+              className='mt-4 w-full px-4 py-2 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors'
             >
-              <Download className='w-4 h-4' />
-              <span className='hidden sm:inline'>Exportar</span>
-            </button>
-
-            {showExportOptions && (
-              <div className='absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50'>
-                <div className='py-2'>
-                  <button
-                    onClick={() => handleExport('csv')}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    <FileText className='w-4 h-4 text-green-500' />
-                    <span>Exportar como CSV</span>
-                  </button>
-                  <button
-                    onClick={() => handleExport('xlsx')}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    <Package className='w-4 h-4 text-blue-500' />
-                    <span>Exportar como Excel</span>
-                  </button>
-                  <button
-                    onClick={() => handleExport('json')}
-                    className='flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-                  >
-                    <FileText className='w-4 h-4 text-purple-500' />
-                    <span>Exportar como JSON</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {onGenerateReport && (
-            <button
-              onClick={onGenerateReport}
-              disabled={isLoading}
-              className='flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50'
-            >
-              <BarChart3 className='w-4 h-4' />
-              <span className='hidden sm:inline'>Reporte</span>
-            </button>
-          )}
-        </div>
-
-        {/* Create Product */}
-        <button
-          onClick={handleCreateProduct}
-          disabled={isLoading}
-          className='flex items-center space-x-2 px-4 py-2 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors disabled:opacity-50'
-        >
-          <Plus className='w-4 h-4' />
-          <span>Nuevo Producto</span>
-        </button>
-      </div>
-
-      {/* Bulk Actions Dropdown */}
-      {showBulkActions && hasSelectedProducts && (
-        <div className='absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50'>
-          <div className='py-1'>
-            <button
-              onClick={() => {
-                // Handle bulk status change
-                setShowBulkActions(false)
-              }}
-              className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-            >
-              <Archive className='w-4 h-4' />
-              <span>Cambiar estado</span>
-            </button>
-
-            <button
-              onClick={() => {
-                // Handle bulk duplicate
-                setShowBulkActions(false)
-              }}
-              className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-            >
-              <Copy className='w-4 h-4' />
-              <span>Duplicar</span>
-            </button>
-
-            <div className='border-t border-gray-200 my-1'></div>
-
-            <button
-              onClick={() => {
-                setShowDeleteConfirm(true)
-                setShowBulkActions(false)
-              }}
-              className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50'
-            >
-              <Trash2 className='w-4 h-4' />
-              <span>Eliminar seleccionados</span>
+              Cancelar
             </button>
           </div>
         </div>
       )}
+
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
@@ -409,7 +397,7 @@ export function ProductActions({
       {/* Bulk Edit Modal */}
       {showBulkEditModal && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-white rounded-lg p-6 max-w-lg w-full mx-4'>
+          <div className='bg-white rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col'>
             <div className='flex items-center justify-between mb-4'>
               <h3 className='text-lg font-medium text-gray-900'>Editar productos masivamente</h3>
               <button
@@ -420,21 +408,29 @@ export function ProductActions({
               </button>
             </div>
 
-            <div className='space-y-4'>
+            <div className='space-y-4 flex-1 overflow-y-auto pr-2'>
+              {/* Categorías (Multi-select) */}
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Categoría</label>
-                <select
-                  value={bulkEditData.categoryId || ''}
-                  onChange={e => setBulkEditData(prev => ({ ...prev, categoryId: e.target.value }))}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
-                >
-                  <option value=''>Sin cambios</option>
-                  <option value='1'>Electrónicos</option>
-                  <option value='2'>Ropa</option>
-                  <option value='3'>Hogar</option>
-                </select>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Categorías {bulkEditData.categoryIds.length > 0 && `(${bulkEditData.categoryIds.length} seleccionadas)`}
+                </label>
+                <CategorySelector
+                  value={bulkEditData.categoryIds}
+                  onChange={(categoryIds) => {
+                    const ids = Array.isArray(categoryIds) ? categoryIds : categoryIds ? [categoryIds] : []
+                    setBulkEditData(prev => ({ ...prev, categoryIds: ids }))
+                  }}
+                  multiple={true}
+                  placeholder='Selecciona categorías (dejar vacío para no cambiar)'
+                />
+                {bulkEditData.categoryIds.length > 0 && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Se aplicarán todas las categorías seleccionadas a los productos
+                  </p>
+                )}
               </div>
 
+              {/* Estado */}
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>Estado</label>
                 <select
@@ -454,6 +450,91 @@ export function ProductActions({
                 </select>
               </div>
 
+              {/* Marca */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Marca</label>
+                <BrandSelector
+                  value={bulkEditData.brand || ''}
+                  onChange={(brand) => setBulkEditData(prev => ({ ...prev, brand }))}
+                  placeholder='Selecciona o crea una marca'
+                  allowCreate={true}
+                />
+                {bulkEditData.brand && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Se aplicará la marca "{bulkEditData.brand}" a todos los productos seleccionados
+                  </p>
+                )}
+              </div>
+
+              {/* Stock */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Stock</label>
+                <div className='flex space-x-2'>
+                  <select
+                    value={bulkEditData.stockAdjustment.type}
+                    onChange={e =>
+                      setBulkEditData(prev => ({
+                        ...prev,
+                        stockAdjustment: {
+                          ...prev.stockAdjustment,
+                          type: e.target.value as 'set' | 'add' | 'subtract',
+                        },
+                      }))
+                    }
+                    className='px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                  >
+                    <option value='set'>Establecer</option>
+                    <option value='add'>Sumar</option>
+                    <option value='subtract'>Restar</option>
+                  </select>
+                  <input
+                    type='number'
+                    value={bulkEditData.stockAdjustment.value}
+                    onChange={e =>
+                      setBulkEditData(prev => ({
+                        ...prev,
+                        stockAdjustment: {
+                          ...prev.stockAdjustment,
+                          value: e.target.value,
+                        },
+                      }))
+                    }
+                    className='flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                    placeholder='0'
+                    min='0'
+                  />
+                </div>
+              </div>
+
+              {/* Precio Base */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Precio Base</label>
+                <input
+                  type='number'
+                  step='0.01'
+                  value={bulkEditData.price}
+                  onChange={e => setBulkEditData(prev => ({ ...prev, price: e.target.value }))}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                  placeholder='Dejar vacío para no cambiar'
+                  min='0'
+                />
+              </div>
+
+              {/* Precio con Descuento */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Precio con Descuento</label>
+                <input
+                  type='number'
+                  step='0.01'
+                  value={bulkEditData.discountedPrice}
+                  onChange={e => setBulkEditData(prev => ({ ...prev, discountedPrice: e.target.value }))}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
+                  placeholder='Dejar vacío para no cambiar'
+                  min='0'
+                />
+              </div>
+
+              {/* Ajuste de precio (porcentaje o fijo) */}
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Ajuste de precio
@@ -472,12 +553,13 @@ export function ProductActions({
                     }
                     className='px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
                   >
-                    <option value='percentage'>Porcentaje</option>
-                    <option value='fixed'>Cantidad fija</option>
+                    <option value='percentage'>Porcentaje (%)</option>
+                    <option value='fixed'>Cantidad fija ($)</option>
                   </select>
                   <input
                     type='number'
-                    value={bulkEditData.priceChange.value}
+                    step='0.01'
+                    value={bulkEditData.priceChange.value || ''}
                     onChange={e =>
                       setBulkEditData(prev => ({
                         ...prev,
@@ -488,15 +570,75 @@ export function ProductActions({
                       }))
                     }
                     className='flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent'
-                    placeholder='0'
+                    placeholder={bulkEditData.priceChange.type === 'percentage' ? 'Ej: 10 (aumenta 10%)' : 'Ej: 100 (suma $100)'}
                   />
                 </div>
+                {bulkEditData.priceChange.value !== 0 && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    {bulkEditData.priceChange.type === 'percentage' 
+                      ? `Se ${bulkEditData.priceChange.value > 0 ? 'aumentará' : 'reducirá'} el precio en ${Math.abs(bulkEditData.priceChange.value)}%`
+                      : `Se ${bulkEditData.priceChange.value > 0 ? 'sumará' : 'restará'} $${Math.abs(bulkEditData.priceChange.value)} al precio`
+                    }
+                  </p>
+                )}
               </div>
+
+              {/* Medidas */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Medidas {bulkEditData.medidas.length > 0 && `(${bulkEditData.medidas.length} seleccionadas)`}
+                </label>
+                <MeasureSelector
+                  value={bulkEditData.medidas}
+                  onChange={(medidas) => setBulkEditData(prev => ({ ...prev, medidas }))}
+                  placeholder='Selecciona o agrega medidas'
+                />
+                {bulkEditData.medidas.length > 0 && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Se aplicarán todas las medidas seleccionadas a los productos
+                  </p>
+                )}
+              </div>
+
+              {/* Color */}
+              <div>
+                <ColorPickerField
+                  colorName={bulkEditData.color}
+                  colorHex={bulkEditData.colorHex}
+                  onColorChange={(name, hex) => setBulkEditData(prev => ({ 
+                    ...prev, 
+                    color: name, 
+                    colorHex: hex || undefined 
+                  }))}
+                  label='Color'
+                />
+                {bulkEditData.color && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Se aplicará el color "{bulkEditData.color}" a todos los productos seleccionados
+                  </p>
+                )}
+              </div>
+
             </div>
 
             <div className='flex justify-end space-x-3 mt-6'>
               <button
-                onClick={() => setShowBulkEditModal(false)}
+                onClick={() => {
+                  setShowBulkEditModal(false)
+                  setBulkEditData({
+                    status: '',
+                    categoryIds: [],
+                    brand: '',
+                    stock: '',
+                    stockAdjustment: { type: 'set' as const, value: '' },
+                    price: '',
+                    discountedPrice: '',
+                    priceChange: { type: 'percentage' as const, value: 0 },
+                    medidas: [],
+                    color: '',
+                    colorHex: '',
+                  })
+                }}
                 className='px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors'
               >
                 Cancelar
@@ -505,31 +647,100 @@ export function ProductActions({
                 onClick={() => {
                   if (onBulkEdit && selectedProducts.length > 0) {
                     const updates: any = {}
+                    
+                    // Estado
                     if (bulkEditData.status) {
                       updates.status = bulkEditData.status
                     }
-                    if (bulkEditData.categoryId) {
-                      onBulkCategoryChange?.(
-                        selectedProducts.map(p => p.id),
-                        parseInt(bulkEditData.categoryId)
-                      )
+                    
+                    // Categorías (multi-select)
+                    if (bulkEditData.categoryIds.length > 0) {
+                      // Aplicar cada categoría seleccionada
+                      bulkEditData.categoryIds.forEach(categoryId => {
+                        onBulkCategoryChange?.(
+                          selectedProducts.map(p => p.id),
+                          categoryId
+                        )
+                      })
                     }
+                    
+                    // Marca
+                    if (bulkEditData.brand.trim()) {
+                      updates.brand = bulkEditData.brand.trim()
+                    }
+                    
+                    // Stock
+                    if (bulkEditData.stockAdjustment.value) {
+                      const stockValue = parseInt(bulkEditData.stockAdjustment.value)
+                      if (!isNaN(stockValue)) {
+                        updates.stockAdjustment = {
+                          type: bulkEditData.stockAdjustment.type,
+                          value: stockValue,
+                        }
+                      }
+                    }
+                    
+                    // Precio base
+                    if (bulkEditData.price) {
+                      const priceValue = parseFloat(bulkEditData.price)
+                      if (!isNaN(priceValue) && priceValue >= 0) {
+                        updates.price = priceValue
+                      }
+                    }
+                    
+                    // Precio con descuento
+                    if (bulkEditData.discountedPrice) {
+                      const discountedValue = parseFloat(bulkEditData.discountedPrice)
+                      if (!isNaN(discountedValue) && discountedValue >= 0) {
+                        updates.discounted_price = discountedValue
+                      }
+                    }
+                    
+                    // Ajuste de precio (porcentaje o fijo)
                     if (bulkEditData.priceChange.value !== 0) {
                       onBulkPriceUpdate?.(
                         selectedProducts.map(p => p.id),
                         bulkEditData.priceChange
                       )
                     }
-                    onBulkEdit(
-                      selectedProducts.map(p => p.id),
-                      updates
-                    )
+                    
+                    // Medidas (array)
+                    if (bulkEditData.medidas.length > 0) {
+                      updates.medidas = bulkEditData.medidas
+                    }
+                    
+                    // Color
+                    if (bulkEditData.color.trim()) {
+                      updates.color = bulkEditData.color.trim()
+                      if (bulkEditData.colorHex) {
+                        updates.color_hex = bulkEditData.colorHex
+                      }
+                    }
+                    
+                    // Aplicar actualizaciones
+                    const hasUpdates = Object.keys(updates).length > 0 || 
+                                      bulkEditData.categoryIds.length > 0 || 
+                                      bulkEditData.priceChange.value !== 0
+                    
+                    if (hasUpdates) {
+                      onBulkEdit(selectedProducts.map(p => p.id), updates)
+                    }
                   }
+                  
+                  // Resetear formulario
                   setShowBulkEditModal(false)
                   setBulkEditData({
                     status: '',
-                    categoryId: '',
+                    categoryIds: [],
+                    brand: '',
+                    stock: '',
+                    stockAdjustment: { type: 'set' as const, value: '' },
+                    price: '',
+                    discountedPrice: '',
                     priceChange: { type: 'percentage' as const, value: 0 },
+                    medidas: [],
+                    color: '',
+                    colorHex: '',
                   })
                 }}
                 className='px-4 py-2 text-sm text-white bg-blaze-orange-600 hover:bg-blaze-orange-700 rounded-lg transition-colors'
@@ -568,6 +779,22 @@ export function ProductRowActions({
 }: ProductRowActionsProps) {
   const notifications = useProductNotifications()
   const [showActions, setShowActions] = useState(false)
+  const [overlayActive, setOverlayActive] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null)
+
+  // Calcular posición del dropdown cuando se abre (a la derecha del botón)
+  useEffect(() => {
+    if (showActions && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setDropdownPosition({
+        top: rect.top, // Alineado verticalmente con el botón
+        left: rect.right + 8, // 8px de margen a la derecha del botón
+      })
+    } else {
+      setDropdownPosition(null)
+    }
+  }, [showActions])
 
   const handleEdit = async () => {
     if (onEdit) {
@@ -630,86 +857,180 @@ export function ProductRowActions({
     }
   }
 
+  // Cerrar el menú cuando se hace clic fuera
+  useEffect(() => {
+    if (!showActions) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      // Excluir el overlay del contenedor del menú
+      const isOverlay = target?.classList?.contains('fixed') && target?.classList?.contains('inset-0')
+      const isInsideMenu = target?.closest('.product-actions-menu') && !isOverlay
+      // También verificar si es un botón o elemento interactivo dentro del menú
+      const isInteractiveElement = target?.closest('button, a, input, select, textarea, [role="button"]')
+      const isInsideDropdown = target?.closest('.absolute.right-0.top-full') // El dropdown del menú
+      
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      
+      // Solo cerrar si no está dentro del menú, no es el overlay, y no es un elemento interactivo del dropdown
+      if (!isInsideMenu && !isOverlay && !isInsideDropdown) {
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        setShowActions(false)
+        setOverlayActive(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showActions, product.id])
+
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+
   return (
-    <div className='relative'>
+    <div className='relative product-actions-menu'>
       <button
-        onClick={() => setShowActions(!showActions)}
-        className='p-1 rounded hover:bg-gray-100 transition-colors'
+        ref={buttonRef}
+        type='button'
+        onMouseEnter={() => {
+          // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        }}
+        onMouseDown={(e) => {
+          // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+          e.stopPropagation()
+        }}
+        onClick={(e) => {
+          // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+          e.stopPropagation()
+          e.preventDefault()
+          const newValue = !showActions
+          // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+          setShowActions(newValue)
+          if (newValue) {
+            // Activar el overlay después de un delay más largo para evitar que capture el mismo click
+            setOverlayActive(false)
+            setTimeout(() => {
+              setOverlayActive(true)
+            }, 100)
+          } else {
+            setOverlayActive(false)
+          }
+        }}
+        className='p-1 rounded hover:bg-gray-100 transition-colors relative'
+        aria-label='Acciones del producto'
+        style={{ pointerEvents: 'auto' }}
       >
         <MoreHorizontal className='w-4 h-4 text-gray-500' />
       </button>
 
       {showActions && (
-        <div className='absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50'>
-          <div className='py-1'>
-            <button
-              onClick={() => {
-                onView?.(product.id)
+        <>
+          {overlayActive && (
+            <div 
+              className='fixed inset-0 z-[60] product-actions-overlay' 
+              onMouseDown={(e) => {
+                // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+                e.preventDefault()
                 setShowActions(false)
+                setOverlayActive(false)
               }}
-              className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+            />
+          )}
+          {dropdownPosition && (
+            <div 
+              className='fixed w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-[70]'
+              style={{
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+              }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <Eye className='w-4 h-4' />
-              <span>Ver detalles</span>
-            </button>
-
-            <button
-              onClick={handleEdit}
-              className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-            >
-              <Edit className='w-4 h-4' />
-              <span>Editar</span>
-            </button>
-
-            {onToggleStatus && (
+            <div className='py-1'>
               <button
-                onClick={handleToggleStatus}
+                type='button'
+                onClick={() => {
+                  onView?.(product.id)
+                  setShowActions(false)
+                }}
                 className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
               >
-                {product.status === 'active' ? (
-                  <>
-                    <XCircle className='w-4 h-4 text-red-500' />
-                    <span>Desactivar</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className='w-4 h-4 text-green-500' />
-                    <span>Activar</span>
-                  </>
-                )}
+                <Eye className='w-4 h-4' />
+                <span>Ver detalles</span>
               </button>
-            )}
 
-            {onManageInventory && (
               <button
-                onClick={handleManageInventory}
+                type='button'
+                onClick={handleEdit}
                 className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
               >
-                <Package className='w-4 h-4 text-blue-500' />
-                <span>Gestionar stock</span>
+                <Edit className='w-4 h-4' />
+                <span>Editar</span>
               </button>
-            )}
 
-            <button
-              onClick={handleDuplicate}
-              className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
-            >
-              <Copy className='w-4 h-4' />
-              <span>Duplicar</span>
-            </button>
+              {onToggleStatus && (
+                <button
+                  type='button'
+                  onClick={handleToggleStatus}
+                  className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+                >
+                  {product.status === 'active' ? (
+                    <>
+                      <XCircle className='w-4 h-4 text-red-500' />
+                      <span>Desactivar</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className='w-4 h-4 text-green-500' />
+                      <span>Activar</span>
+                    </>
+                  )}
+                </button>
+              )}
 
-            <div className='border-t border-gray-200 my-1'></div>
+              {onManageInventory && (
+                <button
+                  type='button'
+                  onClick={handleManageInventory}
+                  className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+                >
+                  <Package className='w-4 h-4 text-blue-500' />
+                  <span>Gestionar stock</span>
+                </button>
+              )}
 
-            <button
-              onClick={handleDelete}
-              disabled={isLoading}
-              className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50'
-            >
-              <Trash2 className='w-4 h-4' />
-              <span>Eliminar</span>
-            </button>
+              <button
+                type='button'
+                onClick={handleDuplicate}
+                className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50'
+              >
+                <Copy className='w-4 h-4' />
+                <span>Duplicar</span>
+              </button>
+
+              <div className='border-t border-gray-200 my-1'></div>
+
+              <button
+                type='button'
+                onClick={handleDelete}
+                disabled={isLoading}
+                className='flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50'
+              >
+                <Trash2 className='w-4 h-4' />
+                <span>Eliminar</span>
+              </button>
+            </div>
           </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   )

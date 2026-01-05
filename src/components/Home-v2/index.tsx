@@ -7,12 +7,27 @@ import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import type { PromoBannersProps } from './PromoBanners'
 import { ProductSkeletonGrid, ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
+// ✅ FIX CRÍTICO: Importar BestSeller directamente en lugar de dynamic para evitar problemas de carga
+import BestSeller from './BestSeller/index'
 
 // BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner
 // ⚡ PERFORMANCE: Loading states para componentes críticos
+// ⚡ FIX CLS: Skeleton con dimensiones ABSOLUTAS fijas para prevenir layout shifts
 const HeroCarousel = dynamic(() => import('./HeroCarousel/index'), {
   loading: () => (
-    <div className='w-full h-[320px] md:h-[500px] bg-gradient-to-r from-orange-500 to-orange-600 animate-pulse' />
+    <div className="relative w-full" style={{ minHeight: '277px', height: 'clamp(277px, calc(100vw * 433 / 1200), 433px)' }}>
+      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-3">
+        <div 
+          className="relative w-full overflow-hidden skeleton-loading"
+          style={{ 
+            aspectRatio: '1200/433',
+            height: 'clamp(277px, calc(100vw * 433 / 1200), 433px)',
+            minHeight: '277px',
+            maxHeight: '433px'
+          }}
+        />
+      </div>
+    </div>
   ),
 })
 
@@ -20,7 +35,7 @@ const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePill
   loading: () => (
     <div className='flex gap-2 px-4 overflow-x-auto'>
       {[...Array(5)].map((_, i) => (
-        <div key={i} className='h-8 w-24 bg-gray-200 rounded-full animate-pulse flex-shrink-0' />
+        <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
       ))}
     </div>
   ),
@@ -28,14 +43,14 @@ const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePill
 
 const PromoBanners = dynamic<PromoBannersProps>(() => import('./PromoBanners/index'), {
   loading: () => (
-    <div className='w-full h-32 md:h-48 bg-gray-200 animate-pulse rounded-lg mx-4' />
+    <div className='w-full h-32 md:h-48 bg-gray-200 skeleton-loading rounded-lg mx-4' />
   ),
 })
 
 const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'), {
   loading: () => (
     <div className='px-4'>
-      <div className='h-8 w-48 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='h-8 w-48 bg-gray-200 rounded skeleton-pulse mb-4' />
       <ProductSkeletonCarousel count={4} />
     </div>
   ),
@@ -44,39 +59,28 @@ const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/in
 const TrendingSearches = dynamic(() => import('./TrendingSearches/index'), {
   loading: () => (
     <div className='px-4'>
-      <div className='h-8 w-40 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='h-8 w-40 bg-gray-200 rounded skeleton-pulse mb-4' />
       <div className='flex flex-wrap gap-2'>
         {[...Array(6)].map((_, i) => (
-          <div key={i} className='h-8 w-24 bg-gray-200 rounded-full animate-pulse' />
+          <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse' />
         ))}
       </div>
     </div>
   ),
 })
 
+// ⚡ CLS FIX: Cargar CombosSection dinámicamente pero con skeleton en el contenedor padre
 const CombosSection = dynamic(() => import('./CombosSection/index'), {
-  loading: () => (
-    <div className='px-4'>
-      <ProductSkeletonGrid count={4} />
-    </div>
-  ),
-})
-
-const BestSeller = dynamic(() => import('./BestSeller/index'), {
-  loading: () => (
-    <div className='px-4'>
-      <ProductSkeletonGrid count={4} />
-    </div>
-  ),
+  loading: () => null, // No mostrar loading aquí, el skeleton está en el contenedor padre
 })
 
 const Testimonials = dynamic(() => import('./Testimonials/index'), {
   loading: () => (
     <div className='px-4'>
-      <div className='h-8 w-40 bg-gray-200 rounded animate-pulse mb-4' />
+      <div className='h-8 w-40 bg-gray-200 rounded skeleton-pulse mb-4' />
       <div className='flex gap-4 overflow-x-auto'>
         {[...Array(3)].map((_, i) => (
-          <div key={i} className='w-80 h-48 bg-gray-200 rounded-lg animate-pulse flex-shrink-0' />
+          <div key={i} className='w-80 h-48 bg-gray-200 rounded-lg skeleton-loading flex-shrink-0' />
         ))}
       </div>
     </div>
@@ -224,65 +228,79 @@ const LazyTestimonials = React.memo(() => {
 LazyTestimonials.displayName = 'LazyTestimonials'
 
 const LazyBestSeller = React.memo(() => {
-  // BestSeller es importante pero puede cargar después del hero y categorías
-  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '100px', // Cargar poco después de que entre al viewport
-    threshold: 0.01,
-  })
-
-  const content = React.useMemo(() => {
-    return isVisible ? <BestSeller /> : null
-  }, [isVisible])
+  // ✅ FIX CRÍTICO: BestSeller debe cargarse SIEMPRE, sin progressive loading
+  // Renderizar inmediatamente sin esperar a ser visible
+  console.log('🔵 [LazyBestSeller] Renderizando - FORZANDO CARGA INMEDIATA')
 
   return (
-    <div ref={ref} className='mt-4 sm:mt-6 product-section' style={{ minHeight: isVisible ? 'auto' : '1px' }}>
-      {content}
+    <div className='mt-4 sm:mt-6 product-section'>
+      <BestSeller />
     </div>
   )
 })
 LazyBestSeller.displayName = 'LazyBestSeller'
 
 const HomeV2 = () => {
-  // Scroll depth tracking - Optimizado con requestAnimationFrame para evitar re-renders
+  // Scroll depth tracking - Optimizado con IntersectionObserver (más eficiente que scroll events)
   useEffect(() => {
-    let maxDepth = 0
-    const trackingThresholds = [25, 50, 75, 100]
-    const trackedDepths = new Set<number>()
-    let ticking = false
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const windowHeight = window.innerHeight
-          const documentHeight = document.documentElement.scrollHeight
-          const scrollTop = window.scrollY
-
-          const scrollPercentage = Math.round(
-            ((scrollTop + windowHeight) / documentHeight) * 100
-          )
-
-          if (scrollPercentage > maxDepth) {
-            maxDepth = scrollPercentage
-          }
-
-          // Trackear cada threshold una sola vez
-          trackingThresholds.forEach(threshold => {
-            if (scrollPercentage >= threshold && !trackedDepths.has(threshold)) {
-              trackedDepths.add(threshold)
-              trackScrollDepth(threshold, window.location.pathname)
-            }
-          })
-
-          ticking = false
-        })
-        ticking = true
-      }
+    // Guardar SSR/hidratación: evitar acceder a window/document en servidor
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
+    const trackingThresholds = [25, 50, 75, 100]
+    const trackedDepths = new Set<number>()
+    const pathname = window.location.pathname
 
+    // Crear elementos marcadores para cada threshold usando IntersectionObserver
+    const markers: HTMLElement[] = []
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const threshold = parseInt(entry.target.getAttribute('data-threshold') || '0', 10)
+            if (threshold > 0 && !trackedDepths.has(threshold)) {
+              trackedDepths.add(threshold)
+              trackScrollDepth(threshold, pathname)
+            }
+          }
+        })
+      },
+      {
+        // Usar rootMargin para detectar cuando el usuario alcanza cada porcentaje
+        rootMargin: '0px',
+        threshold: 0.1,
+      }
+    )
+
+    // Crear marcadores invisibles en el DOM para cada threshold
+    const documentHeight = document.documentElement.scrollHeight
+    const windowHeight = window.innerHeight
+    // Evitar valores negativos o cero para evitar posiciones inválidas
+    const scrollableHeight = Math.max(documentHeight - windowHeight, 1)
+
+    trackingThresholds.forEach((threshold) => {
+      const marker = document.createElement('div')
+      marker.setAttribute('data-threshold', threshold.toString())
+      marker.style.position = 'absolute'
+      marker.style.top = `${(threshold / 100) * scrollableHeight}px`
+      marker.style.height = '1px'
+      marker.style.width = '1px'
+      marker.style.pointerEvents = 'none'
+      marker.style.visibility = 'hidden'
+      document.body.appendChild(marker)
+      markers.push(marker)
+      observer.observe(marker)
+    })
+
+    // Cleanup
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      observer.disconnect()
+      markers.forEach((marker) => {
+        if (marker.parentNode) {
+          marker.parentNode.removeChild(marker)
+        }
+      })
     }
   }, [])
 
@@ -294,45 +312,65 @@ const HomeV2 = () => {
       {/* NUEVO ORDEN OPTIMIZADO */}
 
       {/* 0. Hero Carousel - Primer elemento después del header */}
-      <div className='pt-3 sm:pt-4 md:pt-6'>
+      <div className='pt-1 sm:pt-2 md:pt-3'>
         <HeroCarousel />
       </div>
 
       {/* 1. Navegación rápida por categorías - Espaciado mínimo */}
-      <div className='mt-2 sm:mt-3'>
+      <div className='mt-1 sm:mt-1.5'>
         <CategoryTogglePillsWithSearch />
       </div>
 
       {/* 2. Ofertas Especiales (BestSeller) - Ahora con filtro de categorías */}
-      <LazyBestSeller />
+      <div className='mt-1 sm:mt-1.5'>
+        <LazyBestSeller />
+      </div>
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
-      <div className='mt-3 sm:mt-4'>
+      <div 
+        className='mt-3 sm:mt-4' 
+        style={{ 
+          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px)
+          height: 'auto' // Permite que el contenido defina la altura
+        }}
+      >
         <PromoBanners bannerId={1} />
       </div>
 
-      {/* 4. Productos Destacados (Combos) */}
+      {/* 4. Productos Destacados (Combos) - Misma estructura que HeroCarousel */}
       <div className='mt-4 sm:mt-6 product-section'>
         <CombosSection />
       </div>
 
       {/* 5. Carrusel Dinámico - Solo Envío Gratis */}
-      <div className='mt-4 sm:mt-6 product-section'>
+      <div className='product-section' style={{ minHeight: '350px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
         <DynamicProductCarousel freeShippingOnly={true} />
       </div>
 
-      {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded */}
-      <div className='mt-4 sm:mt-6 below-fold-content'>
+      {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded - Subido más arriba y más separado de Nuevos Productos */}
+      <div 
+        className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content' 
+        style={{ 
+          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px) - Igual que Pintura Flash Days
+          height: 'auto' // Permite que el contenido defina la altura
+        }}
+      >
         <LazyPromoBanner bannerId={2} />
       </div>
 
       {/* 7. Nuevos productos - Lazy loaded */}
-      <div className='mt-3 sm:mt-4 product-section'>
+      <div className='mt-0 product-section' style={{ minHeight: '500px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
         <LazyNewArrivals />
       </div>
 
-      {/* 8. Banner CALCULADORA DE PINTURA - Lazy loaded */}
-      <div className='mt-4 sm:mt-6 below-fold-content'>
+      {/* 8. Banner CALCULADORA DE PINTURA - Lazy loaded - Mismo espaciado que Asesoramiento Gratis */}
+      <div 
+        className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content' 
+        style={{ 
+          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px)
+          height: 'auto' // Permite que el contenido defina la altura
+        }}
+      >
         <LazyPromoBanner bannerId={3} />
       </div>
 
@@ -346,9 +384,9 @@ const HomeV2 = () => {
         <LazyTestimonials />
       </div>
 
-      {/* Elementos flotantes de engagement - Carga diferida */}
-      <DelayedFloatingCart />
-      <DelayedFloatingWhatsApp />
+      {/* Elementos flotantes de engagement - DESACTIVADOS: Reemplazados por bottom navigation */}
+      {/* <DelayedFloatingCart /> */}
+      {/* <DelayedFloatingWhatsApp /> */}
       {/* <ExitIntentModal /> */} {/* Desactivado - Solo WhatsAppPopup activo para evitar sobrecarga de popups */}
       
       {/* WhatsApp Popup para captura de leads - Rediseñado con paleta Pinteya */}

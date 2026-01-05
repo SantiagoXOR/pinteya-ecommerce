@@ -2,11 +2,12 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useRef, useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { ProductFormMinimal } from '@/components/admin/products/ProductFormMinimal'
 import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { toast } from 'react-hot-toast'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Save, X } from '@/lib/optimized-imports'
 
 interface Product {
   id: string
@@ -40,10 +41,15 @@ interface ProductFormData extends Omit<Product, 'id'> {}
 
 // API functions
 async function fetchProduct(productId: string): Promise<Product> {
-  const response = await fetch(`/api/admin/products/${productId}`)
+  // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+  const response = await fetch(`/api/admin/products/${productId}`, {
+    credentials: 'include',
+  })
 
   if (!response.ok) {
-    throw new Error('Error fetching product')
+    // ✅ CORREGIDO: Obtener el mensaje de error del servidor
+    const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+    throw new Error(errorData.error || `Error ${response.status}: Error al cargar producto`)
   }
 
   const data = await response.json()
@@ -53,11 +59,13 @@ async function fetchProduct(productId: string): Promise<Product> {
 async function updateProduct(productId: string, data: ProductFormData) {
   console.log('📤 Enviando actualización:', { productId, data })
   
+  // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
   const response = await fetch(`/api/admin/products/${productId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify(data),
   })
 
@@ -76,6 +84,9 @@ export default function EditProductPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const productId = params.id as string
+  const [isFormDirty, setIsFormDirty] = useState(false)
+  const submitFormRef = useRef<(() => void) | null>(null)
+  const isDirtyCheckRef = useRef<(() => boolean) | null>(null)
 
   // Fetch product data
   const {
@@ -126,6 +137,34 @@ export default function EditProductPage() {
     router.push(`/admin/products/${productId}`)
   }
 
+  const handleFormReady = (submitForm: () => void, isDirty: () => boolean) => {
+    submitFormRef.current = submitForm
+    isDirtyCheckRef.current = isDirty
+    setIsFormDirty(isDirty())
+  }
+
+  // Actualizar isDirty periódicamente y también cuando cambien los datos del producto
+  useEffect(() => {
+    if (!isDirtyCheckRef.current) return
+
+    // Actualizar inmediatamente cuando se cargan los datos del producto
+    setIsFormDirty(isDirtyCheckRef.current())
+
+    const interval = setInterval(() => {
+      if (isDirtyCheckRef.current) {
+        setIsFormDirty(isDirtyCheckRef.current())
+      }
+    }, 200) // ✅ Reducido a 200ms para mayor responsividad
+
+    return () => clearInterval(interval)
+  }, [product]) // ✅ Agregar product como dependencia para actualizar cuando se cargan los datos
+
+  const handleSave = () => {
+    if (submitFormRef.current) {
+      submitFormRef.current()
+    }
+  }
+
   if (isLoading) {
     return (
       <AdminLayout title='Cargando...'>
@@ -159,8 +198,28 @@ export default function EditProductPage() {
     { label: 'Editar' },
   ]
 
+  const actions = (
+    <>
+      <button
+        onClick={handleCancel}
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium whitespace-nowrap'
+      >
+        <X className='w-4 h-4' />
+        <span>Cancelar</span>
+      </button>
+      <button
+        onClick={handleSave}
+        disabled={updateProductMutation.isPending || isLoading}
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed'
+      >
+        <Save className='w-4 h-4' />
+        <span>Guardar</span>
+      </button>
+    </>
+  )
+
   return (
-    <AdminLayout title={`Editar: ${product.name}`} breadcrumbs={breadcrumbs}>
+    <AdminLayout breadcrumbs={breadcrumbs} actions={actions}>
       <AdminContentWrapper>
         <ProductFormMinimal
           mode='edit'
@@ -169,6 +228,7 @@ export default function EditProductPage() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isLoading={updateProductMutation.isPending}
+          onFormReady={handleFormReady}
         />
       </AdminContentWrapper>
     </AdminLayout>

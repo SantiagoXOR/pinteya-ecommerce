@@ -2,7 +2,7 @@
 
 import { UseFormReturn, FieldErrors } from 'react-hook-form'
 import { AdminCard } from '../ui/AdminCard'
-import { Search, Globe, Eye, AlertCircle, CheckCircle } from 'lucide-react'
+import { Search, Globe, Eye, AlertCircle, CheckCircle } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface ProductSeoProps {

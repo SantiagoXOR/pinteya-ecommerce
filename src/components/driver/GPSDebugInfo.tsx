@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { AlertCircle, CheckCircle, Clock, Wifi, WifiOff, RefreshCw } from 'lucide-react'
+import { AlertCircle, CheckCircle, Clock, Wifi, WifiOff, RefreshCw } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface GPSDebugInfoProps {

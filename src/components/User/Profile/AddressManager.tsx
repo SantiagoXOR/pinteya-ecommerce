@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, MapPin, Edit, Trash2, Star, StarOff, Loader2 } from 'lucide-react'
+import { Plus, MapPin, Edit, Trash2, Star, StarOff, Loader2 } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'

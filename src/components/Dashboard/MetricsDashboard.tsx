@@ -19,7 +19,7 @@ import {
   Zap,
   Shield,
   BarChart3,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { MercadoPagoMetrics } from '@/lib/enterprise/metrics'
 
 interface Alert {

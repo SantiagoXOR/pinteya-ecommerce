@@ -31,14 +31,14 @@ const NewArrival: React.FC = () => {
       : 'Nuevos Productos'
 
   return (
-    <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-transparent'>
-      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
+    <section className='overflow-hidden pt-0 pb-6 sm:pb-10 bg-transparent'>
+      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
         {/* Header simplificado - Paleta Pinteya */}
         <div className='mb-4 sm:mb-6 flex items-center gap-3'>
-          <div className='w-10 h-10 rounded-full bg-gradient-to-br from-[#eb6313] to-[#f27a1d] flex items-center justify-center shadow-md'>
+          <div className='w-10 h-10 rounded-full flex items-center justify-center shadow-md' style={{ background: 'linear-gradient(135deg, rgba(235, 99, 19, 0.42) 0%, rgba(242, 122, 29, 1) 100%)' }}>
             <Sparkles className='w-5 h-5 text-white' />
           </div>
-          <h2 className='text-xl md:text-2xl font-bold text-gray-900'>
+          <h2 className='text-xl md:text-2xl font-normal text-white' style={{ fontSize: '23px', letterSpacing: 'normal' }}>
             {sectionTitle}
           </h2>
         </div>
@@ -53,7 +53,7 @@ const NewArrival: React.FC = () => {
                   <span className='text-red-600 text-xl'>⚠️</span>
                 </div>
                 <div>
-                  <h3 className='font-semibold text-red-900 mb-1'>
+                  <h3 className='font-semibold text-red-900 dark:text-red-300 mb-1'>
                     Error al cargar productos
                   </h3>
                   <p className='text-red-700 text-sm'>
@@ -91,10 +91,10 @@ const NewArrival: React.FC = () => {
                   <Sparkles className='w-8 h-8 text-gray-400' />
                 </div>
                 <div>
-                  <h3 className='font-semibold text-gray-900 mb-2'>
+                  <h3 className='font-semibold text-white mb-2'>
                     No hay productos nuevos
                   </h3>
-                  <p className='text-gray-600 text-sm mb-4'>
+                  <p className='text-white/80 text-sm mb-4'>
                     Pronto agregaremos nuevos productos de pinturería
                   </p>
                   <Button variant='outline' asChild>

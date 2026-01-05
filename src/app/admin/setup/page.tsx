@@ -26,7 +26,7 @@ const AdminSetupPage: React.FC = () => {
         },
         body: JSON.stringify({
           securityKey: 'CREATE_ADMIN_PINTEYA_2025',
-          email: 'santiago@xor.com.ar',
+          email: 'admin@setup.dev',
           password: 'SavoirFaire19$',
         }),
       })
@@ -65,7 +65,7 @@ const AdminSetupPage: React.FC = () => {
               <h3 className='font-medium text-blue-900 mb-2'>Datos del Administrador:</h3>
               <ul className='text-blue-800 text-sm space-y-1'>
                 <li>
-                  <strong>Email:</strong> santiago@xor.com.ar
+                  <strong>Email:</strong> admin@setup.dev
                 </li>
                 <li>
                   <strong>Contraseña:</strong> SavoirFaire19$

@@ -36,7 +36,10 @@ export function AdminCard({
     <div className={cn('rounded-lg', variantClasses[variant], paddingClasses[padding], className)}>
       {/* Header */}
       {(title || description || actions) && (
-        <div className={cn('flex items-start justify-between', padding !== 'none' && 'mb-4')}>
+        <div className={cn(
+          'flex items-start justify-between',
+          padding !== 'none' ? 'mb-4' : 'px-6 pt-6 pb-4'
+        )}>
           <div className='flex-1'>
             {title && <h3 className='text-lg font-semibold text-gray-900 mb-1'>{title}</h3>}
             {description && <p className='text-sm text-gray-600'>{description}</p>}

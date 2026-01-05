@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
-import { Loader2, ChevronRight } from 'lucide-react'
+import { Loader2, ChevronRight } from '@/lib/optimized-imports'
 
 interface ProductPageLoadingSkeletonProps {
   className?: string

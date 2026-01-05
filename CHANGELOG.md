@@ -7,7 +7,119 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ## [Unreleased]
 
-### 🎨 Features - Enero 27, 2025
+### 🎨 Features - Diciembre 2025
+
+- **[MAYOR] ✅ Refactorización ProductCard en Arquitectura Modular**
+  - ✅ **Modularización en 5 fases** - Separación de lógica y UI
+  - ✅ **5 hooks personalizados** creados:
+    - `useProductColors` - Manejo de colores y selección
+    - `useProductMeasures` - Manejo de medidas y capacidades
+    - `useProductVariants` - Cálculo de precios por variante
+    - `useProductBadges` - Generación de badges inteligentes
+    - `useProductCardState` - Estado del componente (modal, hover, etc.)
+  - ✅ **7 componentes UI separados**:
+    - `ProductCardImage` - Imagen con fallback
+    - `ProductCardContent` - Contenido (marca, título, precios)
+    - `ProductCardActions` - Botón agregar al carrito
+    - `ColorPillSelector` - Selector de colores en formato pills
+    - `MeasurePillSelector` - Selector de medidas con unidad integrada
+    - `ColorPill` y `MeasurePill` - Componentes base
+  - ✅ **Selectores mejorados** - Convertidos de círculos a pills con mejor UX
+  - 📁 Archivos principales:
+    - `src/components/ui/product-card-commercial/index.tsx` (refactorizado)
+    - `src/components/ui/product-card-commercial/hooks/` (5 hooks)
+    - `src/components/ui/product-card-commercial/components/` (7 componentes)
+    - `src/components/ui/product-card-commercial/utils/` (utilidades)
+  - 📚 Documentación actualizada:
+    - `docs/components/commercial-product-card.md` - Arquitectura modular documentada
+  - 📊 Impacto: **ALTO** - Mejor mantenibilidad y extensibilidad
+  - 🎉 **Estado**: COMPLETADO
+
+- **[UI/UX] ✅ Bottom Navigation Estilo MercadoLibre**
+  - ✅ **5 botones principales** - Volver, Buscar, Carrito, Inicio, WhatsApp
+  - ✅ **Integración con carrito** - Badge dinámico con cantidad de items
+  - ✅ **Estados visuales** - Feedback en interacciones (hover, active, pressed)
+  - ✅ **Funcionalidades específicas**:
+    - Botón "Volver" con historial del navegador
+    - Botón "Buscar" con focus automático en searchbar del header
+    - Botón "WhatsApp" con enlace directo
+  - ✅ **Colores de marca Pinteya** - Naranja para estados activos y badge
+  - ✅ **Safe area support** - Compatible con dispositivos con notch
+  - 📁 Archivos:
+    - `src/components/ui/bottom-navigation-mercadolibre.tsx`
+    - `src/components/ui/bottom-navigation.tsx` (versión base)
+  - 📚 Documentación creada:
+    - `docs/components/bottom-navigation.md` - Documentación completa
+  - 📊 Impacto: **MEDIO** - Mejor UX en dispositivos móviles
+  - 🎉 **Estado**: COMPLETADO
+
+- **[UI] ✅ ScrollingBanner Optimizado**
+  - ✅ **Altura reducida** - De ~28-30px a 22px
+  - ✅ **Tamaño tipográfico ajustado** - De text-xs (12px) a text-[10px] (10px)
+  - ✅ **Colores actualizados** - Fondo naranja de marca, badges verde y amarillo
+  - ✅ **Mejoras de legibilidad** - Texto negro en badge amarillo para mejor contraste
+  - ✅ **Animación optimizada** - Loop infinito suave con pausa en hover
+  - 📁 Archivo: `src/components/Header/ScrollingBanner.tsx`
+  - 📚 Documentación creada:
+    - `docs/components/scrolling-banner.md` - Optimizaciones documentadas
+  - 📊 Impacto: **BAJO** - Mejora visual y de espacio
+  - 🎉 **Estado**: COMPLETADO
+
+- **[DESIGN] ✅ Fondo Global Degradado Negro/Naranja**
+  - ✅ **Fondo unificado** - Degradado vertical 60% negro / 40% naranja
+  - ✅ **Aplicación global** - Se aplica a todas las rutas por defecto
+  - ✅ **Fondo fijo** - `background-attachment: fixed` para efecto parallax
+  - ✅ **Texto blanco por defecto** - Mejor contraste con el fondo oscuro
+  - ✅ **Eliminación de fondos locales** - Consistencia visual en toda la app
+  - 📁 Archivos modificados:
+    - `src/app/css/style.css` - Estilos principales
+    - `src/app/layout.tsx` - CSS inline crítico
+  - 📚 Documentación creada:
+    - `docs/design-system/global-background.md` - Especificaciones completas
+  - 📊 Impacto: **ALTO** - Identidad visual más fuerte y consistente
+  - 🎉 **Estado**: COMPLETADO
+
+- **[ADMIN] ✅ Componentes Admin para Gestión de Productos**
+  - ✅ **MeasureSelector** - Selección múltiple de medidas con búsqueda y creación inline
+  - ✅ **ColorPickerField** - Selector de colores con paleta predefinida y colores personalizados
+  - ✅ **VariantBuilder** - Creación inline de variantes con todos los campos
+  - ✅ **Dropdown de marcas** - Con búsqueda y creación inline
+  - ✅ **Optimización automática de imágenes** - Redimensionamiento y compresión antes de subir
+  - 📁 Archivos:
+    - `src/components/admin/products/MeasureSelector.tsx`
+    - `src/components/admin/products/ColorPickerField.tsx`
+    - `src/components/admin/products/VariantBuilder.tsx`
+  - 📚 Documentación creada:
+    - `docs/admin/components/measure-selector.md`
+    - `docs/admin/components/color-picker-field.md`
+    - `docs/admin/components/variant-builder.md`
+  - 📊 Impacto: **ALTO** - Mejora significativa en UX del panel admin
+  - 🎉 **Estado**: COMPLETADO
+
+- **[TECH] ✅ Actualización a Next.js 16 con Turbopack**
+  - ✅ **Next.js 16.0.8** - Actualización desde Next.js 15.5.3
+  - ✅ **Turbopack habilitado** - Compilación 5-10x más rápida en desarrollo
+  - ✅ **Polyfill react/cache** - Solución para compatibilidad con webpack
+  - ✅ **Build exitoso** - Sin errores de compilación
+  - 📁 Archivos modificados:
+    - `package.json` - Dependencias actualizadas
+    - `next.config.js` - Configuración de Turbopack
+    - `scripts/create-react-cache-polyfill.js` - Polyfill mejorado
+  - 📚 Documentación actualizada:
+    - `README.md` - Versión de Next.js actualizada
+  - 📊 Impacto: **ALTO** - Mejor performance de desarrollo y build
+  - 🎉 **Estado**: COMPLETADO
+
+- **[REFACTOR] ✅ Eliminación de next-themes**
+  - ✅ **Removido next-themes** - Sistema de temas simplificado
+  - ✅ **Comportamiento sin tema forzado** - Restaurado comportamiento nativo
+  - 📁 Archivos modificados:
+    - `src/app/providers.tsx` - Removido ThemeProvider
+    - `package.json` - Dependencia removida
+  - 📊 Impacto: **MEDIO** - Simplificación del sistema de temas
+  - 🎉 **Estado**: COMPLETADO
+
+### 🎨 Features - 15 de Diciembre, 2025
 
 - **[MAYOR] ✅ Sistema de Variantes de Productos - Implementación Completa**
   - ✅ **Consolidación de Productos Duplicados**
@@ -232,4 +344,4 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 **Proyecto:** Pinteya E-commerce  
 **Estado:** EN DESARROLLO ACTIVO  
-**Última Actualización:** Octubre 2025
+**Última Actualización:** 15 de Diciembre, 2025

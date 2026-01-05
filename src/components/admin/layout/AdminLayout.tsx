@@ -25,7 +25,13 @@ export function AdminLayout({
   actions,
   className,
 }: AdminLayoutProps) {
+  // Estado para móvil (abierto/cerrado)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Toggle para móvil
+  const handleMobileToggle = () => {
+    setSidebarOpen(!sidebarOpen)
+  }
 
   return (
     <div data-admin-layout className='flex h-screen bg-gray-50 overflow-hidden'>
@@ -51,17 +57,16 @@ export function AdminLayout({
       <div className='flex-1 flex flex-col min-w-0 h-screen m-0 p-0'>
         {/* Header */}
         <AdminHeader
-          title={title}
           breadcrumbs={breadcrumbs}
           actions={actions}
-          onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+          onMenuToggle={handleMobileToggle}
           isSidebarOpen={sidebarOpen}
         />
 
         {/* Page Content */}
         <main
           className={cn(
-            'flex-1 overflow-y-auto px-4 py-4 lg:px-6 bg-gray-50/80',
+            'flex-1 overflow-y-auto py-4 bg-gray-50/80 w-full',
             'scroll-smooth [scroll-padding-top:3.5rem]',
             className
           )}

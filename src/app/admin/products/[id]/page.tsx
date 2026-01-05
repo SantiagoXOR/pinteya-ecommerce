@@ -16,7 +16,7 @@ import {
   Calendar,
   Tag,
   AlertCircle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 interface Product {
@@ -44,10 +44,15 @@ interface Product {
 
 // API function to fetch product
 async function fetchProduct(productId: string): Promise<Product> {
-  const response = await fetch(`/api/admin/products/${productId}`)
+  // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+  const response = await fetch(`/api/admin/products/${productId}`, {
+    credentials: 'include',
+  })
 
   if (!response.ok) {
-    throw new Error('Error fetching product')
+    // ✅ CORREGIDO: Obtener el mensaje de error del servidor
+    const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+    throw new Error(errorData.error || `Error ${response.status}: Error al cargar producto`)
   }
 
   const data = await response.json()
@@ -67,7 +72,7 @@ function StatusBadge({ status }: { status: Product['status'] }) {
     },
     draft: {
       label: 'Borrador',
-      className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      className: 'bg-amber-100 text-amber-800 border-amber-200',
     },
   }
 
@@ -155,10 +160,10 @@ export default function ProductDetailPage() {
   ]
 
   const actions = (
-    <div className='flex w-full flex-wrap items-center justify-end gap-2 sm:gap-3'>
+    <>
       <button
         onClick={handleViewPublic}
-        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium'
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium whitespace-nowrap'
       >
         <Eye className='w-4 h-4' />
         <span>Ver Público</span>
@@ -166,7 +171,7 @@ export default function ProductDetailPage() {
 
       <button
         onClick={handleEdit}
-        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors text-sm font-medium'
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap'
       >
         <Edit className='w-4 h-4' />
         <span>Editar</span>
@@ -174,12 +179,12 @@ export default function ProductDetailPage() {
 
       <button
         onClick={handleDelete}
-        className='inline-flex w-full sm:w-auto items-center justify-center gap-2 px-3 py-2 border border-red-300 text-red-700 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium'
+        className='inline-flex items-center justify-center gap-2 px-3 py-2 h-10 border border-red-300 text-red-700 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium whitespace-nowrap'
       >
         <Trash2 className='w-4 h-4' />
         <span>Eliminar</span>
       </button>
-    </div>
+    </>
   )
 
   return (
@@ -213,7 +218,7 @@ export default function ProductDetailPage() {
               <div className='text-2xl font-bold text-gray-900'>{product.stock}</div>
               <div className='text-sm text-gray-600'>Unidades en Stock</div>
               {product.stock <= (product.low_stock_threshold || 0) && (
-                <div className='text-xs text-yellow-600 mt-1'>Stock Bajo</div>
+                <div className='text-xs text-orange-700 font-medium mt-1'>Stock Bajo</div>
               )}
             </div>
           </AdminCard>

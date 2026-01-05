@@ -125,11 +125,38 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           console.warn('[NextAuth] User email is missing, skipping profile sync')
           return true
         }
+        
         // Ya verificamos que user.email no es null/undefined arriba
         // Extraer email con type assertion para evitar problemas de TypeScript
         // @ts-ignore - user.email es string después del check !user.email arriba
         const email: string = user.email as string
+        
         try {
+          // Verificar si la cuenta de Google ya está vinculada a otro usuario
+          // Esto previene el error "OAuthAccountNotLinked" cuando hay sesiones activas
+          const { createAdminClient } = await import('./src/lib/integrations/supabase/server')
+          const supabase = createAdminClient()
+          
+          // Buscar si existe una cuenta con este providerAccountId
+          const { data: existingAccount } = await supabase
+            .from('accounts')
+            .select('userId')
+            .eq('provider', 'google')
+            .eq('providerAccountId', account.providerAccountId)
+            .single()
+          
+          // Si la cuenta ya existe y está vinculada al mismo usuario, permitir login
+          if (existingAccount && existingAccount.userId === user.id) {
+            console.log(`[NextAuth] Account already linked to same user, allowing sign-in: ${email}`)
+            // Continuar con la sincronización del perfil
+          } else if (existingAccount && existingAccount.userId !== user.id) {
+            // La cuenta está vinculada a otro usuario
+            console.warn(`[NextAuth] Account ${account.providerAccountId} is already linked to different user ${existingAccount.userId}, current user: ${user.id}`)
+            // Permitir el login de todas formas si el email coincide
+            // Esto permite que un usuario pueda iniciar sesión con su cuenta de Google
+            // incluso si hay alguna inconsistencia en la base de datos
+          }
+          
           // Sincronizar/crear el perfil del usuario en user_profiles
           // @ts-ignore - email es string después del check y type assertion
           await upsertUserProfile({

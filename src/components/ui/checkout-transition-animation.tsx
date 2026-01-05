@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useEffect, useCallback, useMemo, useRef } from 'react'
-import { motion, AnimatePresence, useAnimation, useMotionValue } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion, AnimatePresence, useAnimation, useMotionValue } from '@/lib/framer-motion-lazy'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
@@ -39,6 +40,8 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
 
   // Configuración de duración optimizada
   const animationDuration = useMemo(() => {
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+    // Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     if (customDuration) {
       return customDuration
     }
@@ -48,7 +51,10 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
     if (enablePerformanceMode) {
       return 1500
     } // Versión más rápida para dispositivos lentos
-    return 2500 // Duración completa
+    const result = 2500
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga agent log
+    return result // Duración completa
   }, [customDuration, skipAnimation, enablePerformanceMode])
 
   // Secuencia de animaciones optimizada
@@ -210,7 +216,12 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
           initial='initial'
           animate='animate'
           transition={{
-            duration: animationSequence.find(seq => seq.name === 'wave')?.duration || 1.5,
+            duration: (() => {
+              const duration = animationSequence.find(seq => seq.name === 'wave')?.duration || 1.5;
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga agent log
+              return duration;
+            })(),
             delay: animationSequence.find(seq => seq.name === 'wave')?.delay || 0.3,
             times: [0, 0.6, 0.8, 1],
             ease: 'easeOut',
@@ -234,7 +245,12 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
           initial='initial'
           animate='animate'
           transition={{
-            duration: animationSequence.find(seq => seq.name === 'logo')?.duration || 1.8,
+            duration: (() => {
+              const duration = animationSequence.find(seq => seq.name === 'logo')?.duration || 1.8;
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga agent log
+              return duration;
+            })(),
             delay: animationSequence.find(seq => seq.name === 'logo')?.delay || 0.8,
             times: [0, 0.3, 0.7, 1],
             ease: [0.68, -0.55, 0.265, 1.55], // Bounce effect
@@ -343,7 +359,13 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
           initial={{ opacity: 0 }}
           animate={{ opacity: [0, 0.3, 0.5, 0.8] }}
           transition={{
-            duration: animationDuration / 1000,
+            duration: (() => {
+              const durationMs = animationDuration;
+              const durationSec = durationMs / 1000;
+              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga agent log
+              return durationSec;
+            })(),
             ease: 'easeInOut',
           }}
         />

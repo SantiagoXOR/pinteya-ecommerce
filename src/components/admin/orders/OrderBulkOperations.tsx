@@ -27,7 +27,7 @@ import {
   Truck,
   Package,
   ChevronDown,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface OrderBulkOperationsProps {
   selectedOrders: string[]

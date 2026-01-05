@@ -8,7 +8,7 @@ import { cn } from '@/lib/core/utils'
 import { VariantActions } from './VariantActions'
 import { Badge } from '../ui/Badge'
 import { Skeleton } from '../ui/Skeleton'
-import { Package, Image as ImageIcon, Star, AlertCircle, TrendingDown, TrendingUp, CheckCircle } from 'lucide-react'
+import { Package, Image as ImageIcon, Star, AlertCircle, TrendingDown, TrendingUp, CheckCircle } from '@/lib/optimized-imports'
 
 interface ProductVariant {
   id: number
@@ -98,30 +98,25 @@ export function ExpandableVariantsRow({
 
   if (isLoading) {
     return (
-      <tr>
-        <td colSpan={100} className='px-6 py-4 bg-gray-50'>
+      <div className='px-6 py-4 bg-gray-50'>
           <VariantsSkeleton />
-        </td>
-      </tr>
+      </div>
     )
   }
 
   if (variants.length === 0) {
     return (
-      <tr>
-        <td colSpan={100} className='px-6 py-4 bg-gray-50'>
+      <div className='px-6 py-4 bg-gray-50'>
           <div className='flex items-center justify-center text-gray-500 py-4'>
             <Package className='w-5 h-5 mr-2' />
             <span className='text-sm'>No hay variantes para este producto</span>
           </div>
-        </td>
-      </tr>
+      </div>
     )
   }
 
   return (
-    <tr data-testid={`expandable-variants-row-${productId}`}>
-      <td colSpan={100} className='px-0 py-0 bg-gradient-to-b from-gray-50/80 to-white'>
+    <div data-testid={`expandable-variants-row-${productId}`} className='px-0 py-0 bg-gradient-to-b from-gray-50/80 to-white'>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -292,8 +287,7 @@ export function ExpandableVariantsRow({
             </table>
           </div>
         </motion.div>
-      </td>
-    </tr>
+    </div>
   )
 }
 

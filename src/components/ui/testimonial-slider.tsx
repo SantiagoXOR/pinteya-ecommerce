@@ -38,9 +38,21 @@ const TestimonialSlider = ({
     return () => clearInterval(interval)
   }, [autoPlayEnabled, autorotateTiming, testimonials.length])
 
+  // ⚡ FASE 5: Optimizado - agrupar lectura de geometría en requestAnimationFrame
   const heightFix = () => {
     if (testimonialsRef.current && testimonialsRef.current.parentElement) {
-      testimonialsRef.current.parentElement.style.height = `${testimonialsRef.current.clientHeight}px`
+      // ⚡ FASE 5: Agrupar lectura de geometría antes de escribir estilo
+      requestAnimationFrame(() => {
+        if (testimonialsRef.current && testimonialsRef.current.parentElement) {
+          const height = testimonialsRef.current.clientHeight
+          // Escribir estilo en el siguiente frame para evitar forced reflow
+          requestAnimationFrame(() => {
+            if (testimonialsRef.current?.parentElement) {
+              testimonialsRef.current.parentElement.style.height = `${height}px`
+            }
+          })
+        }
+      })
     }
   }
 
@@ -54,8 +66,11 @@ const TestimonialSlider = ({
 
     if (!container || !pill) return
 
-    const offset = pill.offsetLeft - container.clientWidth / 2 + pill.clientWidth / 2
-    container.scrollTo({ left: offset, behavior: 'smooth' })
+    // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para agrupar lecturas de geometría y evitar reprocesamiento forzado
+    requestAnimationFrame(() => {
+      const offset = pill.offsetLeft - container.clientWidth / 2 + pill.clientWidth / 2
+      container.scrollTo({ left: offset, behavior: 'smooth' })
+    })
   }, [active])
 
   return (
@@ -69,10 +84,10 @@ const TestimonialSlider = ({
                 key={index}
                 show={active === index}
                 className='absolute inset-0 -z-10 h-full'
-                enter='transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 order-first'
+                enter='transition ease-&lsqb;cubic-bezier(0.68,-0.3,0.32,1)&rsqb; duration-700 order-first'
                 enterFrom='opacity-0 -rotate-[60deg]'
                 enterTo='opacity-100 rotate-0'
-                leave='transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700'
+                leave='transition ease-&lsqb;cubic-bezier(0.68,-0.3,0.32,1)&rsqb; duration-700'
                 leaveFrom='opacity-100 rotate-0'
                 leaveTo='opacity-0 rotate-[60deg]'
                 beforeEnter={() => heightFix()}
@@ -103,8 +118,8 @@ const TestimonialSlider = ({
               leaveTo='opacity-0 translate-x-4'
               beforeEnter={() => heightFix()}
             >
-              <blockquote className='text-lg sm:text-xl font-semibold text-gray-900 leading-relaxed'>
-                “{testimonial.quote}”
+              <blockquote className='text-lg sm:text-xl font-semibold text-white leading-relaxed'>
+                "{testimonial.quote}"
               </blockquote>
             </Transition>
           ))}
@@ -125,7 +140,7 @@ const TestimonialSlider = ({
               className={`whitespace-nowrap rounded-full px-4 py-2 text-xs sm:text-sm shadow-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring focus-visible:ring-orange-200 ${
                 isActive
                   ? 'bg-orange-500 text-white shadow-orange-500/20'
-                  : 'bg-white text-orange-900 hover:bg-orange-50'
+                  : 'bg-white text-gray-900 hover:bg-orange-50'
               }`}
               onClick={() => {
                 setActive(index)

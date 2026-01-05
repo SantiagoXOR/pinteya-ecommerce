@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { TrendingUp, Search } from 'lucide-react'
+import { TrendingUp, Search } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'
 
@@ -45,39 +45,77 @@ const getIconForTerm = (term: string): string => {
   return termToIconMap[normalizedTerm] || '🔍'
 }
 
-const TrendingSearches = () => {
-  // Obtener búsquedas trending dinámicas
+const TrendingSearchesBase = () => {
+  // ⚡ OPTIMIZACIÓN: Deshabilitar refetch automático para evitar re-renders
   const { trendingSearches: dynamicSearches, isLoading, error } = useTrendingSearches({
     limit: 8,
     enabled: true,
+    refetchInterval: false, // ⚡ Deshabilitar refetch automático
   })
 
-  // Mapear búsquedas dinámicas al formato esperado por el componente
+  // ⚡ OPTIMIZACIÓN: Estabilizar mappedSearches usando ref para evitar re-renders
+  const prevDynamicSearchesRef = useRef<any[]>([])
   const mappedSearches = useMemo(() => {
-    if (dynamicSearches && dynamicSearches.length > 0) {
-      return dynamicSearches.map(search => ({
+    // Comparar contenido, no solo referencia
+    const currentSearches = dynamicSearches || []
+    const prevSearches = prevDynamicSearchesRef.current
+    
+    // Si el contenido es igual, retornar el mismo array
+    if (
+      currentSearches.length === prevSearches.length &&
+      currentSearches.every((search, idx) => 
+        prevSearches[idx]?.query === search.query
+      )
+    ) {
+      return prevDynamicSearchesRef.current.map(search => ({
         term: search.query,
         icon: getIconForTerm(search.query),
       }))
     }
+    
+    // Si cambió el contenido, actualizar
+    if (currentSearches.length > 0) {
+      prevDynamicSearchesRef.current = currentSearches
+      return currentSearches.map(search => ({
+        term: search.query,
+        icon: getIconForTerm(search.query),
+      }))
+    }
+    
     return null
   }, [dynamicSearches])
 
-  // Usar búsquedas dinámicas si están disponibles, sino usar fallback
-  const trendingSearches = mappedSearches || defaultTrendingSearches
+  // ⚡ OPTIMIZACIÓN: Estabilizar trendingSearches
+  const trendingSearches = useMemo(() => {
+    return mappedSearches || defaultTrendingSearches
+  }, [mappedSearches])
 
-  const handleSearchClick = (term: string) => {
+  // ⚡ OPTIMIZACIÓN: Memoizar handleSearchClick
+  const handleSearchClick = useCallback((term: string) => {
     trackEvent('trending_search_click', 'engagement', term)
-  }
+  }, [])
+
+  // ⚡ DEBUG: Log de re-renders solo en desarrollo
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const stack = new Error().stack
+      console.log('🔄 TrendingSearches re-rendered', {
+        timestamp: Date.now(),
+        caller: stack?.split('\n')[2]?.trim() || 'unknown',
+        isLoading,
+        searchesCount: trendingSearches.length,
+      })
+    }
+  })
 
   return (
-    <section className='bg-white/60 backdrop-blur-sm py-8 border-b border-gray-100'>
+    <section className='py-8 border-b border-white/10'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header */}
         <div className='flex items-center gap-3 mb-5'>
           <div className='flex items-center gap-2 text-orange-600'>
             <TrendingUp className='w-5 h-5' />
-            <h2 className='font-bold text-lg text-gray-900'>
+            <h2 className='font-bold text-lg text-white'>
               Búsquedas Populares
             </h2>
           </div>
@@ -108,15 +146,40 @@ const TrendingSearches = () => {
               key={index}
               href={`/search?search=${encodeURIComponent(search.term)}`}
               onClick={() => handleSearchClick(search.term)}
-              className='group relative bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-300 rounded-full px-3 py-1.5 transition-all hover:shadow-md hover:scale-[1.01] flex items-center gap-1 min-w-fit snap-start'
+              className='group relative bg-white border border-gray-200 rounded-full px-3 py-1.5 transition-transform hover:scale-[1.01] flex items-center gap-1 min-w-fit snap-start'
+              style={{
+                // ⚡ FASE 8: Usar opacity y transform en lugar de background-color y border-color animados
+                willChange: 'transform',
+              }}
+              onMouseEnter={(e) => {
+                const bg = e.currentTarget.querySelector('.hover-bg') as HTMLElement
+                const border = e.currentTarget.querySelector('.hover-border') as HTMLElement
+                const text = e.currentTarget.querySelector('.hover-text') as HTMLElement
+                if (bg) bg.style.opacity = '1'
+                if (border) border.style.opacity = '1'
+                if (text) text.style.opacity = '1'
+              }}
+              onMouseLeave={(e) => {
+                const bg = e.currentTarget.querySelector('.hover-bg') as HTMLElement
+                const border = e.currentTarget.querySelector('.hover-border') as HTMLElement
+                const text = e.currentTarget.querySelector('.hover-text') as HTMLElement
+                if (bg) bg.style.opacity = '0'
+                if (border) border.style.opacity = '0'
+                if (text) text.style.opacity = '0.7'
+              }}
             >
+              {/* ⚡ FASE 8: Overlays para hover effects usando opacity (compositable) */}
+              <span className="absolute inset-0 rounded-full bg-orange-50 opacity-0 hover-bg transition-opacity duration-300 pointer-events-none" />
+              <span className="absolute inset-0 rounded-full border border-orange-300 opacity-0 hover-border transition-opacity duration-300 pointer-events-none" />
+              <span className="absolute inset-0 rounded-full shadow-md opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
+              
               {/* Icon */}
-              <span className='text-base group-hover:scale-110 transition-transform flex-shrink-0'>
+              <span className='text-base group-hover:scale-110 transition-transform flex-shrink-0 relative z-10'>
                 {search.icon}
               </span>
 
               {/* Term */}
-              <span className='text-xs sm:text-sm font-medium text-gray-700 group-hover:text-orange-600 transition-colors break-words whitespace-nowrap'>
+              <span className='text-xs sm:text-sm font-medium text-gray-900 break-words whitespace-nowrap relative z-10 hover-text' style={{ opacity: 0.7 }}>
                 {search.term}
               </span>
 
@@ -134,7 +197,17 @@ const TrendingSearches = () => {
         <div className='mt-6 text-center'>
           <Link
             href='/products'
-            className='inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 font-medium transition-colors group'
+            className='inline-flex items-center gap-2 text-sm text-white/80 font-medium group relative'
+            style={{
+              // ⚡ FASE 8: Usar opacity en lugar de color animado
+              color: 'rgba(234, 90, 23, 0.8)', // orange-600 con opacity
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '1'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '0.8'
+            }}
           >
             <Search className='w-4 h-4' />
             Ver todos los productos
@@ -145,6 +218,14 @@ const TrendingSearches = () => {
     </section>
   )
 }
+
+// ⚡ OPTIMIZACIÓN: Memoizar componente para evitar re-renders innecesarios
+const TrendingSearches = React.memo(TrendingSearchesBase, (prevProps, nextProps) => {
+  // No hay props, pero mantener la función para consistencia
+  return true
+})
+
+TrendingSearches.displayName = 'TrendingSearches'
 
 export default TrendingSearches
 

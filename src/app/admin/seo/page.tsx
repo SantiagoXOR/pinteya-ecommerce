@@ -7,6 +7,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
+import { AdminCard } from '@/components/admin/ui/AdminCard'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,7 +33,7 @@ import {
   Clock,
   Users,
   MousePointer,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import Link from 'next/link'
 
 // ===================================
@@ -179,6 +181,18 @@ export default function SEOAdminDashboard() {
     }
   }
 
+  const formatDateTime = (date: Date) => {
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const year = date.getFullYear()
+    const hours = date.getHours()
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    const displayHours = hours % 12 || 12
+    return `${month}/${day}/${year}, ${displayHours}:${minutes}:${seconds} ${ampm}`
+  }
+
   // ===================================
   // MÉTRICAS PRINCIPALES
   // ===================================
@@ -303,18 +317,20 @@ export default function SEOAdminDashboard() {
         title='SEO Dashboard'
         breadcrumbs={[{ label: 'Admin', href: '/admin' }, { label: 'SEO Dashboard' }]}
       >
-        <div className='space-y-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className='animate-pulse'>
-                <CardHeader className='space-y-2'>
-                  <div className='h-4 bg-gray-200 rounded w-3/4'></div>
-                  <div className='h-8 bg-gray-200 rounded w-1/2'></div>
-                </CardHeader>
-              </Card>
-            ))}
+        <AdminContentWrapper>
+          <div className='space-y-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              {[...Array(6)].map((_, i) => (
+                <AdminCard key={i} className='animate-pulse'>
+                  <div className='space-y-2'>
+                    <div className='h-4 bg-gray-200 rounded w-3/4'></div>
+                    <div className='h-8 bg-gray-200 rounded w-1/2'></div>
+                  </div>
+                </AdminCard>
+              ))}
+            </div>
           </div>
-        </div>
+        </AdminContentWrapper>
       </AdminLayout>
     )
   }
@@ -336,23 +352,23 @@ export default function SEOAdminDashboard() {
         </div>
       }
     >
-      <div className='space-y-6'>
-        {/* Header con Score General */}
-        {overview && (
-          <Card className='border-l-4 border-l-blue-500'>
-            <CardHeader>
-              <div className='flex items-center justify-between'>
+      <AdminContentWrapper>
+        <div className='space-y-6'>
+          {/* Header con Score General */}
+          {overview && (
+            <AdminCard className='border-l-4 border-l-blue-500' padding='lg'>
+              <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
                 <div>
-                  <CardTitle className='text-2xl'>SEO Score General</CardTitle>
-                  <CardDescription>
-                    Última actualización: {overview.lastUpdated.toLocaleString()}
-                  </CardDescription>
+                  <h2 className='text-2xl font-bold text-gray-900 mb-1'>SEO Score General</h2>
+                  <p className='text-sm text-gray-600'>
+                    Última actualización: {formatDateTime(overview.lastUpdated)}
+                  </p>
                 </div>
                 <div className='text-right'>
                   <div className={`text-4xl font-bold ${getScoreColor(overview.overallScore)}`}>
                     {overview.overallScore}/100
                   </div>
-                  <Badge className={getScoreBadgeColor(overview.overallScore)}>
+                  <Badge className={`mt-2 ${getScoreBadgeColor(overview.overallScore)}`}>
                     {overview.overallScore >= 80
                       ? 'Excelente'
                       : overview.overallScore >= 60
@@ -361,25 +377,23 @@ export default function SEOAdminDashboard() {
                   </Badge>
                 </div>
               </div>
-              <Progress value={overview.overallScore} className='mt-4' />
-            </CardHeader>
-          </Card>
-        )}
+              <Progress value={overview.overallScore} className='mt-6' />
+            </AdminCard>
+          )}
 
-        {/* Métricas Principales */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-          {getMainMetrics().map((metric, index) => (
-            <Card key={index} className='hover:shadow-md transition-shadow'>
-              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>{metric.title}</CardTitle>
-                <div className={metric.color}>{metric.icon}</div>
-              </CardHeader>
-              <CardContent>
+          {/* Métricas Principales */}
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
+            {getMainMetrics().map((metric, index) => (
+              <AdminCard key={index} className='hover:shadow-md transition-shadow' padding='md'>
+                <div className='flex flex-row items-center justify-between mb-4'>
+                  <h3 className='text-sm font-medium text-gray-600'>{metric.title}</h3>
+                  <div className={metric.color}>{metric.icon}</div>
+                </div>
                 <div className='flex items-center justify-between'>
-                  <div className='text-2xl font-bold'>{metric.value}</div>
+                  <div className='text-2xl font-bold text-gray-900'>{metric.value}</div>
                   {metric.change !== undefined && (
                     <div
-                      className={`flex items-center text-sm ${
+                      className={`flex items-center text-sm font-medium ${
                         metric.trend === 'up'
                           ? 'text-green-600'
                           : metric.trend === 'down'
@@ -397,24 +411,22 @@ export default function SEOAdminDashboard() {
                   )}
                 </div>
                 {metric.description && (
-                  <p className='text-xs text-gray-500 mt-1'>{metric.description}</p>
+                  <p className='text-xs text-gray-500 mt-2'>{metric.description}</p>
                 )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </AdminCard>
+            ))}
+          </div>
 
-        {/* Alertas Recientes */}
-        {alerts.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <AlertTriangle className='h-5 w-5' />
-                Alertas Recientes
-              </CardTitle>
-              <CardDescription>Issues que requieren atención inmediata</CardDescription>
-            </CardHeader>
-            <CardContent>
+          {/* Alertas Recientes */}
+          {alerts.length > 0 && (
+            <AdminCard padding='md'>
+              <div className='mb-4'>
+                <div className='flex items-center gap-2 mb-1'>
+                  <AlertTriangle className='h-5 w-5 text-red-500' />
+                  <h3 className='text-lg font-semibold text-gray-900'>Alertas Recientes</h3>
+                </div>
+                <p className='text-sm text-gray-600'>Issues que requieren atención inmediata</p>
+              </div>
               <div className='space-y-3'>
                 {alerts.slice(0, 5).map(alert => (
                   <Alert key={alert.id} className='border-l-4 border-l-gray-200'>
@@ -422,7 +434,7 @@ export default function SEOAdminDashboard() {
                       {getAlertIcon(alert.type)}
                       <div className='flex-1'>
                         <div className='flex items-center justify-between'>
-                          <h4 className='font-medium'>{alert.title}</h4>
+                          <h4 className='font-medium text-gray-900'>{alert.title}</h4>
                           <span className='text-xs text-gray-500'>
                             {alert.timestamp.toLocaleTimeString()}
                           </span>
@@ -441,42 +453,41 @@ export default function SEOAdminDashboard() {
                   </Alert>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </AdminCard>
+          )}
 
-        {/* Acciones Rápidas */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Herramientas SEO</CardTitle>
-            <CardDescription>Acceso rápido a todas las funcionalidades de SEO</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {/* Acciones Rápidas */}
+          <AdminCard
+            title='Herramientas SEO'
+            description='Acceso rápido a todas las funcionalidades de SEO'
+            padding='md'
+          >
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
               {quickActions.map((action, index) => (
-                <Link key={index} href={action.href}>
-                  <Card className='hover:shadow-md transition-all cursor-pointer border-2 hover:border-blue-200'>
-                    <CardHeader className='pb-3'>
-                      <div className='flex items-center justify-between'>
-                        <div className={`p-2 rounded-lg ${action.color} text-white`}>
-                          {action.icon}
-                        </div>
-                        {action.badge && (
-                          <Badge variant='secondary' className='text-xs'>
-                            {action.badge}
-                          </Badge>
-                        )}
+                <Link key={index} href={action.href} className='block'>
+                  <AdminCard
+                    className='hover:shadow-md transition-all cursor-pointer border-2 hover:border-blue-200'
+                    padding='md'
+                  >
+                    <div className='flex items-center justify-between mb-3'>
+                      <div className={`p-2 rounded-lg ${action.color} text-white`}>
+                        {action.icon}
                       </div>
-                      <CardTitle className='text-lg'>{action.title}</CardTitle>
-                      <CardDescription>{action.description}</CardDescription>
-                    </CardHeader>
-                  </Card>
+                      {action.badge && (
+                        <Badge variant='secondary' className='text-xs'>
+                          {action.badge}
+                        </Badge>
+                      )}
+                    </div>
+                    <h3 className='text-lg font-semibold text-gray-900 mb-1'>{action.title}</h3>
+                    <p className='text-sm text-gray-600'>{action.description}</p>
+                  </AdminCard>
                 </Link>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </AdminCard>
+        </div>
+      </AdminContentWrapper>
     </AdminLayout>
   )
 }

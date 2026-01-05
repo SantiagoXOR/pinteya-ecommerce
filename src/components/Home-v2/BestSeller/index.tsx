@@ -5,13 +5,20 @@ import ProductItem from '@/components/Common/ProductItem'
 import Link from 'next/link'
 import { useBestSellerProducts } from '@/hooks/useBestSellerProducts'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Trophy } from 'lucide-react'
+import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from './HelpCard'
 import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
-const BestSeller: React.FC = () => {
+// ⚡ OPTIMIZACIÓN: Componente memoizado para evitar re-renders innecesarios
+const BestSeller: React.FC = React.memo(() => {
+  // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para reducir productos iniciales
+  const performanceLevel = useDevicePerformance()
+  const isLowPerformance = performanceLevel === 'low'
+  const initialProductCount = isLowPerformance ? 4 : 12 // Reducir a 4 en dispositivos de bajo rendimiento
+
   const { selectedCategory } = useCategoryFilter()
 
   // Fetch productos según categoría seleccionada
@@ -30,33 +37,66 @@ const BestSeller: React.FC = () => {
     const inStock = sortedByPrice.filter(p => (p.stock ?? 0) > 0)
     const outOfStock = sortedByPrice.filter(p => (p.stock ?? 0) <= 0)
     
-    // Mostrar todos los productos (con stock primero)
-    return [...inStock, ...outOfStock]
-  }, [products])
+    // ⚡ OPTIMIZACIÓN: Limitar productos iniciales en dispositivos de bajo rendimiento
+    const allProducts = [...inStock, ...outOfStock]
+    return isLowPerformance ? allProducts.slice(0, initialProductCount) : allProducts
+  }, [products, isLowPerformance, initialProductCount])
 
   // Calcular si hay espacios vacíos en la última fila
   // Desktop: 4 cols, Tablet: 2 cols, Mobile: 2 cols
   const shouldShowHelpCard = bestSellerProducts.length > 0 && 
     (bestSellerProducts.length % 4 !== 0 || bestSellerProducts.length % 2 !== 0)
 
-  if (isLoading) {
+  // ✅ FIX CRÍTICO: Mejor manejo del estado de loading con timeout y detección de datos
+  const [showTimeout, setShowTimeout] = React.useState(false)
+  const hasProducts = bestSellerProducts.length > 0
+  
+  React.useEffect(() => {
+    // Si hay productos, resetear timeout
+    if (hasProducts) {
+      setShowTimeout(false)
+      return
+    }
+    
+    // Si está cargando y no hay productos, iniciar timeout
+    if (isLoading && !hasProducts) {
+      const timeout = setTimeout(() => {
+        setShowTimeout(true)
+      }, 6000) // 6 segundos - más agresivo
+      
+      return () => clearTimeout(timeout)
+    } else {
+      setShowTimeout(false)
+    }
+  }, [isLoading, hasProducts])
+
+  // ✅ FIX CRÍTICO: Mostrar skeletons solo si:
+  // 1. Está cargando
+  // 2. No hay productos
+  // 3. No hay timeout
+  // 4. No hay error
+  const shouldShowSkeletons = isLoading && !hasProducts && !showTimeout && !error
+
+  if (shouldShowSkeletons) {
     return (
       <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
-        <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
-          <ProductSkeletonGrid count={12} />
+        <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
+          {/* ⚡ OPTIMIZACIÓN: Reducir skeletons en dispositivos de bajo rendimiento */}
+          <ProductSkeletonGrid count={initialProductCount} />
         </div>
       </section>
     )
   }
 
-  if (error) {
+  // Si hay timeout o error, mostrar contenido vacío o mensaje
+  if (error || showTimeout) {
     return null
   }
 
   return (
-    <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
+    <section className='overflow-x-hidden py-1 sm:py-1.5 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
-        {/* Grid de productos mejorado - 4 columnas en desktop */}
+        {/* Grid de productos mejorado - 4 columnas en desktop - Gap igual al padding para calles y medianeras iguales */}
           <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
             {bestSellerProducts.length > 0 ? (
               <>
@@ -74,10 +114,10 @@ const BestSeller: React.FC = () => {
                       <Trophy className='w-8 h-8 text-yellow-500' />
                     </div>
                     <div>
-                      <h3 className='font-semibold text-gray-900 mb-2'>
+                      <h3 className='font-semibold text-white mb-2'>
                         No hay productos disponibles
                       </h3>
-                      <p className='text-gray-600 text-sm mb-4'>
+                      <p className='text-white/80 text-sm mb-4'>
                         No se encontraron productos en este momento.
                       </p>
                       <Button variant='outline' asChild>
@@ -93,6 +133,8 @@ const BestSeller: React.FC = () => {
       </div>
     </section>
   )
-}
+})
+
+BestSeller.displayName = 'BestSeller'
 
 export default BestSeller

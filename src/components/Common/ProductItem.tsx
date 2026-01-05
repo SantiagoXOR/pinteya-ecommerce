@@ -62,20 +62,28 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
   const autoFree = dsShouldShowFreeShipping(finalPrice, config)
   const freeShipping = Boolean((productData as any)?.freeShipping) || autoFree
 
-  // ✅ PRIORIDAD DE IMAGEN: Variante por defecto > Producto padre
+  // ✅ PRIORIDAD DE IMAGEN: image_url desde product_images > Variante por defecto > Producto padre
   const productImage = (() => {
-    // 1. Imagen de variante por defecto (productos con sistema de variantes)
+    // 1. ✅ CORREGIDO: Priorizar image_url desde product_images (API pública)
+    if ((productData as any)?.image_url && typeof (productData as any).image_url === 'string') {
+      const imageUrl = (productData as any).image_url.trim()
+      if (imageUrl && !imageUrl.includes('placeholder')) {
+        return imageUrl
+      }
+    }
+    
+    // 2. Imagen de variante por defecto (productos con sistema de variantes)
     const defaultVariant = (productData as any).default_variant || (productData as any).variants?.[0]
     if (defaultVariant?.image_url) {
       return defaultVariant.image_url
     }
     
-    // 2. Imagen del producto padre (formato array)
+    // 3. Imagen del producto padre (formato array)
     if (Array.isArray((productData as any).images) && (productData as any).images[0]) {
       return (productData as any).images[0]
     }
     
-    // 3. Imagen del producto padre (formato objeto)
+    // 4. Imagen del producto padre (formato objeto)
     const candidates = [
       (productData as any).images?.main,
       (productData as any).images?.previews?.[0],
@@ -87,7 +95,7 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
       if (typeof c === 'string' && c.trim() !== '') return c.trim()
     }
     
-    // 4. Placeholder
+    // 5. Placeholder
     return '/images/products/placeholder.svg'
   })()
 
@@ -139,9 +147,10 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
       specifications={productData.specifications}
       dimensions={productData.dimensions}
       weight={productData.weight}
-      // ✅ NO pasar color/medida legacy - usar solo variantes para badges
-      // color={productData.color}
-      // medida={productData.medida}
+      // ✅ CORREGIDO: Pasar medida para que se muestre en ProductCard cuando no hay variantes
+      medida={(productData as any)?.medida}
+      // ✅ CORREGIDO: Pasar color para que se muestre cuando no hay variantes
+      color={(productData as any)?.color}
     />
   )
 }, (prevProps, nextProps) => {

@@ -11,6 +11,7 @@ import { UserAvatarDropdown, LoginButton } from './UserAvatarDropdown'
 import { useAuth } from '@/hooks/useAuth'
 import ActionButtons from './ActionButtons'
 import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocompleteIntegrated'
+import { cn } from '@/lib/core/utils'
 
 // ⚡ PERFORMANCE: Memoizar SearchAutocomplete para evitar re-renders innecesarios
 const MemoizedSearchAutocomplete = React.memo(SearchAutocompleteIntegrated)
@@ -19,6 +20,8 @@ import { MapPin, Loader2, ShoppingCart, MessageCircle, Search, X } from '@/lib/o
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { HeaderLogo } from '@/components/ui/OptimizedLogo'
 import ScrollingBanner from './ScrollingBanner'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { useScrollActive } from '@/hooks/useScrollActive'
 // import GeolocationDebugger from "./GeolocationDebugger"; // Componente de debugging desactivado
 
 const Header = () => {
@@ -28,9 +31,25 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [isMounted, setIsMounted] = useState(false) // Para evitar hydration mismatch
-  const { openCartModal } = useCartModalContext()
-  const { isAnimating } = useCartAnimation()
-  const { isSignedIn } = useAuth()
+  
+  // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo
+  const performanceLevel = useDevicePerformance()
+  const isLowPerformance = performanceLevel === 'low'
+  const isMediumPerformance = performanceLevel === 'medium'
+  
+  // ⚡ OPTIMIZACIÓN: Detectar scroll activo para deshabilitar efectos costosos
+  const { isScrolling } = useScrollActive()
+  
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+  // Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+  const cartModalContext = useCartModalContext()
+  const { openCartModal } = cartModalContext
+  
+  const cartAnimation = useCartAnimation()
+  const { isAnimating } = cartAnimation
+  
+  const auth = useAuth()
+  const { isSignedIn } = auth
 
   // ⚡ PERFORMANCE: Hook de geolocalización diferido (no bloquea FCP)
   // Solo se inicializa después de 2 segundos del mount
@@ -55,22 +74,54 @@ const Header = () => {
     testLocation,
   } = useGeolocation(geoEnabled ? undefined : { skip: true })
 
-  // Sticky header logic con detección de dirección de scroll
+  // ⚡ PERFORMANCE: Sticky header logic optimizado con requestAnimationFrame y throttling
+  // ⚡ FIX: Usar useRef para lastScrollY para evitar re-registrar el listener constantemente
+  const lastScrollYRef = useRef(0)
+  const lastUpdateTimeRef = useRef(0)
+  
   useEffect(() => {
+    let ticking = false
+    let rafId: number | null = null
+    const THROTTLE_MS = 16 // ~60fps, actualizar máximo cada 16ms
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
+      if (!ticking) {
+        rafId = window.requestAnimationFrame(() => {
+          const now = performance.now()
+          const timeSinceLastUpdate = now - lastUpdateTimeRef.current
 
-      // Determinar si el header debe ser sticky
-      setIsSticky(currentScrollY > 100)
+          // ⚡ OPTIMIZACIÓN: Throttle adicional para evitar actualizaciones excesivas
+          if (timeSinceLastUpdate >= THROTTLE_MS) {
+            const currentScrollY = window.scrollY
+            const prevScrollY = lastScrollYRef.current
 
-      // Determinar dirección del scroll para animaciones
-      setIsScrollingUp(currentScrollY < lastScrollY || currentScrollY < 10)
-      setLastScrollY(currentScrollY)
+            // Determinar si el header debe ser sticky
+            const newIsSticky = currentScrollY > 100
+            const newIsScrollingUp = currentScrollY < prevScrollY || currentScrollY < 10
+
+            // Solo actualizar estado si realmente cambió
+            setIsSticky(prev => prev !== newIsSticky ? newIsSticky : prev)
+            setIsScrollingUp(prev => prev !== newIsScrollingUp ? newIsScrollingUp : prev)
+            
+            lastScrollYRef.current = currentScrollY
+            lastUpdateTimeRef.current = now
+          }
+
+          ticking = false
+          rafId = null
+        })
+        ticking = true
+      }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [lastScrollY])
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
+    }
+  }, []) // ⚡ FIX: Sin dependencias para evitar re-registrar el listener
 
   // Log para debugging del estado de geolocalización (solo cuando cambia la zona)
   useEffect(() => {}, [detectedZone?.name]) // Solo depender del nombre de la zona
@@ -80,8 +131,34 @@ const Header = () => {
     setIsMounted(true)
   }, [])
 
-  const product = useAppSelector(state => state.cartReducer.items)
-  const totalPrice = useSelector(selectTotalPrice)
+  // Escuchar evento personalizado para hacer focus en el searchbar desde el bottom nav
+  useEffect(() => {
+    const handleFocusSearchbar = () => {
+      setIsSearchExpanded(true)
+      // Enfocar el input después de la animación
+      setTimeout(() => {
+        expandedSearchRef.current?.focus()
+        expandedSearchRef.current?.click()
+      }, 100)
+    }
+
+    window.addEventListener('focus-searchbar', handleFocusSearchbar as EventListener)
+    return () => {
+      window.removeEventListener('focus-searchbar', handleFocusSearchbar as EventListener)
+    }
+  }, [])
+
+  // ⚡ FIX: Usar selectores memoizados con shallowEqual para evitar re-renders innecesarios
+  const product = useAppSelector(state => state.cartReducer.items, (prev, next) => {
+    if (prev.length !== next.length) return false
+    // Solo re-renderizar si cambió la cantidad de items o sus IDs/cantidades
+    return prev.every((item, index) => {
+      const nextItem = next[index]
+      return nextItem && item.id === nextItem.id && item.quantity === nextItem.quantity
+    })
+  })
+  
+  const totalPrice = useSelector(selectTotalPrice, (prev, next) => prev === next)
 
   // Efecto para animar el carrito cuando se agregan productos
   useEffect(() => {
@@ -169,37 +246,70 @@ const Header = () => {
     <>
       <header
         className={`
-        fixed top-0 left-0 w-full z-header
-        bg-blaze-orange-600 rounded-b-3xl shadow-lg
+        fixed left-0 right-0 w-full z-header
+        rounded-b-3xl
         header-sticky-transition
-        ${isSticky ? 'shadow-2xl backdrop-blur-sm' : 'shadow-lg'}
+        ${isSticky ? 'glass-header-sticky' : 'glass-header'}
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
+        max-w-full overflow-x-hidden overflow-y-visible
+        safe-area-top
       `}
+        style={{
+          top: 'env(safe-area-inset-top, 0px)',
+          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+          // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+          // El CSS global ya lo deshabilita
+        }}
       >
         {/* ScrollingBanner integrado en la parte superior del header */}
         <div className='w-full'>
           <ScrollingBanner />
         </div>
         {/* Header principal - Con expansión de búsqueda al hacer click */}
-        <div className='max-w-[1200px] mx-auto px-3 sm:px-4 py-2 sm:py-2.5'>
-          <div className='flex items-center gap-3 sm:gap-4 min-h-[52px]'>
+        {/* ⚡ FIX: Usar el mismo ancho que el bottom bar (max-w-md) en móvil, mismo ancho que BestSeller en desktop */}
+        <div className='max-w-md md:max-w-[1170px] mx-auto px-3 sm:px-4 md:px-4 lg:px-8 xl:px-0 py-1.5 sm:py-2'>
+          <div className='flex items-center justify-between md:justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px]'>
             {/* 1. Logo - Ocultar cuando search está expandido */}
+            {/* ⚡ FIX: Remover contenedor innecesario que causa el div rectangular */}
             <Link 
               href='/' 
-              className={`
-                flex-shrink-0 overflow-visible logo-container transition-all duration-300
-                ${isSearchExpanded ? 'hidden sm:hidden' : 'flex'}
-                ml-3 sm:ml-8 md:ml-12
-              `}
+              className={cn(
+                'flex-shrink-0 transition-all duration-300',
+                // ⚡ FIX: Solo ocultar en móvil cuando search está expandido, siempre visible en desktop
+                isSearchExpanded ? 'hidden sm:flex' : 'flex',
+                // ⚡ FIX: En desktop, sin margen izquierdo extra ya que usamos justify-start
+                'ml-0 sm:ml-0 md:ml-0',
+                // ⚡ FIX: Asegurar que el link no tenga padding/margin que cause el div rectangular
+                'p-0 m-0 inline-flex items-center justify-center',
+                // ⚡ FIX: Asegurar visibilidad del logo
+                'relative z-10'
+              )}
+              style={{ 
+                // ⚡ FIX: Asegurar que el contenedor se ajuste al contenido del logo
+                width: 'auto',
+                height: 'auto',
+                minWidth: 'auto',
+                minHeight: 'auto'
+              }}
             >
               <HeaderLogo
                 isMobile={false}
-                className={`
-                  w-20 sm:w-28 md:w-36 h-auto transition-all duration-300 ease-out
-                  hover:scale-110 cursor-pointer
-                  ${isSticky ? 'logo-sticky-scale scale-95' : 'scale-100'}
-                `}
+                className={cn(
+                  // ⚡ FIX: Aumentar tamaño del logo para mejor visibilidad
+                  'h-16 sm:h-20 md:h-24 lg:h-28 w-auto transition-all duration-300 ease-out',
+                  'hover:scale-110 cursor-pointer',
+                  isSticky ? 'logo-sticky-scale scale-95' : 'scale-100',
+                  // ⚡ FIX: Asegurar que el logo sea visible y se ajuste correctamente
+                  'object-contain block',
+                  // ⚡ FIX: Asegurar visibilidad explícita
+                  'opacity-100 visible'
+                )}
+                style={{
+                  // ⚡ FIX: Aumentar dimensiones mínimas del logo
+                  minHeight: '64px',
+                  minWidth: '160px',
+                }}
               />
             </Link>
             
@@ -208,12 +318,15 @@ const Header = () => {
               <div className='flex-1 animate-in fade-in zoom-in-95 duration-200'>
                 <div className='relative w-full'>
                   <div
-                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring bg-bright-sun-100 rounded-full'
+                    className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring glass-search-bar rounded-full'
                   >
                     <MemoizedSearchAutocomplete
                       ref={expandedSearchRef}
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      style={{
+                        '--input-bg': 'rgba(255, 255, 255, 0.3)',
+                      } as React.CSSProperties & { '--input-bg'?: string }}
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}
@@ -237,16 +350,19 @@ const Header = () => {
             {/* 3. Search Normal - Cuando NO está expandido */}
             {!isSearchExpanded && (
               <div 
-                className='flex-1 max-w-xl sm:max-w-2xl mx-4 sm:mx-8 cursor-pointer'
+                className='flex-1 max-w-xl sm:max-w-2xl md:max-w-none md:flex-1 mx-2 sm:mx-4 md:mx-0 cursor-pointer'
                 onClick={handleSearchClick}
               >
                 <div className='relative w-full'>
                   <div
-                    className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring bg-bright-sun-100 rounded-full'
+                    className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring glass-search-bar rounded-full'
                   >
                     <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-bright-sun-200 [&>div>div>input]:rounded-full [&>div>div>input]:pl-3 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-3 [&>div>div>input]:sm:pr-4 [&>div>div>input]:py-1 [&>div>div>input]:text-blaze-orange-600 [&>div>div>input]:text-xs [&>div>div>input]:sm:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:focus:border-bright-sun-300 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300 [&>div>div>input]:!bg-white'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      style={{
+                        '--input-bg': 'rgba(255, 255, 255, 0.3)',
+                      } as React.CSSProperties & { '--input-bg'?: string }}
                       debounceMs={100}
                       maxSuggestions={6}
                       showRecentSearches={true}

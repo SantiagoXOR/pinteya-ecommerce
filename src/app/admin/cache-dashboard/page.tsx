@@ -22,7 +22,7 @@ import {
   Clock,
   BarChart3,
   Settings,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 /**
  * Tipos para el dashboard

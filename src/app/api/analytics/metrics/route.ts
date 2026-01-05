@@ -58,12 +58,27 @@ export async function GET(request: NextRequest) {
     // Obtener métricas adicionales
     const additionalMetrics = await getAdditionalMetrics(startDate, endDate, userId || undefined)
 
+    // Calcular tendencias comparativas (comparar con período anterior)
+    const periodDuration = new Date(endDate).getTime() - new Date(startDate).getTime()
+    const previousStartDate = new Date(new Date(startDate).getTime() - periodDuration).toISOString()
+    const previousEndDate = startDate
+
+    const previousMetrics = await getPreviousPeriodMetrics(previousStartDate, previousEndDate, userId || undefined)
+
+    // Calcular análisis avanzado
+    const advancedAnalysis = calculateAdvancedAnalysis(events || [], metrics, previousMetrics)
+
     return NextResponse.json({
       ...metrics,
       ...additionalMetrics,
+      ...advancedAnalysis,
       period: {
         startDate,
         endDate,
+      },
+      comparison: {
+        previousPeriod: previousMetrics,
+        changes: calculateChanges(metrics, previousMetrics),
       },
       totalEvents: events?.length || 0,
     })
@@ -269,5 +284,252 @@ async function getAdditionalMetrics(startDate: string, endDate: string, userId?:
         averageOrderValue: 0,
       },
     }
+  }
+}
+
+async function getPreviousPeriodMetrics(startDate: string, endDate: string, userId?: string) {
+  try {
+    let baseQuery = supabase
+      .from('analytics_events_unified')
+      .select('*')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+
+    if (userId) {
+      baseQuery = baseQuery.eq('user_id', userId)
+    }
+
+    const { data: events } = await baseQuery
+    const metrics = calculateMetrics(events || [])
+    const additionalMetrics = await getAdditionalMetrics(startDate, endDate, userId)
+
+    return {
+      ...metrics,
+      ...additionalMetrics,
+    }
+  } catch (error) {
+    console.error('Error obteniendo métricas del período anterior:', error)
+    return null
+  }
+}
+
+function calculateChanges(current: any, previous: any) {
+  if (!previous) {
+    return null
+  }
+
+  const calculateChange = (currentVal: number, previousVal: number) => {
+    if (previousVal === 0) return currentVal > 0 ? 100 : 0
+    return ((currentVal - previousVal) / previousVal) * 100
+  }
+
+  return {
+    ecommerce: {
+      productViews: calculateChange(current.ecommerce.productViews, previous.ecommerce.productViews),
+      cartAdditions: calculateChange(current.ecommerce.cartAdditions, previous.ecommerce.cartAdditions),
+      checkoutStarts: calculateChange(current.ecommerce.checkoutStarts, previous.ecommerce.checkoutStarts),
+      checkoutCompletions: calculateChange(
+        current.ecommerce.checkoutCompletions,
+        previous.ecommerce.checkoutCompletions
+      ),
+      conversionRate: calculateChange(current.ecommerce.conversionRate, previous.ecommerce.conversionRate),
+      totalRevenue: calculateChange(current.orders?.totalRevenue || 0, previous.orders?.totalRevenue || 0),
+    },
+    engagement: {
+      uniqueSessions: calculateChange(current.engagement.uniqueSessions, previous.engagement.uniqueSessions),
+      uniqueUsers: calculateChange(current.engagement.uniqueUsers, previous.engagement.uniqueUsers),
+      averageSessionDuration: calculateChange(
+        current.engagement.averageSessionDuration,
+        previous.engagement.averageSessionDuration
+      ),
+    },
+  }
+}
+
+function calculateAdvancedAnalysis(events: any[], currentMetrics: any, previousMetrics: any) {
+  // Análisis de dispositivos
+  const deviceAnalysis = analyzeDevices(events)
+
+  // Análisis de categorías
+  const categoryAnalysis = analyzeCategories(events)
+
+  // Análisis de comportamiento
+  const behaviorAnalysis = analyzeBehavior(events, currentMetrics)
+
+  // Análisis de retención
+  const retentionAnalysis = analyzeRetention(events)
+
+  return {
+    devices: deviceAnalysis,
+    categories: categoryAnalysis,
+    behavior: behaviorAnalysis,
+    retention: retentionAnalysis,
+  }
+}
+
+function analyzeDevices(events: any[]) {
+  const deviceCounts: Record<string, number> = {}
+  const browserCounts: Record<string, number> = {}
+
+  events.forEach(event => {
+    const userAgent = event.user_agent || ''
+    let device = 'Unknown'
+    let browser = 'Unknown'
+
+    if (userAgent.includes('Mobile') || userAgent.includes('Android') || userAgent.includes('iPhone')) {
+      device = 'Mobile'
+    } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
+      device = 'Tablet'
+    } else {
+      device = 'Desktop'
+    }
+
+    if (userAgent.includes('Chrome')) browser = 'Chrome'
+    else if (userAgent.includes('Firefox')) browser = 'Firefox'
+    else if (userAgent.includes('Safari')) browser = 'Safari'
+    else if (userAgent.includes('Edge')) browser = 'Edge'
+
+    deviceCounts[device] = (deviceCounts[device] || 0) + 1
+    browserCounts[browser] = (browserCounts[browser] || 0) + 1
+  })
+
+  const total = events.length
+  return {
+    devices: Object.entries(deviceCounts).map(([device, count]) => ({
+      device,
+      count,
+      percentage: total > 0 ? (count / total) * 100 : 0,
+    })),
+    browsers: Object.entries(browserCounts).map(([browser, count]) => ({
+      browser,
+      count,
+      percentage: total > 0 ? (count / total) * 100 : 0,
+    })),
+  }
+}
+
+function analyzeCategories(events: any[]) {
+  const categoryCounts: Record<string, number> = {}
+  const categoryRevenue: Record<string, number> = {}
+
+  events.forEach(event => {
+    const category = event.category || 'unknown'
+    categoryCounts[category] = (categoryCounts[category] || 0) + 1
+
+    if (event.action === 'purchase' && event.value) {
+      categoryRevenue[category] = (categoryRevenue[category] || 0) + (event.value || 0)
+    }
+  })
+
+  return {
+    distribution: Object.entries(categoryCounts).map(([category, count]) => ({
+      category,
+      count,
+      percentage: events.length > 0 ? (count / events.length) * 100 : 0,
+    })),
+    revenue: Object.entries(categoryRevenue).map(([category, revenue]) => ({
+      category,
+      revenue,
+    })),
+  }
+}
+
+function analyzeBehavior(events: any[], metrics: any) {
+  // Análisis de flujo de usuario
+  const userFlows: Record<string, number> = {}
+  const previousPages: Record<string, string> = {}
+
+  events.forEach(event => {
+    const sessionId = event.session_id
+    const page = event.page || 'unknown'
+
+    if (previousPages[sessionId]) {
+      const flow = `${previousPages[sessionId]} → ${page}`
+      userFlows[flow] = (userFlows[flow] || 0) + 1
+    }
+
+    previousPages[sessionId] = page
+  })
+
+  // Análisis de tiempo en página
+  const pageTimes: Record<string, number[]> = {}
+  const sessionPages: Record<string, Array<{ page: string; time: number }>> = {}
+
+  events.forEach(event => {
+    const sessionId = event.session_id
+    const page = event.page || 'unknown'
+    const time = new Date(event.created_at).getTime()
+
+    if (!sessionPages[sessionId]) {
+      sessionPages[sessionId] = []
+    }
+    sessionPages[sessionId].push({ page, time })
+  })
+
+  Object.values(sessionPages).forEach(pages => {
+    pages.sort((a, b) => a.time - b.time)
+    for (let i = 1; i < pages.length; i++) {
+      const page = pages[i - 1].page
+      const duration = pages[i].time - pages[i - 1].time
+      if (!pageTimes[page]) {
+        pageTimes[page] = []
+      }
+      pageTimes[page].push(duration)
+    }
+  })
+
+  const averagePageTimes = Object.entries(pageTimes).map(([page, times]) => ({
+    page,
+    averageTime: times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length / 1000 : 0, // en segundos
+  }))
+
+  return {
+    topFlows: Object.entries(userFlows)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
+      .slice(0, 10)
+      .map(([flow, count]) => ({ flow, count })),
+    averagePageTimes,
+    bounceRate: calculateBounceRate(events, metrics),
+  }
+}
+
+function calculateBounceRate(events: any[], metrics: any) {
+  // Una sesión con solo 1 evento se considera "bounce"
+  const sessionEventCounts: Record<string, number> = {}
+  events.forEach(event => {
+    const sessionId = event.session_id
+    sessionEventCounts[sessionId] = (sessionEventCounts[sessionId] || 0) + 1
+  })
+
+  const bounceSessions = Object.values(sessionEventCounts).filter(count => count === 1).length
+  const totalSessions = metrics.engagement.uniqueSessions
+
+  return totalSessions > 0 ? (bounceSessions / totalSessions) * 100 : 0
+}
+
+function analyzeRetention(events: any[]) {
+  // Análisis de usuarios recurrentes
+  const userSessions: Record<string, Set<string>> = {}
+
+  events.forEach(event => {
+    if (event.user_id) {
+      if (!userSessions[event.user_id]) {
+        userSessions[event.user_id] = new Set()
+      }
+      userSessions[event.user_id].add(event.session_id)
+    }
+  })
+
+  const returningUsers = Object.values(userSessions).filter(sessions => sessions.size > 1).length
+  const totalUsers = Object.keys(userSessions).length
+
+  return {
+    returningUsers,
+    newUsers: totalUsers - returningUsers,
+    retentionRate: totalUsers > 0 ? (returningUsers / totalUsers) * 100 : 0,
+    averageSessionsPerUser:
+      totalUsers > 0
+        ? Object.values(userSessions).reduce((sum, sessions) => sum + sessions.size, 0) / totalUsers
+        : 0,
   }
 }

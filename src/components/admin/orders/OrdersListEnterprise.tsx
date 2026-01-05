@@ -51,7 +51,7 @@ import {
   User,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Order, OrderStatus, PaymentStatus, OrderFilters } from '@/hooks/admin/useOrdersEnterprise'
 import { cn } from '@/lib/core/utils'
 import { formatDate, formatCurrency } from '@/lib/utils/consolidated-utils'

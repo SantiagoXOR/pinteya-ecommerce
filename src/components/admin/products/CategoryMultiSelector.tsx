@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ChevronDown, X, Search, Check } from 'lucide-react'
+import { ChevronDown, X, Search, Check } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface Category {

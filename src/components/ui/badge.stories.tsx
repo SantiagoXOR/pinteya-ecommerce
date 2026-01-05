@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Tag, Truck, Package, Star, X } from 'lucide-react'
+import { Tag, Truck, Package, Star, X } from '@/lib/optimized-imports'
 import { Badge, DiscountBadge, ShippingBadge, StockBadge, NewBadge, OfferBadge } from './badge'
 
 const meta = {

@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { X, ShoppingCart, Heart, Eye, AlertTriangle, CheckCircle, Info } from 'lucide-react'
+import { X, ShoppingCart, Heart, Eye, AlertTriangle, CheckCircle, Info } from '@/lib/optimized-imports'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden'

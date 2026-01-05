@@ -44,7 +44,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader2,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import {
   CreateShipmentRequest,
   Shipment,

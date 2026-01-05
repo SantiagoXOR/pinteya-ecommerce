@@ -31,7 +31,7 @@ import {
   Shield,
   Zap,
   FileText,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // ===================================
 // INTERFACES

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
-import { Mail, User, MessageSquare, CreditCard, Truck, Package } from 'lucide-react'
+import { Mail, User, MessageSquare, CreditCard, Truck, Package } from '@/lib/optimized-imports'
 import { Form, FormSection, FormRow, FormField, FormActions, FormMessage, useForm } from './form'
 import { Input } from './input'
 import { Textarea } from './textarea'

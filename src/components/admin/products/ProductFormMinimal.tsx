@@ -3,12 +3,20 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminCard } from '../ui/AdminCard'
 import { CategorySelector } from './CategorySelector'
+import { BrandSelector } from './BrandSelector'
+import { MeasureSelector } from './MeasureSelector'
+import { TerminacionSelector } from './TerminacionSelector'
+import { FinishSelectorSingle } from './FinishSelectorSingle'
+import { ColorPickerField } from './ColorPickerField'
+import { VariantBuilder, VariantFormData } from './VariantBuilder'
+import { ImageUploadZone } from './ImageUploadZone'
+import { ProductImageGallery } from './ProductImageGallery'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
-import { Save, X, Upload, Plus, Edit, Trash2 } from 'lucide-react'
+import { Save, X, Upload, Plus, Edit, Trash2 } from '@/lib/optimized-imports'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
 
@@ -18,21 +26,52 @@ const ProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(255),
   description: z.string().max(5000).optional(),
   brand: z.string().max(100).optional(),
-  category_id: z.number().int().positive('Selecciona una categoría'),
+  category_ids: z.array(z.number().int().positive()).min(1, 'Selecciona al menos una categoría'),
   is_active: z.boolean().default(true),
   
   // Metadata
   aikon_id: z.string().max(50).optional(),
   color: z.string().max(100).optional(),
-  medida: z.string().max(50).optional(),
+  medida: z.array(z.string()).optional(),
+  terminaciones: z.array(z.string()).optional(),
   
   // Precios & Stock
-  price: z.number().min(0.01, 'El precio debe ser mayor a 0'),
+  // ✅ Hacer opcionales: si el producto tiene variantes, el precio y stock se definen en las variantes
+  price: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined || val === 0) return null
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return isNaN(num) || num <= 0 ? null : num
+    },
+    z.union([
+      z.number().min(0.01, 'El precio debe ser mayor a 0'),
+      z.null(),
+    ]).optional().nullable()
+  ),
   discounted_price: z.number().min(0).optional().nullable(),
-  stock: z.number().min(0, 'El stock debe ser mayor o igual a 0'),
+  discount_percent: z.number().min(0).max(100).optional().nullable(), // ✅ NUEVO: Porcentaje de descuento
+  stock: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined) return null
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return isNaN(num) ? null : num
+    },
+    z.union([
+      z.number().min(0, 'El stock debe ser mayor o igual a 0'),
+      z.null(),
+    ]).optional().nullable()
+  ),
   
   // Imagen
-  image_url: z.string().url().optional().nullable(),
+  image_url: z
+    .union([
+      z.string().url('URL de imagen inválida'),
+      z.literal(''),
+      z.null(),
+    ])
+    .optional()
+    .nullable()
+    .transform((val) => (val === '' ? null : val)),
   
   // Para badges
   featured: z.boolean().default(false),
@@ -44,6 +83,7 @@ type ProductFormData = z.infer<typeof ProductSchema>
 interface ProductVariant {
   id?: number
   color_name: string
+  color_hex?: string
   measure: string
   finish: string
   price_list: number
@@ -62,6 +102,8 @@ interface ProductFormMinimalProps {
   onSubmit: (data: ProductFormData) => Promise<void>
   onCancel?: () => void
   isLoading?: boolean
+  // ✅ NUEVO: Exponer funciones para que los botones externos puedan usarlas
+  onFormReady?: (submitForm: () => void, isDirty: () => boolean) => void
 }
 
 export function ProductFormMinimal({
@@ -71,60 +113,231 @@ export function ProductFormMinimal({
   onSubmit,
   onCancel,
   isLoading = false,
+  onFormReady,
 }: ProductFormMinimalProps) {
   const notifications = useProductNotifications()
   const queryClient = useQueryClient()
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url || null)
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null)
   const [showVariantModal, setShowVariantModal] = useState(false)
+  const [newVariants, setNewVariants] = useState<VariantFormData[]>([])
+
+  const openNewVariant = () => {
+    // Prellenar con información básica del producto si está disponible
+    const watchedData = form.watch()
+    // ✅ Si el producto tiene terminaciones, usar la primera; si no, dejar null
+    const terminaciones = watchedData.terminaciones && Array.isArray(watchedData.terminaciones) && watchedData.terminaciones.length > 0
+      ? watchedData.terminaciones
+      : []
+    const defaultFinish = terminaciones.length > 0 ? terminaciones[0] : null
+    
+    setEditingVariant({
+      color_name: '',
+      color_hex: undefined,
+      measure: '',
+      finish: defaultFinish, // ✅ null si no hay terminaciones disponibles
+      price_list: watchedData.price || 0,
+      price_sale: watchedData.discounted_price || undefined,
+      stock: watchedData.stock || 0,
+      aikon_id: '',
+      is_active: true,
+      is_default: false,
+    })
+    setShowVariantModal(true)
+  }
   
   // Fetch variantes desde BD
   const { data: variantsData, isLoading: variantsLoading } = useQuery({
     queryKey: ['product-variants', productId],
     queryFn: async () => {
-      const res = await fetch(`/api/products/${productId}/variants`)
+      const res = await fetch(`/api/products/${productId}/variants`, {
+        credentials: 'include',
+        cache: 'no-store',
+      })
       const json = await res.json()
       return json.data || []
     },
-    enabled: !!productId && mode === 'edit'
+    enabled: !!productId && mode === 'edit',
+    staleTime: Infinity, // ✅ CORREGIDO: Los datos son válidos hasta que los actualicemos manualmente
+    gcTime: 5 * 60 * 1000, // ✅ Mantener en cache 5 minutos
+    refetchOnMount: false, // ✅ No refetchear al montar si hay datos en cache
+    refetchOnWindowFocus: false, // ✅ No refetchear al enfocar ventana
   })
   
-  const variants = variantsData || []
+  // ✅ CORREGIDO: Asegurar que variants siempre sea un array
+  const variants = Array.isArray(variantsData) ? variantsData : []
+
+  // ✅ NUEVO: Obtener imagen principal del producto para pasarla al VariantModal
+  const { data: productMainImage } = useQuery({
+    queryKey: ['product-main-image', productId],
+    queryFn: async () => {
+      if (!productId) return null
+      // Intentar obtener la primera imagen primaria de product_images
+      try {
+        const response = await fetch(`/api/admin/products/${productId}/images`, {
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (response.ok) {
+          const result = await response.json()
+          const images = result.data || []
+          const primaryImage = images.find((img: any) => img.is_primary) || images[0]
+          if (primaryImage?.url) return primaryImage.url
+        }
+      } catch (error) {
+        console.error('Error obteniendo imágenes del producto:', error)
+      }
+      // Fallback: intentar obtener image_url del producto desde la API
+      try {
+        const response = await fetch(`/api/admin/products/${productId}`, {
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (response.ok) {
+          const result = await response.json()
+          // Intentar obtener image_url desde el campo images (JSONB) o image_url directo
+          const productData = result.data
+          if (productData?.images) {
+            try {
+              const imagesJson = typeof productData.images === 'string' 
+                ? JSON.parse(productData.images) 
+                : productData.images
+              if (imagesJson?.url) return imagesJson.url
+              if (imagesJson?.previews?.[0]) return imagesJson.previews[0]
+            } catch (e) {
+              // Si no se puede parsear, continuar
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error obteniendo datos del producto:', error)
+      }
+      return null
+    },
+    enabled: !!productId && mode === 'edit',
+    staleTime: 5 * 60 * 1000, // Cache por 5 minutos (suficiente para uso en modal)
+  })
   
   // Mutaciones para variantes
   const createVariantMutation = useMutation({
     mutationFn: async (variant: any) => {
+      // ✅ Asegurar que product_id sea un número
+      const numericProductId = productId ? parseInt(String(productId), 10) : null
+      if (!numericProductId || isNaN(numericProductId)) {
+        throw new Error('Product ID inválido')
+      }
+
+      const requestBody = {
+        ...variant,
+        product_id: numericProductId,
+      }
+
+      console.log('📤 [Frontend] Enviando datos de variante:', JSON.stringify(requestBody, null, 2))
+
       const res = await fetch('/api/admin/products/variants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...variant, product_id: productId })
+        body: JSON.stringify(requestBody),
+        credentials: 'include', // ✅ Incluir cookies de autenticación
       })
-      if (!res.ok) throw new Error('Error creando variante')
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Error desconocido' }))
+        console.error('❌ [Frontend] Error del servidor:', res.status, errorData)
+        throw new Error(errorData.error || `Error ${res.status}: Error creando variante`)
+      }
+      
       return res.json()
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+    onSuccess: (data) => {
+      // ✅ CORREGIDO: Actualizar cache directamente con la nueva variante (similar a updateVariantMutation)
+      if (data?.data && productId) {
+        queryClient.setQueryData(['product-variants', productId], (oldData: any) => {
+          if (!Array.isArray(oldData)) {
+            // Si no hay datos antiguos, crear array con la nueva variante
+            return [data.data]
+          }
+          // Agregar la nueva variante al array
+          return [...oldData, data.data]
+        })
+      } else {
+        // Si no hay datos en la respuesta, invalidar y refetch
+        queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+      }
       notifications.showInfoMessage('Variante creada', 'La variante se creó exitosamente')
     },
     onError: (error: any) => {
       console.error('Error al crear variante:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al crear variante'
+      
+      // Mostrar mensaje de error específico al usuario
+      if (errorMessage.includes('Aikon ya existe') || errorMessage.includes('aikon') || errorMessage.includes('código')) {
+        notifications.showInfoMessage('Error al crear variante', 'El código Aikon ingresado ya está en uso. Por favor, ingresa un código único.')
+      } else {
+        notifications.showInfoMessage('Error al crear variante', errorMessage)
+      }
     }
   })
   
   const updateVariantMutation = useMutation({
     mutationFn: async ({ id, ...data }: any) => {
+      // ✅ CORREGIDO: Filtrar solo campos permitidos y remover undefined
+      const allowedFields = [
+        'color_name',
+        'color_hex',
+        'measure',
+        'finish',
+        'price_list',
+        'price_sale',
+        'stock',
+        'is_active',
+        'is_default',
+        'image_url',
+        'aikon_id',
+      ]
+      
+      // ✅ CORREGIDO: Incluir image_url y color_hex incluso si es null (para permitir limpiarlos)
+      const cleanedData = Object.fromEntries(
+        Object.entries(data)
+          .filter(([key, value]) => {
+            if (!allowedFields.includes(key)) return false
+            // ✅ CORREGIDO: Incluir image_url y color_hex incluso si es null
+            if (key === 'image_url' || key === 'color_hex') return true
+            // Para otros campos, excluir undefined
+            return value !== undefined
+          })
+      )
+      
       console.log('🚀 [Frontend] Enviando actualización de variante:', {
         id,
-        data,
-        dataKeys: Object.keys(data),
-        stock: data.stock,
-        stockType: typeof data.stock
+        originalData: data,
+        cleanedData,
+        dataKeys: Object.keys(cleanedData),
+        color_name: cleanedData.color_name,
+        color_nameType: typeof cleanedData.color_name,
+        color_nameInCleaned: 'color_name' in cleanedData,
+        image_url: cleanedData.image_url,
+        image_urlType: typeof cleanedData.image_url,
+        color_hex: cleanedData.color_hex,
+        color_hexType: typeof cleanedData.color_hex,
+        stock: cleanedData.stock,
+        stockType: typeof cleanedData.stock,
+        price_list: cleanedData.price_list,
+        price_sale: cleanedData.price_sale,
+        allValues: Object.entries(cleanedData).map(([key, value]) => ({
+          key,
+          value: typeof value === 'string' ? value.substring(0, 50) : value,
+          type: typeof value,
+          isNull: value === null,
+          isUndefined: value === undefined,
+        })),
       })
       
       const res = await fetch(`/api/products/${productId}/variants/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(cleanedData),
+        credentials: 'include',
       })
       
       console.log('📡 [Frontend] Respuesta del servidor:', {
@@ -132,29 +345,51 @@ export function ProductFormMinimal({
         ok: res.ok
       })
       
+      // ✅ IMPORTANTE: Verificar res.ok ANTES de leer el body
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: 'Error desconocido' }))
         console.error('❌ [Frontend] Error del servidor:', res.status, errorData)
         throw new Error(errorData.error || `Error ${res.status}: Error actualizando variante`)
       }
       
+      // Leer el body solo cuando la respuesta es exitosa
       const result = await res.json()
       console.log('✅ [Frontend] Variante actualizada, respuesta:', result)
       return result
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+    onSuccess: (data) => {
+      // ✅ Actualizar el cache directamente con los datos actualizados del backend
+      if (data?.data && productId) {
+        queryClient.setQueryData(['product-variants', productId], (oldData: any) => {
+          if (!Array.isArray(oldData)) {
+            // Si no hay datos antiguos, crear array con la variante actualizada
+            return [data.data]
+          }
+          // Actualizar la variante existente o agregarla si no existe
+          return oldData.map((v: any) => v.id === data.data.id ? data.data : v)
+        })
+      }
+      
       notifications.showInfoMessage('Variante actualizada', 'La variante se actualizó exitosamente')
     },
     onError: (error: any) => {
       console.error('Error al actualizar variante:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al actualizar variante'
+      
+      // Mostrar mensaje de error específico al usuario
+      if (errorMessage.includes('Aikon ya existe') || errorMessage.includes('aikon') || errorMessage.includes('código')) {
+        notifications.showInfoMessage('Error al actualizar variante', 'El código Aikon ingresado ya está en uso por otra variante. Por favor, ingresa un código único.')
+      } else {
+        notifications.showInfoMessage('Error al actualizar variante', errorMessage)
+      }
     }
   })
   
   const deleteVariantMutation = useMutation({
     mutationFn: async (variantId: number) => {
       const res = await fetch(`/api/products/${productId}/variants/${variantId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include', // ✅ Incluir cookies de autenticación
       })
       if (!res.ok) throw new Error('Error eliminando variante')
       return res.json()
@@ -168,6 +403,68 @@ export function ProductFormMinimal({
     }
   })
 
+  // Normalizar initialData para convertir category_id a category_ids si es necesario
+  const normalizedInitialData = initialData
+    ? {
+        ...initialData,
+        // ✅ CORREGIDO: Extraer category_ids desde product_categories si está presente
+        category_ids: (() => {
+          // Si ya hay category_ids, usarlos
+          if (initialData.category_ids) {
+            return Array.isArray(initialData.category_ids) 
+              ? initialData.category_ids 
+              : [initialData.category_ids]
+          }
+          
+          // Si hay product_categories, extraer los category_id
+          const productCategories = (initialData as any).product_categories
+          if (productCategories && Array.isArray(productCategories) && productCategories.length > 0) {
+            const categoryIds = productCategories
+              .map((pc: any) => pc.category_id || pc.category?.id)
+              .filter((id: any) => id != null && !isNaN(id))
+            if (categoryIds.length > 0) {
+              return categoryIds
+            }
+          }
+          
+          // Fallback a category_id singular si existe
+          if ((initialData as any).category_id) {
+            return [(initialData as any).category_id]
+          }
+          
+          return []
+        })(),
+        // ✅ CORREGIDO: Asegurar que terminaciones siempre sea un array
+        terminaciones: Array.isArray(initialData.terminaciones) 
+          ? initialData.terminaciones 
+          : (initialData.terminaciones ? [initialData.terminaciones] : []),
+        // ✅ CORREGIDO: Asegurar que medida siempre sea un array
+        medida: (() => {
+          const rawMedida = (initialData as any).medida
+          if (!rawMedida) return []
+          if (Array.isArray(rawMedida)) return rawMedida
+          if (typeof rawMedida === 'string') {
+            // Intentar parsear si es un string de array JSON
+            if (rawMedida.trim().startsWith('[') && rawMedida.trim().endsWith(']')) {
+              try {
+                const parsed = JSON.parse(rawMedida)
+                return Array.isArray(parsed) ? parsed : [parsed]
+              } catch {
+                return [rawMedida]
+              }
+            }
+            return [rawMedida]
+          }
+          return [String(rawMedida)]
+        })(),
+        // ✅ NUEVO: Calcular discount_percent inicial si hay discounted_price
+        discount_percent: 
+          initialData.discounted_price && initialData.price && initialData.price > 0
+            ? Math.round(((initialData.price - initialData.discounted_price) / initialData.price) * 1000) / 10
+            : null,
+      }
+    : {}
+
   const form = useForm<ProductFormData>({
     resolver: zodResolver(ProductSchema),
     defaultValues: {
@@ -176,9 +473,13 @@ export function ProductFormMinimal({
       price: 0,
       featured: false,
       discounted_price: null,
+      discount_percent: null, // ✅ NUEVO: Porcentaje de descuento
       image_url: null,
+      medida: [],
+      terminaciones: [],
+      category_ids: [],
       created_at: new Date().toISOString(),
-      ...initialData,
+      ...normalizedInitialData,
     },
   })
 
@@ -187,16 +488,208 @@ export function ProductFormMinimal({
     formState: { errors, isDirty },
     watch,
     register,
+    setValue,
   } = form
 
   const watchedData = watch()
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // ✅ NUEVO: Exponer funciones al componente padre para que los botones externos puedan usarlas
+  // Usar useRef para almacenar la función checkDirty y evitar re-renders infinitos
+  const isDirtyRef = useRef(isDirty)
+  isDirtyRef.current = isDirty
+
+  useEffect(() => {
+    if (onFormReady) {
+      const submitForm = () => {
+        if (formRef.current) {
+          formRef.current.requestSubmit()
+        }
+      }
+      const checkDirty = () => isDirtyRef.current
+      onFormReady(submitForm, checkDirty)
+    }
+    // ✅ Solo ejecutar cuando onFormReady cambia, NO cuando isDirty cambia
+  }, [onFormReady])
+
+  // ✅ NUEVO: Notificar al padre cuando isDirty cambia para actualizar el botón de guardar
+  useEffect(() => {
+    if (onFormReady && isDirtyRef.current !== isDirty) {
+      isDirtyRef.current = isDirty
+      // Si hay una función checkDirty registrada, notificar el cambio
+      // Esto asegura que el botón de guardar se habilite cuando el formulario tenga cambios
+    }
+  }, [isDirty, onFormReady])
 
   const handleFormSubmit = async (data: ProductFormData) => {
     try {
+      // ✅ VALIDACIÓN: Si no hay variantes, precio y stock son requeridos
+      if (newVariants.length === 0) {
+        if (!data.price || data.price <= 0) {
+          form.setError('price', {
+            type: 'manual',
+            message: 'El precio es requerido cuando el producto no tiene variantes',
+          })
+          notifications.showErrorMessage('El precio es requerido cuando el producto no tiene variantes')
+          return
+        }
+        if (data.stock === null || data.stock === undefined || data.stock < 0) {
+          form.setError('stock', {
+            type: 'manual',
+            message: 'El stock es requerido cuando el producto no tiene variantes',
+          })
+          notifications.showErrorMessage('El stock es requerido cuando el producto no tiene variantes')
+          return
+        }
+      }
+      
       notifications.showProcessingInfo(
         mode === 'create' ? 'Creando producto...' : 'Actualizando producto...'
       )
-      await onSubmit(data)
+      
+      // Primero guardar/actualizar el producto
+      const result = await onSubmit(data)
+      
+      // ✅ MEJORADO: Obtener productId del resultado de múltiples formas posibles
+      let finalProductId: number | string | null = null
+      
+      if (result) {
+        // Intentar obtener el ID de diferentes estructuras de respuesta
+        finalProductId = (result as any)?.data?.id || 
+                        (result as any)?.id || 
+                        (result as any)?.data?.data?.id
+      }
+      
+      // Si no se obtuvo del resultado, usar el productId existente
+      if (!finalProductId && productId) {
+        finalProductId = productId
+      }
+      
+      // ✅ DEBUG: Log para verificar que se obtuvo el productId
+      console.log('🔍 [ProductFormMinimal] Producto guardado:', {
+        result,
+        finalProductId,
+        newVariantsCount: newVariants.length,
+        newVariants: newVariants.map(v => ({ aikon_id: v.aikon_id, measure: v.measure, color_name: v.color_name }))
+      })
+      
+      // Si hay variantes nuevas y tenemos productId, crearlas
+      if (newVariants.length > 0 && finalProductId) {
+        notifications.showProcessingInfo(`Creando ${newVariants.length} variante(s)...`)
+        
+        const createdVariants: any[] = []
+        const failedVariants: any[] = []
+        
+        for (const variant of newVariants) {
+          try {
+            // ✅ VALIDACIÓN: Verificar que la variante tenga los campos requeridos
+            if (!variant.aikon_id || variant.aikon_id.trim() === '') {
+              console.warn('⚠️ [ProductFormMinimal] Variante sin aikon_id, saltando:', variant)
+              failedVariants.push({ variant, error: 'Código Aikon requerido' })
+              continue
+            }
+            
+            if (!variant.measure || variant.measure.trim() === '') {
+              console.warn('⚠️ [ProductFormMinimal] Variante sin measure, saltando:', variant)
+              failedVariants.push({ variant, error: 'Medida requerida' })
+              continue
+            }
+            
+            if (!variant.price_list || variant.price_list <= 0) {
+              console.warn('⚠️ [ProductFormMinimal] Variante sin price_list válido, saltando:', variant)
+              failedVariants.push({ variant, error: 'Precio lista debe ser mayor a 0' })
+              continue
+            }
+            
+            console.log('📤 [ProductFormMinimal] Creando variante:', {
+              product_id: finalProductId,
+              aikon_id: variant.aikon_id,
+              measure: variant.measure,
+              color_name: variant.color_name,
+              finish: variant.finish,
+              price_list: variant.price_list,
+            })
+            
+            const response = await fetch('/api/admin/products/variants', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include', // ✅ Incluir cookies de autenticación
+              body: JSON.stringify({
+                product_id: parseInt(String(finalProductId)),
+                aikon_id: variant.aikon_id.trim(),
+                color_name: variant.color_name && variant.color_name.trim() !== '' ? variant.color_name.trim() : null,
+                color_hex: variant.color_hex && variant.color_hex.trim() !== '' ? variant.color_hex.trim() : null,
+                measure: variant.measure.trim(),
+                finish: variant.finish && variant.finish.trim() !== '' ? variant.finish.trim() : null,
+                price_list: variant.price_list,
+                price_sale: variant.price_sale && variant.price_sale > 0 ? variant.price_sale : null,
+                stock: variant.stock || 0,
+                image_url: variant.image_url && variant.image_url.trim() !== '' ? variant.image_url.trim() : null,
+                is_active: variant.is_active !== false,
+                is_default: variant.is_default || false,
+              }),
+            })
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }))
+              const errorMessage = errorData.error || `Error ${response.status}: Error creando variante`
+              console.error('❌ [ProductFormMinimal] Error creando variante:', {
+                variant: variant.aikon_id,
+                error: errorMessage,
+                status: response.status,
+                errorData
+              })
+              failedVariants.push({ variant, error: errorMessage })
+              throw new Error(errorMessage)
+            }
+            
+            const variantResult = await response.json()
+            console.log('✅ [ProductFormMinimal] Variante creada exitosamente:', {
+              variant: variant.aikon_id,
+              result: variantResult
+            })
+            createdVariants.push(variantResult)
+          } catch (error) {
+            console.error('❌ [ProductFormMinimal] Error creando variante:', error)
+            failedVariants.push({ 
+              variant, 
+              error: error instanceof Error ? error.message : 'Error desconocido' 
+            })
+            // ✅ NO mostrar notificación aquí para evitar spam, se mostrará al final
+          }
+        }
+
+        // ✅ Mostrar resumen de variantes creadas/fallidas
+        if (createdVariants.length > 0) {
+          notifications.showInfoMessage(
+            'Variantes creadas',
+            `${createdVariants.length} de ${newVariants.length} variante(s) creada(s) exitosamente`
+          )
+        }
+        
+        if (failedVariants.length > 0) {
+          const errorMessages = failedVariants.map(f => `${f.variant.aikon_id || 'Sin código'}: ${f.error}`).join(', ')
+          notifications.showInfoMessage(
+            'Error creando algunas variantes',
+            `${failedVariants.length} variante(s) no se pudieron crear: ${errorMessages}`
+          )
+        }
+
+        // Limpiar variantes después de intentar crearlas
+        setNewVariants([])
+        queryClient.invalidateQueries({ queryKey: ['product-variants', finalProductId] })
+      } else if (newVariants.length > 0 && !finalProductId) {
+        // ✅ NUEVO: Mostrar error si hay variantes pero no se pudo obtener el productId
+        console.error('❌ [ProductFormMinimal] No se pudo obtener productId para crear variantes:', {
+          result,
+          productId,
+          newVariantsCount: newVariants.length
+        })
+        notifications.showInfoMessage(
+          'Error al crear variantes',
+          'No se pudo obtener el ID del producto. Las variantes no se guardaron. Por favor, edita el producto y agrega las variantes nuevamente.'
+        )
+      }
       
       if (mode === 'create') {
         notifications.showProductCreated({ productName: data.name })
@@ -205,10 +698,11 @@ export function ProductFormMinimal({
       }
     } catch (error) {
       console.error('Error submitting form:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar el producto'
       if (mode === 'create') {
-        notifications.showProductCreationError('Error al guardar el producto')
+        notifications.showProductCreationError(errorMessage)
       } else {
-        notifications.showProductUpdateError('Error al guardar el producto', data.name)
+        notifications.showProductUpdateError(errorMessage, data.name)
       }
     }
   }
@@ -223,7 +717,7 @@ export function ProductFormMinimal({
     setEditingVariant({
       color_name: '',
       measure: '',
-      finish: 'Mate',
+      finish: null, // ✅ null en lugar de 'Mate' por defecto
       price_list: 0,
       price_sale: 0,
       stock: 0,
@@ -249,37 +743,12 @@ export function ProductFormMinimal({
 
   return (
     <div className='space-y-6'>
-      {/* Header Sticky */}
-      <div className='sticky top-0 z-10 bg-white border-b border-gray-200 -mx-6 px-6 py-4 shadow-sm'>
-        <div className='flex items-center justify-between'>
-          <h1 className='text-2xl font-bold text-gray-900'>
-            {mode === 'create' ? 'Crear Producto' : 'Editar Producto'}
-          </h1>
-          <div className='flex items-center space-x-3'>
-            {onCancel && (
-              <button
-                type='button'
-                onClick={onCancel}
-                className='flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50'
-              >
-                <X className='w-4 h-4' />
-                <span>Cancelar</span>
-              </button>
-            )}
-            <button
-              type='submit'
-              form='product-form-minimal'
-              disabled={isLoading || !isDirty}
-              className='flex items-center space-x-2 px-4 py-2 bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white rounded-lg disabled:opacity-50'
-            >
-              <Save className='w-4 h-4' />
-              <span>{mode === 'create' ? 'Crear' : 'Guardar'}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <form id='product-form-minimal' onSubmit={handleSubmit(handleFormSubmit)} className='space-y-6'>
+      <form 
+        id='product-form-minimal' 
+        ref={formRef}
+        onSubmit={handleSubmit(handleFormSubmit)} 
+        className='space-y-6'
+      >
         {/* Información Básica */}
         <AdminCard title='Información Básica'>
           <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
@@ -289,7 +758,12 @@ export function ProductFormMinimal({
               </label>
               <input
                 {...register('name')}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
+                className={cn(
+                  'w-full px-3 py-2 border rounded-lg focus:ring-2',
+                  errors.name
+                    ? 'border-red-300 focus:ring-red-500'
+                    : 'border-gray-300 focus:ring-blaze-orange-500'
+                )}
                 placeholder='Ej: Látex Interior Blanco 4L'
               />
               {errors.name && <p className='text-red-600 text-sm mt-1'>{errors.name.message}</p>}
@@ -307,21 +781,23 @@ export function ProductFormMinimal({
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>Marca</label>
-              <input
-                {...register('brand')}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='Ej: Plavicon'
+              <BrandSelector
+                value={watchedData.brand || ''}
+                onChange={(brand) => form.setValue('brand', brand, { shouldDirty: true })}
+                placeholder='Selecciona o crea una marca'
+                allowCreate={true}
               />
             </div>
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Categoría *
+                Categorías *
               </label>
               <CategorySelector
-                value={watchedData.category_id}
-                onChange={(categoryId) => form.setValue('category_id', categoryId)}
-                {...(errors.category_id?.message && { error: errors.category_id.message })}
+                value={watchedData.category_ids || []}
+                onChange={(categoryIds) => form.setValue('category_ids', Array.isArray(categoryIds) ? categoryIds : [categoryIds], { shouldDirty: true })}
+                multiple={true}
+                {...(errors.category_ids?.message && { error: errors.category_ids.message })}
               />
             </div>
 
@@ -336,25 +812,31 @@ export function ProductFormMinimal({
               />
             </div>
 
+            <ColorPickerField
+              colorName={watchedData.color || ''}
+              onColorChange={(name) => form.setValue('color', name, { shouldDirty: true })}
+              label='Color del Producto'
+            />
+
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Color del Producto
+                Medidas
               </label>
-              <input
-                {...register('color')}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='Ej: Blanco, Rojo Óxido'
+              <MeasureSelector
+                value={watchedData.medida || []}
+                onChange={(measures) => form.setValue('medida', measures, { shouldDirty: true })}
+                placeholder='Selecciona o agrega medidas'
               />
             </div>
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Medida Principal
+                Terminaciones
               </label>
-              <input
-                {...register('medida')}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='Ej: 4L, 20L'
+              <TerminacionSelector
+                value={watchedData.terminaciones || []}
+                onChange={(terminaciones) => form.setValue('terminaciones', terminaciones, { shouldDirty: true })}
+                placeholder='Selecciona o agrega terminaciones'
               />
             </div>
 
@@ -371,22 +853,90 @@ export function ProductFormMinimal({
 
         {/* Precios & Stock */}
         <AdminCard title='Precios & Stock'>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Precio *
+                Precio {newVariants.length === 0 ? '*' : ''}
+                {newVariants.length > 0 && (
+                  <span className='text-gray-500 font-normal ml-1'>(Opcional - Se define en las variantes)</span>
+                )}
               </label>
               <div className='relative'>
                 <span className='absolute left-3 top-2.5 text-gray-500'>$</span>
                 <input
                   type='number'
                   step='0.01'
-                  {...register('price', { valueAsNumber: true })}
-                  className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                  placeholder='0.00'
+                  {...register('price', { 
+                    valueAsNumber: false, // ✅ Cambiar a false para permitir strings vacíos
+                    onChange: (e) => {
+                      const value = e.target.value
+                      if (value === '' || value === null || value === undefined) {
+                        setValue('price', null, { shouldDirty: true })
+                        return
+                      }
+                      const price = parseFloat(value)
+                      if (!isNaN(price) && price > 0) {
+                        const discountPercent = watch('discount_percent')
+                        if (discountPercent && discountPercent > 0 && discountPercent <= 100) {
+                          const discountedPrice = price * (1 - discountPercent / 100)
+                          setValue('discounted_price', Math.round(discountedPrice * 100) / 100, { shouldDirty: true })
+                        }
+                      }
+                    }
+                  })}
+                  className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
+                  placeholder={newVariants.length > 0 ? 'Opcional' : '0.00'}
                 />
               </div>
               {errors.price && <p className='text-red-600 text-sm mt-1'>{errors.price.message}</p>}
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Porcentaje de Descuento
+              </label>
+              <div className='flex gap-2'>
+                <div className='relative flex-1'>
+                  <input
+                    type='number'
+                    min='0'
+                    max='100'
+                    step='0.1'
+                    {...register('discount_percent', { 
+                      valueAsNumber: true,
+                      onChange: (e) => {
+                        const discountPercent = parseFloat(e.target.value) || 0
+                        const price = watch('price') || 0
+                        if (discountPercent > 0 && discountPercent <= 100 && price > 0) {
+                          const discountedPrice = price * (1 - discountPercent / 100)
+                          setValue('discounted_price', Math.round(discountedPrice * 100) / 100, { shouldDirty: true })
+                        } else if (discountPercent === 0 || !discountPercent) {
+                          setValue('discounted_price', null, { shouldDirty: true })
+                        }
+                      }
+                    })}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
+                    placeholder='0'
+                  />
+                  <span className='absolute right-3 top-2.5 text-gray-500 text-sm'>%</span>
+                </div>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setValue('discount_percent', 0, { shouldDirty: true })
+                    setValue('discounted_price', null, { shouldDirty: true })
+                  }}
+                  className='px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors'
+                  title='Limpiar descuento'
+                >
+                  <X className='w-4 h-4' />
+                </button>
+              </div>
+              {watch('discount_percent') > 0 && watch('price') > 0 && (
+                <p className='text-xs text-gray-500 mt-1'>
+                  Descuento: ${((watch('price') || 0) * (watch('discount_percent') || 0) / 100).toFixed(2)}
+                </p>
+              )}
             </div>
 
             <div>
@@ -398,35 +948,70 @@ export function ProductFormMinimal({
                 <input
                   type='number'
                   step='0.01'
-                  {...register('discounted_price', { valueAsNumber: true })}
-                  className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
+                  {...register('discounted_price', { 
+                    valueAsNumber: true,
+                    onChange: (e) => {
+                      const discountedPrice = parseFloat(e.target.value) || 0
+                      const price = watch('price') || 0
+                      if (discountedPrice > 0 && price > 0) {
+                        const calculatedPercent = ((price - discountedPrice) / price) * 100
+                        setValue('discount_percent', Math.round(calculatedPercent * 10) / 10, { shouldDirty: true })
+                      } else if (!discountedPrice || discountedPrice === 0) {
+                        setValue('discount_percent', 0, { shouldDirty: true })
+                      }
+                    }
+                  })}
+                  className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
                   placeholder='0.00'
                 />
               </div>
+              {watch('discounted_price') && watch('price') && watch('discounted_price') < watch('price') && (
+                <p className='text-xs text-green-600 mt-1'>
+                  Ahorro: ${((watch('price') || 0) - (watch('discounted_price') || 0)).toFixed(2)}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>Stock *</label>
-              <input
-                type='number'
-                {...register('stock', { valueAsNumber: true })}
-                className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='0'
-              />
+              <label className='block text-sm font-medium text-gray-700 mb-2'>
+                Stock {newVariants.length === 0 ? '*' : ''}
+                {newVariants.length > 0 && (
+                  <span className='text-gray-500 font-normal ml-1'>(Opcional - Se define en las variantes)</span>
+                )}
+              </label>
+                <input
+                  type='number'
+                  {...register('stock', { 
+                    valueAsNumber: false, // ✅ Cambiar a false para permitir strings vacíos
+                    onChange: (e) => {
+                      const value = e.target.value
+                      if (value === '' || value === null || value === undefined) {
+                        setValue('stock', null, { shouldDirty: true })
+                      }
+                    }
+                  })}
+                  placeholder={newVariants.length > 0 ? 'Opcional' : '0'}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
+                  placeholder='0'
+                />
               {errors.stock && <p className='text-red-600 text-sm mt-1'>{errors.stock.message}</p>}
             </div>
           </div>
         </AdminCard>
 
-        {/* Variantes */}
-        {productId && (
-          <AdminCard title='Variantes del Producto'>
+        {/* Variantes - Usar VariantBuilder para creación inline */}
+        <AdminCard title='Variantes del Producto'>
+          {productId && mode === 'edit' ? (
+            // Modo edición: mostrar variantes existentes y permitir agregar nuevas
             <div className='space-y-4'>
               {variants.length > 0 ? (
                 <div className='overflow-x-auto'>
                   <table className='min-w-full divide-y divide-gray-200'>
                     <thead className='bg-gray-50'>
                       <tr>
+                        <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                          Imagen
+                        </th>
                         <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
                           Color
                         </th>
@@ -453,17 +1038,39 @@ export function ProductFormMinimal({
                     <tbody className='bg-white divide-y divide-gray-200'>
                       {variants.map((variant: ProductVariant, index: number) => (
                         <tr key={variant.id || index} className='hover:bg-gray-50'>
-                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.color_name}</td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.measure}</td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.finish}</td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>
-                            ${variant.price_sale.toLocaleString('es-AR')}
+                          <td className='px-4 py-3'>
+                            {variant.image_url ? (
+                              <div className='relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200'>
+                                <Image
+                                  src={variant.image_url}
+                                  alt={`${variant.color_name || 'Variante'} ${variant.measure || ''}`}
+                                  fill
+                                  className='object-cover'
+                                  unoptimized
+                                />
+                              </div>
+                            ) : (
+                              <div className='w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center'>
+                                <span className='text-xs text-gray-400'>Sin imagen</span>
+                              </div>
+                            )}
                           </td>
-                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.stock}</td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.color_name || '-'}</td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.measure || '-'}</td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.finish || '-'}</td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>
+                            ${variant.price_sale?.toLocaleString('es-AR') || variant.price_list?.toLocaleString('es-AR') || '0'}
+                          </td>
+                          <td className='px-4 py-3 text-sm text-gray-900'>{variant.stock || 0}</td>
                           <td className='px-4 py-3 text-sm text-gray-500 font-mono'>
-                            {variant.aikon_id}
+                            {variant.aikon_id || '-'}
                           </td>
                           <td className='px-4 py-3 text-right space-x-2'>
+                            {variant.is_default && (
+                              <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 mr-2'>
+                                Predeterminada
+                              </span>
+                            )}
                             <button
                               type='button'
                               onClick={() => openEditVariant(variant)}
@@ -485,77 +1092,215 @@ export function ProductFormMinimal({
                   </table>
                 </div>
               ) : (
-                <div className='text-center py-8 text-gray-500'>
-                  <p className='text-sm'>No hay variantes. Agrega una para ofrecer diferentes opciones.</p>
+                <div className='text-center py-8 text-gray-500 text-sm border border-dashed border-gray-300 rounded-lg'>
+                  <p>No hay variantes agregadas.</p>
+                  <p className='mt-1'>Agrega variantes para ofrecer diferentes opciones de color, medida y precio.</p>
                 </div>
               )}
 
-              <button
-                type='button'
-                onClick={openCreateVariant}
-                className='flex items-center space-x-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blaze-orange-400 hover:bg-blaze-orange-50 w-full justify-center'
-              >
-                <Plus className='w-4 h-4' />
-                <span>Agregar Variante</span>
-              </button>
+              {/* Botón para agregar nueva variante */}
+              <div className='flex justify-end'>
+                <button
+                  type='button'
+                  onClick={openNewVariant}
+                  className='inline-flex items-center px-4 py-2 bg-blaze-orange-600 text-white rounded-lg hover:bg-blaze-orange-700 transition-colors'
+                >
+                  <Plus className='w-4 h-4 mr-2' />
+                  Agregar Nueva Variante
+                </button>
+              </div>
+
+              {/* VariantBuilder para agregar nuevas variantes - Solo mostrar si hay variantes nuevas */}
+              {newVariants.length > 0 && (
+                <VariantBuilder
+                  variants={newVariants}
+                  onChange={setNewVariants}
+                  measures={watchedData.medida || []}
+                  terminaciones={watchedData.terminaciones || []}
+                />
+              )}
             </div>
-          </AdminCard>
-        )}
+          ) : (
+            // Modo creación: mostrar tabla y usar modal (igual que en modo edición)
+            <div className='space-y-4'>
+              {/* Tabla de variantes */}
+              {newVariants.length > 0 ? (
+                <div className='border border-gray-200 rounded-lg overflow-hidden'>
+                  <div className='overflow-x-auto'>
+                    <table className='min-w-full divide-y divide-gray-200'>
+                      <thead className='bg-gray-50'>
+                        <tr>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Imagen
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Color
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Capacidad
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Terminación
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Precio
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Stock
+                          </th>
+                          <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
+                            Código Aikon
+                          </th>
+                          <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase'>
+                            Acciones
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className='bg-white divide-y divide-gray-200'>
+                        {newVariants.map((variant: VariantFormData, index: number) => (
+                          <tr key={index} className='hover:bg-gray-50'>
+                            <td className='px-4 py-3'>
+                              {variant.image_url ? (
+                                <div className='relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200'>
+                                  <Image
+                                    src={variant.image_url}
+                                    alt={`${variant.color_name || 'Variante'} ${variant.measure || ''}`}
+                                    fill
+                                    className='object-cover'
+                                    unoptimized
+                                  />
+                                </div>
+                              ) : (
+                                <div className='w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center'>
+                                  <span className='text-xs text-gray-400'>Sin imagen</span>
+                                </div>
+                              )}
+                            </td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>{variant.color_name || '-'}</td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>{variant.measure || '-'}</td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>{variant.finish || '-'}</td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>
+                              ${variant.price_sale?.toLocaleString('es-AR') || variant.price_list?.toLocaleString('es-AR') || '0'}
+                            </td>
+                            <td className='px-4 py-3 text-sm text-gray-900'>{variant.stock || 0}</td>
+                            <td className='px-4 py-3 text-sm text-gray-500 font-mono'>
+                              {variant.aikon_id || '-'}
+                            </td>
+                            <td className='px-4 py-3 text-right space-x-2'>
+                              {variant.is_default && (
+                                <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 mr-2'>
+                                  Predeterminada
+                                </span>
+                              )}
+                              <button
+                                type='button'
+                                onClick={() => {
+                                  setEditingVariant({
+                                    ...variant,
+                                    id: index, // Usar índice temporal para identificar
+                                  } as any)
+                                  setShowVariantModal(true)
+                                }}
+                                className='inline-flex items-center p-1 text-blue-600 hover:text-blue-800'
+                              >
+                                <Edit className='w-4 h-4' />
+                              </button>
+                              <button
+                                type='button'
+                                onClick={() => {
+                                  const updated = newVariants.filter((_, i) => i !== index)
+                                  // Si se elimina la predeterminada, quitar el flag de todas
+                                  if (variant.is_default) {
+                                    updated.forEach(v => { v.is_default = false })
+                                  }
+                                  setNewVariants(updated)
+                                }}
+                                className='inline-flex items-center p-1 text-red-600 hover:text-red-800'
+                              >
+                                <Trash2 className='w-4 h-4' />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div className='text-center py-8 text-gray-500 text-sm border border-dashed border-gray-300 rounded-lg'>
+                  <p>No hay variantes agregadas.</p>
+                  <p className='mt-1'>Agrega variantes para ofrecer diferentes opciones de color, medida y precio.</p>
+                </div>
+              )}
+
+              {/* Botón para agregar nueva variante */}
+              <div className='flex justify-end'>
+                <button
+                  type='button'
+                  onClick={openNewVariant}
+                  className='inline-flex items-center px-4 py-2 bg-blaze-orange-600 text-white rounded-lg hover:bg-blaze-orange-700 transition-colors'
+                >
+                  <Plus className='w-4 h-4 mr-2' />
+                  Agregar Nueva Variante
+                </button>
+              </div>
+            </div>
+          )}
+        </AdminCard>
 
         {/* Imagen */}
-        <AdminCard title='Imagen del Producto'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300'>
-              {imagePreview || watchedData.image_url ? (
-                <Image
-                  src={imagePreview || watchedData.image_url || ''}
-                  alt={watchedData.name || 'Producto'}
-                  width={400}
-                  height={400}
-                  className='w-full h-full object-cover'
-                  unoptimized
-                />
-              ) : (
-                <div className='text-center text-gray-400'>
-                  <Upload className='w-12 h-12 mx-auto mb-2' />
-                  <p className='text-sm'>Sin imagen</p>
+        <AdminCard title='Imágenes del Producto'>
+          {productId && mode === 'edit' ? (
+            // ✅ NUEVO: Galería de imágenes múltiples para productos existentes
+            <ProductImageGallery productId={productId} />
+          ) : (
+            // Modo creación: upload simple o URL
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <ImageUploadZone
+                productId={productId}
+                currentImageUrl={imagePreview || watchedData.image_url || null}
+                onUploadSuccess={(imageUrl) => {
+                  setImagePreview(imageUrl)
+                  form.setValue('image_url', imageUrl || null, { shouldDirty: true })
+                }}
+                onError={(error) => {
+                  notifications.showInfoMessage('Error al subir imagen', error)
+                }}
+              />
+
+              <div className='space-y-3'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
+                    URL de Imagen
+                  </label>
+                  <input
+                    type='url'
+                    {...register('image_url')}
+                    onChange={handleImageChange}
+                    className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
+                    placeholder='https://ejemplo.com/imagen.jpg'
+                  />
+                  {errors.image_url && (
+                    <p className='text-red-600 text-sm mt-1'>{errors.image_url.message}</p>
+                  )}
+                  <p className='text-xs text-gray-500 mt-2'>
+                    Nota: Para crear un producto nuevo, primero guárdalo y luego podrás subir múltiples imágenes arrastrándolas. Las imágenes se procesarán automáticamente a formato 1:1 con fondo blanco.
+                  </p>
                 </div>
-              )}
-            </div>
 
-            <div className='space-y-3'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  URL de Imagen
-                </label>
-                <input
-                  type='url'
-                  {...register('image_url')}
-                  onChange={handleImageChange}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                  placeholder='https://ejemplo.com/imagen.jpg'
-                />
-                {errors.image_url && (
-                  <p className='text-red-600 text-sm mt-1'>{errors.image_url.message}</p>
-                )}
+                <div className='flex items-center space-x-2 mt-4'>
+                  <input
+                    type='checkbox'
+                    {...register('featured')}
+                    className='w-4 h-4 text-blaze-orange-600 rounded focus:ring-blaze-orange-500'
+                  />
+                  <label className='text-sm font-medium text-gray-700'>
+                    Marcar como Destacado ⭐
+                  </label>
+                </div>
               </div>
-
-              <div className='flex items-center space-x-2 mt-4'>
-                <input
-                  type='checkbox'
-                  {...register('featured')}
-                  className='w-4 h-4 text-blaze-orange-600 rounded focus:ring-blaze-orange-500'
-                />
-                <label className='text-sm font-medium text-gray-700'>
-                  Marcar como Destacado ⭐
-                </label>
-              </div>
-
-              <p className='text-xs text-gray-500 mt-2'>
-                💡 Tip: Las imágenes deben ser de al menos 800x800px para mejor calidad
-              </p>
             </div>
-          </div>
+          )}
         </AdminCard>
       </form>
 
@@ -563,17 +1308,78 @@ export function ProductFormMinimal({
       {showVariantModal && editingVariant && (
         <VariantModal
           variant={editingVariant}
+          productId={productId}
+          productData={{
+            price: watchedData.price,
+            discounted_price: watchedData.discounted_price,
+            stock: watchedData.stock,
+            medida: watchedData.medida,
+            terminaciones: watchedData.terminaciones || [], // ✅ NUEVO: Pasar terminaciones del producto
+            mainImageUrl: productMainImage || (watchedData.image_url && watchedData.image_url.trim() !== '' ? watchedData.image_url : null), // ✅ NUEVO: Pasar imagen principal
+          }}
           onSave={async (variant) => {
             try {
-              if (variant.id) {
-                // Editar existente
-                await updateVariantMutation.mutateAsync({ id: variant.id, ...variant })
+              if (mode === 'create' || !productId) {
+                // Modo creación: agregar a newVariants
+                const variantData: VariantFormData = {
+                  color_name: variant.color_name || '',
+                  color_hex: variant.color_hex || undefined,
+                  measure: variant.measure || '',
+                  finish: variant.finish || null, // ✅ null en lugar de 'Mate' por defecto
+                  price_list: variant.price_list || 0,
+                  price_sale: variant.price_sale || undefined,
+                  stock: variant.stock || 0,
+                  aikon_id: variant.aikon_id || '',
+                  image_url: variant.image_url || undefined,
+                  is_active: variant.is_active !== false,
+                  is_default: variant.is_default || false,
+                }
+
+                // Verificar si es edición (usando id temporal como índice)
+                if (variant.id !== undefined && typeof variant.id === 'number' && variant.id >= 0 && variant.id < newVariants.length) {
+                  // Editar variante existente en newVariants (usando índice)
+                  const index = variant.id
+                  const updated = [...newVariants]
+                  
+                  // Si se marca como predeterminada, quitar el flag de las demás
+                  if (variant.is_default) {
+                    updated.forEach((v, i) => {
+                      if (i !== index) v.is_default = false
+                    })
+                  }
+                  
+                  updated[index] = variantData
+                  setNewVariants(updated)
+                } else {
+                  // Agregar nueva variante
+                  // Si se marca como predeterminada, quitar el flag de las demás
+                  if (variant.is_default) {
+                    const updated = newVariants.map(v => ({ ...v, is_default: false }))
+                    setNewVariants([...updated, variantData])
+                  } else {
+                    setNewVariants([...newVariants, variantData])
+                  }
+                }
+                
+                setShowVariantModal(false)
+                setEditingVariant(null)
               } else {
-                // Crear nueva
-                await createVariantMutation.mutateAsync(variant)
+                // Modo edición: crear/actualizar en BD
+                if (variant.id) {
+                  // Editar existente
+                  await updateVariantMutation.mutateAsync({ id: variant.id, ...variant })
+                } else {
+                  // Crear nueva
+                  await createVariantMutation.mutateAsync(variant)
+                }
+                
+                // ✅ El cache ya se actualizó en onSuccess con los datos del backend
+                // Solo invalidar otras queries relacionadas para asegurar consistencia
+                await queryClient.invalidateQueries({ queryKey: ['default-variant-image', productId] })
+                
+                setShowVariantModal(false)
+                setEditingVariant(null)
               }
-              setShowVariantModal(false)
-              setEditingVariant(null)
             } catch (error) {
               // Error ya manejado en las mutaciones
               console.error('Error guardando variante:', error)
@@ -592,11 +1398,20 @@ export function ProductFormMinimal({
 // Modal de Variante
 interface VariantModalProps {
   variant: ProductVariant
+  productId?: string
+  productData?: {
+    price?: number
+    discounted_price?: number | null
+    stock?: number
+    medida?: string[]
+    terminaciones?: string[] // ✅ NUEVO: Terminaciones del producto
+    mainImageUrl?: string | null // ✅ NUEVO: URL de la imagen principal del producto
+  }
   onSave: (variant: ProductVariant) => void
   onCancel: () => void
 }
 
-function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
+function VariantModal({ variant, productId, productData, onSave, onCancel }: VariantModalProps) {
   const [formData, setFormData] = useState(variant)
   const [imagePreview, setImagePreview] = useState<string | null>(variant.image_url || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -630,7 +1445,113 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
 
   const handleSave = () => {
     if (validateForm()) {
-      onSave(formData)
+      // ✅ CORREGIDO: Normalizar datos antes de guardar para asegurar tipos correctos
+      // Solo incluir campos que se pueden actualizar (excluir id, product_id, etc.)
+      const normalizedData: any = {
+        // Campos de texto
+        color_name: formData.color_name?.trim() || undefined,
+        // ✅ CORREGIDO: Permitir null para color_hex (puede ser null para limpiar el color)
+        // Manejar string vacío, null, undefined: todos deben convertirse a null para permitir limpiar
+        color_hex: formData.color_hex && typeof formData.color_hex === 'string' && formData.color_hex.trim() !== '' 
+          ? formData.color_hex.trim() 
+          : null,
+        measure: formData.measure?.trim() || undefined,
+        finish: formData.finish || undefined,
+        aikon_id: formData.aikon_id?.trim() || undefined,
+        // Asegurar que price_list sea número
+        price_list: typeof formData.price_list === 'number' 
+          ? formData.price_list 
+          : parseFloat(String(formData.price_list || 0)) || 0,
+        // Asegurar que price_sale sea número o null (no 0 cuando está vacío)
+        price_sale: formData.price_sale && formData.price_sale > 0
+          ? (typeof formData.price_sale === 'number' 
+              ? formData.price_sale 
+              : parseFloat(String(formData.price_sale)) || null)
+          : null,
+        // Asegurar que stock sea número entero
+        stock: typeof formData.stock === 'number' 
+          ? Math.floor(formData.stock) 
+          : parseInt(String(formData.stock || 0), 10) || 0,
+        // Asegurar que image_url sea string o null (no string vacío)
+        image_url: formData.image_url && formData.image_url.trim() !== '' 
+          ? formData.image_url.trim() 
+          : null,
+        // Campos booleanos
+        is_active: formData.is_active !== undefined ? formData.is_active : undefined,
+        is_default: formData.is_default !== undefined ? formData.is_default : undefined,
+      }
+      
+      // ✅ CORREGIDO: Remover campos undefined para no enviarlos al backend
+      const cleanedData = Object.fromEntries(
+        Object.entries(normalizedData).filter(([_, value]) => value !== undefined)
+      )
+      
+      // ✅ DEBUG: Log para verificar datos normalizados
+      console.log('💾 [VariantModal] handleSave - formData normalizado:', {
+        id: formData.id,
+        cleanedData,
+        color_name: cleanedData.color_name,
+        color_nameType: typeof cleanedData.color_name,
+        color_nameInCleaned: 'color_name' in cleanedData,
+        image_url: cleanedData.image_url,
+        image_urlType: typeof cleanedData.image_url,
+        color_hex: cleanedData.color_hex,
+        color_hexType: typeof cleanedData.color_hex,
+        price_list: cleanedData.price_list,
+        price_sale: cleanedData.price_sale,
+        stock: cleanedData.stock,
+        stockType: typeof cleanedData.stock,
+        priceListType: typeof cleanedData.price_list,
+        priceSaleType: typeof cleanedData.price_sale,
+        allKeys: Object.keys(cleanedData),
+        allValues: Object.entries(cleanedData).map(([key, value]) => ({
+          key,
+          value,
+          type: typeof value,
+          isNull: value === null,
+          isUndefined: value === undefined,
+        })),
+      })
+      
+      // ✅ CORREGIDO: Crear finalData asegurando que todos los campos requeridos estén presentes
+      // Usar formData como base y sobrescribir con cleanedData donde esté definido
+      const finalData: any = {
+        // Campos requeridos - usar formData si cleanedData no los tiene
+        color_name: cleanedData.color_name !== undefined ? cleanedData.color_name : formData.color_name,
+        measure: cleanedData.measure !== undefined ? cleanedData.measure : formData.measure,
+        aikon_id: cleanedData.aikon_id !== undefined ? cleanedData.aikon_id : formData.aikon_id,
+        price_list: cleanedData.price_list !== undefined ? cleanedData.price_list : formData.price_list,
+        stock: cleanedData.stock !== undefined ? cleanedData.stock : formData.stock,
+        // Campos opcionales - incluir incluso si son null
+        finish: cleanedData.finish !== undefined ? cleanedData.finish : formData.finish,
+        price_sale: 'price_sale' in cleanedData ? cleanedData.price_sale : formData.price_sale,
+        image_url: 'image_url' in cleanedData ? cleanedData.image_url : formData.image_url,
+        color_hex: 'color_hex' in cleanedData ? cleanedData.color_hex : formData.color_hex,
+        is_active: cleanedData.is_active !== undefined ? cleanedData.is_active : (formData.is_active !== undefined ? formData.is_active : true),
+        is_default: cleanedData.is_default !== undefined ? cleanedData.is_default : (formData.is_default !== undefined ? formData.is_default : false),
+      }
+      
+      // Si estamos editando, incluir el id
+      if (formData.id) {
+        finalData.id = formData.id
+      }
+      
+      console.log('💾 [VariantModal] Datos finales a enviar:', {
+        id: finalData.id,
+        color_name: finalData.color_name,
+        color_nameType: typeof finalData.color_name,
+        color_nameInFinal: 'color_name' in finalData,
+        image_url: finalData.image_url,
+        image_urlType: typeof finalData.image_url,
+        allKeys: Object.keys(finalData),
+        allValues: Object.entries(finalData).slice(0, 10).map(([key, value]) => ({
+          key,
+          value: typeof value === 'string' ? value.substring(0, 50) : value,
+          type: typeof value,
+        })),
+      })
+      
+      onSave(finalData)
     }
   }
 
@@ -649,7 +1570,7 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
               {variant.id ? 'Editar Variante' : 'Crear Variante'}
             </h2>
             {formData.is_default && (
-              <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800'>
+              <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800'>
                 ★ Predeterminada
               </span>
             )}
@@ -659,29 +1580,49 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
         <div className='p-6 space-y-6'>
           {/* Imagen de la Variante */}
           <div className='border-b border-gray-200 pb-6'>
-            <h3 className='text-sm font-semibold text-gray-900 mb-4'>Imagen de la Variante</h3>
+            <div className='flex items-center justify-between mb-4'>
+              <h3 className='text-sm font-semibold text-gray-900'>Imagen de la Variante</h3>
+              {/* ✅ NUEVO: Botón para usar imagen principal del producto */}
+              {productData?.mainImageUrl && (
+                <button
+                  type='button'
+                  onClick={() => {
+                    setFormData({ ...formData, image_url: productData.mainImageUrl || null })
+                    setImagePreview(productData.mainImageUrl || null)
+                  }}
+                  className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                >
+                  Usar imagen del producto
+                </button>
+              )}
+            </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div className='aspect-square bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300'>
-                {imagePreview ? (
-                  <Image
-                    src={imagePreview}
-                    alt={formData.color_name || 'Variante'}
-                    width={300}
-                    height={300}
-                    className='w-full h-full object-cover'
-                    unoptimized
-                  />
-                ) : (
-                  <div className='text-center text-gray-400'>
-                    <Upload className='w-12 h-12 mx-auto mb-2' />
-                    <p className='text-sm'>Sin imagen</p>
-                  </div>
-                )}
-              </div>
+              <ImageUploadZone
+                productId={productId} // Usar productId del producto para el upload
+                currentImageUrl={imagePreview || formData.image_url || null}
+                onUploadSuccess={(imageUrl) => {
+                  // ✅ DEBUG: Log para verificar que la imagen se subió correctamente
+                  console.log('📸 [VariantModal] Imagen subida exitosamente:', {
+                    imageUrl,
+                    previousImageUrl: formData.image_url,
+                  })
+                  const updatedFormData = { ...formData, image_url: imageUrl || '' }
+                  setFormData(updatedFormData)
+                  setImagePreview(imageUrl || null)
+                  // ✅ DEBUG: Verificar que se actualizó correctamente
+                  console.log('📸 [VariantModal] formData actualizado:', {
+                    hasImageUrl: !!updatedFormData.image_url,
+                    imageUrl: updatedFormData.image_url,
+                  })
+                }}
+                onError={(error) => {
+                  console.error('Error al subir imagen:', error)
+                }}
+              />
               <div className='space-y-3'>
                 <div>
                   <label className='block text-sm font-medium text-gray-700 mb-2'>
-                    URL de Imagen
+                    O URL de Imagen
                   </label>
                   <input
                     type='url'
@@ -692,7 +1633,7 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
                   />
                 </div>
                 <p className='text-xs text-gray-500'>
-                  💡 Tip: Usa imágenes específicas para cada color/variante
+                  💡 Tip: Puedes subir una imagen arrastrándola, usar una URL externa, o usar la imagen principal del producto
                 </p>
               </div>
             </div>
@@ -702,31 +1643,40 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
           <div>
             <h3 className='text-sm font-semibold text-gray-900 mb-4'>Información Básica</h3>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Color *</label>
-                <input
-                  value={formData.color_name || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, color_name: e.target.value })
-                    if (errors.color_name) setErrors({ ...errors, color_name: '' })
-                  }}
-                  className={cn(
-                    'w-full px-3 py-2 border rounded-lg focus:ring-2',
-                    errors.color_name
-                      ? 'border-red-300 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blaze-orange-500'
-                  )}
-                  placeholder='Ej: Blanco, Rojo Óxido'
-                />
-                {errors.color_name && (
-                  <p className='text-red-600 text-sm mt-1'>{errors.color_name}</p>
-                )}
-              </div>
+              <ColorPickerField
+                colorName={formData.color_name}
+                colorHex={formData.color_hex}
+                onColorChange={(name, hex) => {
+                  setFormData({ ...formData, color_name: name, color_hex: hex })
+                  if (errors.color_name) setErrors({ ...errors, color_name: '' })
+                }}
+                label='Color *'
+                error={errors.color_name}
+              />
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Capacidad *
-                </label>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Capacidad *
+                  </label>
+                  {productData?.medida && productData.medida.length > 0 && !variant.id && (
+                    <div className='flex gap-1 flex-wrap'>
+                      {productData.medida.map((med, idx) => (
+                        <button
+                          key={idx}
+                          type='button'
+                          onClick={() => {
+                            setFormData({ ...formData, measure: med })
+                            if (errors.measure) setErrors({ ...errors, measure: '' })
+                          }}
+                          className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                        >
+                          Usar: {med}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <input
                   value={formData.measure || ''}
                   onChange={(e) => {
@@ -749,17 +1699,25 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
               <div>
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Terminación
+                  {(!productData?.terminaciones || !Array.isArray(productData.terminaciones) || productData.terminaciones.length === 0) && (
+                    <span className='text-gray-500 font-normal ml-1'>(Opcional - Este producto no requiere terminación)</span>
+                  )}
                 </label>
-                <select
-                  value={formData.finish || 'Mate'}
-                  onChange={(e) => setFormData({ ...formData, finish: e.target.value })}
-                  className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                >
-                  <option value='Mate'>Mate</option>
-                  <option value='Satinado'>Satinado</option>
-                  <option value='Brillante'>Brillante</option>
-                  <option value='Rústico'>Rústico</option>
-                </select>
+                <FinishSelectorSingle
+                  value={formData.finish || ''}
+                  onChange={(finish) => {
+                    // ✅ Permitir null/undefined cuando se limpia el campo
+                    setFormData({ ...formData, finish: finish && finish.trim() !== '' ? finish : null })
+                    if (errors.finish) setErrors({ ...errors, finish: '' })
+                  }}
+                  placeholder={
+                    (!productData?.terminaciones || !Array.isArray(productData.terminaciones) || productData.terminaciones.length === 0)
+                      ? 'Opcional - Dejar vacío si no aplica'
+                      : 'Ej: Mate, Metálico, Brillante'
+                  }
+                  error={errors.finish}
+                  availableFinishes={productData?.terminaciones && Array.isArray(productData.terminaciones) ? productData.terminaciones : []}
+                />
               </div>
 
               <div>
@@ -792,9 +1750,23 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
             <h3 className='text-sm font-semibold text-gray-900 mb-4'>Precios y Stock</h3>
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Precio Lista *
-                </label>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Precio Lista *
+                  </label>
+                  {productData?.price && productData.price > 0 && !variant.id && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setFormData({ ...formData, price_list: productData.price || 0 })
+                        if (errors.price_list) setErrors({ ...errors, price_list: '' })
+                      }}
+                      className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                    >
+                      Usar: ${productData.price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    </button>
+                  )}
+                </div>
                 <div className='relative'>
                   <span className='absolute left-3 top-2.5 text-gray-500'>$</span>
                   <input
@@ -820,18 +1792,37 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
               </div>
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>
-                  Precio Venta
-                </label>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Precio Venta
+                  </label>
+                  {productData?.discounted_price && productData.discounted_price > 0 && !variant.id && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setFormData({ ...formData, price_sale: productData.discounted_price || undefined })
+                      }}
+                      className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                    >
+                      Usar: ${productData.discounted_price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                    </button>
+                  )}
+                </div>
                 <div className='relative'>
                   <span className='absolute left-3 top-2.5 text-gray-500'>$</span>
                   <input
                     type='number'
                     step='0.01'
                     value={formData.price_sale || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price_sale: e.target.value ? parseFloat(e.target.value) : 0 })
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setFormData({ 
+                        ...formData, 
+                        price_sale: value && value.trim() !== '' 
+                          ? parseFloat(value) 
+                          : undefined // ✅ Usar undefined en lugar de 0 para que sea opcional
+                      })
+                    }}
                     className='w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
                     placeholder='0.00'
                   />
@@ -839,7 +1830,23 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
               </div>
 
               <div>
-                <label className='block text-sm font-medium text-gray-700 mb-2'>Stock *</label>
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Stock *
+                  </label>
+                  {productData?.stock !== undefined && productData.stock >= 0 && !variant.id && (
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setFormData({ ...formData, stock: productData.stock || 0 })
+                        if (errors.stock) setErrors({ ...errors, stock: '' })
+                      }}
+                      className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blaze-orange-100 text-blaze-orange-800 border border-blaze-orange-200 hover:bg-blaze-orange-200 transition-colors'
+                    >
+                      Usar: {productData.stock}
+                    </button>
+                  )}
+                </div>
                 <input
                   type='number'
                   value={formData.stock || 0}
@@ -890,12 +1897,12 @@ function VariantModal({ variant, onSave, onCancel }: VariantModalProps) {
                 </button>
               </div>
 
-              <div className='flex items-center p-4 bg-yellow-50 rounded-lg border border-yellow-200'>
+              <div className='flex items-center p-4 bg-amber-50 rounded-lg border border-amber-200'>
                 <input
                   type='checkbox'
                   checked={formData.is_default || false}
                   onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                  className='w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500'
+                  className='w-4 h-4 text-amber-600 rounded focus:ring-amber-500'
                 />
                 <div className='ml-3 flex-1'>
                   <label className='text-sm font-medium text-gray-900'>

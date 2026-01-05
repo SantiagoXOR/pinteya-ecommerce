@@ -67,6 +67,7 @@ export interface SecurityAlert {
 export async function logSecurityEvent(
   event: Omit<SecurityEvent, 'id' | 'timestamp' | 'resolved'>
 ): Promise<void> {
+  // Usar try-catch global para asegurar que los errores de logging NO bloqueen operaciones críticas
   try {
     if (!supabaseAdmin) {
       console.warn('[SECURITY] Supabase admin no disponible para logging')
@@ -79,10 +80,42 @@ export async function logSecurityEvent(
       resolved: false,
     }
 
-    const { error } = await supabaseAdmin.from('security_events').insert(securityEvent)
+    // Intentar insertar en security_events, si no existe, usar admin_security_alerts como fallback
+    let { error } = await supabaseAdmin.from('security_events').insert(securityEvent)
 
-    if (error) {
+    if (error && error.code === 'PGRST205') {
+      // Tabla security_events no existe, usar admin_security_alerts como fallback
+      // admin_security_alerts NO tiene columna user_id, solo guardamos user_id en metadata
+      try {
+        const { error: fallbackError } = await supabaseAdmin
+          .from('admin_security_alerts')
+          .insert({
+            alert_type: securityEvent.event_type,
+            severity: securityEvent.severity,
+            message: securityEvent.description,
+            metadata: {
+              ...(securityEvent.metadata || {}),
+              user_id: securityEvent.user_id, // Guardar user_id en metadata (no como columna)
+            },
+            resolved: false,
+            timestamp: securityEvent.timestamp,
+          })
+
+        if (fallbackError) {
+          // Si el fallback también falla, solo loguear el error pero NO lanzar excepción
+          // Esto evita que los errores de logging bloqueen operaciones críticas
+          console.error('[SECURITY] Error guardando evento de seguridad (fallback):', fallbackError)
+        } else {
+          console.log(`[SECURITY] Evento registrado en admin_security_alerts: ${event.event_type} - ${event.description}`)
+        }
+      } catch (fallbackErr) {
+        // Capturar cualquier error del fallback y solo loguearlo, NO bloquear la operación
+        console.warn('[SECURITY] No se pudo registrar evento de seguridad (fallback), pero la operación continúa:', fallbackErr)
+      }
+    } else if (error) {
+      // Error diferente a tabla no encontrada - solo loguear
       console.error('[SECURITY] Error guardando evento de seguridad:', error)
+      // NO lanzar excepción - solo loguear el error
     } else {
       console.log(`[SECURITY] Evento registrado: ${event.event_type} - ${event.description}`)
     }
@@ -99,22 +132,35 @@ export async function logSecurityEvent(
  */
 export async function logAuthSuccess(
   userId: string,
-  context: SecurityContext,
+  context: SecurityContext | undefined | null,
   request?: NextRequest | NextApiRequest
 ): Promise<void> {
+  // Validación defensiva: si context es undefined/null, usar valores por defecto
+  if (!context) {
+    console.warn('[SECURITY] logAuthSuccess llamado con context undefined/null')
+    return
+  }
+
+  // Compatibilidad: aceptar tanto userRole como role, ipAddress como ip_address, userAgent como user_agent
+  const userRole = (context as any).userRole || (context as any).role || 'unknown'
+  const ipAddress = (context as any).ipAddress || (context as any).ip_address || 'unknown'
+  const userAgent = (context as any).userAgent || (context as any).user_agent || 'unknown'
+  const permissions = (context as any).permissions || []
+  const metadata = (context as any).metadata || {}
+
   await logSecurityEvent({
     user_id: userId,
     event_type: 'AUTH_SUCCESS',
     event_category: 'authentication',
     severity: 'low',
-    description: `Usuario autenticado exitosamente con rol: ${context.userRole}`,
+    description: `Usuario autenticado exitosamente con rol: ${userRole}`,
     metadata: {
-      role: context.userRole,
-      permissions: context.permissions,
-      emailVerified: context.metadata.emailVerified,
+      role: userRole,
+      permissions: permissions,
+      emailVerified: metadata.emailVerified || false,
     },
-    ip_address: context.ipAddress,
-    user_agent: context.userAgent,
+    ip_address: ipAddress,
+    user_agent: userAgent,
   })
 }
 
@@ -159,8 +205,20 @@ export async function logPermissionDenied(
   userId: string,
   operation: string,
   requiredPermissions: string[],
-  context: SecurityContext
+  context: SecurityContext | undefined | null
 ): Promise<void> {
+  // Validación defensiva
+  if (!context) {
+    console.warn('[SECURITY] logPermissionDenied llamado con context undefined/null')
+    return
+  }
+
+  // Compatibilidad: aceptar tanto userRole como role, ipAddress como ip_address, userAgent como user_agent
+  const userRole = (context as any).userRole || (context as any).role || 'unknown'
+  const ipAddress = (context as any).ipAddress || (context as any).ip_address || 'unknown'
+  const userAgent = (context as any).userAgent || (context as any).user_agent || 'unknown'
+  const permissions = (context as any).permissions || []
+
   await logSecurityEvent({
     user_id: userId,
     event_type: 'PERMISSION_DENIED',
@@ -170,11 +228,11 @@ export async function logPermissionDenied(
     metadata: {
       operation,
       requiredPermissions,
-      userRole: context.userRole,
-      userPermissions: context.permissions,
+      userRole: userRole,
+      userPermissions: permissions,
     },
-    ip_address: context.ipAddress,
-    user_agent: context.userAgent,
+    ip_address: ipAddress,
+    user_agent: userAgent,
   })
 }
 
@@ -185,9 +243,20 @@ export async function logDataAccess(
   userId: string,
   resource: string,
   action: string,
-  context: SecurityContext,
+  context: SecurityContext | undefined | null,
   metadata?: Record<string, any>
 ): Promise<void> {
+  // Validación defensiva
+  if (!context) {
+    console.warn('[SECURITY] logDataAccess llamado con context undefined/null')
+    return
+  }
+
+  // Compatibilidad: aceptar tanto userRole como role, ipAddress como ip_address, userAgent como user_agent
+  const userRole = (context as any).userRole || (context as any).role || 'unknown'
+  const ipAddress = (context as any).ipAddress || (context as any).ip_address || 'unknown'
+  const userAgent = (context as any).userAgent || (context as any).user_agent || 'unknown'
+
   await logSecurityEvent({
     user_id: userId,
     event_type: 'DATA_ACCESS',
@@ -197,11 +266,11 @@ export async function logDataAccess(
     metadata: {
       resource,
       action,
-      userRole: context.userRole,
+      userRole: userRole,
       ...metadata,
     },
-    ip_address: context.ipAddress,
-    user_agent: context.userAgent,
+    ip_address: ipAddress,
+    user_agent: userAgent,
   })
 }
 
@@ -212,9 +281,20 @@ export async function logAdminAction(
   userId: string,
   action: string,
   target: string,
-  context: SecurityContext,
+  context: SecurityContext | undefined | null,
   metadata?: Record<string, any>
 ): Promise<void> {
+  // Validación defensiva
+  if (!context) {
+    console.warn('[SECURITY] logAdminAction llamado con context undefined/null')
+    return
+  }
+
+  // Compatibilidad: aceptar tanto userRole como role, ipAddress como ip_address, userAgent como user_agent
+  const userRole = (context as any).userRole || (context as any).role || 'unknown'
+  const ipAddress = (context as any).ipAddress || (context as any).ip_address || 'unknown'
+  const userAgent = (context as any).userAgent || (context as any).user_agent || 'unknown'
+
   await logSecurityEvent({
     user_id: userId,
     event_type: 'ADMIN_ACTION',
@@ -224,11 +304,11 @@ export async function logAdminAction(
     metadata: {
       action,
       target,
-      userRole: context.userRole,
+      userRole: userRole,
       ...metadata,
     },
-    ip_address: context.ipAddress,
-    user_agent: context.userAgent,
+    ip_address: ipAddress,
+    user_agent: userAgent,
   })
 }
 

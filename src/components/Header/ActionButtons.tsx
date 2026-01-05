@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { User, ShoppingCart, LogIn, Package, LayoutDashboard, Shield } from 'lucide-react'
+import { User, ShoppingCart, LogIn, Package, LayoutDashboard, Shield } from '@/lib/optimized-imports'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSession, signIn, signOut } from 'next-auth/react'
@@ -88,7 +88,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
           variant='ghost'
           size='sm'
           onClick={handleCartClick}
-          className='relative p-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200 z-maximum'
+          className='relative p-2 text-white dark:text-gray-200 hover:text-black dark:hover:text-gray-100 hover:bg-bright-sun dark:hover:bg-gray-800 transition-all duration-200 z-maximum'
           data-testid='cart-icon'
         >
           <Image
@@ -117,7 +117,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
               <Button
                 variant='ghost'
                 size='sm'
-                className='p-1 hover:bg-bright-sun hover:text-black transition-all duration-200 rounded-full'
+                className='p-1 hover:bg-bright-sun dark:hover:bg-gray-800 hover:text-black dark:hover:text-gray-200 transition-all duration-200 rounded-full'
               >
                 <Avatar className='h-8 w-8 ring-2 ring-transparent hover:ring-bright-sun transition-all duration-200'>
                   <AvatarImage src={session?.user?.image || ''} />
@@ -148,7 +148,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href='/orders'>
+                <Link href='/mis-ordenes'>
                   <Package className='mr-2 h-4 w-4' />
                   Mis Órdenes
                 </Link>
@@ -165,7 +165,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
             variant='ghost'
             size='sm'
             onClick={handleSignIn}
-            className='p-2 hover:bg-bright-sun text-white hover:text-black transition-all duration-200'
+            className='p-2 hover:bg-bright-sun dark:hover:bg-gray-800 text-white dark:text-gray-200 hover:text-black dark:hover:text-gray-100 transition-all duration-200'
           >
             <div className='flex items-center gap-1'>
               <GoogleIcon className='w-4 h-4' />
@@ -185,7 +185,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
         variant='ghost'
         size='sm'
         onClick={handleCartClick}
-        className='relative text-white hover:text-black hover:bg-bright-sun px-3 py-2 transition-all duration-200 z-maximum'
+        className='relative text-white dark:text-gray-200 hover:text-black dark:hover:text-gray-100 hover:bg-bright-sun dark:hover:bg-gray-800 px-3 py-2 transition-all duration-200 z-maximum'
         data-testid='cart-icon'
         aria-label={`Carrito con ${cartItemCount} productos`}
       >
@@ -221,7 +221,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
           <DropdownMenuTrigger asChild>
             <Button
               variant='ghost'
-              className='flex items-center gap-2 px-3 py-2 text-white hover:text-black hover:bg-bright-sun transition-all duration-200 rounded-full'
+              className='flex items-center gap-2 px-3 py-2 text-white dark:text-gray-200 hover:text-black dark:hover:text-gray-100 hover:bg-bright-sun dark:hover:bg-gray-800 transition-all duration-200 rounded-full'
             >
               <Avatar className='h-8 w-8 ring-2 ring-transparent hover:ring-bright-sun transition-all duration-200'>
                 <AvatarImage src={session?.user?.image || ''} />
@@ -257,7 +257,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href='/orders'>
+              <Link href='/mis-ordenes'>
                 <Package className='mr-2 h-4 w-4' />
                 Mis Órdenes
               </Link>
@@ -276,7 +276,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
             variant='ghost'
             size='sm'
             onClick={handleSignIn}
-            className='text-white hover:text-black hover:bg-bright-sun transition-all duration-200'
+            className='text-white dark:text-gray-200 hover:text-black dark:hover:text-gray-100 hover:bg-bright-sun dark:hover:bg-gray-800 transition-all duration-200'
           >
             <div className='flex items-center gap-2'>
               <GoogleIcon className='w-4 h-4' />

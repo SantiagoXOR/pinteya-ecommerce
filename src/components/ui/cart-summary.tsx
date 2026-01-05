@@ -17,7 +17,7 @@ import {
   Percent,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 export interface CartItem {
@@ -138,23 +138,23 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
             className={cn(
               'flex items-center gap-2',
               isMobile &&
-                'justify-between text-base p-5 hover:bg-gray-50/50 transition-colors rounded-xl'
+                'justify-between text-sm px-4 py-3 hover:bg-gray-50/50 transition-colors rounded-xl'
             )}
           >
-            <div className={cn('flex items-center gap-2', isMobile && 'gap-3')}>
+            <div className={cn('flex items-center gap-2', isMobile && 'gap-2')}>
               {isMobile ? (
-                <div className='w-10 h-10 rounded-full bg-green-100 flex items-center justify-center'>
-                  <ShoppingCart className='w-5 h-5 text-green-600' />
+                <div className='w-8 h-8 rounded-full bg-green-100 flex items-center justify-center'>
+                  <ShoppingCart className='w-4 h-4 text-green-600' />
                 </div>
               ) : (
                 <ShoppingCart className='w-5 h-5 text-primary' />
               )}
               <div>
-                <span className={cn('font-semibold', isMobile && 'text-gray-900 block')}>
+                <span className={cn('font-semibold', isMobile && 'text-gray-900 block text-sm')}>
                   {isMobile ? 'Resumen del Pedido' : 'Resumen del Pedido'}
                 </span>
                 {isMobile && (
-                  <span className='text-sm text-gray-600'>
+                  <span className='text-xs text-gray-600'>
                     {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
                   </span>
                 )}
@@ -198,7 +198,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
             <div
               className={cn(
                 'space-y-3',
-                isCompact ? 'max-h-40' : isMobile ? 'max-h-48' : 'max-h-80',
+                isCompact ? 'max-h-40' : isMobile ? 'min-h-[320px] max-h-[calc(100vh-420px)] space-y-2' : 'max-h-80',
                 'overflow-y-auto',
                 isMobile && 'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'
               )}
@@ -230,7 +230,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                     <div
                       className={cn(
                         'flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0',
-                        isMobile && 'py-1.5'
+                        isMobile && 'py-1 min-h-[60px]'
                       )}
                     >
                       <div className='flex-1 pr-4'>
@@ -337,7 +337,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                 <div
                   className={cn(
                     'flex items-center justify-between font-semibold text-lg',
-                    isMobile && 'bg-green-50 p-4 rounded-lg border border-green-200'
+                    isMobile && 'bg-green-50 p-3 rounded-lg border border-green-200 text-base'
                   )}
                 >
                   <div className={cn(isMobile && 'flex flex-col')}>

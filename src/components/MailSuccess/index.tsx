@@ -7,7 +7,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { CheckCircle, Mail, Home, ArrowLeft, ExternalLink } from 'lucide-react'
+import { CheckCircle, Mail, Home, ArrowLeft, ExternalLink } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

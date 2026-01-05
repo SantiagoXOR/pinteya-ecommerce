@@ -24,3 +24,34 @@ body [data-admin-layout] {
   margin: 0 !important;
   padding: 0 !important;
 }
+
+/* Scrollbar horizontal siempre visible para tablas de productos */
+.products-table-scroll {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+  
+  /* Forzar scrollbar siempre visible */
+  overflow-x: scroll !important;
+  overflow-y: auto;
+}
+
+.products-table-scroll::-webkit-scrollbar {
+  height: 10px;
+  background: #f1f5f9;
+}
+
+.products-table-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 5px;
+}
+
+.products-table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 5px;
+  border: 2px solid #f1f5f9;
+}
+
+.products-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

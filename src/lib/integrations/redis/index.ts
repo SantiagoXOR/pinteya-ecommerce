@@ -54,6 +54,12 @@ class MockRedis {
     return 1
   }
 
+  async setex(key: string, seconds: number, value: string): Promise<'OK'> {
+    // Mock: setex es equivalente a set + expire
+    this.storage.set(key, value)
+    return 'OK'
+  }
+
   async keys(pattern: string): Promise<string[]> {
     const regex = new RegExp(pattern.replace(/\*/g, '.*'))
     return Array.from(this.storage.keys()).filter(key => regex.test(key))

@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Percent } from 'lucide-react'
+import { ArrowRight, Percent } from '@/lib/optimized-imports'
 
 export interface PromoBannersProps {
   bannerId?: number // Si se proporciona, muestra solo ese banner
@@ -11,12 +11,13 @@ export interface PromoBannersProps {
 
 const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set())
 
   const banners = [
     {
       id: 1,
-      title: 'PINTURA FLASH DAYS',
-      subtitle: 'En productos seleccionados',
+      title: 'EN TODOS NUESTROS PRODUCTOS',
+      subtitle: '',
       badge: '30% OFF',
       badgeColor: 'bg-yellow-400 text-gray-900',
       ctaText: 'Ver Todos los Productos',
@@ -65,12 +66,12 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
     : banners
 
   return (
-    <section className='px-4 sm:px-4 lg:px-8'>
+    <section className='px-4 sm:px-4 lg:px-8 pb-0 pt-0'>
       <div className='max-w-7xl mx-auto relative'>
         {/* Contenedor con scroll horizontal */}
         <div
           ref={scrollRef}
-          className='flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth pb-2'
+          className='flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth'
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
         {bannersToShow.map((banner) => {
@@ -85,60 +86,121 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
             >
               {/* DISEÑO COMPACTO PARA BANNERS 1 Y 2 */}
               {isCompactBanner ? (
-                <div className='relative h-12 md:h-14'>
+                <div 
+                  className='relative h-12 md:h-14'
+                  style={{ minHeight: '48px' }} // ⚡ CLS FIX: Altura mínima fija (h-12 = 48px)
+                >
+                  {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
+                  <div 
+                    className={`absolute inset-0 skeleton-loading z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                    aria-hidden="true"
+                  />
+                  
                   {/* Background Image optimizada */}
                   {/* Solo bannerId 1 tiene priority (above-fold), los demás usan lazy loading */}
                   <Image
                     src={banner.bgImage}
                     alt={banner.title}
                     fill
-                    className='object-cover object-center'
+                    className='object-cover object-center z-10'
                     sizes='(max-width: 768px) 100vw, 1200px'
                     priority={banner.id === 1}
                     loading={banner.id === 1 ? undefined : 'lazy'}
+                    quality={65} // ⚡ OPTIMIZACIÓN: Reducido de 75 a 65 para ahorrar 20.9 KiB (Lighthouse)
+                    style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito
+                    onLoad={() => {
+                      setImagesLoaded(prev => new Set(prev).add(banner.id))
+                    }}
                   />
                   
                   {/* Gradient Overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient}`}></div>
+                  <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient} z-20`}></div>
                   
                   {/* Content - Súper compacto */}
-                  <div className='relative h-full flex items-center justify-between px-3 md:px-5'>
+                  <div className='relative h-full flex items-center justify-between px-2 md:px-3 z-30' style={{ opacity: banner.id === 2 ? 0.85 : 1 }}>
                     {/* Left Content */}
                     <div className='flex items-center gap-1.5 md:gap-2'>
-                      {/* Badge mini */}
-                      <div className={`inline-flex items-center ${banner.badgeColor} text-white px-1.5 py-0.5 rounded-full font-bold text-[10px] md:text-xs shadow-sm`}>
-                        <span>{banner.badge}</span>
-                      </div>
+                      {/* Badge destacado - Solo para banner Flash Days */}
+                      {banner.id === 1 ? (
+                        <div className={`inline-flex items-center justify-center ${banner.badgeColor} px-2.5 py-1 md:px-3 md:py-1.5 rounded-full font-black text-xs md:text-base shadow-xl ring-2 ring-yellow-300 ring-opacity-70 transform hover:scale-105 transition-transform duration-200`}>
+                          <span className='whitespace-nowrap' style={{ color: 'rgba(235, 99, 19, 1)' }}>{banner.badge}</span>
+                        </div>
+                      ) : (
+                        <div className={`inline-flex items-center ${banner.badgeColor} text-white px-1.5 py-0.5 rounded-full font-bold text-[10px] md:text-xs shadow-sm`}>
+                          <span>{banner.badge}</span>
+                        </div>
+                      )}
                       
                       {/* Text Content - Solo título */}
-                      <h2 className='text-sm md:text-lg font-black text-white leading-none'>
+                      <h2 className='text-sm md:text-lg font-medium text-white leading-none' style={{ letterSpacing: (banner.id === 1 || banner.id === 2) ? '3px' : 'normal' }}>
                         {banner.title}
                       </h2>
                     </div>
 
                     {/* CTA Button - Flecha mini en círculo */}
-                    <div className={`flex items-center justify-center ${banner.id === 1 ? 'bg-yellow-400 hover:bg-yellow-300' : 'bg-white hover:bg-gray-100'} text-gray-900 w-7 h-7 md:w-9 md:h-9 rounded-full transition-all shadow-sm hover:shadow-md hover:scale-110`}>
-                      <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} />
+                    {/* ⚡ FASE 8: Optimizado - reemplazar background-color animado por opacity */}
+                    <div 
+                      className={`flex items-center justify-center text-gray-900 w-7 h-7 md:w-9 md:h-9 rounded-full transition-transform shadow-sm hover:scale-110 relative ${
+                        banner.id === 1 ? 'bg-yellow-400' : 'bg-white'
+                      }`}
+                      style={{
+                        opacity: 1,
+                      }}
+                      onMouseEnter={(e) => {
+                        const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement
+                        if (overlay) overlay.style.opacity = '1'
+                        const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                        if (shadow) shadow.style.opacity = '1'
+                      }}
+                      onMouseLeave={(e) => {
+                        const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement
+                        if (overlay) overlay.style.opacity = '0'
+                        const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                        if (shadow) shadow.style.opacity = '0'
+                      }}
+                    >
+                      {/* ⚡ FASE 8: Overlay para hover effect usando opacity */}
+                      <span 
+                        className={`absolute inset-0 rounded-full opacity-0 hover-overlay transition-opacity duration-300 pointer-events-none ${
+                          banner.id === 1 ? 'bg-yellow-300' : 'bg-gray-100'
+                        }`}
+                      />
+                      <span className="absolute inset-0 rounded-full shadow-md opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
+                      <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} style={{ color: banner.id === 1 ? 'rgba(235, 99, 19, 1)' : 'rgba(17, 24, 39, 1)' }} />
                     </div>
                   </div>
                 </div>
               ) : (
                 // DISEÑO NORMAL PARA OTROS BANNERS
-                <div className='relative h-16 md:h-20'>
+                <div 
+                  className='relative h-16 md:h-20'
+                  style={{ minHeight: '64px' }} // ⚡ CLS FIX: Altura mínima fija (h-16 = 64px)
+                >
+                  {/* ⚡ CLS FIX: Skeleton placeholder mientras carga la imagen */}
+                  <div 
+                    className={`absolute inset-0 skeleton-loading z-0 transition-opacity duration-300 ${imagesLoaded.has(banner.id) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                    aria-hidden="true"
+                  />
+                  
                   <Image
                     src={banner.bgImage}
                     alt={banner.title}
                     fill
-                    className='object-cover'
+                    className='object-cover z-10'
                     sizes='(max-width: 768px) 100vw, 1200px'
                     loading='lazy'
+                    quality={65} // ⚡ OPTIMIZACIÓN: Reducido de 75 a 65 para ahorrar tamaño
+                    style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito
+                    onLoad={() => {
+                      setImagesLoaded(prev => new Set(prev).add(banner.id))
+                    }}
                   />
                   
                   {/* Gradient Overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient}`}></div>
+                  <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient} z-20`}></div>
                   
                   {/* Content - Simplificado para 1-2 líneas */}
-                  <div className='relative h-full flex items-center justify-between px-4 md:px-8'>
+                  <div className='relative h-full flex items-center justify-between px-4 md:px-8 z-30'>
                     {/* Left Content */}
                     <div className='flex items-center gap-3 md:gap-4'>
                       {/* Badge más pequeño */}
@@ -159,7 +221,19 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     </div>
 
                     {/* CTA más compacto */}
-                    <div className='flex items-center gap-2 bg-white/95 text-gray-900 px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold hover:bg-white transition-colors text-xs md:text-sm'>
+                    {/* ⚡ FASE 8: Optimizado - reemplazar background-color animado por opacity */}
+                    <div 
+                      className='flex items-center gap-2 bg-white/95 text-gray-900 px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold text-xs md:text-sm relative'
+                      style={{
+                        opacity: 0.95,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.opacity = '1'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = '0.95'
+                      }}
+                    >
                       <span className='hidden sm:inline'>{banner.ctaText}</span>
                       <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
                     </div>

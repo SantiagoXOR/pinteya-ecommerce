@@ -490,4 +490,43 @@ test.describe('Cart Persistence E2E Tests', () => {
       expect(isCounterVisible).toBeFalsy()
     }
   })
+
+  test('should display at least 2 products in mobile viewport', async ({ page }) => {
+    // Configurar viewport mobile
+    await page.setViewportSize({ width: 375, height: 667 })
+    
+    await page.goto('/shop')
+    await page.waitForSelector('[data-testid="product-card"]')
+
+    // Agregar al menos 2 productos
+    const products = page.locator('[data-testid="product-card"]')
+    const productCount = Math.min(await products.count(), 2)
+
+    for (let i = 0; i < productCount; i++) {
+      await products.nth(i).locator('[data-testid="add-to-cart-btn"]').click()
+      await page.waitForTimeout(500)
+    }
+
+    // Abrir modal del carrito
+    await page.click('[data-testid="cart-icon"]')
+    await page.waitForSelector('[data-testid="cart-item"]', { timeout: 5000 })
+
+    // Verificar que hay al menos 2 productos visibles
+    const cartItems = page.locator('[data-testid="cart-item"]')
+    const itemCount = await cartItems.count()
+    expect(itemCount).toBeGreaterThanOrEqual(2)
+
+    // Verificar que los primeros 2 productos son visibles
+    await expect(cartItems.first()).toBeVisible()
+    await expect(cartItems.nth(1)).toBeVisible()
+
+    // Verificar altura del área de scroll
+    const scrollHeight = await page.evaluate(() => {
+      const scrollElement = document.querySelector('.flex-1.overflow-y-auto, [class*="overflow-y-auto"]')
+      if (!scrollElement) return 0
+      return scrollElement.getBoundingClientRect().height
+    })
+
+    expect(scrollHeight).toBeGreaterThanOrEqual(280)
+  })
 })

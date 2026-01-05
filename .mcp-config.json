@@ -18,13 +18,6 @@
       "restartPolicy": "on-failure",
       "timeout": 30000
     },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"],
-      "maxInstances": 1,
-      "restartPolicy": "on-failure",
-      "timeout": 30000
-    },
     "playwright": {
       "command": "npx",
       "args": ["-y", "@playwright/mcp@latest"],
@@ -36,12 +29,24 @@
       "command": "npx",
       "args": [
         "-y",
-        "@supabase/mcp-server-supabase@latest",
+        "@supabase/mcp-server-supabase@0.5.10",
+        "--read-only",
         "--project-ref=aakzspzfulgftqlgwkpb"
       ],
       "env": {
         "SUPABASE_ACCESS_TOKEN": "sbp_973e7c2a5f8440f4b073cf40b7fd543d265f5e6f"
       },
+      "maxInstances": 1,
+      "restartPolicy": "on-failure",
+      "timeout": 30000
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "shadcn@latest",
+        "mcp"
+      ],
       "maxInstances": 1,
       "restartPolicy": "on-failure",
       "timeout": 30000

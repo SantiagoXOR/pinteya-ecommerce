@@ -22,7 +22,7 @@ import {
   Activity,
   Zap,
   AlertTriangle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface TestFlow {
   id: string

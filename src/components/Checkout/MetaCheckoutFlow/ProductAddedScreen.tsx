@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle, ShoppingCart, ArrowRight, Shield, Truck, Clock } from 'lucide-react'
+import { CheckCircle, ShoppingCart, ArrowRight, Shield, Truck, Clock } from '@/lib/optimized-imports'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { ProductRecommendations } from './ProductRecommendations'
@@ -151,7 +151,7 @@ export const ProductAddedScreen: React.FC<ProductAddedScreenProps> = ({
   // Mostrar loading mientras Redux se inicializa
   if (!isReduxReady) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50 flex items-center justify-center p-4'>
+      <div className='min-h-screen flex items-center justify-center p-4'>
         <Card className='max-w-md w-full'>
           <CardContent className='p-6 text-center'>
             <div className='w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4' />
@@ -164,7 +164,7 @@ export const ProductAddedScreen: React.FC<ProductAddedScreenProps> = ({
 
   if (!displayedProduct) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50 flex items-center justify-center p-4'>
+      <div className='min-h-screen flex items-center justify-center p-4'>
         <Card className='max-w-md w-full'>
           <CardContent className='p-6 text-center'>
             <ShoppingCart className='w-16 h-16 text-gray-400 mx-auto mb-4' />
@@ -184,7 +184,7 @@ export const ProductAddedScreen: React.FC<ProductAddedScreenProps> = ({
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-yellow-50'>
+    <div className='min-h-screen'>
       <div className='max-w-4xl mx-auto px-4 py-8'>
         {/* Animación de confirmación */}
         <div

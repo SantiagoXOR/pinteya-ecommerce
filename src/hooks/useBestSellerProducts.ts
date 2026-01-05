@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Product } from '@/types/product'
 import { getProducts } from '@/lib/api/products'
 import { adaptApiProductsToLegacy } from '@/lib/adapters/productAdapter'
-import { productQueryKeys } from './queries/productQueryKeys'
+import { productQueryKeys, normalizeProductFilters } from './queries/productQueryKeys'
 
 // ===================================
 // HOOK: useBestSellerProducts
@@ -60,64 +60,149 @@ export const useBestSellerProducts = ({
   enableCache = true,
 }: UseBestSellerProductsOptions): UseBestSellerProductsReturn => {
   
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: productQueryKeys.bestseller(categorySlug),
+  // ✅ LOG: Verificar que el hook se está ejecutando
+  console.log('🟡 [useBestSellerProducts] HOOK EJECUTÁNDOSE', {
+    categorySlug,
+    timestamp: new Date().toISOString(),
+    isClient: typeof window !== 'undefined'
+  })
+  
+  // ✅ FIX: Usar el mismo formato que useProductsByCategory para evitar errores de TypeScript
+  // ⚡ OPTIMIZACIÓN: Normalizar filtros para compartir cache con useFilteredProducts
+  const filters = {
+    limit: categorySlug ? 20 : 30,
+    sortBy: categorySlug ? 'created_at' : 'price',
+    sortOrder: 'desc' as const,
+    ...(categorySlug ? { category: categorySlug } : {}),
+  }
+  const normalizedFilters = normalizeProductFilters(filters)
+  
+  // ⚡ OPTIMIZACIÓN: Si no hay categoría, usar la misma queryKey que useFilteredProducts
+  // para compartir cache entre componentes
+  const queryKey = categorySlug 
+    ? ['products', 'bestsellers', normalizedFilters] as const
+    : ['filtered-products', normalizedFilters] as const
+  
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey,
     queryFn: async (): Promise<Product[]> => {
-      // Construir filtros según si hay categoría o no
-      const filters: any = {
-        limit: categorySlug ? 50 : 100,
-        sortBy: categorySlug ? 'created_at' : 'price',
-        sortOrder: 'desc',
-      }
-      
-      if (categorySlug) {
-        filters.category = categorySlug
-      }
+      console.log('🟡 [useBestSellerProducts] INICIANDO QUERY', { categorySlug })
+      try {
+        // ⚡ OPTIMIZACIÓN: Usar los mismos filtros normalizados que se usaron en queryKey
+        // Esto asegura consistencia y permite compartir cache con useFilteredProducts
+        const filters: any = normalizedFilters
 
-      // Fetch productos usando la función de API existente
-      const response = await getProducts(filters)
-      
-      if (!response.success || !response.data) {
-        throw new Error(response.message || 'Error al cargar productos')
-      }
-
-      // Adaptar productos del formato API al formato legacy
-      const fetchedProducts = adaptApiProductsToLegacy(response.data)
-      
-      let finalProducts: Product[]
-      
-      if (!categorySlug) {
-        // Sin categoría: filtrar solo los 10 productos específicos
-        const specificProducts = fetchedProducts.filter(p => 
-          BESTSELLER_PRODUCTS_SLUGS.includes((p.slug || '') as any)
-        )
+        // Fetch productos usando la función de API existente
+        console.log('🟡 [useBestSellerProducts] Llamando getProducts con filters:', filters)
+        const response = await getProducts(filters)
         
-        // Ordenar según el orden de prioridad y limitar a 10
-        finalProducts = orderProductsByPriority(specificProducts, BESTSELLER_PRODUCTS_SLUGS).slice(0, 10)
-      } else {
-        // Con categoría: usar todos los productos de la categoría
-        finalProducts = fetchedProducts
-      }
+        // ✅ FIX: Verificar que response existe antes de acceder a sus propiedades
+        if (!response) {
+          throw new Error('Respuesta vacía del servidor')
+        }
+        
+        console.log('🟡 [useBestSellerProducts] Respuesta recibida:', {
+          success: response?.success,
+          hasData: !!response?.data,
+          dataLength: Array.isArray(response?.data) ? response.data.length : 'NO ARRAY',
+          message: response?.message
+        })
+        
+        // ✅ FIX CRÍTICO: Si la respuesta no es exitosa, lanzar error para que la query se complete
+        if (!response || !response.success) {
+          const errorMessage = response?.message || response?.error || 'Error al cargar productos'
+          console.error('🟡 [useBestSellerProducts] ❌ Respuesta no exitosa:', errorMessage)
+          throw new Error(errorMessage)
+        }
 
-      return finalProducts
+        // ✅ FIX: Verificar que hay datos antes de procesar
+        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+          console.warn('🟡 [useBestSellerProducts] ⚠️ No hay datos en la respuesta, devolviendo array vacío')
+          // Si no hay datos pero la respuesta fue exitosa, devolver array vacío (no es error)
+          return []
+        }
+
+        // Adaptar productos del formato API al formato legacy
+        const fetchedProducts = adaptApiProductsToLegacy(response.data)
+        console.log('🟡 [useBestSellerProducts] Productos adaptados:', fetchedProducts.length)
+        
+        let finalProducts: Product[]
+        
+        if (!categorySlug) {
+          // Sin categoría: filtrar solo los 10 productos específicos
+          const specificProducts = fetchedProducts.filter(p => 
+            BESTSELLER_PRODUCTS_SLUGS.includes((p.slug || '') as any)
+          )
+          
+          // Ordenar según el orden de prioridad y limitar a 10
+          finalProducts = orderProductsByPriority(specificProducts, BESTSELLER_PRODUCTS_SLUGS).slice(0, 10)
+        } else {
+          // Con categoría: usar todos los productos de la categoría
+          finalProducts = fetchedProducts
+        }
+
+        console.log('🟡 [useBestSellerProducts] ✅ Query completada exitosamente:', {
+          finalProductsCount: finalProducts.length,
+          categorySlug
+        })
+        return finalProducts
+      } catch (err) {
+        // ✅ FIX: Asegurar que siempre se lance un error válido para que la query se complete
+        let errorMessage = 'Error inesperado al cargar productos'
+        
+        if (err instanceof Error) {
+          errorMessage = err.message || errorMessage
+        } else if (typeof err === 'string') {
+          errorMessage = err
+        } else if (err && typeof err === 'object' && 'message' in err) {
+          errorMessage = String((err as any).message) || errorMessage
+        }
+        
+        // Asegurar que el mensaje no sea undefined o vacío
+        if (!errorMessage || errorMessage.trim() === '') {
+          errorMessage = 'Error inesperado al cargar productos'
+        }
+        
+        console.error('🟡 [useBestSellerProducts] ❌ Error en queryFn:', errorMessage, err)
+        throw new Error(errorMessage)
+      }
     },
-    // Configuración optimizada para Home-v2
-    staleTime: enableCache ? 5 * 60 * 1000 : 0, // 5 minutos de caché
+    // ✅ FIX: Asegurar que la query siempre se ejecute
+    enabled: true,
+    // ⚡ OPTIMIZACIÓN: staleTime de 10 minutos para reducir refetches innecesarios
+    staleTime: 10 * 60 * 1000, // 10 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos en caché
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retry: 1, // Reducir retries para evitar esperas largas
+    retryDelay: 2000, // 2 segundos entre retries
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
-    refetchOnMount: false, // Usar caché si está disponible
+    refetchOnMount: false, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
     refetchOnReconnect: true, // Refetch si se reconecta
   })
 
+  // ⚡ OPTIMIZACIÓN: Eliminado useEffect que fuerza refetch - React Query maneja esto automáticamente
+  // ⚡ OPTIMIZACIÓN: Eliminado useEffect de logging - no es necesario para producción
+
+  // ✅ FIX CRÍTICO: Determinar loading de forma más confiable
+  // isLoading puede quedarse en true si la query nunca se completa
+  // Si hay datos, no mostrar loading aunque isLoading sea true
+  // Si hay error, no mostrar loading
+  // Usar isLoading directamente pero verificar que no haya datos
+  const isActuallyLoading = isLoading && !data && !error
+
+  console.log('🟡 [useBestSellerProducts] Retornando valores:', {
+    productsCount: Array.isArray(data) ? data.length : 0,
+    isActuallyLoading,
+    hasError: !!error
+  })
+
   return {
-    products: data || [],
-    isLoading,
+    products: Array.isArray(data) ? data : [],
+    isLoading: isActuallyLoading,
     // Convertir Error a string para mantener compatibilidad con componentes
     error: error ? (error instanceof Error ? error.message : String(error)) : null,
     refetch: () => {
+      console.log('🟡 [useBestSellerProducts] refetch() llamado manualmente')
       refetch()
     },
   }

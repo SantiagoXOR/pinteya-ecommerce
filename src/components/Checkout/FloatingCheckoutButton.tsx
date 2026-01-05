@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems, selectTotalPrice } from '@/redux/features/cart-slice'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 export const FloatingCheckoutButton: React.FC = () => {

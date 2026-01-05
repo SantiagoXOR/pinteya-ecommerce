@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, X, ZoomIn, AlertCircle } from 'lucide-react'
+import { Upload, X, ZoomIn, AlertCircle } from '@/lib/optimized-imports'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
 

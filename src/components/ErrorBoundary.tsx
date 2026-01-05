@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Alert, AlertDescription } from './ui/alert'
 import { proactiveMonitoring } from '../lib/monitoring/proactive-monitoring'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
-import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Home, Bug } from '@/lib/optimized-imports'
 
 interface Props {
   children: ReactNode

@@ -41,7 +41,7 @@ import {
   AlertTriangle,
   Clock,
   Gauge,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // ===================================
 // INTERFACES

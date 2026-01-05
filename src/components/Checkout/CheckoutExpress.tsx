@@ -19,7 +19,7 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import ExpressForm from './ExpressForm'
 import PaymentMethodSelector from './PaymentMethodSelector'
 import MercadoPagoWallet, { MercadoPagoWalletFallback } from './MercadoPagoWallet'

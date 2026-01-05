@@ -30,7 +30,7 @@ import {
   Settings,
   Download,
   RefreshCw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Importar managers SEO
 // import { seoAnalyticsManager } from '@/lib/seo/seo-analytics-manager'; // Comentado temporalmente para build

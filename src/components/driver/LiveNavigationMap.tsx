@@ -9,7 +9,7 @@ import { GoogleMap, DirectionsRenderer, Marker, InfoWindow } from '@react-google
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Navigation, MapPin, CheckCircle, Clock, AlertTriangle, Phone, Package } from 'lucide-react'
+import { Navigation, MapPin, CheckCircle, Clock, AlertTriangle, Phone, Package } from '@/lib/optimized-imports'
 import { toast } from 'sonner'
 
 interface DeliveryStop {

@@ -54,12 +54,17 @@ nano .env.local
 ### **4. Iniciar Desarrollo**
 
 ```bash
-# Iniciar servidor de desarrollo
+# Iniciar servidor de desarrollo con Turbopack (recomendado - 5-10x más rápido)
+npm run dev:turbo
+
+# O iniciar servidor de desarrollo tradicional
 npm run dev
 
 # La aplicación estará disponible en:
-# http://localhost:3001
+# http://localhost:3000
 ```
+
+> **💡 Nota:** Se recomienda usar `npm run dev:turbo` para compilación más rápida (Next.js 16 con Turbopack)
 
 ## ⚙️ Variables de Entorno
 
@@ -71,9 +76,11 @@ NEXT_PUBLIC_SUPABASE_URL=https://aakzspzfulgftqlgwkpb.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key-aqui
 SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key-aqui
 
-# Clerk Authentication (OPCIONAL para desarrollo)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=[STRIPE_PUBLIC_KEY_REMOVED]tu-publishable-key
-CLERK_SECRET_KEY=[STRIPE_SECRET_KEY_REMOVED]tu-secret-key
+# NextAuth Authentication (REQUERIDO)
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=tu-secret-key-generado-con-openssl-rand-base64-32
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=tu-google-client-id
+GOOGLE_CLIENT_SECRET=tu-google-client-secret
 
 # MercadoPago Payment Gateway (OPCIONAL para desarrollo)
 MERCADOPAGO_ACCESS_TOKEN=APP_USR-tu-access-token
@@ -81,7 +88,7 @@ NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=APP_USR-tu-public-key
 MERCADOPAGO_CLIENT_ID=tu-client-id
 
 # Application URLs
-NEXT_PUBLIC_APP_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ### **Obtener Credenciales**
@@ -94,12 +101,15 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 4. Ve a Settings > API
 5. Copia las keys necesarias
 
-#### **Clerk** (Opcional)
+#### **NextAuth con Google OAuth** (Requerido)
 
-1. Ve a [clerk.com](https://clerk.com)
-2. Crea una cuenta
-3. Crea una nueva aplicación
-4. Copia las keys desde el dashboard
+1. Ve a [Google Cloud Console](https://console.cloud.google.com)
+2. Crea un nuevo proyecto o selecciona uno existente
+3. Habilita Google+ API
+4. Crea credenciales OAuth 2.0
+5. Agrega `http://localhost:3000/api/auth/callback/google` como URI de redirección
+6. Copia el Client ID y Client Secret
+7. Genera `NEXTAUTH_SECRET` con: `openssl rand -base64 32`
 
 #### **MercadoPago** (Opcional)
 
@@ -114,10 +124,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 
 ```json
 {
-  "next": "^15.3.3",
-  "react": "^18.2.0",
+  "next": "^16.0.8",
+  "react": "^18.3.1",
   "typescript": "^5.7.3",
-  "@clerk/nextjs": "^6.19.4",
+  "next-auth": "^5.0.0-beta.29",
   "@supabase/supabase-js": "^2.50.0",
   "mercadopago": "^2.7.0",
   "tailwindcss": "^3.4.17",
@@ -145,7 +155,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ### **Desarrollo**
 
 ```bash
-npm run dev          # Iniciar servidor de desarrollo
+npm run dev          # Iniciar servidor de desarrollo (tradicional)
+npm run dev:turbo    # Iniciar servidor con Turbopack (recomendado - más rápido)
 npm run build        # Construir para producción
 npm run start        # Iniciar servidor de producción
 npm run lint         # Ejecutar ESLint
@@ -190,8 +201,9 @@ El proyecto incluye datos de ejemplo que se cargan automáticamente:
 ### **1. Servidor de Desarrollo**
 
 ```bash
-npm run dev
-# Debería mostrar: Ready - started server on 0.0.0.0:3001
+npm run dev:turbo
+# Debería mostrar: Ready - started server on 0.0.0.0:3000
+# Con Turbopack habilitado para compilación más rápida
 ```
 
 ### **2. Build de Producción**
@@ -217,14 +229,17 @@ npm run lint
 
 ## 🚨 Solución de Problemas
 
-### **Error: Puerto 3001 en uso**
+### **Error: Puerto 3000 en uso**
 
 ```bash
 # Cambiar puerto en package.json
-"dev": "next dev -p 3002"
+"dev": "next dev --turbo -p 3001"
 
 # O matar proceso existente
-lsof -ti:3001 | xargs kill -9
+# Windows (PowerShell):
+Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process
+# macOS/Linux:
+lsof -ti:3000 | xargs kill -9
 ```
 
 ### **Error: Dependencias**
@@ -287,7 +302,7 @@ npm run test:api
 - [ ] Servidor de desarrollo funcionando (`npm run dev`)
 - [ ] Tests pasando (`npm test`)
 - [ ] Build exitoso (`npm run build`)
-- [ ] Aplicación accesible en http://localhost:3001
+- [ ] Aplicación accesible en http://localhost:3000
 
 ## 🔗 Próximos Pasos
 

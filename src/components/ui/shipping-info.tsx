@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
-import { Truck, Clock, MapPin, Star, Shield } from 'lucide-react'
+import { Truck, Clock, MapPin, Star, Shield } from '@/lib/optimized-imports'
 
 const shippingInfoVariants = cva('flex items-center gap-2 text-sm', {
   variants: {

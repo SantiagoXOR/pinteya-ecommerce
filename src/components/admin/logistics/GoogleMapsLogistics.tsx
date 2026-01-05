@@ -39,7 +39,7 @@ import {
   Navigation,
   Zap,
   Settings,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { RouteOptimizationPanel } from './RouteOptimizationPanel'
 import { RouteVisualization } from './RouteVisualization'
 import { useRouteOptimization } from '@/hooks/admin/useRouteOptimization'

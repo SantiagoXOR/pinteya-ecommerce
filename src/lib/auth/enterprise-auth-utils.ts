@@ -126,15 +126,44 @@ export async function getEnterpriseAuthContext(
     const testAdmin = getHeader(request, 'x-test-admin')
     const testEmail = getHeader(request, 'x-admin-email')
 
-    // Bypass para tests E2E
-    if (testAdmin === 'true' && testEmail === 'santiago@xor.com.ar') {
-      console.log('[Enterprise Auth] Test mode - bypassing authentication')
+    // Bypass para tests E2E - SOLO EN DESARROLLO/TEST Y CON VERIFICACIÓN DE SEGURIDAD
+    if (testAdmin === 'true' && testEmail) {
+      // CRÍTICO: Solo permitir en desarrollo/test, nunca en producción
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('[Enterprise Auth] Intento de bypass de test en producción - BLOQUEADO')
+        return {
+          success: false,
+          error: 'Test bypass no permitido en producción',
+          code: 'PRODUCTION_BYPASS_BLOCKED',
+          status: 403,
+        }
+      }
+
+      // Lista blanca de emails permitidos para tests (solo emails con rol admin en BD)
+      const ALLOWED_TEST_ADMIN_EMAILS = [
+        'santiago@xor.com.ar',
+        'pinteya.app@gmail.com',
+        'pinturasmascolor@gmail.com',
+      ]
+
+      // Verificar que el email esté en la lista blanca
+      if (!ALLOWED_TEST_ADMIN_EMAILS.includes(testEmail)) {
+        console.warn(`[Enterprise Auth] Intento de bypass con email no autorizado: ${testEmail}`)
+        return {
+          success: false,
+          error: 'Email no autorizado para test bypass',
+          code: 'UNAUTHORIZED_TEST_EMAIL',
+          status: 403,
+        }
+      }
+
+      console.log(`[Enterprise Auth] Test mode - bypassing authentication para ${testEmail} (solo desarrollo/test)`)
       return {
         success: true,
         context: {
           userId: 'test-admin-user',
           sessionId: 'test-session',
-          email: 'santiago@xor.com.ar',
+          email: testEmail,
           role: 'admin',
           permissions: [
             'admin_access',
@@ -173,7 +202,7 @@ export async function getEnterpriseAuthContext(
             context: {
               userId: 'dev-admin',
               sessionId: 'dev-session',
-              email: 'santiago@xor.com.ar',
+              email: 'admin@bypass.dev',
               role: 'admin',
               permissions: [
                 'admin_access',
@@ -304,7 +333,13 @@ export async function getEnterpriseAuthContext(
           await logPermissionDenied(
             userId,
             `Permission validation failed: ${permissionResult.error}`,
-            request
+            config.requiredPermissions || [],
+            {
+              ipAddress: getClientIP(request),
+              userAgent: getHeader(request, 'user-agent') || 'unknown',
+              userRole: 'unknown', // No disponible aún en este punto
+              permissions: [],
+            }
           )
 
           return {
@@ -337,7 +372,13 @@ export async function getEnterpriseAuthContext(
       await logPermissionDenied(
         userId,
         `Role validation failed: required ${config.requiredRole}, got ${userRole}`,
-        request
+        config.requiredPermissions || [],
+        {
+          ipAddress: getClientIP(request),
+          userAgent: getHeader(request, 'user-agent') || 'unknown',
+          userRole: userRole,
+          permissions: userPermissions,
+        }
       )
 
       return {
@@ -358,7 +399,13 @@ export async function getEnterpriseAuthContext(
         await logPermissionDenied(
           userId,
           `Permission validation failed: missing ${config.requiredPermissions.join(', ')}`,
-          request
+          config.requiredPermissions,
+          {
+            ipAddress: getClientIP(request),
+            userAgent: getHeader(request, 'user-agent') || 'unknown',
+            userRole: userRole,
+            permissions: userPermissions,
+          }
         )
 
         return {
@@ -400,11 +447,18 @@ export async function getEnterpriseAuthContext(
       userId,
       {
         ip_address: ipAddress,
+        ipAddress: ipAddress, // Compatibilidad con SecurityContext
         user_agent: userAgent,
+        userAgent: userAgent, // Compatibilidad con SecurityContext
         session_id: sessionId,
+        sessionId: sessionId, // Compatibilidad con SecurityContext
         security_level: config.securityLevel || 'medium',
         permissions: userPermissions,
         role: userRole,
+        userRole: userRole, // Compatibilidad con SecurityContext
+        metadata: {
+          emailVerified: userProfile?.metadata?.emailVerified || false,
+        },
       },
       request
     )
@@ -533,14 +587,14 @@ export async function requireAdminAuth(
           success: true,
           user: {
             id: 'dev-admin',
-            email: 'santiago@xor.com.ar',
+            email: 'admin@bypass.dev',
             role: 'admin',
           },
           supabase,
           context: {
         user: {
           id: 'dev-admin',
-          email: 'santiago@xor.com.ar',
+          email: 'admin@bypass.dev',
           role: 'admin',
         },
             permissions: requiredPermissions,

@@ -27,7 +27,16 @@ const supabase = createClient(
 
 const BulkOperationSchema = z.object({
   operation: z.enum(['update_status', 'update_category', 'update_price', 'delete']),
-  product_ids: z.array(z.string().uuid()).min(1, 'Debe seleccionar al menos un producto'),
+  // ✅ CORREGIDO: Aceptar números enteros (IDs de productos) en lugar de UUIDs
+  product_ids: z
+    .array(z.union([z.number().int().positive(), z.string().transform((val) => {
+      const num = parseInt(val, 10)
+      if (isNaN(num) || num <= 0) {
+        throw new Error('ID de producto inválido')
+      }
+      return num
+    })]))
+    .min(1, 'Debe seleccionar al menos un producto'),
   data: z
     .object({
       status: z.enum(['active', 'inactive']).optional(),
@@ -47,15 +56,26 @@ const BulkOperationSchema = z.object({
 // =====================================================
 
 export async function POST(request: NextRequest) {
+  // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+  
   try {
     // Verificar autenticación
     const session = await auth()
+    
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+    
     if (!session?.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
     // Validar datos de entrada
     const body = await request.json()
+    
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+    
     const validationResult = BulkOperationSchema.safeParse(body)
 
     if (!validationResult.success) {
@@ -70,22 +90,68 @@ export async function POST(request: NextRequest) {
 
     const { operation, product_ids, data } = validationResult.data
 
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+
+    // ✅ CORREGIDO: Asegurar que todos los IDs sean números enteros
+    // Usar 'let' en lugar de 'const' para permitir reasignación si algunos productos no existen
+    let numericProductIds = product_ids.map(id => typeof id === 'string' ? parseInt(id, 10) : id).filter(id => !isNaN(id) && id > 0)
+
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+
+    if (numericProductIds.length === 0) {
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      return NextResponse.json(
+        { error: 'IDs de productos inválidos' },
+        { status: 400 }
+      )
+    }
+
     // Verificar que los productos existen y pertenecen al usuario autorizado
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+    
     const { data: existingProducts, error: checkError } = await supabase
       .from('products')
       .select('id, name')
-      .in('id', product_ids)
+      .in('id', numericProductIds)
+
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     if (checkError) {
       console.error('Error verificando productos:', checkError)
       return NextResponse.json({ error: 'Error al verificar productos' }, { status: 500 })
     }
 
-    if (existingProducts.length !== product_ids.length) {
-      return NextResponse.json(
-        { error: 'Algunos productos no fueron encontrados' },
-        { status: 404 }
-      )
+    // ✅ CORREGIDO: Si algunos productos no existen, continuar con los que sí existen
+    // Esto puede pasar si ya fueron eliminados pero la UI no se actualizó
+    if (existingProducts.length !== numericProductIds.length) {
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      
+      // Si no hay productos existentes, retornar éxito vacío (ya fueron eliminados)
+      if (existingProducts.length === 0) {
+        return NextResponse.json({
+          success: true,
+          message: 'Los productos ya fueron eliminados',
+          data: {
+            operation: operation,
+            affected_count: 0,
+            already_deleted: true,
+            requested_ids: numericProductIds,
+          },
+        })
+      }
+      
+      // Si hay algunos productos, actualizar numericProductIds para solo incluir los existentes
+      const existingProductIds = existingProducts.map(p => p.id)
+      numericProductIds = existingProductIds
+      
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     }
 
     let result
@@ -107,7 +173,7 @@ export async function POST(request: NextRequest) {
             is_active: data.status === 'active',
             updated_at: new Date().toISOString(),
           })
-          .in('id', product_ids)
+          .in('id', numericProductIds)
           .select('id')
 
         if (statusError) {
@@ -147,7 +213,7 @@ export async function POST(request: NextRequest) {
             category_id: data.category_id,
             updated_at: new Date().toISOString(),
           })
-          .in('id', product_ids)
+          .in('id', numericProductIds)
           .select('id')
 
         if (categoryUpdateError) {
@@ -174,7 +240,7 @@ export async function POST(request: NextRequest) {
         const { data: currentProducts, error: priceError } = await supabase
           .from('products')
           .select('id, price')
-          .in('id', product_ids)
+          .in('id', numericProductIds)
 
         if (priceError) {
           throw priceError
@@ -228,24 +294,88 @@ export async function POST(request: NextRequest) {
         break
 
       case 'delete':
-        // Eliminar productos (soft delete marcando como inactivo)
-        const { data: deleteData, error: deleteError } = await supabase
-          .from('products')
-          .update({
-            is_active: false,
-            updated_at: new Date().toISOString(),
+        // ✅ CORREGIDO: Eliminar productos (hard delete si no tienen órdenes, soft delete si tienen)
+        console.log('🗑️ Iniciando eliminación masiva de productos:', { productIds: numericProductIds })
+        
+        // Primero verificar si tienen órdenes asociadas
+        const { data: orderItems, error: orderCheckError } = await supabase
+          .from('order_items')
+          .select('product_id')
+          .in('product_id', numericProductIds)
+          .limit(1)
+
+        if (orderCheckError) {
+          console.warn('⚠️ Error verificando órdenes:', orderCheckError)
+        }
+
+        console.log('📦 Verificación de órdenes:', { 
+          hasOrders: orderItems && orderItems.length > 0,
+          orderItemsCount: orderItems?.length || 0 
+        })
+
+        let deleteData
+        let deleteError
+
+        if (orderItems && orderItems.length > 0) {
+          // Soft delete: marcar como inactivo si tienen órdenes
+          console.log('🔄 Realizando soft delete (marcar como inactivo)')
+          const result = await supabase
+            .from('products')
+            .update({
+              is_active: false,
+              updated_at: new Date().toISOString(),
+            })
+            .in('id', numericProductIds)
+            .select('id')
+          deleteData = result.data
+          deleteError = result.error
+          console.log('🔄 Resultado soft delete:', { data: deleteData, error: deleteError })
+        } else {
+          // Hard delete: eliminar completamente si no tienen órdenes
+          console.log('🗑️ Realizando hard delete (eliminación completa)')
+          const result = await supabase
+            .from('products')
+            .delete()
+            .in('id', numericProductIds)
+          // ✅ CORREGIDO: En Supabase, después de DELETE, select puede no funcionar correctamente
+          // Verificar eliminación consultando los productos
+          const { data: verifyDelete, error: verifyError } = await supabase
+            .from('products')
+            .select('id')
+            .in('id', numericProductIds)
+          
+          console.log('🗑️ Verificación de eliminación:', { 
+            productosRestantes: verifyDelete?.length || 0,
+            verifyError 
           })
-          .in('id', product_ids)
-          .select('id')
+          
+          // Si no hay productos restantes, la eliminación fue exitosa
+          deleteData = verifyDelete && verifyDelete.length === 0 ? numericProductIds.map(id => ({ id })) : []
+          deleteError = result.error || verifyError
+        }
 
         if (deleteError) {
+          console.error('❌ Error en eliminación:', deleteError)
           throw deleteError
         }
 
         affectedCount = deleteData?.length || 0
+        
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        console.log('✅ Eliminación completada:', { 
+          affectedCount, 
+          expectedCount: numericProductIds.length,
+          hard_delete: !orderItems || orderItems.length === 0,
+          soft_delete: orderItems && orderItems.length > 0,
+        })
+        
         result = {
           operation: 'delete',
           affected_count: affectedCount,
+          hard_delete: !orderItems || orderItems.length === 0,
+          soft_delete: orderItems && orderItems.length > 0,
         }
         break
 
@@ -260,6 +390,9 @@ export async function POST(request: NextRequest) {
       user_id: session.user.id,
       timestamp: new Date().toISOString(),
     })
+
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     return NextResponse.json({
       success: true,

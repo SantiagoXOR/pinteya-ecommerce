@@ -25,7 +25,7 @@ import {
   Bell,
   BellOff,
   RefreshCw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // Importar monitoring manager
 import EnterpriseMonitoringManager from '@/lib/monitoring/enterprise-monitoring-manager'

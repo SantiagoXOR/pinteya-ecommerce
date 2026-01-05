@@ -1,6 +1,13 @@
+// ===================================
+// PINTEYA E-COMMERCE - MERCADOPAGO ADMIN PAGE
+// ===================================
+
 import { Metadata } from 'next'
 import { auth } from '@/lib/auth/config'
 import { redirect } from 'next/navigation'
+import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
+import { MercadoPagoDashboard } from '@/components/admin/mercadopago/MercadoPagoDashboard'
 
 export const metadata: Metadata = {
   title: 'MercadoPago Admin - Pinteya E-commerce',
@@ -18,10 +25,16 @@ export default async function MercadoPagoAdminPage() {
     redirect('/sign-in')
   }
 
+  const breadcrumbs = [
+    { label: 'Admin', href: '/admin' },
+    { label: 'MercadoPago' },
+  ]
+
   return (
-    <div className='container mx-auto px-4 py-8'>
-      <h1 className='text-2xl font-bold mb-4'>MercadoPago Admin</h1>
-      <p className='text-gray-600'>Panel de administración en desarrollo.</p>
-    </div>
+    <AdminLayout title='MercadoPago Admin' breadcrumbs={breadcrumbs}>
+      <AdminContentWrapper>
+        <MercadoPagoDashboard />
+      </AdminContentWrapper>
+    </AdminLayout>
   )
 }

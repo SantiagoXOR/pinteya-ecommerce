@@ -6,7 +6,7 @@ import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { Product } from '@/types/product'
 import { cn } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from '@/lib/optimized-imports'
 
 interface ProductRecommendationsProps {
   currentProductId?: string

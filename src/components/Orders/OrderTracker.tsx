@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Package, Truck, CheckCircle, Clock, AlertCircle, XCircle } from 'lucide-react'
+import { Package, Truck, CheckCircle, Clock, AlertCircle, XCircle } from '@/lib/optimized-imports'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'

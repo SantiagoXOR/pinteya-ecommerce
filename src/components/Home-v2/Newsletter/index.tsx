@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Mail, Send, CheckCircle } from 'lucide-react'
+import { Mail, Send, CheckCircle } from '@/lib/optimized-imports'
 
 const Newsletter = () => {
   const [email, setEmail] = useState('')
@@ -19,7 +19,7 @@ const Newsletter = () => {
   }
 
   return (
-    <section className='overflow-hidden py-12 sm:py-16 lg:py-20 bg-white/50 backdrop-blur-sm'>
+    <section className='overflow-hidden py-12 sm:py-16 lg:py-20'>
       <div className='max-w-[1170px] mx-auto px-4 sm:px-8 xl:px-0'>
         <div className='relative z-1 overflow-hidden rounded-3xl shadow-2xl'>
           {/* Background Image */}
@@ -93,16 +93,35 @@ const Newsletter = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder='tuemail@ejemplo.com'
                         required
-                        className='w-full bg-white border-2 border-gray-200 focus:border-[#eb6313] outline-none rounded-xl placeholder:text-gray-400 py-4 pl-12 pr-4 text-gray-900 font-medium transition-all'
+                        className='w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 focus:border-[#eb6313] dark:focus:border-blaze-orange-500 outline-none rounded-xl placeholder:text-gray-400 dark:placeholder:!text-white/60 py-4 pl-12 pr-4 text-gray-900 dark:!text-white font-medium transition-all'
                       />
                     </div>
                     
                     <button
                       type='submit'
-                      className='group w-full inline-flex items-center justify-center gap-2 py-4 px-7 text-white bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105'
+                      className='group w-full inline-flex items-center justify-center gap-2 py-4 px-7 text-white bg-gradient-to-r from-yellow-400 to-yellow-500 font-bold rounded-xl shadow-xl transition-transform duration-300 hover:scale-105 relative'
+                      style={{
+                        // ⚡ FASE 8: Usar opacity en overlay para hover effect en lugar de background-gradient animado
+                        willChange: 'transform',
+                      }}
+                      onMouseEnter={(e) => {
+                        const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement
+                        if (overlay) overlay.style.opacity = '1'
+                        const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                        if (shadow) shadow.style.opacity = '1'
+                      }}
+                      onMouseLeave={(e) => {
+                        const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement
+                        if (overlay) overlay.style.opacity = '0'
+                        const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                        if (shadow) shadow.style.opacity = '0'
+                      }}
                     >
-                      <span>Suscribirse</span>
-                      <Send className='w-5 h-5 group-hover:translate-x-1 transition-transform' />
+                      {/* ⚡ FASE 8: Overlay para hover gradient effect usando opacity */}
+                      <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 opacity-0 hover-overlay transition-opacity duration-300 pointer-events-none" />
+                      <span className="absolute inset-0 rounded-xl shadow-2xl opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
+                      <span className="relative z-10">Suscribirse</span>
+                      <Send className='w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10' />
                     </button>
 
                     <p className='text-white/70 text-xs text-center'>

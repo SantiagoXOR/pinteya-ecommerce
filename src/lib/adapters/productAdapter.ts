@@ -88,6 +88,8 @@ export function adaptApiProductToLegacy(apiProduct: ProductWithCategory): Legacy
     color: (apiProduct as any).color || undefined,
     medida: (apiProduct as any).medida || undefined,
     slug: (apiProduct as any).slug || undefined, // Agregar slug para consistencia con search/bestsellers
+    // ✅ NUEVO: image_url desde product_images (API pública)
+    image_url: (apiProduct as any).image_url || undefined,
   }
 }
 
@@ -181,6 +183,8 @@ export type ExtendedProduct = LegacyProduct & {
   description?: string
   discounted_price?: number | null
   images?: any
+  // ✅ NUEVO: image_url desde product_images (API pública)
+  image_url?: string | null
   // Campos adicionales para badges inteligentes y datos estructurados
   variants?: any[]
   specifications?: Record<string, any>

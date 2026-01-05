@@ -99,7 +99,7 @@ const Cart = () => {
             <Card className='text-center p-12 border-0 shadow-2'>
               <div className='mx-auto mb-8'>
                 <div className='w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center'>
-                  <ShoppingBag className='w-12 h-12' style={{ color: '#ea5a17' }} />
+                  <ShoppingBag className='w-12 h-12' style={{ color: '#c2410b' }} />
                 </div>
                 <h2 className='text-2xl font-bold text-gray-900 mb-3'>¡Tu carrito está vacío!</h2>
                 <p className='text-gray-600 mb-8'>

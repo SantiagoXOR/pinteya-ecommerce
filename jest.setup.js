@@ -877,9 +877,257 @@ jest.mock('@/lib/enterprise/rate-limiter', () => ({
   })),
 }))
 
+// ===================================
+// MOCK API RESPONSES
+// ===================================
+// Importar funciones mock de handlers
+const { mockApiResponses } = require('./src/__tests__/mocks/handlers')
+
+// Mock global fetch con respuestas de handlers
+global.fetch = jest.fn((url, options) => {
+  const urlString = typeof url === 'string' ? url : url.toString()
+  
+  // Mock para /api/products
+  if (urlString.includes('/api/products')) {
+    const urlObj = new URL(urlString, 'http://localhost')
+    const id = urlObj.pathname.split('/').pop()
+    const slug = urlObj.searchParams.get('slug')
+    
+    if (id && id !== 'products') {
+      const response = mockApiResponses.supabase.getProductById(Number(id))
+      return Promise.resolve(
+        new Response(JSON.stringify(response), {
+          status: response.status || 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+    }
+    
+    if (slug) {
+      const response = mockApiResponses.supabase.getProductBySlug(slug)
+      return Promise.resolve(
+        new Response(JSON.stringify(response), {
+          status: response.status || 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+    }
+    
+    const response = mockApiResponses.supabase.getProducts()
+    return Promise.resolve(
+      new Response(JSON.stringify(response), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+  }
+  
+  // Mock para /api/cart
+  if (urlString.includes('/api/cart')) {
+    if (options?.method === 'POST') {
+      const body = JSON.parse(options.body || '{}')
+      const response = mockApiResponses.supabase.addToCart(body.product_id, body.quantity)
+      return Promise.resolve(
+        new Response(JSON.stringify(response), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+    }
+    
+    if (options?.method === 'PUT') {
+      const productId = urlString.split('/').pop()
+      const body = JSON.parse(options.body || '{}')
+      const response = mockApiResponses.supabase.updateCartItem(Number(productId), body.quantity)
+      return Promise.resolve(
+        new Response(JSON.stringify(response), {
+          status: response.status || 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+    }
+    
+    if (options?.method === 'DELETE') {
+      const productId = urlString.split('/').pop()
+      const response = mockApiResponses.supabase.removeFromCart(Number(productId))
+      return Promise.resolve(
+        new Response(JSON.stringify(response), {
+          status: response.status || 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+    }
+    
+    const response = mockApiResponses.supabase.getCart()
+    return Promise.resolve(
+      new Response(JSON.stringify(response), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+  }
+  
+  // Mock para /api/mercadopago
+  if (urlString.includes('/api/mercadopago/preferences')) {
+    const body = options?.body ? JSON.parse(options.body) : {}
+    const response = mockApiResponses.mercadopago.createPreference(body)
+    return Promise.resolve(
+      new Response(JSON.stringify(response), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+  }
+  
+  // Mock para /api/auth
+  if (urlString.includes('/api/auth/session')) {
+    const response = mockApiResponses.nextAuth.getSession()
+    return Promise.resolve(
+      new Response(JSON.stringify(response), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+  }
+  
+  // Default response
+  return Promise.resolve(
+    new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  )
+})
+
+// ===================================
+// SHADCN/UI COMPONENTS MOCKS
+// ===================================
+
+// Mock para componentes de shadcn/ui que usan Radix UI
+jest.mock('@radix-ui/react-dialog', () => {
+  const React = require('react')
+  return {
+    Root: ({ children, open, onOpenChange }) =>
+      React.createElement('div', { 'data-testid': 'dialog-root', 'data-open': open }, open && children),
+    Trigger: ({ children, onClick }) =>
+      React.createElement('button', { onClick }, children),
+    Portal: ({ children }) => React.createElement('div', null, children),
+    Overlay: ({ children }) => React.createElement('div', { 'data-testid': 'dialog-overlay' }, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'dialog-content' }, children),
+    Title: ({ children }) => React.createElement('h2', { 'data-testid': 'dialog-title' }, children),
+    Description: ({ children }) => React.createElement('p', { 'data-testid': 'dialog-description' }, children),
+    Close: ({ children, onClick }) =>
+      React.createElement('button', { onClick, 'data-testid': 'dialog-close' }, children),
+  }
+})
+
+jest.mock('@radix-ui/react-dropdown-menu', () => {
+  const React = require('react')
+  return {
+    Root: ({ children }) => React.createElement('div', null, children),
+    Trigger: ({ children, onClick }) => React.createElement('button', { onClick }, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'dropdown-content' }, children),
+    Item: ({ children, onClick }) =>
+      React.createElement('div', { onClick, 'data-testid': 'dropdown-item' }, children),
+  }
+})
+
+jest.mock('@radix-ui/react-select', () => {
+  const React = require('react')
+  return {
+    Root: ({ children, onValueChange, value }) =>
+      React.createElement('div', { 'data-testid': 'select-root', 'data-value': value }, children),
+    Trigger: ({ children, onClick }) =>
+      React.createElement('button', { onClick, 'data-testid': 'select-trigger' }, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'select-content' }, children),
+    Item: ({ children, onClick, value }) =>
+      React.createElement(
+        'div',
+        { onClick: () => onClick?.(value), 'data-testid': 'select-item', 'data-value': value },
+        children
+      ),
+  }
+})
+
+jest.mock('@radix-ui/react-popover', () => {
+  const React = require('react')
+  return {
+    Root: ({ children, open, onOpenChange }) =>
+      React.createElement('div', { 'data-testid': 'popover-root', 'data-open': open }, open && children),
+    Trigger: ({ children, onClick }) => React.createElement('button', { onClick }, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'popover-content' }, children),
+  }
+})
+
+jest.mock('@radix-ui/react-tooltip', () => {
+  const React = require('react')
+  return {
+    Root: ({ children }) => React.createElement('div', null, children),
+    Trigger: ({ children }) => React.createElement('div', null, children),
+    Content: ({ children }) => React.createElement('div', { 'data-testid': 'tooltip-content' }, children),
+  }
+})
+
+jest.mock('@radix-ui/react-tabs', () => {
+  const React = require('react')
+  return {
+    Root: ({ children, defaultValue }) =>
+      React.createElement('div', { 'data-testid': 'tabs-root', 'data-default-value': defaultValue }, children),
+    List: ({ children }) => React.createElement('div', { 'data-testid': 'tabs-list' }, children),
+    Trigger: ({ children, onClick, value }) =>
+      React.createElement('button', { onClick, 'data-testid': 'tabs-trigger', 'data-value': value }, children),
+    Content: ({ children, value }) =>
+      React.createElement('div', { 'data-testid': 'tabs-content', 'data-value': value }, children),
+  }
+})
+
+// ===================================
+// MOCK DE OPTIMIZED IMPORTS
+// ===================================
+// Mock para evitar problemas con @tabler/icons-react y módulos ES
+
+jest.mock('@/lib/optimized-imports', () => {
+  const React = require('react')
+  return {
+    Loader2: () => React.createElement('svg', { 'data-testid': 'loader-2' }),
+    CreditCard: () => React.createElement('svg', { 'data-testid': 'credit-card' }),
+    AlertTriangle: () => React.createElement('svg', { 'data-testid': 'alert-triangle' }),
+    ShoppingCart: () => React.createElement('svg', { 'data-testid': 'shopping-cart' }),
+    Truck: () => React.createElement('svg', { 'data-testid': 'truck' }),
+    CheckCircle: () => React.createElement('svg', { 'data-testid': 'check-circle' }),
+    User: () => React.createElement('svg', { 'data-testid': 'user' }),
+    MapPin: () => React.createElement('svg', { 'data-testid': 'map-pin' }),
+    Shield: () => React.createElement('svg', { 'data-testid': 'shield' }),
+    Phone: () => React.createElement('svg', { 'data-testid': 'phone' }),
+    Mail: () => React.createElement('svg', { 'data-testid': 'mail' }),
+    MessageCircle: () => React.createElement('svg', { 'data-testid': 'message-circle' }),
+    Zap: () => React.createElement('svg', { 'data-testid': 'zap' }),
+    Gift: () => React.createElement('svg', { 'data-testid': 'gift' }),
+    Star: () => React.createElement('svg', { 'data-testid': 'star' }),
+    Users: () => React.createElement('svg', { 'data-testid': 'users' }),
+    Clock: () => React.createElement('svg', { 'data-testid': 'clock' }),
+    Eye: () => React.createElement('svg', { 'data-testid': 'eye' }),
+    TrendingUp: () => React.createElement('svg', { 'data-testid': 'trending-up' }),
+    ArrowLeft: () => React.createElement('svg', { 'data-testid': 'arrow-left' }),
+    ChevronDown: () => React.createElement('svg', { 'data-testid': 'chevron-down' }),
+    ChevronUp: () => React.createElement('svg', { 'data-testid': 'chevron-up' }),
+    Package: () => React.createElement('svg', { 'data-testid': 'package' }),
+    AlertCircle: () => React.createElement('svg', { 'data-testid': 'alert-circle' }),
+  }
+})
+
+// ===================================
+// CLEANUP
+// ===================================
+
 // Clean up after each test
 afterEach(() => {
   jest.clearAllMocks()
   localStorageMock.clear()
   sessionStorageMock.clear()
+  
+  // Limpiar mocks de fetch
+  if (global.fetch && typeof global.fetch.mockClear === 'function') {
+    global.fetch.mockClear()
+  }
 })

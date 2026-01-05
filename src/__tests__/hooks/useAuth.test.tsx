@@ -1,223 +1,285 @@
 // ===================================
-// TESTS PARA HOOK DE AUTENTICACIÓN
-// Tests unitarios e integración para useAuth
+// PINTEYA E-COMMERCE - TESTS PARA useAuth HOOK
 // ===================================
 
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth, useIsAdmin, useRequireAuth } from '@/hooks/useAuth'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import React from 'react'
+import { createFullHookWrapper } from '@/__tests__/utils/test-utils'
 
-// Mocks
-jest.mock('next-auth/react')
-jest.mock('sonner', () => ({
-  toast: {
-    success: jest.fn(),
-    error: jest.fn(),
-    loading: jest.fn(),
-  },
+// Mock next-auth/react
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(),
+  signIn: jest.fn(),
+  signOut: jest.fn(),
 }))
+
+// Mock next/navigation
+const mockPush = jest.fn()
 
 jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
+  useRouter: jest.fn(() => ({
+    push: mockPush,
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+  })),
 }))
-
-const mockRouter = {
-  push: jest.fn(),
-  replace: jest.fn(),
-  refresh: jest.fn(),
-}
-
-// Wrapper para React Query
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: false,
-      },
-    },
-  })
-
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  )
-}
 
 describe('useAuth Hook', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    mockPush.mockClear()
+  })
 
-    // Mock default NextAuth session
+  it('should return authenticated user when session exists', () => {
+    const mockSession = {
+      user: {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        name: 'Test User',
+        image: 'https://example.com/avatar.jpg',
+      },
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    }
+
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: mockSession,
+      status: 'authenticated',
+    })
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: createFullHookWrapper({ authState: 'authenticated' }),
+    })
+
+    expect(result.current.isSignedIn).toBe(true)
+    expect(result.current.isLoaded).toBe(true)
+    expect(result.current.user).toEqual({
+      id: 'test-user-id',
+      email: 'test@example.com',
+      name: 'Test User',
+      image: 'https://example.com/avatar.jpg',
+    })
+  })
+
+  it('should return unauthenticated state when no session', () => {
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+    })
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: createFullHookWrapper({ authState: 'unauthenticated' }),
+    })
+
+    expect(result.current.isSignedIn).toBe(false)
+    expect(result.current.isLoaded).toBe(true)
+    expect(result.current.user).toBeNull()
+  })
+
+  it('should return loading state when session is loading', () => {
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: null,
+      status: 'loading',
+    })
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: createFullHookWrapper({ authState: 'loading' }),
+    })
+
+    expect(result.current.isLoaded).toBe(false)
+    expect(result.current.isSignedIn).toBe(false)
+  })
+
+  it('should handle sign in', async () => {
+    const mockSignIn = signIn as jest.MockedFunction<typeof signIn>
+    mockSignIn.mockResolvedValue({ ok: true, error: null, status: 200, url: '/admin' })
+
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+    })
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: createFullHookWrapper({ authState: 'unauthenticated' }),
+    })
+
+    await act(async () => {
+      await result.current.signIn('google', { callbackUrl: '/admin' })
+    })
+
+    expect(mockSignIn).toHaveBeenCalledWith('google', {
+      callbackUrl: '/admin',
+      redirect: true,
+    })
+  })
+
+  it('should handle sign out', async () => {
+    const mockSignOut = signOut as jest.MockedFunction<typeof signOut>
+    mockSignOut.mockResolvedValue({ ok: true, error: null, status: 200, url: '/' })
+
     ;(useSession as jest.Mock).mockReturnValue({
       data: {
         user: {
           id: 'test-user-id',
           email: 'test@example.com',
           name: 'Test User',
-          image: 'https://example.com/avatar.jpg',
         },
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       },
       status: 'authenticated',
     })
-  })
 
-  describe('Autenticación con NextAuth', () => {
-    it('debe iniciar sesión exitosamente', async () => {
-      ;(signIn as jest.Mock).mockResolvedValue({ ok: true, error: null })
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
-
-      await act(async () => {
-        await result.current.signIn('google', { callbackUrl: '/dashboard' })
-      })
-
-      expect(signIn).toHaveBeenCalledWith('google', {
-        callbackUrl: '/dashboard',
-        redirect: true,
-      })
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: createFullHookWrapper({ authState: 'authenticated' }),
     })
 
-    it('debe cerrar sesión exitosamente', async () => {
-      ;(signOut as jest.Mock).mockResolvedValue({ url: '/api/auth/signin' })
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
-
-      await act(async () => {
-        await result.current.signOut({ callbackUrl: '/' })
-      })
-
-      expect(signOut).toHaveBeenCalledWith({
-        callbackUrl: '/',
-        redirect: true,
-      })
+    await act(async () => {
+      await result.current.signOut({ callbackUrl: '/' })
     })
 
-    it('debe retornar información del usuario autenticado', () => {
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
-
-      expect(result.current.user).toEqual({
-        id: 'test-user-id',
-        email: 'test@example.com',
-        name: 'Test User',
-        image: 'https://example.com/avatar.jpg',
-      })
-      expect(result.current.isSignedIn).toBe(true)
-      expect(result.current.isLoaded).toBe(true)
-    })
-
-    it('debe manejar estado de carga', () => {
-      ;(useSession as jest.Mock).mockReturnValue({
-        data: null,
-        status: 'loading',
-      })
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
-
-      expect(result.current.isLoaded).toBe(false)
-      expect(result.current.isSignedIn).toBe(false)
-      expect(result.current.user).toBeNull()
-    })
-
-    it('debe manejar estado no autenticado', () => {
-      ;(useSession as jest.Mock).mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-      })
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
-
-      expect(result.current.isLoaded).toBe(true)
-      expect(result.current.isSignedIn).toBe(false)
-      expect(result.current.user).toBeNull()
+    expect(mockSignOut).toHaveBeenCalledWith({
+      callbackUrl: '/',
+      redirect: true,
     })
   })
 
-  describe('Hooks de utilidad', () => {
-    it('useIsAdmin debe retornar false para usuario normal', () => {
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
+  it('should use default callbackUrl for sign in', async () => {
+    const mockSignIn = signIn as jest.MockedFunction<typeof signIn>
+    mockSignIn.mockResolvedValue({ ok: true, error: null, status: 200, url: '/admin' })
 
-      // useIsAdmin está incluido en el hook useAuth
-      expect(result.current.user?.email).toBe('test@example.com')
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
     })
 
-    it('useRequireAuth debe redirigir si no está autenticado', async () => {
-      ;(useSession as jest.Mock).mockReturnValue({
-        data: null,
-        status: 'unauthenticated',
-      })
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
-
-      expect(result.current.isSignedIn).toBe(false)
-    })
-  })
-
-  describe('Manejo de errores', () => {
-    it('debe manejar error en signIn', async () => {
-      ;(signIn as jest.Mock).mockResolvedValue({ ok: false, error: 'Authentication failed' })
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
-
-      await act(async () => {
-        await result.current.signIn('google')
-      })
-
-      expect(signIn).toHaveBeenCalledWith('google', {
-        callbackUrl: '/admin',
-        redirect: true,
-      })
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: createFullHookWrapper({ authState: 'unauthenticated' }),
     })
 
-    it('debe manejar error en signOut', async () => {
-      ;(signOut as jest.Mock).mockRejectedValue(new Error('Sign out failed'))
+    await act(async () => {
+      await result.current.signIn()
+    })
 
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
-
-      await act(async () => {
-        try {
-          await result.current.signOut()
-        } catch (error) {
-          expect(error).toBeInstanceOf(Error)
-        }
-      })
-
-      expect(signOut).toHaveBeenCalled()
+    expect(mockSignIn).toHaveBeenCalledWith('google', {
+      callbackUrl: '/admin',
+      redirect: true,
     })
   })
 
-  describe('Integración con Router', () => {
-    it('debe usar el router correctamente', () => {
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: createWrapper(),
-      })
+  it('should use default callbackUrl for sign out', async () => {
+    const mockSignOut = signOut as jest.MockedFunction<typeof signOut>
+    mockSignOut.mockResolvedValue({ ok: true, error: null, status: 200, url: '/' })
 
-      // El hook debe tener acceso al router
-      expect(result.current).toBeDefined()
-      expect(typeof result.current.signIn).toBe('function')
-      expect(typeof result.current.signOut).toBe('function')
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: {
+        user: {
+          id: 'test-user-id',
+          email: 'test@example.com',
+          name: 'Test User',
+        },
+      },
+      status: 'authenticated',
     })
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: createFullHookWrapper({ authState: 'authenticated' }),
+    })
+
+    await act(async () => {
+      await result.current.signOut()
+    })
+
+    expect(mockSignOut).toHaveBeenCalledWith({
+      callbackUrl: '/',
+      redirect: true,
+    })
+  })
+})
+
+describe('useIsAdmin Hook', () => {
+  it('should return true for authenticated users', () => {
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: {
+        user: {
+          id: 'test-user-id',
+          email: 'test@example.com',
+          name: 'Test User',
+        },
+      },
+      status: 'authenticated',
+    })
+
+    const { result } = renderHook(() => useIsAdmin(), {
+      wrapper: createFullHookWrapper({ authState: 'authenticated' }),
+    })
+
+    expect(result.current).toBe(true)
+  })
+
+  it('should return false for unauthenticated users', () => {
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+    })
+
+    const { result } = renderHook(() => useIsAdmin(), {
+      wrapper: createFullHookWrapper({ authState: 'unauthenticated' }),
+    })
+
+    expect(result.current).toBe(false)
+  })
+})
+
+describe('useRequireAuth Hook', () => {
+  beforeEach(() => {
+    mockPush.mockClear()
+  })
+
+  it('should redirect when user is not authenticated', () => {
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+    })
+
+    renderHook(() => useRequireAuth('/signin'), {
+      wrapper: createFullHookWrapper({ authState: 'unauthenticated' }),
+    })
+
+    expect(mockPush).toHaveBeenCalledWith('/signin')
+  })
+
+  it('should not redirect when user is authenticated', () => {
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: {
+        user: {
+          id: 'test-user-id',
+          email: 'test@example.com',
+          name: 'Test User',
+        },
+      },
+      status: 'authenticated',
+    })
+
+    renderHook(() => useRequireAuth('/signin'), {
+      wrapper: createFullHookWrapper({ authState: 'authenticated' }),
+    })
+
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it('should use default redirect URL', () => {
+    ;(useSession as jest.Mock).mockReturnValue({
+      data: null,
+      status: 'unauthenticated',
+    })
+
+    renderHook(() => useRequireAuth(), {
+      wrapper: createFullHookWrapper({ authState: 'unauthenticated' }),
+    })
+
+    expect(mockPush).toHaveBeenCalledWith('/api/auth/signin')
   })
 })

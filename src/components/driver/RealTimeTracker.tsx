@@ -6,7 +6,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
-import { MapPin, AlertCircle, RefreshCw, Wifi, WifiOff } from 'lucide-react'
+import { MapPin, AlertCircle, RefreshCw, Wifi, WifiOff } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import {
   GeolocationTracker,

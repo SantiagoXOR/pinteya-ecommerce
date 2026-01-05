@@ -15,7 +15,7 @@ import {
   MapPin,
   Truck,
   Calendar,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useDriver } from '@/contexts/DriverContext'
 import Link from 'next/link'
 

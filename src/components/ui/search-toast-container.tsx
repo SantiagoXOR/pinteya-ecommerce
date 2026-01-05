@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { Toast } from './feedback'
-import { AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Info, AlertTriangle } from '@/lib/optimized-imports'
 import type { ToastNotification } from '@/hooks/useSearchToast'
 
 // ===================================

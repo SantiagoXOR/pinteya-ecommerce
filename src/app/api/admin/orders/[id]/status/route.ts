@@ -95,8 +95,8 @@ async function validateAdminAuth() {
       return { error: 'Usuario no encontrado', status: 401 }
     }
 
-    // Verificar si es admin
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
     if (!isAdmin) {
       return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 }
     }

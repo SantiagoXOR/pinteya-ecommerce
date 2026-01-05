@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Navigation, Settings, AlertTriangle, MapPin, Plus, X, RefreshCw, Info } from 'lucide-react'
+import { Navigation, Settings, AlertTriangle, MapPin, Plus, X, RefreshCw, Info } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { useModalActions } from '@/contexts/ModalContext'
 

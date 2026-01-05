@@ -36,7 +36,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Package,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import {
   DropdownMenu,
   DropdownMenuContent,

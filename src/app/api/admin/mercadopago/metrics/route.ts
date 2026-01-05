@@ -66,7 +66,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // TODO: Verificar rol de admin
-    // const isAdmin = await checkUserRole(userId);
+    // const isAdmin = await checkUserRole(session.user.id);
     // if (!isAdmin) {
     //   return NextResponse.json(
     //     { success: false, error: 'Acceso denegado' },
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     //   );
     // }
 
-    logger.info(LogCategory.API, 'Fetching MercadoPago metrics', { userId })
+    logger.info(LogCategory.API, 'Fetching MercadoPago metrics', { userId: session.user.id })
 
     // Obtener métricas del sistema
     const metrics = await metricsCollector.getMercadoPagoMetrics()
@@ -223,7 +223,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
     }
 
-    logger.info(LogCategory.API, 'Resetting MercadoPago metrics', { userId })
+    logger.info(LogCategory.API, 'Resetting MercadoPago metrics', { userId: session.user.id })
 
     // TODO: Implementar reset de métricas
     // await metricsCollector.resetMetrics();

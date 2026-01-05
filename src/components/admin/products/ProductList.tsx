@@ -1,19 +1,22 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion, AnimatePresence } from '@/lib/framer-motion-lazy'
 import { AdminDataTable } from '../ui/AdminDataTable'
 import { ProductFilters } from './ProductFilters'
 import { ProductActions, ProductRowActions } from './ProductActions'
 import { useProductList } from '@/hooks/admin/useProductList'
+import { useQueryClient } from '@tanstack/react-query'
 import { ExpandableVariantsRow } from './ExpandableVariantsRow'
 import { Skeleton, TableSkeleton } from '../ui/Skeleton'
 import { EmptyState } from '../ui/EmptyState'
 import { Badge } from '../ui/Badge'
 import { cn } from '@/lib/core/utils'
-import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { useResizableColumns } from '@/hooks/admin/useResizableColumns'
+import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Check } from '@/lib/optimized-imports'
 
 const resolveImageSource = (payload: any): string | null => {
   const normalize = (value?: string | null) => {
@@ -106,6 +109,14 @@ interface ProductListProps {
     hasPrev?: boolean
   }
   onProductAction?: (action: string, productId: string) => void
+  // ✅ NUEVO: Funciones para acciones masivas
+  onBulkStatusChange?: (productIds: string[], status: 'active' | 'inactive') => Promise<void>
+  onBulkCategoryChange?: (productIds: string[], categoryId: number) => Promise<void>
+  onBulkPriceUpdate?: (productIds: string[], priceChange: { type: 'percentage' | 'fixed'; value: number }) => Promise<void>
+  onBulkArchive?: (productIds: string[]) => Promise<void>
+  onBulkDelete?: (productIds: string[]) => Promise<void>
+  refreshProducts?: () => Promise<void>  // ✅ Función para refrescar productos
+  refreshStats?: () => Promise<void>      // ✅ Función para refrescar estadísticas
   className?: string
 }
 
@@ -201,11 +212,24 @@ export function ProductList({
     prevPage: () => {},
   },
   onProductAction,
+  // ✅ NUEVO: Funciones para acciones masivas
+  onBulkStatusChange,
+  onBulkCategoryChange,
+  onBulkPriceUpdate,
+  onBulkArchive,
+  onBulkDelete,
+  refreshProducts,  // ✅ Función para refrescar productos
+  refreshStats,     // ✅ Función para refrescar estadísticas
   className 
 }: ProductListProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([])
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const tableScrollRef = useRef<HTMLDivElement>(null)
+  const topScrollBarRef = useRef<HTMLDivElement>(null)
+  const [showBulkActionsDropdown, setShowBulkActionsDropdown] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
 
   // ✅ Estado de sorting
   const [sortColumn, setSortColumn] = useState<string>(filters.sort_by || 'created_at')
@@ -242,12 +266,143 @@ export function ProductList({
       : <ArrowDown className='w-3.5 h-3.5 text-primary' />
   }
 
+  // Configuración de anchos por defecto para columnas
+  const defaultColumnWidths: { [key: string]: number } = {
+    select: 50, // ✅ NUEVO: Columna de selección
+    actions: 80, // ✅ Movido al principio (después de selección)
+    images: 80,
+    name: 250,
+    id: 70,
+    slug: 150,
+    variant_count: 120,
+    categories: 150,
+    brand: 120,
+    medida: 100,
+    price: 100,
+    discounted_price: 120,
+    stock: 100,
+    color: 100,
+    aikon_id: 120,
+    status: 100,
+    created_at: 110,
+    updated_at: 110,
+  }
+
+  // Hook para columnas redimensionables
+  const { columnWidths, isResizing, justFinishedResizing, handleMouseDown } = useResizableColumns({
+    defaultWidths: defaultColumnWidths,
+    minWidth: 80, // Aumentado para evitar superposición
+    maxWidth: 500,
+  })
+
+  // Sincronizar scroll horizontal entre la barra superior y la tabla
+  useEffect(() => {
+    const tableContainer = tableScrollRef.current
+    const scrollBar = topScrollBarRef.current
+    
+    if (!tableContainer || !scrollBar) return
+
+    const scrollContent = scrollBar.querySelector('.scroll-content') as HTMLElement
+    if (scrollContent) {
+      scrollContent.style.width = `${tableContainer.scrollWidth}px`
+    }
+
+    const handleTableScroll = () => {
+      if (scrollBar) {
+        scrollBar.scrollLeft = tableContainer.scrollLeft
+      }
+    }
+
+    const handleBarScroll = () => {
+      if (tableContainer) {
+        tableContainer.scrollLeft = scrollBar.scrollLeft
+      }
+    }
+
+    tableContainer.addEventListener('scroll', handleTableScroll)
+    scrollBar.addEventListener('scroll', handleBarScroll)
+
+    // Actualizar ancho cuando cambie el contenido
+    const resizeObserver = new ResizeObserver(() => {
+      if (scrollContent) {
+        scrollContent.style.width = `${tableContainer.scrollWidth}px`
+      }
+    })
+    resizeObserver.observe(tableContainer)
+
+    return () => {
+      tableContainer.removeEventListener('scroll', handleTableScroll)
+      scrollBar.removeEventListener('scroll', handleBarScroll)
+      resizeObserver.disconnect()
+    }
+  }, [products, columnWidths])
+
+  // ✅ Handlers para selección
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProducts(prev => {
+      const isSelected = prev.some(p => p.id === product.id)
+      if (isSelected) {
+        return prev.filter(p => p.id !== product.id)
+      } else {
+        return [...prev, product]
+      }
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedProducts.length === products.length) {
+      setSelectedProducts([])
+    } else {
+      setSelectedProducts([...products])
+    }
+  }
+
+  const isProductSelected = (productId: string) => {
+    return selectedProducts.some(p => p.id === productId)
+  }
+
+  const isAllSelected = products.length > 0 && selectedProducts.length === products.length
+  const isSomeSelected = selectedProducts.length > 0 && selectedProducts.length < products.length
+
   // Table columns configuration
   const columns = [
     {
+      key: 'select',
+      title: '',
+      defaultWidth: 50,
+      align: 'center' as const,
+      render: (_: any, product: Product) => (
+        <div className='flex items-center justify-center'>
+          <input
+            type='checkbox'
+            checked={isProductSelected(product.id)}
+            onChange={() => handleSelectProduct(product)}
+            onClick={(e) => e.stopPropagation()}
+            className='w-4 h-4 text-blaze-orange-600 border-gray-300 rounded focus:ring-blaze-orange-500 cursor-pointer'
+            aria-label={`Seleccionar ${product.name}`}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      title: 'Acciones',
+      defaultWidth: 80,
+      render: (_: any, product: Product) => (
+        <ProductRowActions
+          product={product}
+          onView={id => router.push(`/admin/products/${id}`)}
+          onEdit={id => router.push(`/admin/products/${id}/edit`)}
+          onDelete={handleDeleteProduct}
+          onDuplicate={handleDuplicateProduct}
+          isLoading={isDeleting}
+        />
+      ),
+    },
+    {
       key: 'images',
       title: 'Imagen',
-      width: '100px',
+      defaultWidth: 80,
       render: (images: any, product: Product) => {
         const imageUrl = resolveImageSource(product.image_url || images)
         
@@ -273,14 +428,17 @@ export function ProductList({
       key: 'name',
       title: 'Producto',
       sortable: true,
+      defaultWidth: 280, // Aumentado para evitar superposición
       render: (name: string, product: Product) => (
-        <div className='max-w-sm'>
-          <div className='font-semibold text-gray-900 text-base mb-1'>{name}</div>
+        <div className='w-full min-w-0'>
+          <div className='font-semibold text-gray-900 text-sm mb-0.5 truncate' title={name}>
+            {name}
+          </div>
           <div
-            className='text-sm text-gray-600 overflow-hidden leading-relaxed'
-            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+            className='text-xs text-gray-600 truncate'
+            title={product.description || 'Sin descripción'}
           >
-            {product.description || 'Sin descripción disponible'}
+            {product.description || 'Sin descripción'}
           </div>
         </div>
       ),
@@ -289,7 +447,7 @@ export function ProductList({
       key: 'id',
       title: 'ID',
       sortable: true,
-      width: '70px',
+      defaultWidth: 70,
       render: (id: number) => (
         <span className='text-sm text-gray-600 font-mono'>#{id}</span>
       ),
@@ -297,8 +455,9 @@ export function ProductList({
     {
       key: 'slug',
       title: 'Slug',
+      defaultWidth: 180, // Aumentado
       render: (slug: string) => (
-        <span className='text-xs text-gray-500 font-mono max-w-[150px] truncate block' title={slug}>
+        <span className='text-xs text-gray-500 font-mono truncate block w-full' title={slug}>
           {slug || '-'}
         </span>
       ),
@@ -307,6 +466,7 @@ export function ProductList({
       key: 'variant_count',
       title: 'Variantes',
       sortable: true,
+      defaultWidth: 120,
       render: (count: number, product: Product) => {
         const isExpanded = expandedRows.has(product.id)
         return (
@@ -340,18 +500,42 @@ export function ProductList({
       key: 'categories',
       title: 'Categorías',
       sortable: false,
+      defaultWidth: 150,
       render: (_: any, product: Product) => {
         const categories = product.categories || []
         
+        // Fallback: intentar obtener categorías de product_categories si categories está vacío
+        if (categories.length === 0 && (product as any).product_categories) {
+          const fallbackCategories = (product as any).product_categories
+            ?.map((pc: any) => pc.category)
+            .filter((cat: any) => cat != null) || []
+          
+          if (fallbackCategories.length > 0) {
+            return (
+              <div className='flex flex-wrap gap-1'>
+                {fallbackCategories.map((cat: any) => (
+                  <Badge
+                    key={cat.id}
+                    variant='soft'
+                    className='text-xs'
+                  >
+                    {cat.name}
+                  </Badge>
+                ))}
+              </div>
+            )
+          }
+        }
+
         if (categories.length === 0) {
           return <span className='text-sm text-gray-500'>Sin categorías</span>
         }
-        
+
         return (
           <div className='flex flex-wrap gap-1'>
             {categories.map(cat => (
-              <Badge 
-                key={cat.id} 
+              <Badge
+                key={cat.id}
                 variant='soft'
                 className='text-xs'
               >
@@ -366,26 +550,48 @@ export function ProductList({
       key: 'brand',
       title: 'Marca',
       sortable: true,
+      defaultWidth: 120,
       render: (brand: string) => (
-        <span className='text-sm text-gray-700'>{brand || '-'}</span>
+        <span className='text-xs text-gray-700'>{brand || '-'}</span>
       ),
     },
     {
       key: 'medida',
       title: 'Medida',
       sortable: true,
-      render: (medida: string) => (
-        <span className='text-sm text-gray-700 font-medium'>{medida || '-'}</span>
-      ),
+      defaultWidth: 100,
+      render: (medida: string, product: Product) => {
+        // ✅ NUEVO: Obtener todas las medidas del array 'medidas' o usar la medida individual
+        const medidas = (product as any).medidas || (medida ? [medida] : [])
+        
+        if (medidas.length === 0) {
+          return <span className='text-sm text-gray-500'>Sin medidas</span>
+        }
+
+        return (
+          <div className='flex flex-wrap gap-1'>
+            {medidas.map((m: string, index: number) => (
+              <Badge
+                key={`${product.id}-${m}-${index}`}
+                variant='soft'
+                className='text-xs'
+              >
+                {m}
+              </Badge>
+            ))}
+          </div>
+        )
+      },
     },
     {
       key: 'price',
       title: 'Precio',
       align: 'right' as const,
       sortable: true,
+      defaultWidth: 100,
       render: (price: number) => (
         <div className='text-right'>
-          <span className='font-bold text-lg text-green-600'>${price.toLocaleString('es-AR')}</span>
+          <span className='font-semibold text-sm text-green-600'>${price.toLocaleString('es-AR')}</span>
         </div>
       ),
     },
@@ -394,6 +600,7 @@ export function ProductList({
       title: 'Precio Desc.',
       align: 'right' as const,
       sortable: true,
+      defaultWidth: 120,
       render: (discountedPrice: number, product: Product) => (
         discountedPrice ? (
           <div className='text-right'>
@@ -414,35 +621,62 @@ export function ProductList({
       title: 'Stock',
       align: 'center' as const,
       sortable: true,
+      defaultWidth: 100,
       render: (stock: number) => <StockBadge stock={stock} />,
     },
     {
       key: 'color',
       title: 'Color',
-      render: (color: string) => (
-        <span className='text-sm text-gray-700'>{color || '-'}</span>
-      ),
+      defaultWidth: 100,
+      render: (color: string, product: Product) => {
+        // ✅ NUEVO: Obtener todos los colores del array 'colores' o usar el color individual
+        const colores = (product as any).colores || (color ? [color] : [])
+        
+        if (colores.length === 0) {
+          return <span className='text-sm text-gray-500'>Sin colores</span>
+        }
+
+        return (
+          <div className='flex flex-wrap gap-1'>
+            {colores.map((c: string, index: number) => (
+              <Badge
+                key={`${product.id}-${c}-${index}`}
+                variant='soft'
+                className='text-xs'
+              >
+                {c}
+              </Badge>
+            ))}
+          </div>
+        )
+      },
     },
     {
       key: 'aikon_id',
       title: 'Código Aikon',
-      render: (aikonId: string) => (
-        <span className='text-xs text-gray-500 font-mono'>{aikonId || '-'}</span>
-      ),
+      defaultWidth: 120,
+      render: (aikonId: string) => {
+        // ✅ CAMBIADO: Mostrar solo el código aikon (ya viene de la variante predeterminada desde la API)
+        return (
+          <span className='text-xs text-gray-500 font-mono'>{aikonId || '-'}</span>
+        )
+      },
     },
     {
       key: 'status',
       title: 'Estado',
       align: 'center' as const,
       sortable: true,
+      defaultWidth: 100,
       render: (status: Product['status']) => <StatusBadge status={status} />,
     },
     {
       key: 'created_at',
       title: 'Creado',
       sortable: true,
+      defaultWidth: 110,
       render: (createdAt: string) => (
-        <span className='text-sm text-gray-500'>
+        <span className='text-xs text-gray-500'>
           {new Date(createdAt).toLocaleDateString('es-AR')}
         </span>
       ),
@@ -451,44 +685,406 @@ export function ProductList({
       key: 'updated_at',
       title: 'Actualizado',
       sortable: true,
+      defaultWidth: 110,
       render: (updatedAt: string) => (
-        <span className='text-sm text-gray-500'>
+        <span className='text-xs text-gray-500'>
           {new Date(updatedAt).toLocaleDateString('es-AR')}
         </span>
-      ),
-    },
-    {
-      key: 'actions',
-      title: 'Acciones',
-      width: '60px',
-      render: (_: any, product: Product) => (
-        <ProductRowActions
-          product={product}
-          onView={id => router.push(`/admin/products/${id}`)}
-          onEdit={id => router.push(`/admin/products/${id}/edit`)}
-          onDelete={handleDeleteProduct}
-          onDuplicate={handleDuplicateProduct}
-          isLoading={isDeleting}
-        />
       ),
     },
   ]
 
   // Event handlers
   const handleDeleteProduct = async (productId: string) => {
-    // TODO: Implement actual delete functionality
-    console.log('Delete product:', productId)
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+    
+    // Usar onBulkDelete con un solo ID para eliminar el producto individual
+    if (onBulkDelete) {
+      try {
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        const result = await onBulkDelete([productId])
+        
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        // ✅ SOLUCIÓN DEFINITIVA: Limpiar completamente el cache y forzar recarga
+        // En lugar de intentar actualizar el cache manualmente, simplemente lo limpiamos
+        // y forzamos un refetch completo desde el servidor
+        
+        // Paso 1: Remover todas las queries del cache relacionadas con productos
+        queryClient.removeQueries({ queryKey: ['admin-products'], exact: false })
+        queryClient.removeQueries({ queryKey: ['admin-products-stats'], exact: false })
+        
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        // Paso 2: Invalidar queries para forzar refetch
+        queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+        queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+        
+        // ✅ Esperar un momento para que la transacción de la DB se confirme
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // ✅ Usar refreshProducts directamente si está disponible
+        if (refreshProducts) {
+          try {
+            await refreshProducts()
+          } catch (refreshError) {
+            console.warn('Error en refreshProducts:', refreshError)
+          }
+        } else {
+          // Fallback: Invalidar queries si refreshProducts no está disponible
+          queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+          queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+        }
+        
+        // ✅ Refrescar estadísticas para actualizar contadores
+        if (refreshStats) {
+          try {
+            await refreshStats()
+          } catch (refreshError) {
+            console.warn('Error en refreshStats:', refreshError)
+          }
+        }
+        
+        // Paso 3: Forzar refetch adicional de todas las queries activas relacionadas
+        try {
+          await queryClient.refetchQueries({ 
+            queryKey: ['admin-products'],
+            exact: false,
+            type: 'active'
+          })
+          await queryClient.refetchQueries({ 
+            queryKey: ['admin-products-stats'],
+            exact: false,
+            type: 'active'
+          })
+        } catch (refetchError) {
+          console.warn('Error en refetchQueries:', refetchError)
+        }
+      } catch (error) {
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        console.error('Error en eliminación de producto:', error)
+        throw error // Re-lanzar para que el componente padre maneje el error
+      }
+    } else {
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      console.warn('onBulkDelete no está definido, no se puede eliminar el producto')
+    }
   }
 
   const handleBulkDelete = async (productIds: string[]) => {
-    // TODO: Implement bulk delete
-    console.log('Bulk delete products:', productIds)
-    setSelectedProducts([])
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+    
+    if (onBulkDelete) {
+      try {
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        const result = await onBulkDelete(productIds)
+        
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        setSelectedProducts([]) // Limpiar selección después de la acción
+        
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        // ✅ SOLUCIÓN DEFINITIVA: Limpiar completamente el cache y forzar recarga
+        // En lugar de intentar actualizar el cache manualmente, simplemente lo limpiamos
+        // y forzamos un refetch completo desde el servidor
+        
+        // Paso 1: Remover todas las queries del cache relacionadas con productos
+        queryClient.removeQueries({ queryKey: ['admin-products'], exact: false })
+        queryClient.removeQueries({ queryKey: ['admin-products-stats'], exact: false })
+        
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        
+        // Paso 2: Invalidar queries para forzar refetch
+        queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+        queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+        
+        // ✅ Esperar un momento para que la transacción de la DB se confirme
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
+        // ✅ Usar refreshProducts directamente si está disponible
+        if (refreshProducts) {
+          try {
+            await refreshProducts()
+          } catch (refreshError) {
+            console.warn('Error en refreshProducts:', refreshError)
+          }
+        } else {
+          // Fallback: Invalidar queries si refreshProducts no está disponible
+          queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+          queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+        }
+        
+        // ✅ Refrescar estadísticas para actualizar contadores
+        if (refreshStats) {
+          try {
+            await refreshStats()
+          } catch (refreshError) {
+            console.warn('Error en refreshStats:', refreshError)
+          }
+        }
+        
+        // Paso 3: Forzar refetch adicional de todas las queries activas relacionadas
+        try {
+          await queryClient.refetchQueries({ 
+            queryKey: ['admin-products'],
+            exact: false,
+            type: 'active'
+          })
+          await queryClient.refetchQueries({ 
+            queryKey: ['admin-products-stats'],
+            exact: false,
+            type: 'active'
+          })
+        } catch (refetchError) {
+          console.warn('Error en refetchQueries:', refetchError)
+        }
+      } catch (error) {
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+        console.error('Error en eliminación masiva:', error)
+        throw error // Re-lanzar para que el componente padre maneje el error
+      }
+    } else {
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      console.warn('onBulkDelete no está definido')
+    }
   }
 
-  const handleDuplicateProduct = (productId: string) => {
-    // TODO: Implement product duplication
-    console.log('Duplicate product:', productId)
+  // ✅ Handlers para acciones masivas
+  const handleBulkStatusChange = async (productIds: string[], status: 'active' | 'inactive' | 'draft') => {
+    if (onBulkStatusChange) {
+      try {
+        // Convertir 'draft' a 'inactive' si es necesario (el hook solo soporta 'active' | 'inactive')
+        const statusToUse = status === 'draft' ? 'inactive' : status
+        await onBulkStatusChange(productIds, statusToUse)
+        setSelectedProducts([]) // Limpiar selección después de la acción
+      } catch (error) {
+        console.error('Error en cambio masivo de estado:', error)
+      }
+    }
+  }
+
+  const handleBulkCategoryChange = async (productIds: string[], categoryId: number) => {
+    if (onBulkCategoryChange) {
+      try {
+        await onBulkCategoryChange(productIds, categoryId)
+        setSelectedProducts([])
+      } catch (error) {
+        console.error('Error en cambio masivo de categoría:', error)
+      }
+    }
+  }
+
+  const handleBulkPriceUpdate = async (productIds: string[], priceChange: { type: 'percentage' | 'fixed'; value: number }) => {
+    if (onBulkPriceUpdate) {
+      try {
+        await onBulkPriceUpdate(productIds, priceChange)
+        setSelectedProducts([])
+      } catch (error) {
+        console.error('Error en actualización masiva de precio:', error)
+      }
+    }
+  }
+
+  const handleBulkArchive = async (productIds: string[]) => {
+    if (onBulkArchive) {
+      try {
+        await onBulkArchive(productIds)
+        setSelectedProducts([])
+      } catch (error) {
+        console.error('Error en archivado masivo:', error)
+      }
+    }
+  }
+
+  const handleDuplicateProduct = async (productId: string) => {
+    try {
+      // 1. Obtener el producto original con todas sus variantes
+      // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+      const productResponse = await fetch(`/api/admin/products/${productId}`, {
+        credentials: 'include',
+      })
+      if (!productResponse.ok) {
+        throw new Error('Error al obtener el producto original')
+      }
+      const productData = await productResponse.json()
+      
+      // 2. Obtener variantes del producto
+      // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+      const variantsResponse = await fetch(`/api/products/${productId}/variants`, {
+        credentials: 'include',
+      })
+      const variantsData = variantsResponse.ok ? await variantsResponse.json() : { data: [] }
+      const variants = variantsData.data || []
+      
+      // 3. Preparar datos del nuevo producto (sin id, con nombre modificado)
+      const originalProduct = productData.data || productData
+      
+      // ✅ Extraer todas las categorías desde product_categories
+      let categoryIds: number[] = []
+      if (originalProduct.product_categories && Array.isArray(originalProduct.product_categories)) {
+        categoryIds = originalProduct.product_categories
+          .map((pc: any) => pc.category_id || pc.category?.id)
+          .filter((id: any) => id != null && !isNaN(id))
+      }
+      
+      // Si no hay categorías en product_categories, usar category_id del producto como fallback
+      if (categoryIds.length === 0 && originalProduct.category_id) {
+        categoryIds.push(parseInt(String(originalProduct.category_id)))
+      }
+      
+      const newProductData = {
+        name: `${originalProduct.name} (Copia)`,
+        description: originalProduct.description || '',
+        price: parseFloat(String(originalProduct.price || 0)), // Asegurar que sea número
+        ...(originalProduct.discounted_price ? { compare_price: parseFloat(String(originalProduct.discounted_price)) } : {}), // La API espera compare_price
+        stock: parseInt(String(originalProduct.stock || 0)), // ✅ Usar stock del producto principal
+        ...(originalProduct.category_id ? { category_id: parseInt(String(originalProduct.category_id)) } : {}), // Mantener category_id principal para retrocompatibilidad
+        ...(categoryIds.length > 0 ? { category_ids: categoryIds } : {}), // ✅ NUEVO: Incluir todas las categorías
+        ...(originalProduct.brand ? { brand: String(originalProduct.brand) } : {}),
+        ...(originalProduct.color ? { color: String(originalProduct.color) } : {}),
+        ...(originalProduct.medida ? { medida: String(originalProduct.medida) } : {}),
+        // NO incluir terminaciones - esa columna no existe en la tabla products
+        status: 'active', // ✅ CORREGIDO: Crear productos duplicados como activos para que aparezcan en la lista
+        // No enviar slug, la API lo genera automáticamente
+        // No enviar images aquí, se manejan por separado si es necesario
+      }
+      
+      // 4. Crear el nuevo producto
+      // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+      const createResponse = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+        credentials: 'include',
+        cache: 'no-store', // ✅ Forzar sin cache
+        body: JSON.stringify(newProductData),
+      })
+      
+      // ✅ IMPORTANTE: Leer el body una sola vez
+      const newProduct = await createResponse.json().catch(() => ({ error: 'Error desconocido' }))
+      
+      if (!createResponse.ok) {
+        throw new Error(newProduct.error || newProduct.message || 'Error al crear el producto duplicado')
+      }
+      const newProductId = newProduct.data?.id || newProduct.id
+      
+      // 5. Duplicar todas las variantes creándolas directamente en el nuevo producto
+      if (variants.length > 0) {
+        
+        for (const variant of variants) {
+          try {
+            // Generar nuevo aikon_id único usando timestamp
+            const timestamp = Date.now()
+            const newAikonId = `${variant.aikon_id || 'VAR'}-COPIA-${timestamp}-${Math.random().toString(36).substring(2, 9)}`
+            
+            const variantData = {
+              product_id: parseInt(String(newProductId)),
+              aikon_id: newAikonId,
+              color_name: variant.color_name || null,
+              color_hex: variant.color_hex || null,
+              measure: variant.measure || null,
+              finish: variant.finish || 'Mate',
+              price_list: parseFloat(String(variant.price_list || variant.price_sale || 0)), // Asegurar que sea número
+              price_sale: variant.price_sale ? parseFloat(String(variant.price_sale)) : null,
+              stock: parseInt(String(variant.stock || 0)), // Asegurar que sea número entero
+              image_url: variant.image_url || null,
+              is_active: variant.is_active !== false,
+              is_default: variant.is_default || false,
+            }
+            
+            // Crear nueva variante en el nuevo producto
+            // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+            const variantResponse = await fetch('/api/admin/products/variants', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(variantData),
+            })
+            
+            if (!variantResponse.ok) {
+              const errorData = await variantResponse.json().catch(() => ({ error: 'Error desconocido' }))
+              console.error('Error al crear variante duplicada:', errorData.error || errorData.message || 'Error al crear variante')
+            }
+          } catch (error) {
+            console.error('Error al duplicar variante:', error)
+          }
+        }
+      }
+      
+      // 6. Limpiar cache y forzar refetch completo para actualizar la lista
+      // ✅ ESTRATEGIA AGRESIVA: Remover completamente del cache antes de invalidar
+      // Paso 1: Remover todas las queries del cache relacionadas con productos
+      queryClient.removeQueries({ queryKey: ['admin-products'], exact: false })
+      queryClient.removeQueries({ queryKey: ['admin-products-stats'], exact: false })
+      
+      // ✅ Esperar un momento para que la transacción de la DB se confirme
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Paso 2: Invalidar queries para forzar refetch automático de queries activas
+      queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+      
+      // Paso 3: Forzar refetch de queries activas con headers de no-cache
+      if (refreshProducts) {
+        try {
+          await refreshProducts()
+        } catch (refreshError) {
+          console.warn('Error en refreshProducts:', refreshError)
+        }
+      }
+      
+      // ✅ Refrescar estadísticas para actualizar contadores
+      if (refreshStats) {
+        try {
+          await refreshStats()
+        } catch (refreshError) {
+          console.warn('Error en refreshStats:', refreshError)
+        }
+      }
+      
+      // Paso 4: Forzar refetch adicional de todas las queries activas relacionadas
+      try {
+        await queryClient.refetchQueries({ 
+          queryKey: ['admin-products'],
+          exact: false,
+          type: 'active'
+        })
+        await queryClient.refetchQueries({ 
+          queryKey: ['admin-products-stats'],
+          exact: false,
+          type: 'active'
+        })
+      } catch (refetchError) {
+        console.warn('Error en refetchQueries:', refetchError)
+      }
+      
+      return newProductId
+    } catch (error) {
+      console.error('Error al duplicar producto:', error)
+      throw error
+    }
   }
 
   const handleCreateProduct = () => {
@@ -499,6 +1095,11 @@ export function ProductList({
     try {
       console.log(`📊 Exportando productos en formato ${format}...`)
       
+      // ✅ Si hay productos seleccionados, exportar solo esos
+      const productIdsToExport = selectedProducts.length > 0 
+        ? selectedProducts.map(p => p.id)
+        : undefined
+      
       // Construir URL con filtros actuales
       const params = new URLSearchParams({
         format: format,
@@ -506,6 +1107,10 @@ export function ProductList({
         ...(filters.brand && { brand: filters.brand }),
         ...(filters.status && filters.status !== 'all' && { status: filters.status }),
         ...(filters.stock_status && filters.stock_status !== 'all' && { stock_status: filters.stock_status }),
+        // ✅ Agregar IDs de productos seleccionados si hay alguno
+        ...(productIdsToExport && productIdsToExport.length > 0 && { 
+          product_ids: productIdsToExport.join(',')
+        }),
       })
 
       // Hacer request a la API
@@ -559,14 +1164,21 @@ export function ProductList({
     event: React.MouseEvent<HTMLTableRowElement>,
     product: Product
   ) => {
-    if (event.defaultPrevented) return
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+    if (event.defaultPrevented) {
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      return
+    }
 
     const target = event.target as HTMLElement
-    if (
-      target.closest(
-        'button, a, input, select, textarea, label, [role="button"], [data-interactive="true"]'
-      )
-    ) {
+    const isInteractive = target.closest(
+      'button, a, input, select, textarea, label, [role="button"], [data-interactive="true"], .product-actions-menu'
+    )
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+    if (isInteractive) {
       return
     }
 
@@ -622,73 +1234,181 @@ export function ProductList({
   }
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn('', className)}>
       {/* Filters */}
       <ProductFilters
         filters={params.filters || {}}
         onFiltersChange={updateFilters}
         onClearFilters={clearFilters}
         categories={categories} // ✅ Pasar categorías reales desde el padre
+        onImportProducts={handleImportProducts}
+        onExportProducts={handleExportProducts}
+        onShowExportModal={() => {
+          setShowExportModal(true)
+        }}
+        onBulkActions={() => {
+          setShowBulkActionsDropdown(true)
+        }}
+        selectedProductsCount={selectedProducts.length}
+        isLoading={isDeleting || isBulkDeleting}
       />
 
-      {/* Actions */}
+      {/* Actions - Solo para modales y lógica */}
       <ProductActions
         selectedProducts={selectedProducts}
-        onCreateProduct={handleCreateProduct}
+        categories={categories} // ✅ Pasar categorías reales
         onBulkDelete={handleBulkDelete}
+        onBulkStatusChange={handleBulkStatusChange}
+        onBulkCategoryChange={handleBulkCategoryChange}
+        onBulkPriceUpdate={handleBulkPriceUpdate}
+        onBulkArchive={handleBulkArchive}
         onExportProducts={handleExportProducts}
         onImportProducts={handleImportProducts}
         isLoading={isDeleting || isBulkDeleting}
+        externalShowBulkActions={showBulkActionsDropdown}
+        onExternalBulkActionsChange={setShowBulkActionsDropdown}
+        externalShowExportModal={showExportModal}
+        onExternalExportModalChange={setShowExportModal}
       />
 
       {/* Modern Table with Improved UX */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+        className='mt-4 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative'
       >
-        <div className='overflow-x-auto'>
+        {/* Barra de scroll horizontal flotante siempre visible en la parte superior */}
+        <div 
+          ref={topScrollBarRef}
+          className='sticky top-0 z-30 h-3 bg-gray-50 border-b border-gray-200 overflow-x-auto overflow-y-hidden products-table-scroll'
+          style={{ 
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#cbd5e1 #f1f5f9'
+          }}
+        >
+          <div className='scroll-content' style={{ height: '1px' }}></div>
+        </div>
+        
+        <div 
+          ref={tableScrollRef}
+          className='products-table-scroll' 
+          style={{ 
+            maxHeight: 'calc(100vh - 300px)',
+            overflowX: 'auto',
+            overflowY: 'auto'
+          }}
+        >
           <table className='min-w-full divide-y divide-gray-100' data-testid="products-table">
             {/* Sticky Header con blur backdrop y sorting */}
             <thead className='bg-gradient-to-r from-gray-50/95 to-gray-100/95 sticky top-0 z-10 backdrop-blur-sm border-b border-gray-200'>
               <tr>
-                {columns.slice(0, -1).map((column, index) => (
-                  <th
-                    key={`header-${column.key.toString()}-${index}`}
-                    className={cn(
-                      'px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider',
-                      column.sortable && 'cursor-pointer select-none group hover:bg-gray-100/50 transition-colors'
-                    )}
-                    style={{ width: column.width }}
-                    onClick={() => column.sortable && handleSort(column.key.toString())}
-                  >
-                    <div className='flex items-center gap-2'>
-                      <span>{column.title}</span>
-                      {column.sortable && renderSortIcon(column.key.toString())}
-                    </div>
-                  </th>
-                ))}
-                <th className='px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider'>
-                  Acciones
-                </th>
+                {columns.map((column, index) => {
+                  const columnKey = column.key.toString()
+                  const width = columnWidths[columnKey] || column.defaultWidth || 150
+                  const isResizingColumn = isResizing === columnKey
+                  const isSelectColumn = columnKey === 'select'
+
+                  return (
+                    <th
+                      key={`header-${columnKey}-${index}`}
+                      className={cn(
+                        'px-2 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wider relative',
+                        column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left',
+                        column.sortable && !isSelectColumn && 'cursor-pointer select-none group hover:bg-gray-100/50 transition-colors',
+                        isResizingColumn && 'bg-blue-50'
+                      )}
+                      style={{ width: `${width}px`, minWidth: `${width}px`, maxWidth: `${width}px` }}
+                      onClick={(e) => {
+                        // Prevenir sort si estamos redimensionando o acabamos de redimensionar esta columna
+                        if (isSelectColumn) {
+                          // Para la columna de selección, manejar "seleccionar todos"
+                          e.stopPropagation()
+                          handleSelectAll()
+                          return
+                        }
+                        if (column.sortable && !isResizing && justFinishedResizing !== columnKey) {
+                          handleSort(columnKey)
+                        } else if (justFinishedResizing === columnKey) {
+                          e.stopPropagation()
+                        }
+                      }}
+                    >
+                      <div className='flex items-center gap-1.5 justify-center'>
+                        {isSelectColumn ? (
+                          <input
+                            type='checkbox'
+                            checked={isAllSelected}
+                            ref={(input) => {
+                              if (input) input.indeterminate = isSomeSelected
+                            }}
+                            onChange={handleSelectAll}
+                            onClick={(e) => e.stopPropagation()}
+                            className='w-4 h-4 text-blaze-orange-600 border-gray-300 rounded focus:ring-blaze-orange-500 cursor-pointer'
+                            aria-label='Seleccionar todos los productos'
+                          />
+                        ) : (
+                          <>
+                            <span>{column.title}</span>
+                            {column.sortable && renderSortIcon(columnKey)}
+                          </>
+                        )}
+                      </div>
+                      {/* Resize handle */}
+                      <div
+                        className={cn(
+                          'absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 transition-colors group z-10',
+                          isResizingColumn && 'bg-blue-500 w-1.5'
+                        )}
+                        onMouseDown={(e) => {
+                          handleMouseDown(e, columnKey)
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        onMouseUp={(e) => {
+                          // Prevenir que el click se propague después del mouseUp
+                          e.preventDefault()
+                          e.stopPropagation()
+                        }}
+                        title='Arrastra para redimensionar'
+                      >
+                        <div className='absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-0.5 opacity-0 group-hover:opacity-100 transition-opacity'>
+                          <div className='w-0.5 h-4 bg-gray-400 rounded-full'></div>
+                        </div>
+                      </div>
+                    </th>
+                  )
+                })}
               </tr>
             </thead>
             <tbody className='bg-white divide-y divide-gray-50'>
               {isLoading ? (
                 /* Skeleton Loading State */
                 <>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className='animate-pulse'>
-                      {columns.map((column, colIndex) => (
-                        <td 
-                          key={`skeleton-${i}-${colIndex}`}
-                          className='px-6 py-4'
-                        >
-                          <Skeleton className='h-4 w-full' />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const columnKey = columns[i % columns.length]?.key.toString() || 'default'
+                    const width = columnWidths[columnKey] || columns[i % columns.length]?.defaultWidth || 150
+                    
+                    return (
+                      <tr key={i} className='animate-pulse'>
+                        {columns.map((column, colIndex) => {
+                          const colKey = column.key.toString()
+                          const colWidth = columnWidths[colKey] || column.defaultWidth || 150
+                          
+                          return (
+                            <td 
+                              key={`skeleton-${i}-${colIndex}`}
+                              className='px-2 py-2'
+                              style={{ width: `${colWidth}px`, minWidth: `${colWidth}px`, maxWidth: `${colWidth}px` }}
+                            >
+                              <Skeleton className='h-4 w-full' />
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    )
+                  })}
                 </>
               ) : products.length === 0 ? (
                 /* Empty State Mejorado */
@@ -731,23 +1451,46 @@ export function ProductList({
                         )}
                         data-testid="product-row"
                       >
-                        {columns.slice(0, -1).map((column, colIndex) => (
-                          <td
-                            key={`${product.id}-${column.key.toString()}-${colIndex}`}
-                            className={cn(
-                              'px-6 py-4 whitespace-nowrap transition-colors',
-                              column.align === 'center' && 'text-center',
-                              column.align === 'right' && 'text-right'
-                            )}
-                          >
-                            {column.render
-                              ? column.render(product[column.key as keyof Product], product)
-                              : String(product[column.key as keyof Product] || '-')}
-                          </td>
-                        ))}
-                        <td className='px-6 py-4 whitespace-nowrap text-right'>
-                          {columns[columns.length - 1]?.render?.(null, product) || null}
-                        </td>
+                        {columns.map((column, colIndex) => {
+                          const columnKey = column.key.toString()
+                          const width = columnWidths[columnKey] || column.defaultWidth || 150
+                          const shouldWrap = column.key === 'name' || column.key === 'description' || column.key === 'slug'
+                          
+                          return (
+                            <td
+                              key={`${product.id}-${column.key.toString()}-${colIndex}`}
+                              className={cn(
+                                'px-2 py-2 transition-colors overflow-hidden',
+                                !shouldWrap && 'whitespace-nowrap',
+                                column.align === 'center' && 'text-center',
+                                column.align === 'right' && 'text-right',
+                                column.key === 'actions' && 'relative z-50'
+                              )}
+                              style={{ 
+                                width: `${width}px`, 
+                                minWidth: `${width}px`, 
+                                maxWidth: `${width}px`,
+                                overflow: 'visible',
+                                textOverflow: 'ellipsis',
+                                position: column.key === 'actions' ? 'relative' : 'static'
+                              }}
+                              onClick={(e) => {
+                                if (column.key === 'actions') {
+                                  e.stopPropagation()
+                                }
+                              }}
+                            >
+                              <div className={cn(
+                                'w-full min-w-0',
+                                column.key === 'actions' ? 'overflow-visible' : 'overflow-hidden'
+                              )}>
+                                {column.render
+                                  ? column.render(product[column.key as keyof Product], product)
+                                  : String(product[column.key as keyof Product] || '-')}
+                              </div>
+                            </td>
+                          )
+                        })}
                       </tr>
 
                       {/* Fila expandible de variantes */}

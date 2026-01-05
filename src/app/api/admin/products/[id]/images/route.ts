@@ -23,7 +23,7 @@ const ImageUpdateSchema = z.object({
 })
 
 const ProductParamsSchema = z.object({
-  id: z.string().uuid('ID de producto inválido'),
+  id: z.string().regex(/^\d+$/, 'ID de producto inválido'), // ✅ Aceptar IDs numéricos
 })
 
 const ImageParamsSchema = z.object({
@@ -100,7 +100,12 @@ async function deleteImageFromStorage(path: string) {
  * Upload new image for product
  */
 const postHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-  const { supabase, user } = request as any
+  // ✅ CORREGIDO: Usar supabaseAdmin directamente y obtener user del auth
+  const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { auth } = await import('@/lib/auth/config')
+  const session = await auth()
+  const user = session?.user
+  
   const { id } = await context.params
   const productId = id
 
@@ -110,11 +115,14 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
     throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
+  // Convert productId to number if it's numeric
+  const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
+
   // Check if product exists
-  const { data: product, error: productError } = await supabase
+  const { data: product, error: productError } = await supabaseAdmin
     .from('products')
     .select('id, name')
-    .eq('id', productId)
+    .eq('id', numericProductId)
     .single()
 
   if (productError || !product) {
@@ -139,10 +147,10 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   const uploadResult = await uploadImageToStorage(file, filename)
 
   // Save image record to database
-  const { data: imageRecord, error: dbError } = await supabase
+  const { data: imageRecord, error: dbError } = await supabaseAdmin
     .from('product_images')
     .insert({
-      product_id: productId,
+      product_id: numericProductId,
       url: uploadResult.url,
       storage_path: uploadResult.path,
       alt_text: altText || null,
@@ -163,15 +171,17 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
 
   // If this is set as primary, update other images
   if (isPrimary) {
-    await supabase
+    await supabaseAdmin
       .from('product_images')
       .update({ is_primary: false })
-      .eq('product_id', productId)
+      .eq('product_id', numericProductId)
       .neq('id', imageRecord.id)
   }
 
   // Log action
+  if (user?.id) {
   await logAdminAction(user.id, 'CREATE', 'product_image', imageRecord.id, null, imageRecord)
+  }
 
   return NextResponse.json(
     {
@@ -187,9 +197,11 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
  * GET /api/admin/products/[id]/images
  * Get all images for product
  */
-const getHandler = async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const { supabase } = request as any
-  const productId = params.id
+const getHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
+  // ✅ CORREGIDO: Usar supabaseAdmin directamente en lugar de request.supabase
+  const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { id } = await context.params
+  const productId = id
 
   // Validate params
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
@@ -197,11 +209,14 @@ const getHandler = async (request: NextRequest, { params }: { params: { id: stri
     throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
   }
 
+  // Convert productId to number if it's numeric
+  const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
+
   // Get images
-  const { data: images, error } = await supabase
+  const { data: images, error } = await supabaseAdmin
     .from('product_images')
     .select('*')
-    .eq('product_id', productId)
+    .eq('product_id', numericProductId)
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: true })
 
@@ -210,7 +225,7 @@ const getHandler = async (request: NextRequest, { params }: { params: { id: stri
   }
 
   return NextResponse.json({
-    data: images,
+    data: images || [],
     success: true,
     message: 'Imágenes obtenidas exitosamente',
   })

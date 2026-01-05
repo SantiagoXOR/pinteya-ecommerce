@@ -15,7 +15,7 @@ import {
   User,
   Wifi,
   Package,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'

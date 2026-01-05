@@ -16,7 +16,7 @@ import {
   ProductGridSkeleton,
 } from '@/components/ui/enhanced-loading'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
-import { ShoppingCart, Heart, Star, Zap, Package } from 'lucide-react'
+import { ShoppingCart, Heart, Star, Zap, Package } from '@/lib/optimized-imports'
 
 export default function MicroInteractionsDemo() {
   const [loading, setLoading] = React.useState(false)

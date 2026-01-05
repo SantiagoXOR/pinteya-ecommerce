@@ -43,10 +43,10 @@ export async function getAuthenticatedUser(
 
     console.log(`[AUTH] Usuario autenticado via NextAuth: ${session.user.id}`)
 
-    // Verificar si es admin usando el email
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
-    console.log(`[AUTH] Verificación admin - email: ${session.user.email}, isAdmin: ${isAdmin}`)
+    console.log(`[AUTH] Verificación admin - email: ${session.user.email}, role: ${session.user.role || 'none'}, isAdmin: ${isAdmin}`)
 
     return {
       userId: session.user.id,
@@ -148,8 +148,8 @@ export async function isUserAdmin(userId?: string): Promise<boolean> {
       return false
     }
 
-    // Verificar si es admin usando el email
-    return session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    return session.user.role === 'admin'
   } catch (error) {
     console.error('[AUTH] Error verificando admin:', error)
     return false
@@ -179,7 +179,7 @@ export async function requireAdminAuth(): Promise<{
             success: true,
             user: {
               id: 'dev-admin',
-              email: 'santiago@xor.com.ar',
+              email: 'admin@bypass.dev',
               role: 'admin',
             },
           }
@@ -223,7 +223,8 @@ export async function requireAdminAuth(): Promise<{
 export async function checkCRUDPermissions(
   operation: 'create' | 'read' | 'update' | 'delete',
   resource: string,
-  userId?: string
+  userId?: string,
+  request?: NextRequest | NextApiRequest
 ): Promise<{
   allowed: boolean
   error?: string
@@ -247,7 +248,23 @@ export async function checkCRUDPermissions(
       }
     }
 
-    const session = await auth()
+    // ✅ CORREGIDO: En NextAuth v5, auth() lee automáticamente las cookies del contexto
+    // No necesitamos pasar el request explícitamente
+    let session
+    try {
+      // NextAuth v5 lee automáticamente las cookies del contexto de la request
+      session = await auth()
+    } catch (authError: any) {
+      console.error('[AUTH] Error al leer sesión:', {
+        error: authError.message,
+        stack: authError.stack,
+      })
+      // Si falla, retornar error de autenticación
+      return {
+        allowed: false,
+        error: 'Error de autenticación: No se pudo leer la sesión',
+      }
+    }
 
     if (!session?.user) {
       return {
@@ -256,8 +273,8 @@ export async function checkCRUDPermissions(
       }
     }
 
-    // Verificar si es admin
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
     if (!isAdmin) {
       return {
@@ -345,8 +362,8 @@ export async function checkAdminAccess(requiredRole: string = 'admin'): Promise<
       }
     }
 
-    // Verificar si es admin
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
     if (!isAdmin) {
       return {
@@ -401,7 +418,7 @@ export async function getUserProfile(userId?: string): Promise<{
 
     // Si se especifica un userId diferente, verificar permisos admin
     if (userId && userId !== session.user.id) {
-      const isAdmin = session.user.email === 'santiago@xor.com.ar'
+      const isAdmin = session.user.role === 'admin'
       if (!isAdmin) {
         return {
           success: false,
@@ -410,7 +427,8 @@ export async function getUserProfile(userId?: string): Promise<{
       }
     }
 
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
     return {
       success: true,
@@ -453,9 +471,34 @@ export async function getAuthFromHeaders(headers: Headers | Record<string, strin
       ? headers.get('x-admin-email') 
       : headers['x-admin-email']
 
-    // Bypass para tests E2E
-    if (testAdmin === 'true' && testEmail === 'santiago@xor.com.ar') {
-      console.log('[AUTH] Test mode - bypassing authentication')
+    // Bypass para tests E2E - SOLO EN DESARROLLO/TEST Y CON VERIFICACIÓN DE SEGURIDAD
+    if (testAdmin === 'true' && testEmail) {
+      // CRÍTICO: Solo permitir en desarrollo/test, nunca en producción
+      if (process.env.NODE_ENV === 'production') {
+        console.warn('[AUTH] Intento de bypass de test en producción - BLOQUEADO')
+        return {
+          success: false,
+          error: 'Test bypass no permitido en producción',
+        }
+      }
+
+      // Lista blanca de emails permitidos para tests (solo emails con rol admin en BD)
+      const ALLOWED_TEST_ADMIN_EMAILS = [
+        'santiago@xor.com.ar',
+        'pinteya.app@gmail.com',
+        'pinturasmascolor@gmail.com',
+      ]
+
+      // Verificar que el email esté en la lista blanca
+      if (!ALLOWED_TEST_ADMIN_EMAILS.includes(testEmail)) {
+        console.warn(`[AUTH] Intento de bypass con email no autorizado: ${testEmail}`)
+        return {
+          success: false,
+          error: 'Email no autorizado para test bypass',
+        }
+      }
+
+      console.log(`[AUTH] Test mode - bypassing authentication para ${testEmail} (solo desarrollo/test)`)
       return {
         success: true,
         userId: 'test-admin-user',
@@ -475,9 +518,10 @@ export async function getAuthFromHeaders(headers: Headers | Record<string, strin
       }
     }
 
-    const isAdmin = session.user.email === 'santiago@xor.com.ar'
+    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    const isAdmin = session.user.role === 'admin'
 
-    console.log(`[AUTH] Autenticación extraída de headers para ${session.user.email}`)
+    console.log(`[AUTH] Autenticación extraída de headers para ${session.user.email} (rol: ${session.user.role || 'none'})`)
 
     return {
       success: true,

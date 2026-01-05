@@ -4,6 +4,8 @@
 
 import { Metadata } from 'next'
 import { Suspense } from 'react'
+import { requireAdminAuth } from '@/lib/auth/server-auth-guard'
+import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { MonitoringClientPage } from './MonitoringClientPage'
 
 export const metadata: Metadata = {
@@ -14,10 +16,19 @@ export const metadata: Metadata = {
 /**
  * Página principal del dashboard de monitoreo (Server Component)
  */
-export default function MonitoringPage() {
+export default async function MonitoringPage() {
+  await requireAdminAuth()
+
+  const breadcrumbs = [
+    { label: 'Admin', href: '/admin' },
+    { label: 'Monitoreo' },
+  ]
+
   return (
-    <Suspense fallback={<div>Cargando dashboard de monitoreo...</div>}>
-      <MonitoringClientPage />
-    </Suspense>
+    <AdminLayout title='Dashboard de Monitoreo' breadcrumbs={breadcrumbs}>
+      <Suspense fallback={<div className='p-6'>Cargando dashboard de monitoreo...</div>}>
+        <MonitoringClientPage />
+      </Suspense>
+    </AdminLayout>
   )
 }

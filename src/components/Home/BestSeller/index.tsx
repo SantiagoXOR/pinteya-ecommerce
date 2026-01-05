@@ -17,7 +17,7 @@ const BestSeller: React.FC = () => {
   // Obtener productos y ordenarlos por precio alto; sin stock al final
   const { data, isLoading, error } = useFilteredProducts({
     categories: filters.categories.length > 0 ? filters.categories : undefined,
-    limit: 50,
+    limit: 20, // ⚡ OPTIMIZACIÓN: Reducido de 50 a 20 para reducir tamaño de respuesta
     sortBy: 'price',
     sortOrder: 'desc',
   })
@@ -58,7 +58,7 @@ const BestSeller: React.FC = () => {
           </div>
 
           {/* Loading State mejorado - Mobile-First 2 columnas */}
-          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-7.5'>
+          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-7.5 gap-y-6 md:gap-y-8'>
             {[...Array(6)].map((_, index) => (
               <Card key={index} className='overflow-hidden'>
                 <div className='animate-pulse'>
@@ -115,7 +115,7 @@ const BestSeller: React.FC = () => {
   }
 
   return (
-    <section className='overflow-hidden py-2 sm:py-4'>
+    <section className='overflow-x-hidden py-2 sm:py-4'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
         {/* Section Header - Migrado al Design System */}
         <div className='mb-4 flex items-center justify-between'>
@@ -132,7 +132,7 @@ const BestSeller: React.FC = () => {
           </div>
         </div>
 
-        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-7.5'>
+        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-7.5 gap-y-6 md:gap-y-8'>
           {/* Best Sellers Grid - Mobile-First 2 columnas */}
           {bestSellerProducts.length > 0 ? (
             bestSellerProducts.map((item, key) => <ProductItem key={key} product={item} />)

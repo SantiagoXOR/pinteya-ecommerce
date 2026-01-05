@@ -11,7 +11,7 @@ import {
   Filter,
   Download,
   MoreHorizontal,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface Column<T> {
   key: keyof T | string

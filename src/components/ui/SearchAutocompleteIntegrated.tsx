@@ -3,12 +3,16 @@
 // ===================================
 
 import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
-import { Search, X, Clock, TrendingUp, Package, Tag } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Search, X, Clock, TrendingUp, Package, Tag } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { useSearchOptimized } from '@/hooks/useSearchOptimized'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'
 import { useRecentSearches } from '@/hooks/useRecentSearches'
+import { useAnimatedPlaceholder } from '@/hooks/useAnimatedPlaceholder'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
+import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { useScrollActive } from '@/hooks/useScrollActive'
 
 // ===================================
 // TIPOS E INTERFACES
@@ -84,7 +88,7 @@ export const SearchAutocompleteIntegrated = React.memo(
   React.forwardRef<HTMLInputElement, SearchAutocompleteIntegratedProps>(
     (
       {
-        placeholder = 'Látex interior blanco 20lts, rodillos, pinceles...',
+        placeholder = 'Buscar productos...',
         className,
         disabled = false,
         autoFocus = false,
@@ -114,12 +118,31 @@ export const SearchAutocompleteIntegrated = React.memo(
       const [isOpen, setIsOpen] = useState(false)
       const [inputValue, setInputValue] = useState('')
       const [selectedIndex, setSelectedIndex] = useState(-1)
+      const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
+      const [mounted, setMounted] = useState(false)
+
+      // Hook para placeholder animado
+      const { placeholder: animatedPlaceholder, resetAnimation } = useAnimatedPlaceholder({
+        basePlaceholder: placeholder,
+        enabled: !inputValue.trim(), // Solo animar cuando no hay texto
+      })
+
+      // ⚡ OPTIMIZACIÓN: Detectar scroll activo y rendimiento del dispositivo
+      const performanceLevel = useDevicePerformance()
+      const isLowPerformance = performanceLevel === 'low'
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+      const { isScrolling } = useScrollActive()
 
       // Referencias
       const inputRef = useRef<HTMLInputElement>(null)
       const dropdownRef = useRef<HTMLDivElement>(null)
       const containerRef = useRef<HTMLDivElement>(null)
       const suggestionRefs = useRef<(HTMLDivElement | null)[]>([])
+
+      // Montar el componente en el cliente
+      useEffect(() => {
+        setMounted(true)
+      }, [])
 
       // Combinar refs
       const combinedRef = useCallback(
@@ -159,6 +182,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         categoryId,
       })
 
+      // ⚡ OPTIMIZACIÓN: Deshabilitar refetch automático para evitar re-renders
       const {
         trendingSearches,
         isLoading: isTrendingLoading,
@@ -166,6 +190,7 @@ export const SearchAutocompleteIntegrated = React.memo(
       } = useTrendingSearches({
         limit: 4,
         enabled: showTrendingSearches,
+        refetchInterval: false, // ⚡ Deshabilitar refetch automático
       })
 
       const { recentSearches } = useRecentSearches({
@@ -259,6 +284,7 @@ export const SearchAutocompleteIntegrated = React.memo(
           if (value.trim()) {
             searchWithDebounce(value)
             setIsOpen(true)
+            resetAnimation() // Detener animación cuando el usuario escribe
           } else {
             // Mantener el dropdown abierto para mostrar recientes/trending
             setIsOpen(true)
@@ -266,13 +292,32 @@ export const SearchAutocompleteIntegrated = React.memo(
 
           onSearch?.(value)
         },
-        [searchWithDebounce, onSearch]
+        [searchWithDebounce, onSearch, resetAnimation]
       )
+
+      // Calcular posición del dropdown - Optimizado con requestAnimationFrame
+      const updateDropdownPosition = useCallback(() => {
+        if (inputRef.current) {
+          // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para evitar forced reflow
+          requestAnimationFrame(() => {
+            if (inputRef.current) {
+              const rect = inputRef.current.getBoundingClientRect()
+              setDropdownPosition({
+                top: rect.bottom + window.scrollY + 4,
+                left: rect.left + window.scrollX,
+                width: rect.width,
+              })
+            }
+          })
+        }
+      }, [])
 
       const handleInputFocus = useCallback(() => {
         setIsOpen(true)
+        updateDropdownPosition()
+        resetAnimation() // Detener animación al enfocar
         onFocus?.()
-      }, [onFocus])
+      }, [onFocus, updateDropdownPosition, resetAnimation])
 
       const handleInputBlur = useCallback(
         (e: React.FocusEvent) => {
@@ -383,10 +428,26 @@ export const SearchAutocompleteIntegrated = React.memo(
           const timer = setTimeout(() => {
             inputRef.current?.focus()
             setIsOpen(true) // Abrir dropdown automáticamente
+            updateDropdownPosition()
           }, 50)
           return () => clearTimeout(timer)
         }
-      }, [autoFocus])
+      }, [autoFocus, updateDropdownPosition])
+
+      // Actualizar posición del dropdown cuando se abre o cambia el tamaño de la ventana
+      useEffect(() => {
+        if (isOpen && mounted) {
+          updateDropdownPosition()
+          const handleResize = () => updateDropdownPosition()
+          const handleScroll = () => updateDropdownPosition()
+          window.addEventListener('resize', handleResize)
+          window.addEventListener('scroll', handleScroll, true)
+          return () => {
+            window.removeEventListener('resize', handleResize)
+            window.removeEventListener('scroll', handleScroll, true)
+          }
+        }
+      }, [isOpen, mounted, updateDropdownPosition])
 
       // ===================================
       // FUNCIONES DE RENDERIZADO
@@ -395,15 +456,15 @@ export const SearchAutocompleteIntegrated = React.memo(
       const getSuggestionIcon = (type: SearchSuggestion['type']) => {
         switch (type) {
           case 'product':
-            return <Package className='w-4 h-4 text-gray-500' />
+            return <Package className='w-4 h-4 text-gray-500 dark:text-gray-400' />
           case 'category':
-            return <Tag className='w-4 h-4 text-gray-500' />
+            return <Tag className='w-4 h-4 text-gray-500 dark:text-gray-400' />
           case 'recent':
-            return <Clock className='w-4 h-4 text-gray-400' />
+            return <Clock className='w-4 h-4 text-gray-400 dark:text-gray-500' />
           case 'trending':
-            return <TrendingUp className='w-4 h-4 text-orange-500' />
+            return <TrendingUp className='w-4 h-4 text-orange-500 dark:text-blaze-orange-400' />
           default:
-            return <Search className='w-4 h-4 text-gray-500' />
+            return <Search className='w-4 h-4 text-gray-500 dark:text-gray-400' />
         }
       }
 
@@ -413,8 +474,8 @@ export const SearchAutocompleteIntegrated = React.memo(
           ref={el => (suggestionRefs.current[index] = el)}
           className={cn(
             'flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors',
-            'hover:bg-gray-50 focus:bg-gray-50',
-            selectedIndex === index && 'bg-gray-50'
+            'hover:bg-gray-50 dark:hover:bg-gray-800 focus:bg-gray-50 dark:focus:bg-gray-800',
+            selectedIndex === index && 'bg-gray-50 dark:bg-gray-800'
           )}
           onClick={() => handleSuggestionSelect(suggestion)}
           onMouseEnter={() => {
@@ -433,7 +494,7 @@ export const SearchAutocompleteIntegrated = React.memo(
             <img
               src={suggestion.image}
               alt={suggestion.title}
-              className='w-10 h-10 rounded-md object-cover border border-gray-200 flex-shrink-0'
+              className='w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0'
             />
           ) : (
             getSuggestionIcon(suggestion.type)
@@ -441,9 +502,9 @@ export const SearchAutocompleteIntegrated = React.memo(
 
           {/* Texto */}
           <div className='flex-1 min-w-0'>
-            <div className='font-medium text-gray-900 truncate'>{suggestion.title}</div>
+            <div className='font-medium text-gray-900 dark:text-gray-200 truncate'>{suggestion.title}</div>
             {suggestion.subtitle && (
-              <div className='text-sm text-gray-500 truncate'>{suggestion.subtitle}</div>
+              <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>{suggestion.subtitle}</div>
             )}
           </div>
 
@@ -458,7 +519,6 @@ export const SearchAutocompleteIntegrated = React.memo(
         <div ref={containerRef} className={cn('relative w-full', className)}>
           <form onSubmit={handleSubmit} id={formId || 'search-autocomplete-form'} className='relative'>
             <div className='relative'>
-              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
               <input
                 {...props}
                 ref={combinedRef}
@@ -468,15 +528,25 @@ export const SearchAutocompleteIntegrated = React.memo(
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
                 onKeyDown={handleKeyDown}
-                placeholder={placeholder}
+                placeholder={animatedPlaceholder}
                 disabled={disabled}
                 className={cn(
-                  'w-full pl-10 pr-10 py-1.5 border border-gray-300 rounded-full',
-                  'focus:ring-2 focus:ring-orange-500 focus:border-orange-500',
-                  'placeholder-gray-500 text-gray-900',
-                  'disabled:bg-gray-50 disabled:text-gray-500',
-                  'transition-colors duration-200'
+                  'w-full pl-4 pr-10 py-1.5 border border-white/35 rounded-full',
+                  'focus:ring-2 focus:ring-orange-500/50 dark:focus:ring-blaze-orange-500/50 focus:border-orange-500/50 dark:focus:border-blaze-orange-500/50',
+                  'placeholder-gray-600 placeholder:text-xs placeholder:font-normal dark:placeholder-gray-300 dark:placeholder:text-xs dark:placeholder:font-normal text-gray-600 dark:text-gray-300',
+                  'text-sm font-normal',
+                  'disabled:bg-gray-50/30 dark:disabled:bg-gray-900/30 disabled:text-gray-500 dark:disabled:text-gray-400',
+                  'transition-all duration-200',
+                  'focus:shadow-[0_4px_16px_rgba(0,0,0,0.15),0_2px_6px_rgba(0,0,0,0.1)]'
                 )}
+                style={{
+                  background: inputValue || isOpen 
+                    ? 'rgba(255, 255, 255, 0.95)'
+                    : 'rgba(255, 255, 255, 0.95)',
+                  // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+                  // El CSS global ya lo deshabilita
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                }}
                 role='searchbox'
                 aria-expanded={isOpen}
                 aria-haspopup='listbox'
@@ -488,34 +558,63 @@ export const SearchAutocompleteIntegrated = React.memo(
                     : undefined
                 }
               />
+              
+              {/* Botón de búsqueda circular estilo product card */}
+              <button
+                type='submit'
+                className='absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-6 h-6 md:w-7 md:h-7'
+                aria-label='Buscar'
+              >
+                {/* Blur amarillo detrás del botón */}
+                <div 
+                  className='absolute inset-0 rounded-full pointer-events-none'
+                  style={{
+                    background: 'rgba(250, 204, 21, 0.9)',
+                    // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+                    // El CSS global ya lo deshabilita
+                  }}
+                />
+                
+                {/* Botón circular */}
+                <div className='relative w-full h-full rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform bg-transparent'>
+                  <Search className='w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-[#EA5A17]' />
+                </div>
+              </button>
+
               {showClearButton && inputValue && (
                 <button
                   type='button'
                   onClick={handleClear}
-                  className='absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors'
+                  className='absolute right-10 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors z-20'
                   aria-label='Clear search'
                 >
-                  <X className='w-4 h-4 text-gray-400' />
+                  <X className='w-3 h-3 md:w-4 md:h-4 text-gray-400 dark:text-gray-500' />
                 </button>
               )}
             </div>
           </form>
 
-          {/* Dropdown de sugerencias */}
-          {isOpen && (
-            <div
-              ref={dropdownRef}
-              className={cn(
-                'absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200',
-                'rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto'
-              )}
-              role='listbox'
-            id='autocomplete-listbox'
-            >
+          {/* Dropdown de sugerencias - Renderizado con Portal fuera del header */}
+          {isOpen && mounted && dropdownPosition
+            ? createPortal(
+                <div
+                  ref={dropdownRef}
+                  className={cn(
+                    'fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
+                    'rounded-lg shadow-lg dark:shadow-xl z-[200] max-h-96 overflow-y-auto'
+                  )}
+                  style={{
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                    width: `${dropdownPosition.width}px`,
+                  }}
+                  role='listbox'
+                  id='autocomplete-listbox'
+                >
               {/* Estado inicial sin texto: encabezado y esqueleto/ayuda */}
               {!inputValue.trim() && (
                 <div className='py-2'>
-                  <div className='px-4 py-2 text-sm text-gray-600'>
+                  <div className='px-4 py-2 text-sm text-gray-600 dark:text-gray-400'>
                     Sugerencias populares
                   </div>
                   {/* Lista curada de sugerencias siempre visible en estado vacío */}
@@ -550,10 +649,10 @@ export const SearchAutocompleteIntegrated = React.memo(
                     <div className='py-2' aria-live='polite'>
                       {[...Array(3)].map((_, i) => (
                         <div key={`trend-sk-${i}`} className='flex items-center gap-3 px-4 py-3'>
-                          <div className='w-10 h-10 bg-gray-100 rounded-md animate-pulse' />
+                          <div className='w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse' />
                           <div className='flex-1 min-w-0'>
-                            <div className='w-40 h-3 bg-gray-100 rounded-md animate-pulse mb-2' />
-                            <div className='w-24 h-3 bg-gray-100 rounded-md animate-pulse' />
+                            <div className='w-40 h-3 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mb-2' />
+                            <div className='w-24 h-3 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse' />
                           </div>
                         </div>
                       ))}
@@ -595,16 +694,16 @@ export const SearchAutocompleteIntegrated = React.memo(
                   {/* Skeletons de carga para mejor percepción de velocidad */}
                   {[...Array(3)].map((_, i) => (
                     <div key={`sk-${i}`} className='flex items-center gap-3 px-4 py-3'>
-                      <div className='w-10 h-10 bg-gray-100 rounded-md animate-pulse' />
-                      <div className='flex-1 min-w-0'>
-                        <div className='w-40 h-3 bg-gray-100 rounded-md animate-pulse mb-2' />
-                        <div className='w-24 h-3 bg-gray-100 rounded-md animate-pulse' />
+                      <div className='w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse' />
+                          <div className='flex-1 min-w-0'>
+                        <div className='w-40 h-3 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mb-2' />
+                        <div className='w-24 h-3 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse' />
                       </div>
                     </div>
                   ))}
                   <div className='flex items-center justify-center py-2'>
                     <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500' />
-                    <span className='ml-2 text-gray-600'>Buscando productos...</span>
+                    <span className='ml-2 text-white'>Buscando productos...</span>
                   </div>
                 </div>
               )}
@@ -616,7 +715,7 @@ export const SearchAutocompleteIntegrated = React.memo(
               )}
 
               {!isLoading && !error && allSuggestions.length === 0 && inputValue.trim() && (
-                <div className='px-4 py-8 text-center text-gray-500' aria-live='polite'>
+                <div className='px-4 py-8 text-center text-gray-500 dark:text-gray-400' aria-live='polite'>
                   No se encontraron resultados para "{inputValue}"
                 </div>
               )}
@@ -626,8 +725,10 @@ export const SearchAutocompleteIntegrated = React.memo(
                   {allSuggestions.map((suggestion, index) => renderSuggestion(suggestion, index))}
                 </div>
               )}
-            </div>
-          )}
+                </div>,
+                document.body
+              )
+            : null}
         </div>
       )
     }

@@ -12,7 +12,7 @@ import {
   TableRow 
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { 
   Package, 
@@ -25,7 +25,7 @@ import {
   DollarSign,
   CreditCard,
   Search,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { OrderFilters } from './OrderFilters'
 import { OrderRowActions } from './OrderActions'
 

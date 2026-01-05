@@ -4,7 +4,7 @@
  */
 
 import Link from 'next/link'
-import { Shield, Lock, Users, BarChart3, Package, ArrowRight } from 'lucide-react'
+import { Shield, Lock, Users, BarChart3, Package, ArrowRight } from '@/lib/optimized-imports'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {

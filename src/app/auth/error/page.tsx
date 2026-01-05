@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { AlertCircle, Home, RefreshCw } from 'lucide-react'
+import { AlertCircle, Home, RefreshCw } from '@/lib/optimized-imports'
 
 export default function AuthErrorPage() {
   const searchParams = useSearchParams()

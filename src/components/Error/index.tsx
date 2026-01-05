@@ -7,7 +7,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { AlertTriangle, Home, RefreshCw, ArrowLeft } from 'lucide-react'
+import { AlertTriangle, Home, RefreshCw, ArrowLeft } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

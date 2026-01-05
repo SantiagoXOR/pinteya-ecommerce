@@ -192,9 +192,10 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 fill
                 className='object-contain transition-all duration-500 ease-in-out select-none'
                 priority={image.priority || index === 0}
-                unoptimized={image.unoptimized || image.src.endsWith('.svg')}
+                fetchPriority={image.fetchPriority || (index === 0 ? 'high' : 'auto')}
+                unoptimized={image.unoptimized || false} // ⚡ OPTIMIZACIÓN: Permitir optimización de Next.js para WebP
                 sizes='(max-width: 640px) 100vw, (max-width: 768px) 95vw, (max-width: 1024px) 80vw, 60vw'
-                quality={image.quality || 90}
+                quality={image.quality || 80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad
                 aria-describedby={`slide-description-${index}`}
                 style={{ objectFit: 'contain' }}
                 draggable={false}

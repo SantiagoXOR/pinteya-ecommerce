@@ -21,7 +21,7 @@ import {
   CheckCircle,
   AlertTriangle,
   BarChart3,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface OptimizationMetrics {
   analytics: {

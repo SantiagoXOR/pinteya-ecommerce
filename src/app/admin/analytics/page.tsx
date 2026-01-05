@@ -6,15 +6,24 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion } from '@/lib/framer-motion-lazy'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
+import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AnalyticsDashboard from '@/components/Analytics/AnalyticsDashboard'
 import ConversionFunnel from '@/components/Analytics/ConversionFunnel'
 import HeatmapViewer from '@/components/Analytics/HeatmapViewer'
+import GoogleAnalyticsEmbed from '@/components/Analytics/GoogleAnalyticsEmbed'
+import MetaMetrics from '@/components/Analytics/MetaMetrics'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useUserRole } from '@/hooks/useUserRole'
-import { BarChart3, TrendingUp, Users, Eye, Download, RefreshCw, Settings } from 'lucide-react'
+import { UserInteraction } from '@/lib/integrations/analytics'
+import { BarChart3, TrendingUp, Users, Eye, Download, RefreshCw, Settings } from '@/lib/optimized-imports'
 
 const AnalyticsPage: React.FC = () => {
   const router = useRouter()
@@ -29,6 +38,14 @@ const AnalyticsPage: React.FC = () => {
     checkoutStarts: 0,
     checkoutCompletions: 0,
   })
+  const [conversionAnalysis, setConversionAnalysis] = useState<{
+    improvements: Array<{ label: string; value: string; severity: string }>
+    strengths: Array<{ label: string; value: string; severity: string }>
+  } | null>(null)
+  const [pageInteractions, setPageInteractions] = useState<Array<{ page: string; interactions: number }>>([])
+  const [interactions, setInteractions] = useState<UserInteraction[]>([])
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false)
+  const [loadingInteractions, setLoadingInteractions] = useState(false)
 
   // Verificar permisos de administrador - Usar rol de la sesión de NextAuth
   useEffect(() => {
@@ -58,53 +75,166 @@ const AnalyticsPage: React.FC = () => {
 
   useEffect(() => {
     loadConversionData()
+    loadConversionAnalysis()
+    loadPageInteractions()
   }, [])
 
-  const loadConversionData = () => {
-    const metrics = getConversionMetrics()
-    setConversionData({
-      productViews: metrics.productViews,
-      cartAdditions: metrics.cartAdditions,
-      checkoutStarts: metrics.checkoutStarts,
-      checkoutCompletions: metrics.checkoutCompletions,
-    })
+  useEffect(() => {
+    if (activeTab === 'heatmap') {
+      loadInteractions()
+    }
+  }, [activeTab])
+
+  const loadConversionData = async () => {
+    try {
+      // Obtener datos desde la API (base de datos)
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+      const response = await fetch(
+        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}`
+      )
+      if (!response.ok) {
+        throw new Error('Error al cargar métricas de conversión')
+      }
+      const data = await response.json()
+
+      setConversionData({
+        productViews: data.ecommerce?.productViews || 0,
+        cartAdditions: data.ecommerce?.cartAdditions || 0,
+        checkoutStarts: data.ecommerce?.checkoutStarts || 0,
+        checkoutCompletions: data.ecommerce?.checkoutCompletions || 0,
+      })
+    } catch (error) {
+      console.error('Error cargando datos de conversión:', error)
+      // Si falla, mostrar ceros en lugar de datos en memoria
+      setConversionData({
+        productViews: 0,
+        cartAdditions: 0,
+        checkoutStarts: 0,
+        checkoutCompletions: 0,
+      })
+    }
+  }
+
+  const loadConversionAnalysis = async () => {
+    try {
+      setLoadingAnalysis(true)
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+      const response = await fetch(
+        `/api/analytics/conversion-analysis?startDate=${startDate}&endDate=${endDate}`
+      )
+      if (!response.ok) {
+        throw new Error('Error al cargar análisis de conversión')
+      }
+      const data = await response.json()
+      setConversionAnalysis(data)
+    } catch (error) {
+      console.error('Error cargando análisis de conversión:', error)
+    } finally {
+      setLoadingAnalysis(false)
+    }
+  }
+
+  const loadPageInteractions = async () => {
+    try {
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+      const response = await fetch(
+        `/api/analytics/interactions?startDate=${startDate}&endDate=${endDate}&statsOnly=true`
+      )
+      if (!response.ok) {
+        throw new Error('Error al cargar interacciones por página')
+      }
+      const data = await response.json()
+      setPageInteractions(data.stats || [])
+    } catch (error) {
+      console.error('Error cargando interacciones por página:', error)
+    }
+  }
+
+  const loadInteractions = async () => {
+    try {
+      setLoadingInteractions(true)
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const currentPage = typeof window !== 'undefined' ? window.location.pathname : '/'
+
+      const response = await fetch(
+        `/api/analytics/interactions?startDate=${startDate}&endDate=${endDate}&page=${currentPage}`
+      )
+      if (!response.ok) {
+        throw new Error('Error al cargar interacciones')
+      }
+      const data = await response.json()
+      setInteractions(data.interactions || [])
+    } catch (error) {
+      console.error('Error cargando interacciones:', error)
+    } finally {
+      setLoadingInteractions(false)
+    }
   }
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {
-      // Simular refresh de datos
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      loadConversionData()
+      await Promise.all([
+        loadConversionData(),
+        loadConversionAnalysis(),
+        loadPageInteractions(),
+        activeTab === 'heatmap' ? loadInteractions() : Promise.resolve(),
+      ])
     } finally {
       setIsRefreshing(false)
     }
   }
 
-  const exportData = () => {
-    const events = getEvents()
-    const interactions = getInteractions()
-    const metrics = getConversionMetrics()
+  const exportData = async () => {
+    try {
+      // Obtener todos los datos desde la base de datos
+      const endDate = new Date().toISOString()
+      const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
-    const exportData = {
-      events,
-      interactions,
-      metrics,
-      exportDate: new Date().toISOString(),
+      const [metricsResponse, interactionsResponse, conversionResponse] = await Promise.all([
+        fetch(`/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}`),
+        fetch(`/api/analytics/interactions?startDate=${startDate}&endDate=${endDate}`),
+        fetch(`/api/analytics/conversion-analysis?startDate=${startDate}&endDate=${endDate}`),
+      ])
+
+      const metrics = metricsResponse.ok ? await metricsResponse.json() : null
+      const interactions = interactionsResponse.ok ? await interactionsResponse.json() : null
+      const conversion = conversionResponse.ok ? await conversionResponse.json() : null
+
+      const exportData = {
+        metrics,
+        interactions: interactions?.interactions || [],
+        conversionAnalysis: conversion,
+        exportDate: new Date().toISOString(),
+        period: {
+          startDate,
+          endDate,
+        },
+      }
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json',
+      })
+
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `pinteya-analytics-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error exportando datos:', error)
+      alert('Error al exportar datos. Por favor, intenta nuevamente.')
     }
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: 'application/json',
-    })
-
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `pinteya-analytics-${new Date().toISOString().split('T')[0]}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
   }
 
   // Mostrar pantalla de carga solo mientras se carga la sesión
@@ -149,226 +279,355 @@ const AnalyticsPage: React.FC = () => {
     )
   }
 
-  const tabs = [
-    {
-      id: 'dashboard',
-      name: 'Dashboard',
-      icon: BarChart3,
-      description: 'Vista general de métricas',
-    },
-    {
-      id: 'funnel',
-      name: 'Embudo de Conversión',
-      icon: TrendingUp,
-      description: 'Análisis de conversión',
-    },
-    {
-      id: 'heatmap',
-      name: 'Mapa de Calor',
-      icon: Eye,
-      description: 'Interacciones de usuarios',
-    },
-    {
-      id: 'google',
-      name: 'Google Analytics',
-      icon: BarChart3,
-      description: 'Métricas de Google Analytics',
-    },
-    {
-      id: 'meta',
-      name: 'Meta Pixel',
-      icon: Eye,
-      description: 'Métricas de Meta Pixel',
-    },
+  const breadcrumbs = [
+    { label: 'Admin', href: '/admin' },
+    { label: 'Analytics' },
   ]
 
-  return (
-    <div className='min-h-screen bg-gray-50'>
-      {/* Header */}
-      <div className='bg-white shadow-sm border-b border-gray-200'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='flex justify-between items-center py-6'>
-            <div>
-              <h1 className='text-2xl font-bold text-gray-900'>Analytics Dashboard</h1>
-              <p className='text-gray-600'>Panel de control de métricas de Pinteya E-commerce</p>
-            </div>
-
-            <div className='flex items-center gap-3'>
-              <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className='flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50'
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                Actualizar
-              </button>
-
-              <button
-                onClick={exportData}
-                className='flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors'
-              >
-                <Download className='w-4 h-4' />
-                Exportar
-              </button>
-
-              <button className='flex items-center gap-2 px-4 py-2 bg-yellow-400 text-gray-900 rounded-lg hover:bg-yellow-500 transition-colors'>
-                <Settings className='w-4 h-4' />
-                Configurar
-              </button>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className='flex space-x-8 border-b border-gray-200'>
-            {tabs.map(tab => {
-              const Icon = tab && tab.icon ? tab.icon : null
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-yellow-400 text-yellow-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {Icon && <Icon className='w-5 h-5' />}
-                  <span className='hidden sm:inline'>{tab.name}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {activeTab === 'dashboard' && <AnalyticsDashboard />}
-
-          {activeTab === 'funnel' && (
-            <div className='space-y-6'>
-              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
-                <h2 className='text-xl font-semibold text-gray-900 mb-4'>
-                  Análisis de Embudo de Conversión
-                </h2>
-                <p className='text-gray-600 mb-6'>
-                  Visualiza el flujo de usuarios desde la vista de producto hasta la compra
-                  completada. Identifica puntos de abandono y oportunidades de optimización.
-                </p>
-              </div>
-
-              <ConversionFunnel data={conversionData} />
-
-              {/* Métricas adicionales del embudo */}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
-                  <h3 className='text-lg font-semibold text-gray-900 mb-4'>Puntos de Mejora</h3>
-                  <div className='space-y-3'>
-                    <div className='flex items-center justify-between p-3 bg-red-50 rounded-lg'>
-                      <span className='text-red-800'>Mayor abandono en checkout</span>
-                      <span className='text-red-600 font-medium'>-23%</span>
-                    </div>
-                    <div className='flex items-center justify-between p-3 bg-yellow-50 rounded-lg'>
-                      <span className='text-yellow-800'>Baja conversión producto → carrito</span>
-                      <span className='text-yellow-600 font-medium'>-15%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
-                  <h3 className='text-lg font-semibold text-gray-900 mb-4'>Fortalezas</h3>
-                  <div className='space-y-3'>
-                    <div className='flex items-center justify-between p-3 bg-green-50 rounded-lg'>
-                      <span className='text-green-800'>Alta retención en carrito</span>
-                      <span className='text-green-600 font-medium'>+18%</span>
-                    </div>
-                    <div className='flex items-center justify-between p-3 bg-blue-50 rounded-lg'>
-                      <span className='text-blue-800'>Buena tasa de vista de productos</span>
-                      <span className='text-blue-600 font-medium'>+12%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'heatmap' && (
-            <div className='space-y-6'>
-              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
-                <h2 className='text-xl font-semibold text-gray-900 mb-4'>
-                  Mapa de Calor de Interacciones
-                </h2>
-                <p className='text-gray-600 mb-6'>
-                  Visualiza dónde los usuarios hacen click, hover y scroll en tus páginas.
-                  Identifica patrones de comportamiento y optimiza la experiencia de usuario.
-                </p>
-              </div>
-
-              <HeatmapViewer
-                interactions={getInteractions()}
-                page={typeof window !== 'undefined' ? window.location.pathname : '/'}
-              />
-
-              {/* Análisis de páginas */}
-              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
-                <h3 className='text-lg font-semibold text-gray-900 mb-4'>Análisis por Página</h3>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                  <div className='text-center p-4 bg-blue-50 rounded-lg'>
-                    <p className='text-2xl font-bold text-blue-600'>1,234</p>
-                    <p className='text-sm text-blue-800'>Interacciones en Home</p>
-                  </div>
-                  <div className='text-center p-4 bg-green-50 rounded-lg'>
-                    <p className='text-2xl font-bold text-green-600'>856</p>
-                    <p className='text-sm text-green-800'>Interacciones en Shop</p>
-                  </div>
-                  <div className='text-center p-4 bg-purple-50 rounded-lg'>
-                    <p className='text-2xl font-bold text-purple-600'>432</p>
-                    <p className='text-sm text-purple-800'>Interacciones en Producto</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'google' && (
-            <div className='space-y-6'>
-              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
-                <h2 className='text-xl font-semibold text-gray-900 mb-4'>Google Analytics</h2>
-                <p className='text-gray-600 mb-6'>
-                  Visualización de métricas y reportes de Google Analytics 4. Los reportes embebidos
-                  requieren que tengas acceso a la cuenta de Google Analytics asociada.
-                </p>
-              </div>
-
-              <GoogleAnalyticsEmbed />
-            </div>
-          )}
-
-          {activeTab === 'meta' && (
-            <div className='space-y-6'>
-              <div className='bg-white rounded-xl p-6 shadow-sm border border-gray-100'>
-                <h2 className='text-xl font-semibold text-gray-900 mb-4'>Meta Pixel Analytics</h2>
-                <p className='text-gray-600 mb-6'>
-                  Métricas basadas en eventos trackeados por el Meta Pixel. Estos datos muestran los
-                  eventos que se están enviando desde nuestro sistema al Pixel de Meta.
-                </p>
-              </div>
-
-              <MetaMetrics
-                startDate={new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()}
-                endDate={new Date().toISOString()}
-              />
-            </div>
-          )}
-        </motion.div>
-      </div>
+  const actions = (
+    <div className='flex items-center gap-2 sm:gap-3'>
+      <Button
+        variant='outline'
+        size='sm'
+        onClick={handleRefresh}
+        disabled={isRefreshing}
+        className='flex items-center gap-2'
+      >
+        <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+        <span className='hidden sm:inline'>Actualizar</span>
+      </Button>
+      <Button
+        variant='default'
+        size='sm'
+        onClick={exportData}
+        className='flex items-center gap-2 bg-blue-600 hover:bg-blue-700'
+      >
+        <Download className='w-4 h-4' />
+        <span className='hidden sm:inline'>Exportar</span>
+      </Button>
+      <Button
+        variant='outline'
+        size='sm'
+        className='flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 border-yellow-400'
+      >
+        <Settings className='w-4 h-4' />
+        <span className='hidden sm:inline'>Configurar</span>
+      </Button>
     </div>
+  )
+
+  return (
+    <AdminLayout title='Analytics Dashboard' breadcrumbs={breadcrumbs} actions={actions}>
+      <AdminContentWrapper>
+        <div className='space-y-6'>
+          {/* Tabs */}
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as typeof activeTab)}
+            className='w-full'
+          >
+            <div className='flex justify-center sm:justify-start mb-4'>
+              <TabsList className='bg-gray-100 p-1 rounded-lg'>
+                <TabsTrigger
+                  value='dashboard'
+                  className='data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 sm:px-6 py-2.5 flex items-center gap-2'
+                >
+                  <BarChart3 className='w-4 h-4' />
+                  <span className='hidden sm:inline'>Dashboard</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value='funnel'
+                  className='data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 sm:px-6 py-2.5 flex items-center gap-2'
+                >
+                  <TrendingUp className='w-4 h-4' />
+                  <span className='hidden sm:inline'>Embudo</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value='heatmap'
+                  className='data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 sm:px-6 py-2.5 flex items-center gap-2'
+                >
+                  <Eye className='w-4 h-4' />
+                  <span className='hidden sm:inline'>Mapa de Calor</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value='google'
+                  className='data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 sm:px-6 py-2.5 flex items-center gap-2'
+                >
+                  <BarChart3 className='w-4 h-4' />
+                  <span className='hidden sm:inline'>Google Analytics</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value='meta'
+                  className='data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 sm:px-6 py-2.5 flex items-center gap-2'
+                >
+                  <Eye className='w-4 h-4' />
+                  <span className='hidden sm:inline'>Meta Pixel</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            {/* Tab Content */}
+            <TabsContent value='dashboard' className='mt-0'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <AnalyticsDashboard />
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value='funnel' className='mt-0'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className='space-y-6'
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Análisis de Embudo de Conversión</CardTitle>
+                    <CardDescription>
+                      Visualiza el flujo de usuarios desde la vista de producto hasta la compra
+                      completada. Identifica puntos de abandono y oportunidades de optimización.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ConversionFunnel data={conversionData} />
+                  </CardContent>
+                </Card>
+
+                {/* Métricas adicionales del embudo */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Puntos de Mejora</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingAnalysis ? (
+                        <div className='text-center py-4'>
+                          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400 mx-auto'></div>
+                          <p className='text-sm text-gray-500 mt-2'>Cargando análisis...</p>
+                        </div>
+                      ) : conversionAnalysis?.improvements.length ? (
+                        <div className='space-y-3'>
+                          {conversionAnalysis.improvements.map((improvement, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-center justify-between p-3 rounded-lg ${
+                                improvement.severity === 'high'
+                                  ? 'bg-red-50'
+                                  : improvement.severity === 'medium'
+                                    ? 'bg-yellow-50'
+                                    : 'bg-orange-50'
+                              }`}
+                            >
+                              <span
+                                className={
+                                  improvement.severity === 'high'
+                                    ? 'text-red-800'
+                                    : improvement.severity === 'medium'
+                                      ? 'text-yellow-800'
+                                      : 'text-orange-800'
+                                }
+                              >
+                                {improvement.label}
+                              </span>
+                              <span
+                                className={`font-medium ${
+                                  improvement.severity === 'high'
+                                    ? 'text-red-600'
+                                    : improvement.severity === 'medium'
+                                      ? 'text-yellow-600'
+                                      : 'text-orange-600'
+                                }`}
+                              >
+                                {improvement.value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className='text-gray-500 text-sm'>No hay puntos de mejora identificados</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Fortalezas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {loadingAnalysis ? (
+                        <div className='text-center py-4'>
+                          <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400 mx-auto'></div>
+                          <p className='text-sm text-gray-500 mt-2'>Cargando análisis...</p>
+                        </div>
+                      ) : conversionAnalysis?.strengths.length ? (
+                        <div className='space-y-3'>
+                          {conversionAnalysis.strengths.map((strength, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-center justify-between p-3 rounded-lg ${
+                                strength.severity === 'high'
+                                  ? 'bg-green-50'
+                                  : strength.severity === 'medium'
+                                    ? 'bg-blue-50'
+                                    : 'bg-teal-50'
+                              }`}
+                            >
+                              <span
+                                className={
+                                  strength.severity === 'high'
+                                    ? 'text-green-800'
+                                    : strength.severity === 'medium'
+                                      ? 'text-blue-800'
+                                      : 'text-teal-800'
+                                }
+                              >
+                                {strength.label}
+                              </span>
+                              <span
+                                className={`font-medium ${
+                                  strength.severity === 'high'
+                                    ? 'text-green-600'
+                                    : strength.severity === 'medium'
+                                      ? 'text-blue-600'
+                                      : 'text-teal-600'
+                                }`}
+                              >
+                                {strength.value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className='text-gray-500 text-sm'>No hay fortalezas identificadas</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value='heatmap' className='mt-0'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className='space-y-6'
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Mapa de Calor de Interacciones</CardTitle>
+                    <CardDescription>
+                      Visualiza dónde los usuarios hacen click, hover y scroll en tus páginas.
+                      Identifica patrones de comportamiento y optimiza la experiencia de usuario.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingInteractions ? (
+                      <div className='text-center py-8'>
+                        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400 mx-auto'></div>
+                        <p className='text-sm text-gray-500 mt-4'>Cargando interacciones...</p>
+                      </div>
+                    ) : (
+                      <HeatmapViewer
+                        interactions={interactions}
+                        page={typeof window !== 'undefined' ? window.location.pathname : '/'}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Análisis de páginas */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Análisis por Página</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {pageInteractions.length > 0 ? (
+                      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                        {pageInteractions.slice(0, 3).map((stat, index) => {
+                          const colors = [
+                            { bg: 'bg-blue-50', text: 'text-blue-600', label: 'text-blue-800' },
+                            { bg: 'bg-green-50', text: 'text-green-600', label: 'text-green-800' },
+                            { bg: 'bg-purple-50', text: 'text-purple-600', label: 'text-purple-800' },
+                          ]
+                          const color = colors[index] || colors[0]
+                          const pageName =
+                            stat.page === '/' ? 'Home' : stat.page.split('/').filter(Boolean).pop() || stat.page
+
+                          return (
+                            <div key={stat.page} className={`text-center p-4 ${color.bg} rounded-lg`}>
+                              <p className={`text-2xl font-bold ${color.text}`}>
+                                {stat.interactions.toLocaleString()}
+                              </p>
+                              <p className={`text-sm ${color.label}`}>Interacciones en {pageName}</p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p className='text-gray-500 text-sm text-center py-4'>
+                        No hay datos de interacciones disponibles
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value='google' className='mt-0'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className='space-y-6'
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Google Analytics</CardTitle>
+                    <CardDescription>
+                      Visualización de métricas y reportes de Google Analytics 4. Los reportes embebidos
+                      requieren que tengas acceso a la cuenta de Google Analytics asociada.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <GoogleAnalyticsEmbed />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value='meta' className='mt-0'>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className='space-y-6'
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Meta Pixel Analytics</CardTitle>
+                    <CardDescription>
+                      Métricas basadas en eventos trackeados por el Meta Pixel. Estos datos muestran los
+                      eventos que se están enviando desde nuestro sistema al Pixel de Meta.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <MetaMetrics
+                      startDate={new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()}
+                      endDate={new Date().toISOString()}
+                    />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </AdminContentWrapper>
+    </AdminLayout>
   )
 }
 

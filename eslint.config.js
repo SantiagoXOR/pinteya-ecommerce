@@ -6,9 +6,13 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
 })
 
+// Extend Next.js ESLint config
+// Usar configuración compatible para evitar errores circulares
+const nextConfigs = compat.extends('next/core-web-vitals')
+
 module.exports = [
-  // Extend Next.js ESLint config
-  ...compat.extends('next/core-web-vitals'),
+  // Aplicar configuraciones de Next.js con ajustes para evitar referencias circulares
+  ...(Array.isArray(nextConfigs) ? nextConfigs : [nextConfigs]),
   
   // Files to lint
   {

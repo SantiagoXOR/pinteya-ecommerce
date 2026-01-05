@@ -8,7 +8,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Navigation, MapPin, Settings, User, Truck, Clock, CheckCircle } from 'lucide-react'
+import { Home, Navigation, MapPin, Settings, User, Truck, Clock, CheckCircle } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { useDriver } from '@/contexts/DriverContext'
 import { Badge } from '@/components/ui/badge'

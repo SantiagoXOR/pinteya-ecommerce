@@ -1,18 +1,7 @@
-import { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  robots: {
-    index: false,
-    follow: false,
-    googleBot: {
-      index: false,
-      follow: false,
-      'noimageindex': true,
-      'noarchive': true,
-      'nosnippet': true,
-    },
-  },
-}
+// ⚡ FIX VERCEL: Layout para forzar renderizado dinámico de todas las rutas /demo/*
+// Cambiado a force-dynamic para que Vercel trate estas rutas como lambdas explícitamente
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default function DemoLayout({
   children,
@@ -21,14 +10,3 @@ export default function DemoLayout({
 }) {
   return <>{children}</>
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -19,7 +19,7 @@ import {
   TrendingDown,
   DollarSign,
   Users,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { LogisticsStats } from '@/types/logistics'
 import { cn } from '@/lib/core/utils'
 

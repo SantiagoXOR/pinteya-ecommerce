@@ -1,0 +1,63 @@
+/* ⚡ FIX Turbopack: Fuentes optimizadas para Turbopack
+ * next/font/local tiene un bug conocido con Turbopack que genera URLs mal formateadas
+ * Este archivo CSS manual mantiene las optimizaciones pero funciona con Turbopack
+ */
+
+/* Variable CSS para la fuente */
+:root {
+  --font-euclid: 'Euclid Circular A', 'Euclid Circular A Fallback', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* 1. Regular (400) - Más usado en el sitio */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/EuclidCircularA-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: optional; /* ⚡ FASE 4.2: optional para prevenir layout shifts */
+  unicode-range: U+0020-007F, U+00A0-00FF, U+0100-017F;
+}
+
+/* 2. SemiBold (600) - Usado en títulos y destacados */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/EuclidCircularA-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: optional; /* ⚡ FASE 4.2: optional para prevenir layout shifts */
+  unicode-range: U+0020-007F, U+00A0-00FF, U+0100-017F;
+}
+
+/* 3. Bold (700) - Usado en CTAs y encabezados principales */
+/* ⚡ FIX CLS: Preload crítico para elementos above-the-fold (hero, header) */
+@font-face {
+  font-family: 'Euclid Circular A';
+  src: url('/fonts/EuclidCircularA-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: optional; /* ⚡ FASE 4.2: optional para prevenir layout shifts */
+  unicode-range: U+0020-007F, U+00A0-00FF, U+0100-017F;
+}
+
+/* Fallback con ajuste para reducir layout shift */
+/* ⚡ FIX CLS: Fallback mejorado para coincidir mejor con dimensiones de fuente Bold */
+@font-face {
+  font-family: 'Euclid Circular A Fallback';
+  ascent-override: 93.26%;
+  descent-override: 24.99%;
+  line-gap-override: 0.00%;
+  size-adjust: 107.23%;
+  src: local('Arial');
+}
+
+/* ⚡ FIX CLS: Fallback específico para Bold (700) con dimensiones ajustadas */
+@font-face {
+  font-family: 'Euclid Circular A Fallback';
+  font-weight: 700;
+  ascent-override: 95%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+  size-adjust: 105%;
+  src: local('Arial Bold');
+}
+

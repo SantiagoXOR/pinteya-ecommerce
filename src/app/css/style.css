@@ -1,6 +1,6 @@
-@import './variables.css';
-@import '../../styles/checkout-transition.css';
-@import '../../styles/hero-carousel.css';
+/* ⚡ OPTIMIZACIÓN: variables.css ahora está inline en layout.tsx para eliminar request bloqueante */
+/* ⚡ OPTIMIZACIÓN: checkout-transition.css y hero-carousel.css se cargan diferidamente via DeferredCSS.tsx */
+/* Los @import bloqueantes fueron removidos para eliminar ~760ms de render-blocking */
 
 @tailwind base;
 @tailwind components;
@@ -28,14 +28,53 @@
   img:not([width]):not([height]) {
     height: auto;
   }
-
-  /* ⚡ PERFORMANCE: Shimmer animation para skeletons */
-  @keyframes shimmer {
+  
+  /* ⚡ PERFORMANCE: Reservar espacio para contenido dinámico */
+  .hero-section {
+    min-height: 320px;
+  }
+  
+  @media (min-width: 1024px) {
+    .hero-section {
+      min-height: 500px;
+    }
+  }
+  
+  /* Prevenir CLS en carruseles */
+  .carousel-container,
+  .swiper-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Reservar espacio para skeletons */
+  .skeleton-loader {
+    display: block;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes loading {
     0% {
-      transform: translateX(-100%);
+      background-position: 200% 0;
     }
     100% {
-      transform: translateX(100%);
+      background-position: -200% 0;
+    }
+  }
+
+  /* ⚡ PERFORMANCE: Shimmer animation para skeletons - Pulso sutil sin movimiento horizontal */
+  @keyframes shimmer {
+    0% {
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.9;
     }
   }
 
@@ -65,10 +104,11 @@
     contain-intrinsic-size: auto 450px;
   }
 
-  /* ⚡ PERFORMANCE: Wave animation para skeleton shimmer effect */
+  /* ⚡ PERFORMANCE: Wave animation para skeleton shimmer effect - FIX: Contenedor con overflow */
   .skeleton-wave {
     position: relative;
-    overflow: hidden;
+    overflow: hidden; /* ✅ FIX: Asegurar que no se salga */
+    contain: layout style paint; /* ✅ FIX: Optimizar rendering */
   }
 
   .skeleton-wave::after {
@@ -78,36 +118,44 @@
     right: 0;
     bottom: 0;
     left: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.2) 20%,
-      rgba(255, 255, 255, 0.5) 60%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    animation: shimmer 2s infinite;
+    /* DESACTIVADO: Sin animación horizontal - transform: translateX(-100%); */
+    background: rgba(255, 255, 255, 0.1);
+    animation: shimmer-pulse 2.5s ease-in-out infinite;
+    will-change: opacity; /* ✅ FIX: Optimizar animación */
   }
 
-  /* Shimmer mejorado con gradiente más suave */
+  /* Shimmer mejorado - Pulso sutil sin animación horizontal */
   .skeleton-shimmer {
-    background: linear-gradient(
-      110deg,
-      #f0f0f0 8%,
-      #f8f8f8 18%,
-      #f0f0f0 33%
-    );
-    background-size: 200% 100%;
-    animation: shimmer-slide 1.5s linear infinite;
+    background: #f0f0f0;
+    animation: shimmer-pulse 2.5s ease-in-out infinite;
+    overflow: hidden; /* ✅ FIX: Asegurar que no se salga */
+    contain: layout style paint; /* ✅ FIX: Optimizar rendering */
   }
 
-  @keyframes shimmer-slide {
+  @keyframes shimmer-pulse {
     0% {
-      background-position: 100% 0;
+      opacity: 0.9;
+    }
+    50% {
+      opacity: 1;
     }
     100% {
-      background-position: -100% 0;
+      opacity: 0.9;
     }
+  }
+
+  /* Pulso sutil para skeletons que usan animate-pulse de Tailwind */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.95;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
 
@@ -118,30 +166,87 @@
 
   html {
     @apply scroll-smooth;
+    overflow-x: hidden;
+    overflow-y: auto; /* ⚡ FIX: Permitir solo scroll vertical en html */
+    max-width: 100vw;
+    width: 100%;
+    height: 100%; /* ⚡ FIX: Altura completa para evitar scroll duplicado */
+    /* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll vertical a 60fps */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply font-euclid-circular-a font-normal text-base text-dark-3 relative z-1 bg-white;
+    @apply font-euclid-circular-a font-normal text-base text-dark-3 dark:text-bright-sun-200 relative z-1;
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    overflow-y: hidden !important; /* ⚡ FIX CRÍTICO: No scroll en body, solo en html */
+    max-width: 100vw;
+    width: 100%;
+    height: auto; /* ⚡ FIX: Altura automática, no min-height para evitar scroll duplicado */
+    /* ⚡ FIX: No usar transform en body para que position:fixed funcione correctamente */
+    /* Fondo degradado negro/naranja por defecto en todas las rutas - sobrescribe bg-white */
+    background: linear-gradient(to bottom, #000000 0%, #000000 60%, #eb6313 100%) !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    color: #ffffff !important;
     /* Header height unificado: ScrollingBanner (~28px) + Main (~60px) = ~88px, usando 92px para spacing óptimo */
-    padding-top: 92px; /* Ajustado para header más alto en mobile */
+    /* Agregar safe area superior para iOS Safari cuando se oculta la interfaz */
+    padding-top: calc(92px + env(safe-area-inset-top, 0px)); /* Ajustado para header más alto en mobile + safe area iOS */
     /* Emoji font fallbacks to ensure color emoji rendering across platforms */
     font-family: 'Euclid Circular A', system-ui, -apple-system, 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
       var(--emoji-fonts);
   }
+  
+  /* ⚡ FIX: Prevenir scroll en contenedores principales - solo html debe hacer scroll */
+  #__next {
+    overflow-x: hidden;
+    overflow-y: hidden !important; /* ⚡ FIX CRÍTICO: No scroll aquí */
+    max-width: 100vw;
+    width: 100%;
+    height: auto; /* Altura automática */
+    position: relative;
+  }
+  
+  /* ⚡ FIX: Asegurar que main no tenga overflow que cause scroll duplicado */
+  main {
+    overflow-x: hidden;
+    overflow-y: hidden !important; /* ⚡ FIX CRÍTICO: No scroll aquí, solo en html */
+    position: relative;
+  }
+
+  /* ⚡ FIX: Asegurar que elementos fixed (header, bottom nav) funcionen correctamente */
+  header[class*="fixed"],
+  nav[class*="fixed"],
+  header.fixed,
+  nav.fixed {
+    position: fixed !important;
+    z-index: 1100 !important;
+  }
+
+  /* Bottom navigation específico */
+  nav.z-bottom-nav,
+  nav[class*="bottom-nav"] {
+    position: fixed !important;
+    z-index: 1300 !important;
+  }
 
   /* Mobile pequeño - Reducir padding para aprovechar mejor el espacio */
   @media (max-width: 375px) {
     body {
-      padding-top: 88px; /* Menos padding en pantallas muy pequeñas */
+      /* Menos padding en pantallas muy pequeñas + safe area iOS */
+      padding-top: calc(88px + env(safe-area-inset-top, 0px));
     }
   }
 
   /* Ajuste específico para desktop */
   @media (min-width: 1024px) {
     body {
-      padding-top: 105px; /* Ajustado para mejor spacing con header más alto */
+      /* Ajustado para mejor spacing con header más alto + safe area iOS */
+      padding-top: calc(105px + env(safe-area-inset-top, 0px));
     }
   }
   :root {
@@ -441,192 +546,23 @@
   letter-spacing: 0.2px;
 }
 
-/* =====================================================
-   Pinteya Brand Loader (Pantalla de carga mejorada)
-   Fondo naranja con microinteracción del logo
-   ===================================================== */
-
-@keyframes brand-bob {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-6px) scale(1.02); }
-}
-
-@keyframes brand-shimmer {
-  0% { transform: translateX(-120%); opacity: 0.0; }
-  30% { opacity: 0.25; }
-  50% { opacity: 0.35; }
-  100% { transform: translateX(120%); opacity: 0; }
-}
-
-@keyframes micro-drop {
-  0% { transform: translate(0, -8px) scale(0.9); opacity: 0; }
-  20% { opacity: 1; }
-  50% { transform: translate(0, 0) scale(1); }
-  70% { transform: translate(0, 2px) scale(0.98); }
-  100% { transform: translate(0, -8px) scale(0.9); opacity: 0; }
-}
-
-.brand-loader {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #ea5a17 0%, #f97316 100%);
-}
-
-.brand-loader-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-
-.brand-badge {
-  position: relative;
-  width: 112px;
-  height: 112px;
-  border-radius: 28px;
-  background: #ffd57a; /* amarillo cálido del tile */
-  box-shadow:
-    0 10px 25px rgba(0, 0, 0, 0.25),
-    inset 0 -6px 10px rgba(0, 0, 0, 0.1),
-    inset 0 6px 10px rgba(255, 255, 255, 0.5);
-  display: grid;
-  place-items: center;
-  animation: brand-bob 1.8s ease-in-out infinite;
-}
-
-.brand-logo {
-  width: 84px;
-  height: 84px;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
-}
-
-.brand-shine {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.35) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: translateX(-120%);
-  animation: brand-shimmer 1.8s ease-in-out infinite;
-}
-
-.brand-micro-drop {
-  width: 10px;
-  height: 14px;
-  border-radius: 8px 8px 12px 12px;
-  background: #6b2107; /* tono más oscuro de la marca */
-  opacity: 0.85;
-  filter: drop-shadow(0 2px 1px rgba(0,0,0,0.2));
-  animation: micro-drop 1.8s ease-in-out infinite;
-}
-
-.brand-loader-text {
-  color: #fff7ed; /* naranja claro para contraste */
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-/* =====================================================
-   Pinteya Brand Loader (Pantalla de carga mejorada)
-   Fondo naranja con microinteracción del logo
-   ===================================================== */
-
-@keyframes brand-bob {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-6px) scale(1.02); }
-}
-
-@keyframes brand-shimmer {
-  0% { transform: translateX(-120%); opacity: 0.0; }
-  30% { opacity: 0.25; }
-  50% { opacity: 0.35; }
-  100% { transform: translateX(120%); opacity: 0; }
-}
-
-@keyframes micro-drop {
-  0% { transform: translate(0, -8px) scale(0.9); opacity: 0; }
-  20% { opacity: 1; }
-  50% { transform: translate(0, 0) scale(1); }
-  70% { transform: translate(0, 2px) scale(0.98); }
-  100% { transform: translate(0, -8px) scale(0.9); opacity: 0; }
-}
-
-.brand-loader {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #ea5a17 0%, #f97316 100%);
-}
-
-.brand-loader-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-
-.brand-badge {
-  position: relative;
-  width: 112px;
-  height: 112px;
-  border-radius: 28px;
-  background: #ffd57a; /* amarillo cálido del tile */
-  box-shadow:
-    0 10px 25px rgba(0, 0, 0, 0.25),
-    inset 0 -6px 10px rgba(0, 0, 0, 0.1),
-    inset 0 6px 10px rgba(255, 255, 255, 0.5);
-  display: grid;
-  place-items: center;
-  animation: brand-bob 1.8s ease-in-out infinite;
-}
-
-.brand-logo {
-  width: 84px;
-  height: 84px;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
-}
-
-.brand-shine {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.35) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: translateX(-120%);
-  animation: brand-shimmer 1.8s ease-in-out infinite;
-}
-
-.brand-micro-drop {
-  width: 10px;
-  height: 14px;
-  border-radius: 8px 8px 12px 12px;
-  background: #6b2107; /* tono más oscuro de la marca */
-  opacity: 0.85;
-  filter: drop-shadow(0 2px 1px rgba(0,0,0,0.2));
-  animation: micro-drop 1.8s ease-in-out infinite;
-}
-
-.brand-loader-text {
-  color: #fff7ed; /* naranja claro para contraste */
-  font-weight: 600;
-  letter-spacing: 0.2px;
+/* Padding para bottom navigation estilo MercadoLibre */
+@media (max-width: 768px) {
+  body {
+    /* Altura del bottom nav + safe area inferior para iOS Safari */
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+  
+  /* Safe area para dispositivos con notch - Bottom navigation */
+  .safe-area-bottom {
+    /* Usar bottom en lugar de padding-bottom para posicionamiento correcto */
+    bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Safe area superior para header en iOS Safari */
+  .safe-area-top {
+    top: env(safe-area-inset-top, 0px);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
 }

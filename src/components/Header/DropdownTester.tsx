@@ -22,7 +22,7 @@ import {
   ShoppingCart,
   Heart,
   MapPin,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface TestResult {
   test: string

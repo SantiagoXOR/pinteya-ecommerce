@@ -123,11 +123,25 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
         }
       })
 
-      const response = await fetch(`/api/admin/products?${params}`)
+      // ✅ Forzar fetch sin cache para asegurar datos frescos
+      // Agregar timestamp único para bypass del cache del navegador
+      const timestamp = Date.now()
+      params.append('_t', timestamp.toString())
+      
+      const response = await fetch(`/api/admin/products?${params}`, {
+        cache: 'no-store',  // ✅ Forzar fetch sin cache
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      })
+      
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
+      
       logger.dev('[useProductsEnterprise] API Response:', {
         productsCount: data?.data?.length,
         count: data?.count,
@@ -136,9 +150,10 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       return data
     },
     enabled: filters.page > 0 && filters.limit > 0,
-    staleTime: 30000,          // 30 seg - datos frescos
+    staleTime: 0,              // ✅ CAMBIADO: Siempre considerar los datos como obsoletos para forzar refetch después de refresh
     gcTime: 300000,            // 5 min - mantener en memoria (cacheTime deprecado, usar gcTime)
     refetchOnWindowFocus: false,
+    refetchOnMount: 'always',  // ✅ AGREGADO: Siempre refetch al montar el componente (después de refresh)
   })
 
   // Query para estadísticas
@@ -146,10 +161,20 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
     data: statsData,
     isLoading: statsLoading,
     error: statsError,
+    refetch: refetchStats,
   } = useQuery({
     queryKey: ['admin-products-stats'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/products/stats')
+      // Agregar timestamp único para bypass del cache del navegador
+      const timestamp = Date.now()
+      const response = await fetch(`/api/admin/products/stats?_t=${timestamp}`, {
+        cache: 'no-store',  // ✅ Forzar fetch sin cache
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      })
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
@@ -157,9 +182,10 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       logger.dev('[useProductsEnterprise] Stats Response:', data?.stats)
       return data
     },
-    staleTime: 60000,          // 1 min - stats cambian menos frecuentemente
+    staleTime: 0,              // ✅ CAMBIADO: Siempre considerar los datos como obsoletos para forzar refetch después de operaciones CUD
     gcTime: 600000,            // 10 min
     refetchOnWindowFocus: false,
+    refetchOnMount: 'always',  // ✅ AGREGADO: Siempre refetch al montar el componente
   })
 
   // Query para categorías
@@ -226,21 +252,45 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   // Mutation para operaciones masivas
   const bulkOperationMutation = useMutation({
     mutationFn: async (operation: BulkOperation) => {
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      
       const response = await fetch('/api/admin/products/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(operation),
       })
 
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+
       if (!response.ok) {
+        const errorText = await response.text()
+        // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
 
-      return response.json()
+      const result = await response.json()
+      
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      
+      return result
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-products'] })
-      queryClient.invalidateQueries({ queryKey: ['admin-products-stats'] })
+    onSuccess: (data) => {
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      // ✅ CORREGIDO: Invalidar con exact: false para invalidar todas las variantes con filtros
+      queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+      
+      // ✅ ADICIONAL: Forzar refetch inmediato de todas las queries (no solo activas)
+      // Esto asegura que la UI se actualice incluso si las queries no están activamente observadas
+      queryClient.refetchQueries({ 
+        queryKey: ['admin-products'], 
+        exact: false
+      }).catch(() => {}) // No fallar si hay error en refetch
     },
   })
 
@@ -324,10 +374,18 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
 
   const bulkDelete = useCallback(
     (productIds: string[]) => {
-      return bulkOperationMutation.mutateAsync({
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      
+      const operation = {
         operation: 'delete',
         product_ids: productIds,
-      })
+      }
+      
+      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+      
+      return bulkOperationMutation.mutateAsync(operation)
     },
     [bulkOperationMutation]
   )
@@ -479,8 +537,9 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
       prevPage: () => derivedMetrics.hasPrevPage && updateFilters({ page: filters.page - 1 }),
     },
     
-    // Función refresh simplificada
+    // Funciones refresh simplificadas
     refreshProducts: refetchProducts,
+    refreshStats: refetchStats,
     
     // Handlers para componente
     handleBulkOperation: bulkUpdateStatus,

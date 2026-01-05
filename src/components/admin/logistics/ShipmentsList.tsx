@@ -46,7 +46,7 @@ import {
   MapPin,
   Clock,
   Truck,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Shipment, ShipmentStatus } from '@/types/logistics'
 import {
   useShipments,

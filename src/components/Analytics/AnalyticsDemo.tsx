@@ -7,7 +7,7 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { BarChart3, MousePointer, Eye, ShoppingCart, TrendingUp, Activity, Zap } from 'lucide-react'
+import { BarChart3, MousePointer, Eye, ShoppingCart, TrendingUp, Activity, Zap } from '@/lib/optimized-imports'
 import { useOptimizedAnalytics } from '@/components/Analytics/OptimizedAnalyticsProvider'
 import { useAnalytics } from '@/hooks/useAnalytics'
 

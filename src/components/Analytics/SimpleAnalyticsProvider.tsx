@@ -27,11 +27,30 @@ interface AnalyticsContextType {
 // Contexto
 const AnalyticsContext = createContext<AnalyticsContextType | undefined>(undefined)
 
+// ⚡ FIX: Hook opcional - no lanza error si el provider no está disponible
+// Esto permite que componentes se rendericen antes de que AnalyticsProvider se hidrate
+const noopAnalytics: AnalyticsContextType = {
+  trackEvent: () => {},
+  trackPageView: () => {},
+  trackClick: () => {},
+  trackHover: () => {},
+  trackScroll: () => {},
+  trackConversion: () => {},
+  trackSearch: () => {},
+  trackCartAction: () => {},
+  trackProductView: () => {},
+  trackCategoryView: () => {},
+  trackUserAction: () => {},
+  isEnabled: false,
+}
+
 // Hook para usar el contexto
 export const useAnalytics = (): AnalyticsContextType => {
   const context = useContext(AnalyticsContext)
+  // ⚡ FIX: Retornar objeto no-op si el provider no está disponible
+  // Esto permite que componentes se rendericen antes de que AnalyticsProvider se hidrate
   if (!context) {
-    throw new Error('useAnalytics must be used within an AnalyticsProvider')
+    return noopAnalytics
   }
   return context
 }

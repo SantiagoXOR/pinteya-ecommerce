@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Shield, Truck, CheckCircle, Star, Users, Clock } from 'lucide-react'
+import { Shield, Truck, CheckCircle, Star, Users, Clock } from '@/lib/optimized-imports'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 

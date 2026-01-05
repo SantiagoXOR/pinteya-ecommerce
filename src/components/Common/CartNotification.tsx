@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useAppSelector } from '@/redux/store'
-import { ShoppingCart, X, Check } from 'lucide-react'
+import { ShoppingCart, X, Check } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 import Image from 'next/image'

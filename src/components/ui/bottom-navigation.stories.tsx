@@ -10,7 +10,7 @@ import {
   User,
   Heart,
   Search,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 const meta = {
   title: 'UI/BottomNavigation',

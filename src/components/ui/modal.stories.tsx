@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
-import { ShoppingCart, Trash2, Eye, Heart, AlertTriangle } from 'lucide-react'
+import { ShoppingCart, Trash2, Eye, Heart, AlertTriangle } from '@/lib/optimized-imports'
 import { Modal, ConfirmModal, AddToCartModal, useModal } from './modal'
 import { Button } from './button'
 import { Card, CardContent, ProductCard } from './card'

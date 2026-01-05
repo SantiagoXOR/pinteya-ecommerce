@@ -11,7 +11,7 @@ import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Shield, ArrowRight, CheckCircle } from 'lucide-react'
+import { Loader2, Shield, ArrowRight, CheckCircle } from '@/lib/optimized-imports'
 
 import { signIn } from 'next-auth/react'
 

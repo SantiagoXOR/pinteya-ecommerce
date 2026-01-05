@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock } from 'lucide-react'
+import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -241,7 +241,7 @@ export default function CashSuccessPage() {
       params.set('customerName', customerName || '')
       params.set('total', effectiveTotal.toString())
       
-      router.push(`/orders/${orderId}?${params.toString()}`)
+      router.push(`/mis-ordenes/${orderId}?${params.toString()}`)
     }
   }
 

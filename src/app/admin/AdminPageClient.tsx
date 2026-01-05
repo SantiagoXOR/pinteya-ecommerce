@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminCard } from '@/components/admin/ui/AdminCard'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import {
   Package,
@@ -19,7 +20,7 @@ import {
   Truck,
   Gauge,
   GitBranch,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 import { useMonitoringStats } from '@/providers/MonitoringProvider'
 
@@ -118,8 +119,7 @@ export function AdminPageClient() {
       href: '/admin/settings',
       icon: Settings,
       color: 'bg-gray-500',
-      stats: 'Solo lectura',
-      badge: 'Beta',
+      stats: 'Disponible',
     },
     {
       title: 'Base de Datos',
@@ -127,8 +127,7 @@ export function AdminPageClient() {
       href: '/admin/database',
       icon: Database,
       color: 'bg-orange-500',
-      stats: 'Próximamente',
-      disabled: true,
+      stats: 'Solo lectura',
     },
   ]
 
@@ -170,11 +169,14 @@ export function AdminPageClient() {
       <AdminContentWrapper>
         <div className='space-y-6'>
         {/* Welcome Section */}
-        <AdminCard className='bg-gradient-to-r from-blaze-orange-500 to-blaze-orange-600 text-white border-0'>
-          <div className='flex items-center justify-between'>
+        <div className='bg-gradient-to-r from-blaze-orange-500 to-blaze-orange-600 rounded-xl shadow-lg p-4 sm:p-6 text-white'>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0'>
             <div>
-              <h1 className='text-2xl font-bold mb-2'>¡Bienvenido al Panel Administrativo!</h1>
-              <p className='text-blaze-orange-100'>
+              <div className='flex items-center space-x-3 mb-2'>
+                <BarChart3 className='w-6 h-6 sm:w-8 sm:h-8' />
+                <h1 className='text-2xl sm:text-3xl font-bold'>¡Bienvenido al Panel Administrativo!</h1>
+              </div>
+              <p className='text-blaze-orange-100 text-sm sm:text-base'>
                 Gestiona y monitorea tu tienda de e-commerce desde aquí
               </p>
             </div>
@@ -184,7 +186,7 @@ export function AdminPageClient() {
               </div>
             </div>
           </div>
-        </AdminCard>
+        </div>
 
         {/* Error Message */}
         {error && (
@@ -200,49 +202,94 @@ export function AdminPageClient() {
         )}
 
         {/* Quick Stats */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-          {quickStats.map(stat => (
-            <AdminCard key={stat.title} className='p-6'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <p className='text-sm font-medium text-gray-600'>{stat.title}</p>
-                  <p className='text-2xl font-bold text-gray-900 mt-1'>{stat.value}</p>
-                  <p
-                    className={`text-sm mt-1 ${
-                      stat.changeType === 'positive'
-                        ? 'text-green-600'
-                        : stat.changeType === 'negative'
-                          ? 'text-red-600'
-                          : 'text-gray-600'
-                    }`}
-                  >
-                    {stat.change} desde ayer
-                  </p>
-                </div>
-                <div
-                  className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                    stat.changeType === 'positive'
-                      ? 'bg-green-100'
-                      : stat.changeType === 'negative'
-                        ? 'bg-red-100'
-                        : 'bg-gray-100'
-                  }`}
-                >
-                  {stat && stat.icon && (
-                    <stat.icon
-                      className={`w-6 h-6 ${
-                        stat.changeType === 'positive'
-                          ? 'text-green-600'
-                          : stat.changeType === 'negative'
-                            ? 'text-red-600'
-                            : 'text-gray-600'
-                      }`}
-                    />
-                  )}
-                </div>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6'>
+          {/* Total Productos */}
+          <Card className='border-t-4 border-t-blue-500 hover:shadow-lg transition-shadow'>
+            <CardHeader className='flex flex-row items-center justify-between pb-2'>
+              <CardTitle className='text-sm font-medium text-gray-600'>Total Productos</CardTitle>
+              <div className='w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center'>
+                <Package className='h-5 w-5 text-blue-600' />
               </div>
-            </AdminCard>
-          ))}
+            </CardHeader>
+            <CardContent>
+              <div className='text-3xl font-bold text-gray-900'>
+                {loading ? (
+                  <div className='h-9 w-20 bg-gray-200 animate-pulse rounded' />
+                ) : (
+                  stats?.totalProducts || 0
+                )}
+              </div>
+              <p className='text-xs text-gray-500 mt-1'>
+                {loading ? '...' : `${stats?.activeProducts || 0} activos`} desde ayer
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Stock Bajo */}
+          <Card className='border-t-4 border-t-yellow-500 hover:shadow-lg transition-shadow'>
+            <CardHeader className='flex flex-row items-center justify-between pb-2'>
+              <CardTitle className='text-sm font-medium text-gray-600'>Stock Bajo</CardTitle>
+              <div className='w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center'>
+                <AlertTriangle className='h-5 w-5 text-yellow-600' />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className='text-3xl font-bold text-gray-900'>
+                {loading ? (
+                  <div className='h-9 w-20 bg-gray-200 animate-pulse rounded' />
+                ) : (
+                  stats?.lowStockProducts || 0
+                )}
+              </div>
+              <p className='text-xs text-yellow-600 mt-1'>
+                {loading ? '...' : `${stats?.noStockProducts || 0} sin stock`} desde ayer
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Órdenes Totales */}
+          <Card className='border-t-4 border-t-indigo-500 hover:shadow-lg transition-shadow'>
+            <CardHeader className='flex flex-row items-center justify-between pb-2'>
+              <CardTitle className='text-sm font-medium text-gray-600'>Órdenes Totales</CardTitle>
+              <div className='w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center'>
+                <ShoppingCart className='h-5 w-5 text-indigo-600' />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className='text-3xl font-bold text-gray-900'>
+                {loading ? (
+                  <div className='h-9 w-20 bg-gray-200 animate-pulse rounded' />
+                ) : (
+                  stats?.totalOrders || 0
+                )}
+              </div>
+              <p className='text-xs text-gray-500 mt-1'>
+                {loading ? '...' : `${stats?.pendingOrders || 0} pendientes`} desde ayer
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Usuarios Registrados */}
+          <Card className='border-t-4 border-t-green-500 hover:shadow-lg transition-shadow'>
+            <CardHeader className='flex flex-row items-center justify-between pb-2'>
+              <CardTitle className='text-sm font-medium text-gray-600'>Usuarios Registrados</CardTitle>
+              <div className='w-10 h-10 rounded-full bg-green-100 flex items-center justify-center'>
+                <Users className='h-5 w-5 text-green-600' />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className='text-3xl font-bold text-gray-900'>
+                {loading ? (
+                  <div className='h-9 w-20 bg-gray-200 animate-pulse rounded' />
+                ) : (
+                  stats?.totalUsers || 0
+                )}
+              </div>
+              <p className='text-xs text-green-600 mt-1'>
+                {loading ? '...' : `${stats?.activeUsers || 0} activos`} desde ayer
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Admin Sections Grid */}

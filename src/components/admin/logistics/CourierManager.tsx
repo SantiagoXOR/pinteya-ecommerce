@@ -51,7 +51,7 @@ import {
   AlertTriangle,
   TrendingUp,
   TrendingDown,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Courier, ShippingService } from '@/types/logistics'
 import { useCouriers } from '@/hooks/admin/useShippingQuote'
 import { cn } from '@/lib/core/utils'

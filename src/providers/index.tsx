@@ -8,7 +8,6 @@ import { Toaster } from 'sonner'
 import { MonitoringProvider } from './MonitoringProvider'
 import { CartProvider } from '../contexts/CartContext'
 import { DesignSystemProvider } from '../contexts/DesignSystemContext'
-import { ThemeProvider } from 'next-themes'
 
 // Configuración del cliente de React Query
 const queryClient = new QueryClient({
@@ -41,13 +40,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute='class'
-          defaultTheme='light'
-          enableSystem
-          disableTransitionOnChange
-        >
-          <MonitoringProvider autoStart={true} enableErrorBoundary={true}>
+        <MonitoringProvider autoStart={true} enableErrorBoundary={true}>
             <DesignSystemProvider>
               <CartProvider>
                 {children}
@@ -75,7 +68,6 @@ export function Providers({ children }: ProvidersProps) {
               </CartProvider>
             </DesignSystemProvider>
           </MonitoringProvider>
-        </ThemeProvider>
       </QueryClientProvider>
     </SessionProvider>
   )
@@ -110,11 +102,6 @@ export const getProviderConfig = () => {
       enableDevtools: isDevelopment,
       staleTime: isDevelopment ? 1000 * 30 : 1000 * 60 * 5, // 30s dev, 5min prod
       gcTime: isDevelopment ? 1000 * 60 : 1000 * 60 * 10, // 1min dev, 10min prod
-    },
-    theme: {
-      defaultTheme: 'light' as const,
-      enableSystem: true,
-      storageKey: 'ecommerce-theme',
     },
   }
 }
@@ -159,11 +146,6 @@ export function ProvidersStatus() {
 
         <div className='flex justify-between'>
           <span>NextAuth:</span>
-          <span>✅</span>
-        </div>
-
-        <div className='flex justify-between'>
-          <span>Theme:</span>
           <span>✅</span>
         </div>
 

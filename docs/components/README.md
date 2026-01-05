@@ -6,6 +6,19 @@ Este directorio contiene la documentación técnica completa de todos los compon
 
 ## 📁 Documentos Disponibles
 
+### 🎯 Componentes UI Principales
+
+- **[CommercialProductCard](./commercial-product-card.md)** - Tarjeta de producto modular con hooks personalizados
+- **[ScrollingBanner](./scrolling-banner.md)** - Banner con animación de scroll infinito
+- **[BottomNavigation](./bottom-navigation.md)** - Navegación inferior estilo MercadoLibre
+- **[Footer](./footer.md)** - Pie de página con beneficios y enlaces
+- **[HeroCarousel](./hero-carousel.md)** - Carrusel de imágenes hero optimizado
+- **[BestSeller](./best-seller.md)** - Sección de productos más vendidos
+- **[CombosSection](./combos-section.md)** - Carrusel de combos destacados
+- **[PromoBanners](./promo-banners.md)** - Banners promocionales con scroll horizontal
+- **[CartSidebarModal](./cart-sidebar-modal.md)** - Modal de carrito con drag-to-dismiss
+- **[CategoriesFilterSystem](./categories-filter-system.md)** - Sistema de filtrado de categorías
+
 ### 🎯 Header Component (COMPLETADO)
 
 - **[Documentación Técnica Completa](./header-implementation-documentation.md)** - Implementación detallada del Header
@@ -13,8 +26,15 @@ Este directorio contiene la documentación técnica completa de todos los compon
 ### 📊 Estado Actual de Componentes
 
 - ✅ **Header**: 100% documentado y testeado
-- 🔄 **ProductCard**: Pendiente documentación
-- 🔄 **Footer**: Pendiente documentación
+- ✅ **CommercialProductCard**: 100% documentado - Arquitectura modular con hooks personalizados
+- ✅ **ScrollingBanner**: 100% documentado - Banner con animación infinita
+- ✅ **BottomNavigation**: 100% documentado - Navegación estilo MercadoLibre
+- ✅ **Footer**: 100% documentado - Pie de página con beneficios y redes sociales
+- ✅ **HeroCarousel**: 100% documentado - Carrusel hero con Swiper y versión custom
+- ✅ **BestSeller**: 100% documentado - Sección de productos más vendidos
+- ✅ **CombosSection**: 100% documentado - Carrusel de combos destacados
+- ✅ **PromoBanners**: 100% documentado - Banners promocionales con scroll horizontal
+- ✅ **CartSidebarModal**: 100% documentado - Modal de carrito con drag-to-dismiss
 - 🔄 **SearchBar**: Pendiente documentación
 
 ## 🎯 Estándares de Documentación Establecidos
@@ -68,8 +88,18 @@ src/components/
 │   ├── TopBar.tsx             # Barra superior
 │   ├── ActionButtons.tsx      # Botones de acción
 │   └── __tests__/             # Suite de testing completa
-├── ProductCard/                # 🔄 Pendiente
-├── Footer/                     # 🔄 Pendiente
+├── ui/product-card-commercial/ # ✅ Completado
+│   ├── index.tsx               # Componente principal
+│   ├── hooks/                  # Hooks personalizados
+│   └── components/             # Subcomponentes UI
+├── layout/Footer.tsx           # ✅ Completado
+├── Common/
+│   ├── CartSidebarModal/       # ✅ Completado
+│   └── HeroCarousel.tsx        # ✅ Completado
+├── Home-v2/
+│   ├── BestSeller/             # ✅ Completado
+│   ├── CombosSection/          # ✅ Completado
+│   └── PromoBanners/            # ✅ Completado
 └── SearchBar/                  # 🔄 Pendiente
 ```
 
@@ -85,7 +115,7 @@ src/components/
 
 ### Framework y Lenguajes
 
-- **Framework**: Next.js 15 con App Router
+- **Framework**: Next.js 16 con App Router y Turbopack
 - **Lenguaje**: TypeScript 5.7.3
 - **Estilos**: Tailwind CSS 3.4
 - **Testing**: Jest + RTL + Playwright + jest-axe
@@ -239,27 +269,7 @@ src/components/[Component]/__tests__/
 
 ## 🎯 Próximos Componentes Prioritarios
 
-### 1. ProductCard
-
-**Funcionalidades críticas**:
-
-- Renderizado de producto
-- Botón "Agregar al carrito"
-- Estados de stock
-- Precios y descuentos
-- Imágenes responsive
-
-### 2. Footer
-
-**Funcionalidades críticas**:
-
-- Enlaces de navegación
-- Información de contacto
-- Logos de pago
-- Newsletter signup
-- Responsive layout
-
-### 3. SearchBar
+### 1. SearchBar
 
 **Funcionalidades críticas**:
 
@@ -315,7 +325,7 @@ src/components/[Component]/__tests__/
 
 ---
 
-**📅 Última actualización**: Enero 2025  
+**📅 Última actualización**: 15 de Diciembre, 2025  
 **🔧 Mantenimiento**: Automatizado en CI/CD  
-**📈 Estado**: Header completado, modelo establecido  
-**🎯 Próximo**: ProductCard, Footer, SearchBar
+**📈 Estado**: 10 componentes documentados, modelo establecido  
+**🎯 Próximo**: SearchBar

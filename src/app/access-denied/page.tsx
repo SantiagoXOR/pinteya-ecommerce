@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Shield, ArrowLeft, Home } from 'lucide-react'
+import { Shield, ArrowLeft, Home } from '@/lib/optimized-imports'
 import Link from 'next/link'
 
 interface AccessDeniedPageProps {

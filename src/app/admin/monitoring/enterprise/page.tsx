@@ -30,7 +30,7 @@ import {
   TrendingUp,
   Eye,
   Lock,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 // =====================================================
 // TIPOS E INTERFACES

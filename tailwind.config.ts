@@ -3,12 +3,42 @@ import type { Config } from 'tailwindcss'
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 const config: Config = {
-  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  // ⚡ OPTIMIZACIÓN: Content paths para purge más agresivo
+  // ⚡ CRITICAL: Incluir todos los archivos que pueden usar clases Tailwind
+  // ⚡ OPTIMIZACIÓN: Orden optimizado - archivos más importantes primero para mejor detección
+  content: [
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}', // ⚡ OPTIMIZACIÓN: App router primero (más crítico)
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}', // Componentes principales
+    './src/**/*.{js,ts,jsx,tsx,mdx}', // Resto de archivos
+    './src/styles/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/lib/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/hooks/**/*.{js,ts,jsx,tsx,mdx}',
+    './public/**/*.{html,js}',
+  ],
   darkMode: ['class', 'class'],
+  // ⚡ OPTIMIZACIÓN: Purge CSS no utilizado en producción
+  // ⚡ FASE 9: Safelist optimizada - solo clases realmente dinámicas y verificadas
+  // ⚡ REDUCIDO: Eliminadas clases de dark mode de safelist (Tailwind las detecta estáticamente)
+  // ⚡ REDUCIDO: Solo mantener clases que se generan dinámicamente (template strings, código)
+  safelist: [
+    // ⚡ Animaciones usadas dinámicamente (verificado: ProductList.tsx, feedback.tsx)
+    'animate-fade-in',
+    'animate-slide-up',
+    'animate-scale-in',
+    // ⚡ Clases de z-index críticas (verificado: layout.tsx, Header, dialog.tsx)
+    'z-header',
+    'z-modal',
+    'z-toast',
+    // ⚡ NOTA: Clases de dark mode removidas de safelist
+    // Tailwind puede detectar clases estáticas automáticamente (dark:text-bright-sun-*)
+    // Solo agregar a safelist si se generan dinámicamente en template strings
+  ],
   theme: {
     fontFamily: {
-      'euclid-circular-a': ['Euclid Circular A'],
-      sans: ['Inter', 'system-ui', 'sans-serif'],
+      // ⚡ OPTIMIZACIÓN: Usar variables de next/font para mejor performance
+      'euclid-circular-a': ['var(--font-euclid)', 'Euclid Circular A', 'system-ui', 'sans-serif'],
+      euclid: ['var(--font-euclid)', 'Euclid Circular A', 'system-ui', 'sans-serif'],
+      sans: ['var(--font-euclid)', 'Inter', 'system-ui', 'sans-serif'],
       inter: ['Inter', 'system-ui', 'sans-serif'],
     },
     container: {
@@ -665,6 +695,38 @@ const config: Config = {
           '&::-webkit-scrollbar': {
             display: 'none',
           },
+        },
+        // ⚡ PERFORMANCE: Utilidades de transición compuestas (solo transform y opacity)
+        // Estas animaciones usan GPU y no causan reflow/repaint
+        '.transition-composite': {
+          'transition-property': 'transform, opacity',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '300ms',
+          'will-change': 'transform, opacity',
+        },
+        '.transition-composite-fast': {
+          'transition-property': 'transform, opacity',
+          'transition-timing-function': 'ease-out',
+          'transition-duration': '150ms',
+          'will-change': 'transform, opacity',
+        },
+        '.transition-composite-slow': {
+          'transition-property': 'transform, opacity',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '500ms',
+          'will-change': 'transform, opacity',
+        },
+        '.transition-transform-only': {
+          'transition-property': 'transform',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '300ms',
+          'will-change': 'transform',
+        },
+        '.transition-opacity-only': {
+          'transition-property': 'opacity',
+          'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
+          'transition-duration': '300ms',
+          'will-change': 'opacity',
         },
       })
     },

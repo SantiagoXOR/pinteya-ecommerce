@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { Bell, LogOut, Home, User, Settings, Package, ChevronDown } from 'lucide-react'
+import { Bell, LogOut, Home, User, Settings, Package, ChevronDown } from '@/lib/optimized-imports'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -139,7 +139,7 @@ export function DashboardHeader() {
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild>
-                <Link href='/orders' className='flex items-center'>
+                <Link href='/mis-ordenes' className='flex items-center'>
                   <Package className='mr-2 h-4 w-4' />
                   <span>Mis Órdenes</span>
                 </Link>

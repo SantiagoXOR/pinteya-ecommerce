@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AddressMapSelectorAdvanced } from '@/components/ui/AddressMapSelectorAdvanced'
-import { CheckCircle, AlertCircle } from 'lucide-react'
+import { CheckCircle, AlertCircle } from '@/lib/optimized-imports'
 
 export default function TestAddressAdvancedPage() {
   // Bloquear indexación para SEO

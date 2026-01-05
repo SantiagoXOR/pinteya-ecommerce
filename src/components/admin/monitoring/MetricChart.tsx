@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus } from '@/lib/optimized-imports'
 
 interface MetricDataPoint {
   timestamp: string

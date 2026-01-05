@@ -35,12 +35,20 @@ function extractImageUrl(images: any): string | null {
     const trimmed = images.trim()
     if (!trimmed) return null
 
-    // Intentar parsear JSON si corresponde
-    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    // Intentar parsear JSON si corresponde (puede estar doblemente escapado)
+    if (trimmed.startsWith('{') || trimmed.startsWith('[') || trimmed.startsWith('"')) {
       try {
-        return extractImageUrl(JSON.parse(trimmed))
+        // Intentar parsear directamente
+        const parsed = JSON.parse(trimmed)
+        return extractImageUrl(parsed)
+      } catch {
+        try {
+          // Si falla, intentar parsear como string escapado
+          const unescaped = JSON.parse(`"${trimmed}"`)
+          return extractImageUrl(unescaped)
       } catch {
         return normalize(trimmed)
+        }
       }
     }
 
@@ -58,7 +66,8 @@ function extractImageUrl(images: any): string | null {
       normalize(images.thumbnails?.[0]) ||
       normalize(images.gallery?.[0]) ||
       normalize(images.main) ||
-      normalize(images.url)
+      normalize(images.url) || // ✅ NUEVO: Soporte para formato {url, is_primary}
+      normalize((images as any).url) // ✅ NUEVO: Extra soporte para formato simple
     )
   }
 
@@ -254,19 +263,132 @@ const getHandler = async (request: ValidatedRequest) => {
       ultimos3: products?.slice(-3).map(p => `${p.id}:${p.name?.substring(0, 15)}`) || [],
     })
 
+    // ✅ NUEVO: Obtener TODAS las medidas y colores únicos de variantes, y solo el código aikon de la variante predeterminada
+    const productIds = products?.map(p => p.id) || []
+    const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
+    const variantColors: Record<number, string[]> = {} // ✅ Array de colores
+    const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+    const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
+    
+    if (productIds.length > 0) {
+      // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
+      const { data: productImagesData } = await supabaseAdmin
+        .from('product_images')
+        .select('product_id, url, is_primary')
+        .in('product_id', productIds)
+        .order('is_primary', { ascending: false })
+        .order('display_order', { ascending: true })
+      
+      // Agrupar por product_id y tomar la primera (primaria o primera disponible)
+      productImagesData?.forEach((img: any) => {
+        if (!productImagesFromTable[img.product_id]) {
+          productImagesFromTable[img.product_id] = img.url
+        }
+      })
+      
+      const { data: variantData, error: variantError } = await supabaseAdmin
+        .from('product_variants')
+        .select('product_id,is_default,measure,color_name,aikon_id')
+        .in('product_id', productIds)
+        .eq('is_active', true)
+      
+      variantData?.forEach(variant => {
+        // Obtener TODAS las medidas únicas de las variantes
+        if (variant.measure && variant.measure.trim() !== '') {
+          if (!variantMeasures[variant.product_id]) {
+            variantMeasures[variant.product_id] = []
+          }
+          if (!variantMeasures[variant.product_id].includes(variant.measure)) {
+            variantMeasures[variant.product_id].push(variant.measure)
+          }
+        }
+        
+        // ✅ Obtener TODOS los colores únicos de las variantes
+        if (variant.color_name && variant.color_name.trim() !== '') {
+          if (!variantColors[variant.product_id]) {
+            variantColors[variant.product_id] = []
+          }
+          if (!variantColors[variant.product_id].includes(variant.color_name)) {
+            variantColors[variant.product_id].push(variant.color_name)
+          }
+        }
+        
+        // ✅ CAMBIADO: Obtener SOLO el código aikon de la variante predeterminada
+        if (variant.is_default && variant.aikon_id && variant.aikon_id.trim() !== '') {
+          variantAikonIds[variant.product_id] = variant.aikon_id
+        }
+      })
+    }
+
     // Transform data to include category name and all fields
     const transformedProducts =
       products?.map(product => {
+        // ✅ NUEVO: Prioridad: product_images > images JSONB
+        const primaryImageFromTable = productImagesFromTable[product.id]
         const resolvedImage = extractImageUrl(product.images)
+        
+        // Transform product_categories to categories array
+        const categories = product.product_categories
+          ?.map((pc: any) => pc.category)
+          .filter((cat: any) => cat != null) || []
+        
+        // ✅ NUEVO: Combinar medida del producto con todas las medidas de variantes
+        // ✅ CORREGIDO: Parsear medida si viene como string de array
+        let parsedMedida: string[] = []
+        if (product.medida) {
+          if (typeof product.medida === 'string') {
+            // Intentar parsear si es un string de array JSON
+            if (product.medida.trim().startsWith('[') && product.medida.trim().endsWith(']')) {
+              try {
+                const parsed = JSON.parse(product.medida)
+                parsedMedida = Array.isArray(parsed) ? parsed : [parsed]
+              } catch {
+                parsedMedida = [product.medida]
+              }
+            } else {
+              parsedMedida = [product.medida]
+            }
+          } else if (Array.isArray(product.medida)) {
+            parsedMedida = product.medida
+          } else {
+            parsedMedida = [String(product.medida)]
+          }
+        }
+        const variantMeasuresList = variantMeasures[product.id] || []
+        const allMeasures = Array.from(new Set([...parsedMedida, ...variantMeasuresList]))
+        
+        // ✅ NUEVO: Combinar color del producto con todos los colores de variantes
+        const productColor = product.color ? [product.color] : []
+        const variantColorsList = variantColors[product.id] || []
+        const allColors = Array.from(new Set([...productColor, ...variantColorsList]))
+        
+        // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
+        const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
 
         return {
           ...product,
-          category_name: product.category?.name || null,
+          category_name: product.category?.name || categories[0]?.name || null,
           category: undefined, // Remove nested object
+          product_categories: undefined, // Remove nested object
+          // Transform product_categories to categories array
+          categories: categories,
           // Transform images JSONB/legacy formats to image_url
-          image_url: resolvedImage,
+          // ✅ CORREGIDO: Prioridad: product_images > images JSONB
+          image_url: primaryImageFromTable || resolvedImage,
           // Derive status from is_active (status column doesn't exist in DB)
           status: product.is_active ? 'active' : 'inactive',
+          // ✅ NUEVO: Array de todas las medidas (producto + variantes)
+          medida: allMeasures.length > 0 ? allMeasures[0] : null, // Mantener compatibilidad con campo string
+          medidas: allMeasures, // ✅ NUEVO: Array de todas las medidas
+          // ✅ NUEVO: Array de todos los colores (producto + variantes)
+          color: allColors.length > 0 ? allColors[0] : null, // Mantener compatibilidad con campo string
+          colores: allColors, // ✅ NUEVO: Array de todos los colores
+          // ✅ NUEVO: Terminaciones del producto (array de texto)
+          terminaciones: product.terminaciones && Array.isArray(product.terminaciones) 
+            ? product.terminaciones.filter((t: string) => t && t.trim() !== '')
+            : [],
+          // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+          aikon_id: defaultAikonId,
         }
       }) || []
 
@@ -347,22 +469,63 @@ const postHandler = async (request: ValidatedRequest) => {
       )
     }
 
-    // Verify category exists
-    const { data: category, error: categoryError } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('id', productData.category_id)
-      .single()
+    // Normalizar category_ids: soportar tanto category_id como category_ids para retrocompatibilidad
+    let categoryIds: number[] = []
+    if ((productData as any).category_ids && Array.isArray((productData as any).category_ids)) {
+      categoryIds = (productData as any).category_ids.map((id: any) => parseInt(String(id))).filter((id: number) => !isNaN(id))
+    } else if ((productData as any).category_id) {
+      categoryIds = [parseInt(String((productData as any).category_id))].filter((id: number) => !isNaN(id))
+    }
 
-    if (categoryError || !category) {
-      return NextResponse.json({ error: 'Categoría no encontrada' }, { status: 400 })
+    // Validar categorías si se proporcionan
+    if (categoryIds.length > 0) {
+      const { data: categories, error: categoryError } = await supabase
+        .from('categories')
+        .select('id')
+        .in('id', categoryIds)
+
+      if (categoryError) {
+        return NextResponse.json(
+          {
+            error: 'Error al validar categorías',
+            code: 'CATEGORY_VALIDATION_ERROR',
+            enterprise: true,
+          },
+          { status: 400 }
+        )
+      }
+
+      if (!categories || categories.length !== categoryIds.length) {
+        return NextResponse.json(
+          {
+            error: 'Una o más categorías no fueron encontradas',
+            code: 'CATEGORY_NOT_FOUND',
+            enterprise: true,
+          },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Mantener category_id para retrocompatibilidad (usar primera categoría)
+    // Normalizar terminaciones: convertir array a formato PostgreSQL TEXT[]
+    const terminaciones = (productData as any).terminaciones 
+      ? Array.isArray((productData as any).terminaciones) 
+        ? (productData as any).terminaciones.filter((t: string) => t && t.trim() !== '')
+        : []
+      : []
+
+    const productDataWithCategory = {
+      ...productData,
+      category_id: categoryIds.length > 0 ? categoryIds[0] : (productData as any).category_id || null,
+      terminaciones: terminaciones.length > 0 ? terminaciones : null, // null en lugar de array vacío para mejor rendimiento
     }
 
     // Create product
     const { data: product, error } = await supabase
       .from('products')
       .insert({
-        ...productData,
+        ...productDataWithCategory,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -375,6 +538,7 @@ const postHandler = async (request: ValidatedRequest) => {
         stock,
         category_id,
         images,
+        terminaciones,
         created_at,
         updated_at,
         category:categories (
@@ -395,6 +559,26 @@ const postHandler = async (request: ValidatedRequest) => {
     if (error) {
       console.error('Error creating product:', error)
       return NextResponse.json({ error: 'Error al crear producto' }, { status: 500 })
+    }
+
+    // Insertar relaciones en product_categories si hay categorías
+    if (categoryIds.length > 0 && product?.id) {
+      const categoryInserts = categoryIds.map(catId => ({
+        product_id: product.id,
+        category_id: catId,
+      }))
+
+      const { error: categoryRelationError } = await supabase
+        .from('product_categories')
+        .insert(categoryInserts)
+
+      if (categoryRelationError) {
+        console.error('Error creating product_categories relations:', categoryRelationError)
+        // No fallar la creación del producto si falla la relación de categorías
+        // pero loguear el error
+      } else {
+        console.log(`✅ Created ${categoryIds.length} product category relation(s)`)
+      }
     }
 
     // Transform response
@@ -459,7 +643,8 @@ const postHandlerSimple = async (request: NextRequest) => {
     console.log('📝 Request body:', JSON.stringify(body, null, 2))
 
     // Validación básica de campos requeridos
-    const requiredFields = ['name', 'price']
+    // ✅ price es opcional si el producto tiene variantes (el precio se define en las variantes)
+    const requiredFields = ['name']
     for (const field of requiredFields) {
       if (!body[field]) {
         return NextResponse.json(
@@ -471,54 +656,102 @@ const postHandlerSimple = async (request: NextRequest) => {
         )
       }
     }
+    
+    // ✅ Validar que si no hay variantes, entonces price es requerido
+    // (Las variantes se crean después de crear el producto, así que no podemos verificar aquí)
+    // Por ahora, permitimos que price sea opcional y se valida en el frontend
 
-    // Mapear datos del frontend al formato de base de datos
-    const productData = {
-      name: body.name,
-      description: body.description || '',
-      price: parseFloat(body.price),
-      discounted_price: body.compare_price ? parseFloat(body.compare_price) : null,
-      stock: parseInt(body.stock) || 0,
-      category_id: body.category_id ? parseInt(body.category_id) : null,
-      is_active: body.status === 'active' || true,
-      brand: body.brand || '',
-      color: body.color || '',
-      medida: body.medida || '',
-      // Generar slug automático
-      slug:
-        body.name
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .trim() +
-        '-' +
-        Date.now(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+    // Normalizar category_ids: soportar tanto category_id como category_ids para retrocompatibilidad
+    let categoryIds: number[] = []
+    if (body.category_ids && Array.isArray(body.category_ids)) {
+      categoryIds = body.category_ids.map(id => parseInt(String(id))).filter(id => !isNaN(id))
+    } else if (body.category_id) {
+      categoryIds = [parseInt(String(body.category_id))].filter(id => !isNaN(id))
     }
 
-    console.log('🔄 Mapped product data:', JSON.stringify(productData, null, 2))
-
-    // Verificar categoría si se proporciona
-    if (productData.category_id) {
-      const { data: category, error: categoryError } = await supabase
+    // Validar categorías si se proporcionan
+    if (categoryIds.length > 0) {
+      const { data: categories, error: categoryError } = await supabase
         .from('categories')
         .select('id')
-        .eq('id', productData.category_id)
-        .single()
+        .in('id', categoryIds)
 
-      if (categoryError || !category) {
-        console.log('❌ Category not found:', categoryError)
+      if (categoryError) {
+        console.log('❌ Error fetching categories:', categoryError)
         return NextResponse.json(
           {
-            error: 'Categoría no encontrada',
+            error: 'Error al validar categorías',
+            code: 'CATEGORY_VALIDATION_ERROR',
+          },
+          { status: 400 }
+        )
+      }
+
+      if (!categories || categories.length !== categoryIds.length) {
+        console.log('❌ Some categories not found')
+        return NextResponse.json(
+          {
+            error: 'Una o más categorías no fueron encontradas',
             code: 'CATEGORY_NOT_FOUND',
           },
           { status: 400 }
         )
       }
     }
+
+    // Mapear datos del frontend al formato de base de datos
+    // ✅ price y stock son opcionales si el producto tiene variantes
+    const productData = {
+      name: body.name,
+      description: body.description || '',
+      price: body.price !== undefined && body.price !== null && body.price !== '' 
+        ? parseFloat(String(body.price)) 
+        : null, // ✅ Permitir null si no se proporciona
+      discounted_price: body.discounted_price !== undefined && body.discounted_price !== null 
+        ? parseFloat(String(body.discounted_price)) 
+        : (body.compare_price ? parseFloat(String(body.compare_price)) : null),
+      stock: body.stock !== undefined && body.stock !== null && body.stock !== '' 
+        ? parseInt(String(body.stock)) 
+        : null, // ✅ Permitir null si no se proporciona
+      category_id: categoryIds.length > 0 ? categoryIds[0] : null, // Mantener category_id para retrocompatibilidad
+      is_active: body.is_active !== undefined 
+        ? Boolean(body.is_active) 
+        : (body.status === 'active' ? true : (body.status === 'inactive' ? false : true)), // Si no se especifica status, por defecto es activo
+      brand: body.brand || '',
+      color: body.color || '',
+      // ✅ CORREGIDO: Normalizar medida - convertir array a string (tomar primera medida) o null
+      medida: (() => {
+        if (Array.isArray(body.medida)) {
+          return body.medida.length > 0 ? body.medida[0] : null
+        }
+        return typeof body.medida === 'string' && body.medida.trim() !== '' 
+          ? body.medida 
+          : null
+      })(),
+      // ✅ NUEVO: Incluir terminaciones como array de texto
+      terminaciones: body.terminaciones && Array.isArray(body.terminaciones) 
+        ? body.terminaciones.filter((t: string) => t && t.trim() !== '')
+        : null,
+      // ✅ NUEVO: Incluir image_url en el campo images (JSONB) para retrocompatibilidad
+      images: body.image_url 
+        ? JSON.stringify({ url: body.image_url, is_primary: true })
+        : null,
+      // Generar slug automático (agregar timestamp solo si es necesario para evitar duplicados)
+      slug: (() => {
+        const baseSlug = body.name
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .trim()
+        // Agregar timestamp para asegurar unicidad (se puede mejorar con verificación de duplicados)
+        return `${baseSlug}-${Date.now()}`
+      })(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    console.log('🔄 Mapped product data:', JSON.stringify(productData, null, 2))
 
     // Crear producto
     const { data: product, error } = await supabase
@@ -550,6 +783,26 @@ const postHandlerSimple = async (request: NextRequest) => {
         },
         { status: 500 }
       )
+    }
+
+    // Insertar relaciones en product_categories si hay categorías
+    if (categoryIds.length > 0 && product?.id) {
+      const categoryInserts = categoryIds.map(catId => ({
+        product_id: product.id,
+        category_id: catId,
+      }))
+
+      const { error: categoryRelationError } = await supabase
+        .from('product_categories')
+        .insert(categoryInserts)
+
+      if (categoryRelationError) {
+        console.error('❌ Error creating product_categories relations:', categoryRelationError)
+        // No fallar la creación del producto si falla la relación de categorías
+        // pero loguear el error
+      } else {
+        console.log(`✅ Created ${categoryIds.length} product category relation(s)`)
+      }
     }
 
     console.log('✅ Product created successfully:', product)
@@ -661,16 +914,40 @@ export const GET = async (request: NextRequest) => {
     
     query = query.range(from, to)
 
-    // Apply sorting
+    // Apply sorting - IMPORTANTE: Asegurar que el ordenamiento se aplique correctamente
     query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+    
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     const { data: products, error, count } = await query
+    
+    // ✅ DIAGNÓSTICO: Verificar si el producto #294 está en los resultados
+    const tieneProducto294 = products?.some(p => p.id === 294) || false
+    const primeros5IDs = products?.slice(0, 5).map(p => p.id) || []
+    console.log('🔍 [API GET /admin/products] Productos devueltos:', {
+      total: products?.length,
+      count,
+      primeros5IDs,
+      tieneProducto294,
+      todosLosIDs: products?.map(p => p.id) || [],
+    })
+    
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     
     logger.dev('[API] Resultado:', {
       productsLength: products?.length,
       count,
       primeros5IDs: products?.slice(0, 5).map(p => p.id) || [],
+      todosLosIDs: products?.map(p => p.id) || [],
+      tieneProducto256: products?.some(p => p.id === 256) || false,
+      tieneProducto257: products?.some(p => p.id === 257) || false,
+      tieneProducto258: products?.some(p => p.id === 258) || false,
     })
+    
+    // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
+// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
 
     if (error) {
       logger.error('[API] Database error:', error)
@@ -680,11 +957,30 @@ export const GET = async (request: NextRequest) => {
     const productIds = products?.map(p => p.id) || []
     const variantCounts: Record<number, number> = {}
     const variantImages: Record<number, string | null> = {}
+    const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
+    const variantColors: Record<number, string[]> = {} // ✅ Array de colores
+    const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+    const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
     
     if (productIds.length > 0) {
-      const { data: variantData } = await supabaseAdmin
+      // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
+      const { data: productImagesData } = await supabaseAdmin
+        .from('product_images')
+        .select('product_id, url, is_primary')
+        .in('product_id', productIds)
+        .order('is_primary', { ascending: false })
+        .order('display_order', { ascending: true })
+      
+      // Agrupar por product_id y tomar la primera (primaria o primera disponible)
+      productImagesData?.forEach((img: any) => {
+        if (!productImagesFromTable[img.product_id]) {
+          productImagesFromTable[img.product_id] = img.url
+        }
+      })
+      
+      const { data: variantData, error: variantError } = await supabaseAdmin
         .from('product_variants')
-        .select('product_id,image_url,is_default')
+        .select('product_id,image_url,is_default,measure,color_name,aikon_id') // ✅ AGREGADO: color_name, aikon_id
         .in('product_id', productIds)
         .eq('is_active', true)
       
@@ -699,24 +995,105 @@ export const GET = async (request: NextRequest) => {
         if (variant.is_default && normalizedImage) {
           variantImages[variant.product_id] = normalizedImage
         }
+        
+        // ✅ Obtener TODAS las medidas únicas de las variantes
+        if (variant.measure && variant.measure.trim() !== '') {
+          if (!variantMeasures[variant.product_id]) {
+            variantMeasures[variant.product_id] = []
+          }
+          if (!variantMeasures[variant.product_id].includes(variant.measure)) {
+            variantMeasures[variant.product_id].push(variant.measure)
+          }
+        }
+        
+        // ✅ Obtener TODOS los colores únicos de las variantes
+        if (variant.color_name && variant.color_name.trim() !== '') {
+          if (!variantColors[variant.product_id]) {
+            variantColors[variant.product_id] = []
+          }
+          if (!variantColors[variant.product_id].includes(variant.color_name)) {
+            variantColors[variant.product_id].push(variant.color_name)
+          }
+        }
+        
+        // ✅ CAMBIADO: Obtener SOLO el código aikon de la variante predeterminada
+        if (variant.is_default && variant.aikon_id && variant.aikon_id.trim() !== '') {
+          variantAikonIds[variant.product_id] = variant.aikon_id
+        }
       })
     }
     
     const transformedProducts =
       products?.map(product => {
+        // ✅ NUEVO: Prioridad: product_images > variante > images JSONB
+        const primaryImageFromTable = productImagesFromTable[product.id]
         const variantImage = variantImages[product.id]
         const fallbackImage = extractImageUrl(product.images)
-
+        
+        // Transform product_categories to categories array
+        const categories = product.product_categories
+          ?.map((pc: any) => pc.category)
+          .filter((cat: any) => cat != null) || []
+        
+        // ✅ NUEVO: Combinar medida del producto con todas las medidas de variantes
+        // ✅ CORREGIDO: Parsear medida si viene como string de array
+        let parsedMedida: string[] = []
+        if (product.medida) {
+          if (typeof product.medida === 'string') {
+            // Intentar parsear si es un string de array JSON
+            if (product.medida.trim().startsWith('[') && product.medida.trim().endsWith(']')) {
+              try {
+                const parsed = JSON.parse(product.medida)
+                parsedMedida = Array.isArray(parsed) ? parsed : [parsed]
+              } catch {
+                parsedMedida = [product.medida]
+              }
+            } else {
+              parsedMedida = [product.medida]
+            }
+          } else if (Array.isArray(product.medida)) {
+            parsedMedida = product.medida
+          } else {
+            parsedMedida = [String(product.medida)]
+          }
+        }
+        const variantMeasuresList = variantMeasures[product.id] || []
+        const allMeasures = Array.from(new Set([...parsedMedida, ...variantMeasuresList]))
+        
+        // ✅ NUEVO: Combinar color del producto con todos los colores de variantes
+        const productColor = product.color ? [product.color] : []
+        const variantColorsList = variantColors[product.id] || []
+        const allColors = Array.from(new Set([...productColor, ...variantColorsList]))
+        
+        // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
+        const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
+        
         return {
           ...product,
-          category_name: product.category?.name || null,
+          category_name: product.category?.name || categories[0]?.name || null,
           category: undefined,
+          product_categories: undefined, // Remove nested object
+          // Transform product_categories to categories array
+          categories: categories,
           // Agregar conteo de variantes
           variant_count: variantCounts[product.id] || 0,
           // Imagen priorizando variantes
-          image_url: variantImage || fallbackImage,
+          // ✅ CORREGIDO: Prioridad: product_images > variante > images JSONB
+          image_url: primaryImageFromTable || variantImage || fallbackImage,
           // Default status si es null
           status: product.status || (product.is_active ? 'active' : 'inactive'),
+          // ✅ NUEVO: Array de todas las medidas (producto + variantes)
+          medida: allMeasures.length > 0 ? allMeasures[0] : null, // Mantener compatibilidad con campo string
+          medidas: allMeasures, // ✅ NUEVO: Array de todas las medidas
+          // ✅ NUEVO: Array de todos los colores (producto + variantes)
+          color: allColors.length > 0 ? allColors[0] : null, // Mantener compatibilidad con campo string
+          colores: allColors, // ✅ NUEVO: Array de todos los colores
+          // ✅ NUEVO: Terminaciones del producto (array de texto)
+          terminaciones: product.terminaciones && Array.isArray(product.terminaciones) 
+            ? product.terminaciones.filter((t: string) => t && t.trim() !== '')
+            : [],
+          // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+          aikon_id: defaultAikonId,
         }
       }) || []
 

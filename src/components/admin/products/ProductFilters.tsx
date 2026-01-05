@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Filter, X, Search, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react'
+import { Filter, X, Search, SlidersHorizontal, ChevronDown, ChevronUp, Upload, Download, Settings, Package } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { ProductFilters as ProductFiltersType } from '@/hooks/admin/useProductsEnterprise'
 import { Badge } from '../ui/Badge'
@@ -19,6 +19,13 @@ interface ProductFiltersProps {
   onClearFilters: () => void
   categories?: Category[]
   className?: string
+  // Props para botones de acciones
+  onImportProducts?: () => void
+  onExportProducts?: (format?: 'csv' | 'xlsx' | 'json') => void
+  onShowExportModal?: () => void
+  onBulkActions?: () => void
+  selectedProductsCount?: number
+  isLoading?: boolean
 }
 
 const statusOptions = [
@@ -52,6 +59,12 @@ export function ProductFilters({
   onClearFilters,
   categories = [],
   className,
+  onImportProducts,
+  onExportProducts,
+  onShowExportModal,
+  onBulkActions,
+  selectedProductsCount = 0,
+  isLoading = false,
 }: ProductFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const safeCategories = Array.isArray(categories) ? categories : []
@@ -101,17 +114,63 @@ export function ProductFilters({
             </motion.div>
           </button>
 
-          {hasActiveFilters && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              onClick={onClearFilters}
-              className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors'
-            >
-              <X className='w-4 h-4' />
-              <span>Limpiar</span>
-            </motion.button>
-          )}
+          <div className='flex items-center gap-2'>
+            {/* Badge de productos seleccionados */}
+            {selectedProductsCount > 0 && (
+              <div className='flex items-center gap-1.5 px-2.5 py-1.5 bg-blaze-orange-100 text-blaze-orange-800 rounded-lg border border-blaze-orange-200'>
+                <Package className='w-3.5 h-3.5' />
+                <span className='text-sm font-semibold'>{selectedProductsCount}</span>
+              </div>
+            )}
+
+            {/* Botón Acciones masivas */}
+            {selectedProductsCount > 0 && onBulkActions && (
+              <button
+                onClick={() => onBulkActions()}
+                disabled={isLoading}
+                className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50'
+              >
+                <Settings className='w-4 h-4' />
+                <span>Acciones masivas</span>
+              </button>
+            )}
+
+            {/* Botones Importar y Exportar */}
+            {onImportProducts && (
+              <button
+                onClick={onImportProducts}
+                disabled={isLoading}
+                className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50'
+              >
+                <Upload className='w-4 h-4' />
+                <span>Importar</span>
+              </button>
+            )}
+
+            {onShowExportModal && (
+              <button
+                onClick={() => onShowExportModal()}
+                disabled={isLoading}
+                className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50'
+              >
+                <Download className='w-4 h-4' />
+                <span>Exportar</span>
+              </button>
+            )}
+
+            {/* Botón Limpiar */}
+            {hasActiveFilters && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={onClearFilters}
+                className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors'
+              >
+                <X className='w-4 h-4' />
+                <span>Limpiar</span>
+              </motion.button>
+            )}
+          </div>
         </div>
       </div>
 

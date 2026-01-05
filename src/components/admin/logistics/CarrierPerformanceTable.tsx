@@ -37,7 +37,7 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { CarrierPerformance } from '@/types/logistics'
 import { cn } from '@/lib/core/utils'
 import { formatCurrency, formatDate } from '@/lib/utils/consolidated-utils'

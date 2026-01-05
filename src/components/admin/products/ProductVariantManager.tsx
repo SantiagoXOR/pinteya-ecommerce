@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { AdminCard } from '../ui/AdminCard'
-import { Plus, X, Edit, Trash2, Palette, Package } from 'lucide-react'
+import { Plus, X, Edit, Trash2, Palette, Package } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface ProductVariant {

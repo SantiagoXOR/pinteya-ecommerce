@@ -40,7 +40,7 @@ import {
   Loader2,
   CheckCircle,
   AlertTriangle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { CreateShipmentRequest, ShippingService, Shipment } from '@/types/logistics'
 import { useCreateShipment } from '@/hooks/admin/useShipments'
 import { useCouriers, useShippingQuote } from '@/hooks/admin/useShippingQuote'

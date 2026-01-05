@@ -1,0 +1,395 @@
+/* ⚡ OPTIMIZACIÓN: Eliminar todos los efectos costosos, usar solo colores sólidos */
+/* Priorizar performance sobre estética */
+
+:root {
+  /* Colores sólidos en lugar de glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.98);
+  --glass-bg-light: rgba(255, 255, 255, 0.95);
+  --glass-bg-medium: rgba(255, 255, 255, 0.92);
+  --glass-bg-strong: rgba(255, 255, 255, 1);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-border-light: rgba(0, 0, 0, 0.08);
+  --glass-border-strong: rgba(0, 0, 0, 0.15);
+  
+  /* Sombras simples */
+  --card-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --card-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --card-shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* Responsive spacing - Mobile First */
+  --card-padding-xs: clamp(0.5rem, 2vw, 0.75rem);
+  --card-padding-sm: clamp(0.75rem, 2.5vw, 1rem);
+  --card-padding-md: clamp(1rem, 3vw, 1.5rem);
+  --card-padding-lg: clamp(1.25rem, 4vw, 1.75rem);
+  
+  /* Border radius responsive */
+  --card-radius-xs: 0.75rem;
+  --card-radius-sm: 1rem;
+  --card-radius-md: 1.25rem;
+  --card-radius-lg: 1.5rem;
+  
+  /* Pill spacing - ajustado a márgenes del card */
+  --pill-gap-xs: 0.25rem;
+  --pill-gap-sm: 0.375rem;
+  --pill-gap-md: 0.5rem;
+  
+  /* Font sizes responsive con escala de UI del sistema */
+  --pill-font-xs: clamp(0.5rem, 1.5vw, 0.625rem);
+  --pill-font-sm: clamp(0.625rem, 2vw, 0.75rem);
+  --pill-font-md: clamp(0.75rem, 2.5vw, 0.875rem);
+}
+
+/* Media queries para diferentes tamaños de móviles */
+/* xs: 320px-374px (móviles pequeños) */
+@media (max-width: 374px) {
+  :root {
+    --glass-blur: var(--glass-blur-xs);
+    --card-padding: var(--card-padding-xs);
+    --card-radius: var(--card-radius-xs);
+    --pill-gap: var(--pill-gap-xs);
+    --pill-font: var(--pill-font-xs);
+  }
+}
+
+/* sm: 375px-413px (móviles medianos) */
+@media (min-width: 375px) and (max-width: 413px) {
+  :root {
+    --glass-blur: var(--glass-blur-sm);
+    --card-padding: var(--card-padding-sm);
+    --card-radius: var(--card-radius-sm);
+    --pill-gap: var(--pill-gap-sm);
+    --pill-font: var(--pill-font-sm);
+  }
+}
+
+/* md: 414px-767px (móviles grandes) */
+@media (min-width: 414px) and (max-width: 767px) {
+  :root {
+    --glass-blur: var(--glass-blur-sm);
+    --card-padding: var(--card-padding-sm);
+    --card-radius: var(--card-radius-sm);
+    --pill-gap: var(--pill-gap-sm);
+    --pill-font: var(--pill-font-sm);
+  }
+}
+
+/* lg: 768px+ (tablets y desktop) */
+@media (min-width: 768px) {
+  :root {
+    --glass-blur: var(--glass-blur-md);
+    --card-padding: var(--card-padding-md);
+    --card-radius: var(--card-radius-md);
+    --pill-gap: var(--pill-gap-md);
+    --pill-font: var(--pill-font-md);
+  }
+}
+
+/* Escalas de UI del sistema - prefers-contrast */
+@media (prefers-contrast: high) {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --card-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --card-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ⚡ OPTIMIZACIÓN CRÍTICA: Reducir animaciones en móviles y dispositivos de bajo rendimiento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ⚡ OPTIMIZACIÓN: Deshabilitar animaciones y transiciones en móviles para eliminar lag */
+@media (max-width: 768px) {
+  /* ⚡ OPTIMIZACIÓN CRÍTICA: Reducir efectos costosos en product cards */
+  .glass-card-3d,
+  .glass-accelerated {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  /* ⚡ OPTIMIZACIÓN: Simplificar hover effects en product cards */
+  [data-testid="commercial-product-card"]:hover,
+  [data-testid="product-card"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  * {
+    /* Reducir drásticamente animaciones */
+    animation-duration: 1s !important;
+    transition-duration: 0.8s !important;
+    /* Deshabilitar animaciones complejas */
+    animation-timing-function: ease !important;
+    transition-timing-function: ease !important;
+  }
+  
+  /* Deshabilitar efectos hover en móviles */
+  .glass-card-3d:hover,
+  .glass-category-pill:hover {
+    transform: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+/* ⚡ OPTIMIZACIÓN CRÍTICA: Deshabilitar completamente glassmorphism en móviles */
+/* En móviles, usar estilos simples y sólidos para eliminar lag */
+@media (max-width: 768px) {
+  /* Deshabilitar todos los efectos costosos */
+  .glass-card,
+  .glass-pill,
+  .glass-header,
+  .glass-header-sticky,
+  .glass-search-bar,
+  .glass-category-pill,
+  .glass-card-3d {
+    /* Eliminar backdrop-filter completamente */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    /* Eliminar will-change y transform para reducir carga GPU */
+    will-change: auto !important;
+    transform: none !important;
+    /* Eliminar contain para reducir overhead */
+    contain: none !important;
+    /* Simplificar backgrounds - usar colores sólidos en lugar de gradientes */
+    background: rgba(255, 255, 255, 0.98) !important;
+    /* Reducir sombras complejas */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    /* Eliminar transiciones costosas */
+    transition: none !important;
+  }
+  
+  .glass-header,
+  .glass-header-sticky {
+    /* Background sólido simple en lugar de gradiente */
+    background: rgba(234, 90, 23, 0.98) !important;
+  }
+  
+  .glass-category-pill {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+  }
+  
+  .glass-category-pill-active {
+    /* Background sólido con color de acento */
+    background: rgba(234, 90, 23, 0.15) !important;
+    border-color: rgba(234, 90, 23, 0.5) !important;
+  }
+  
+  .glass-search-bar {
+    background: rgba(255, 255, 255, 0.95) !important;
+  }
+  
+  .glass-search-bar:focus-within {
+    background: rgba(255, 255, 255, 1) !important;
+  }
+  
+  /* Deshabilitar efectos 3D y hover en móviles */
+  .glass-card-3d:hover {
+    transform: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .card-image-depth {
+    transform: none !important;
+  }
+  
+  .glass-card-3d:hover .card-image-depth {
+    transform: none !important;
+  }
+}
+
+/* ⚡ OPTIMIZACIÓN: Detectar dispositivos con preferencia de bajo rendimiento */
+@media (prefers-reduced-motion: reduce), (prefers-contrast: high) {
+  .glass-card,
+  .glass-pill,
+  .glass-header,
+  .glass-header-sticky,
+  .glass-search-bar,
+  .glass-category-pill,
+  .glass-card-3d {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+    transform: none !important;
+    contain: none !important;
+    transition: none !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+/* Clases utilitarias para glassmorphism */
+/* ⚡ OPTIMIZACIÓN: Usar contain y will-change para mejor rendimiento */
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    var(--glass-bg-light) 0%,
+    var(--glass-bg) 50%,
+    var(--glass-bg-light) 100%
+  );
+  /* ⚡ OPTIMIZACIÓN: Reducir blur en móviles y usar contain para aislar composición */
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow-md);
+  /* ⚡ PERFORMANCE: Aislar composición para mejor rendimiento */
+  contain: layout style paint;
+  /* ⚡ PERFORMANCE: Aceleración GPU solo cuando sea necesario */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.glass-card-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transform: perspective(1000px) rotateX(0deg);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card-3d:hover {
+  transform: perspective(1000px) rotateX(2deg) translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.glass-pill {
+  background: linear-gradient(
+    135deg,
+    var(--glass-bg-medium) 0%,
+    var(--glass-bg-light) 100%
+  );
+  /* ⚡ OPTIMIZACIÓN: Reducir blur de 6px a 4px para mejor rendimiento */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border-light);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* ⚡ PERFORMANCE: Aislar composición */
+  contain: layout style paint;
+}
+
+.glass-pill-selected {
+  background: linear-gradient(
+    135deg,
+    var(--glass-bg-strong) 0%,
+    var(--glass-bg-medium) 100%
+  );
+  border: 1.5px solid var(--glass-border-strong);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Optimización para GPU - deshabilitado */
+.glass-accelerated {
+  will-change: auto !important;
+  transform: none !important;
+}
+
+/* Efecto de profundidad para imágenes - deshabilitado */
+.card-image-depth {
+  transform: none !important;
+  transition: none !important;
+}
+
+.glass-card-3d:hover .card-image-depth {
+  transform: none !important;
+}
+
+/* Responsive adjustments para diferentes tamaños de UI */
+@media (min-width: 320px) {
+  .glass-card {
+    padding: var(--card-padding-xs);
+    border-radius: var(--card-radius-xs);
+  }
+}
+
+@media (min-width: 375px) {
+  .glass-card {
+    padding: var(--card-padding-sm);
+    border-radius: var(--card-radius-sm);
+  }
+}
+
+@media (min-width: 414px) {
+  .glass-card {
+    padding: var(--card-padding-sm);
+    border-radius: var(--card-radius-sm);
+  }
+}
+
+@media (min-width: 768px) {
+  .glass-card {
+    padding: var(--card-padding-md);
+    border-radius: var(--card-radius-md);
+  }
+}
+
+/* Ajustes para pills dentro de cards */
+.glass-card .glass-pill {
+  margin: 0;
+  padding: var(--pill-gap);
+  font-size: var(--pill-font);
+}
+
+/* Glassmorphism para Header - background sólido */
+.glass-header {
+  background: rgba(234, 90, 23, 0.98) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.glass-header-sticky {
+  background: rgba(234, 90, 23, 0.98) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Glassmorphism para Search Bar - background sólido */
+.glass-search-bar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.glass-search-bar:focus-within {
+  background: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Glassmorphism para Category Pills - backgrounds sólidos */
+.glass-category-pill {
+  background: rgba(255, 255, 255, 0.98) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: none !important;
+}
+
+.glass-category-pill:hover {
+  background: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: none !important;
+}
+
+.glass-category-pill-active {
+  background: rgba(234, 90, 23, 0.15) !important;
+  border-color: rgba(234, 90, 23, 0.5) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+

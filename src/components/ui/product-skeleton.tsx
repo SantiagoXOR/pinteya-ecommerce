@@ -36,7 +36,7 @@ export const ProductSkeleton: React.FC<ProductSkeletonProps> = ({
   showPrice = true,
   showButton = true,
 }) => {
-  const baseClasses = 'animate-pulse bg-white rounded-lg border border-gray-200 overflow-hidden'
+  const baseClasses = 'skeleton-loading bg-white rounded-lg border border-gray-200 overflow-hidden'
 
   if (variant === 'list') {
     return (
@@ -77,7 +77,7 @@ export const ProductSkeleton: React.FC<ProductSkeletonProps> = ({
         className={cn(
           'relative rounded-xl bg-white shadow-md flex flex-col w-full',
           'h-[300px] sm:h-[360px] md:h-[450px] lg:h-[500px]',
-          'animate-pulse',
+          'skeleton-loading',
           className
         )}
       >
@@ -126,7 +126,7 @@ export const ProductSkeleton: React.FC<ProductSkeletonProps> = ({
       className={cn(
         'relative rounded-xl bg-white shadow-md flex flex-col w-full',
         'h-[300px] sm:h-[360px] md:h-[450px] lg:h-[500px]',
-        'animate-pulse',
+        'skeleton-loading',
         className
       )}
     >
@@ -242,21 +242,21 @@ export const SearchPageSkeleton: React.FC<{ className?: string }> = ({ className
         {/* Header skeleton */}
         <div className='mb-8'>
           <div className='flex items-center gap-3 mb-4'>
-            <div className='w-6 h-6 bg-gray-200 rounded animate-pulse' />
-            <div className='h-8 bg-gray-200 rounded w-64 animate-pulse' />
+            <div className='w-6 h-6 bg-gray-200 rounded skeleton-pulse' />
+            <div className='h-8 bg-gray-200 rounded w-64 skeleton-pulse' />
           </div>
 
           <div className='flex items-center justify-between mb-6'>
-            <div className='h-4 bg-gray-200 rounded w-48 animate-pulse' />
-            <div className='h-4 bg-gray-200 rounded w-32 animate-pulse' />
+            <div className='h-4 bg-gray-200 rounded w-48 skeleton-pulse' />
+            <div className='h-4 bg-gray-200 rounded w-32 skeleton-pulse' />
           </div>
         </div>
 
         {/* Filtros skeleton */}
         <div className='flex gap-4 mb-6'>
-          <div className='h-10 bg-gray-200 rounded-lg w-32 animate-pulse' />
-          <div className='h-10 bg-gray-200 rounded-lg w-28 animate-pulse' />
-          <div className='h-10 bg-gray-200 rounded-lg w-36 animate-pulse' />
+          <div className='h-10 bg-gray-200 rounded-lg w-32 skeleton-pulse' />
+          <div className='h-10 bg-gray-200 rounded-lg w-28 skeleton-pulse' />
+          <div className='h-10 bg-gray-200 rounded-lg w-36 skeleton-pulse' />
         </div>
 
         {/* Grid de productos skeleton */}
@@ -265,11 +265,11 @@ export const SearchPageSkeleton: React.FC<{ className?: string }> = ({ className
         {/* Paginación skeleton */}
         <div className='flex justify-center mt-8'>
           <div className='flex gap-2'>
-            <div className='h-10 w-20 bg-gray-200 rounded animate-pulse' />
-            <div className='h-10 w-10 bg-gray-200 rounded animate-pulse' />
-            <div className='h-10 w-10 bg-gray-200 rounded animate-pulse' />
-            <div className='h-10 w-10 bg-gray-200 rounded animate-pulse' />
-            <div className='h-10 w-20 bg-gray-200 rounded animate-pulse' />
+            <div className='h-10 w-20 bg-gray-200 rounded skeleton-pulse' />
+            <div className='h-10 w-10 bg-gray-200 rounded skeleton-pulse' />
+            <div className='h-10 w-10 bg-gray-200 rounded skeleton-pulse' />
+            <div className='h-10 w-10 bg-gray-200 rounded skeleton-pulse' />
+            <div className='h-10 w-20 bg-gray-200 rounded skeleton-pulse' />
           </div>
         </div>
       </div>

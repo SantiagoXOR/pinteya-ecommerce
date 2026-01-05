@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { ShoppingCart, Heart, ArrowRight, Plus, Download } from 'lucide-react'
+import { ShoppingCart, Heart, ArrowRight, Plus, Download } from '@/lib/optimized-imports'
 import { Button } from './button'
 
 const meta = {

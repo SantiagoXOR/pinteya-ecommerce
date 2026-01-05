@@ -12,7 +12,7 @@ import {
   ExternalLink,
   Code,
   Eye,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 const demoPages = [
   {

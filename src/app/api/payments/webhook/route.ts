@@ -383,7 +383,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
           payer: {
             first_name: 'Santiago',
             last_name: 'Martinez',
-            email: 'santiago@xor.com.ar',
+            email: 'admin@test.dev',
             phone: {
               number: '3547527070',
             },

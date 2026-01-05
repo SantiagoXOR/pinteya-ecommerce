@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { AlertCircle, Users, Shield, Settings, Search, Plus, Edit, Trash2 } from 'lucide-react'
+import { AlertCircle, Users, Shield, Settings, Search, Plus, Edit, Trash2 } from '@/lib/optimized-imports'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 // Interfaces

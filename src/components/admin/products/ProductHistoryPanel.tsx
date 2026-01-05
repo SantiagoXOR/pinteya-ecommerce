@@ -14,7 +14,7 @@ import {
   EyeOff,
   RefreshCw,
   AlertCircle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 interface ProductHistoryPanelProps {

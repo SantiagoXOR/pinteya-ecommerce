@@ -26,7 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { toast } from 'sonner'
 
 // ===================================

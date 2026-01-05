@@ -9,7 +9,7 @@ import React, { lazy, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { Package, Search, Filter, Plus, AlertTriangle, Loader2 } from 'lucide-react'
+import { Package, Search, Filter, Plus, AlertTriangle, Loader2 } from '@/lib/optimized-imports'
 
 // ===================================
 // LAZY IMPORTS

@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, User, Shield, Monitor, Settings, Activity, Menu, X } from 'lucide-react'
+import { LayoutDashboard, User, Shield, Monitor, Settings, Activity, Menu, X } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 
 const navigation = [

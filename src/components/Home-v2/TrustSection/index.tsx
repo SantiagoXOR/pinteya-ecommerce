@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react'
 import Image from 'next/image'
-import { Shield, Award, Truck, Clock, Users, Star, CheckCircle } from 'lucide-react'
+import { Shield, Award, Truck, Clock, Users, Star, CheckCircle } from '@/lib/optimized-imports'
 
 const TrustSection = () => {
   const [isVisible, setIsVisible] = useState(false)
@@ -44,10 +44,10 @@ const TrustSection = () => {
             <CheckCircle className='w-5 h-5' />
             <span className='font-bold text-sm'>GARANTÍA PINTEYA</span>
           </div>
-          <h2 className='text-3xl lg:text-5xl font-bold text-gray-900 mb-4'>
+          <h2 className='text-3xl lg:text-5xl font-bold text-white mb-4'>
             Tu Confianza es Nuestra <span className='text-[#eb6313]'>Prioridad</span>
           </h2>
-          <p className='text-lg text-gray-600 max-w-3xl mx-auto'>
+          <p className='text-lg text-white/80 max-w-3xl mx-auto'>
             Más de 15.000 clientes confían en nosotros. Descubre por qué somos líderes en Córdoba Capital.
           </p>
         </div>
@@ -63,16 +63,37 @@ const TrustSection = () => {
                 { image: '/images/hero/hero-devoluciones.png', label: 'Cambios Fáciles', color: 'from-blue-400 to-blue-600', hoverColor: 'group-hover:from-blue-500 group-hover:to-blue-700' },
               ].map((item, idx) => (
                 <div key={idx} className='text-center group cursor-pointer'>
-                  <div className={`mx-auto w-20 h-20 lg:w-28 lg:h-28 mb-3 lg:mb-4 rounded-full bg-gradient-to-br ${item.color} ${item.hoverColor} flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl group-hover:rotate-6`}>
+                  {/* ⚡ FASE 8: Optimizado - reemplazar background-gradient animado por opacity */}
+                  <div 
+                    className={`mx-auto w-20 h-20 lg:w-28 lg:h-28 mb-3 lg:mb-4 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center shadow-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 relative`}
+                    onMouseEnter={(e) => {
+                      const overlay = e.currentTarget.querySelector('.hover-gradient') as HTMLElement
+                      if (overlay) overlay.style.opacity = '1'
+                      const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                      if (shadow) shadow.style.opacity = '1'
+                    }}
+                    onMouseLeave={(e) => {
+                      const overlay = e.currentTarget.querySelector('.hover-gradient') as HTMLElement
+                      if (overlay) overlay.style.opacity = '0'
+                      const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                      if (shadow) shadow.style.opacity = '0'
+                    }}
+                  >
+                    {/* ⚡ FASE 8: Overlay para hover gradient effect usando opacity */}
+                    <span className={`absolute inset-0 rounded-full bg-gradient-to-br ${item.hoverColor.replace('group-hover:', '')} opacity-0 hover-gradient transition-opacity duration-300 pointer-events-none`} />
+                    <span className="absolute inset-0 rounded-full shadow-2xl opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
                     <Image
                       src={item.image}
                       alt={item.label}
                       width={112}
                       height={112}
-                      className='w-20 h-20 lg:w-28 lg:h-28 rounded-full transition-transform duration-300 group-hover:scale-110'
+                      className='w-20 h-20 lg:w-28 lg:h-28 rounded-full transition-transform duration-300 group-hover:scale-110 relative z-10'
                     />
                   </div>
-                  <h3 className='font-bold text-[#eb6313] text-sm lg:text-lg transition-all duration-300 group-hover:scale-110 group-hover:text-[#bd4811]'>
+                  {/* ⚡ FASE 8: Optimizado - reemplazar color animado por opacity en pseudo-elemento */}
+                  <h3 
+                    className='font-bold text-[#eb6313] dark:text-bright-sun-400 text-sm lg:text-lg transition-transform duration-300 group-hover:scale-110 relative'
+                  >
                     {item.label}
                   </h3>
                 </div>
@@ -91,7 +112,20 @@ const TrustSection = () => {
           ].map((badge, idx) => {
             const Icon = badge.icon
             return (
-              <div key={idx} className={`flex items-center gap-3 p-4 ${badge.color} border-2 rounded-xl shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer`}>
+              {/* ⚡ FASE 8: Optimizado - reemplazar box-shadow animado por opacity */}
+              <div 
+                key={idx} 
+                className={`flex items-center gap-3 p-4 ${badge.color} border-2 rounded-xl shadow-md hover:scale-105 transition-transform duration-300 cursor-pointer relative`}
+                onMouseEnter={(e) => {
+                  const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                  if (shadow) shadow.style.opacity = '1'
+                }}
+                onMouseLeave={(e) => {
+                  const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                  if (shadow) shadow.style.opacity = '0'
+                }}
+              >
+                <span className="absolute inset-0 rounded-xl shadow-xl opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
                 <Icon className='w-6 h-6 flex-shrink-0' />
                 <span className='text-sm font-bold'>{badge.label}</span>
               </div>
@@ -109,12 +143,43 @@ const TrustSection = () => {
           ].map((stat, idx) => {
             const Icon = stat.icon
             return (
-              <div key={idx} className='text-center p-8 bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 border-orange-100 group'>
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br ${stat.color} mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+              {/* ⚡ FASE 8: Optimizado - reemplazar box-shadow animado por opacity */}
+              <div 
+                key={idx} 
+                className='text-center p-8 bg-white rounded-2xl shadow-xl transition-transform duration-300 hover:scale-105 border-2 border-orange-100 group relative'
+                onMouseEnter={(e) => {
+                  const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                  if (shadow) shadow.style.opacity = '1'
+                }}
+                onMouseLeave={(e) => {
+                  const shadow = e.currentTarget.querySelector('.hover-shadow') as HTMLElement
+                  if (shadow) shadow.style.opacity = '0'
+                }}
+              >
+                <span className="absolute inset-0 rounded-2xl shadow-2xl opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br ${stat.color} mb-4 group-hover:scale-110 transition-transform shadow-lg relative z-10`}>
                   <Icon className='w-8 h-8 text-white' />
                 </div>
-                <div className='text-3xl font-bold text-gray-900 mb-1 group-hover:text-[#eb6313] transition-colors'>{stat.value}</div>
-                <div className='text-sm text-gray-600 font-medium'>{stat.label}</div>
+                {/* ⚡ FASE 8: Optimizado - reemplazar color animado por opacity */}
+                <div 
+                  className='text-3xl font-bold text-white mb-1 relative'
+                  style={{
+                    // ⚡ FASE 8: Usar opacity para color effect
+                    color: '#ffffff',
+                  }}
+                  onMouseEnter={(e) => {
+                    const overlay = e.currentTarget.querySelector('.hover-color') as HTMLElement
+                    if (overlay) overlay.style.opacity = '1'
+                  }}
+                  onMouseLeave={(e) => {
+                    const overlay = e.currentTarget.querySelector('.hover-color') as HTMLElement
+                    if (overlay) overlay.style.opacity = '0'
+                  }}
+                >
+                  <span className="absolute inset-0 text-[#eb6313] opacity-0 hover-color transition-opacity duration-300 pointer-events-none">{stat.value}</span>
+                  <span className="relative z-10">{stat.value}</span>
+                </div>
+                <div className='text-sm text-white/80 font-medium'>{stat.label}</div>
               </div>
             )
           })}

@@ -7,11 +7,11 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Building2, Users, Target, Award, MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { Building2, Users, Target, Award, MapPin, Phone, Mail, Clock } from '@/lib/optimized-imports'
 
 const AboutPage = () => {
   return (
-    <div className='min-h-screen bg-white'>
+    <div className='min-h-screen'>
       {/* Hero Section */}
       <section className='bg-gradient-to-r from-blaze-orange-600 to-blaze-orange-500 text-white py-20'>
         <div className='container mx-auto px-4'>

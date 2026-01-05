@@ -62,7 +62,8 @@ async function unifiedAuth(request: NextRequest, action: string, mode: string) {
       if (!session?.user) {
         return { allowed: false, error: 'Autenticación requerida', status: 401 }
       }
-      const isAdmin = session.user.email === 'santiago@xor.com.ar'
+      // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+      const isAdmin = session.user.role === 'admin'
       if (!isAdmin) {
         return { allowed: false, error: 'Permisos de administrador requeridos', status: 403 }
       }

@@ -33,7 +33,7 @@ import {
   ArrowRight,
   CreditCard,
   User,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 
 interface TestSuite {
   name: string

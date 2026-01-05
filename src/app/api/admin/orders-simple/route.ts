@@ -35,7 +35,7 @@ async function validateSimpleAuth() {
           success: true,
           user: {
             id: 'dev-admin',
-            email: 'santiago@xor.com.ar',
+            email: 'admin@bypass.dev',
           },
         }
       }

@@ -11,7 +11,7 @@ import {
   CheckCircle,
   RefreshCw,
   Settings,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'

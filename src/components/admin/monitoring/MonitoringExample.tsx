@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { useRenderMonitoring, withRenderMonitoring } from '@/hooks/monitoring/useRenderMonitoring'
 import { useToast } from '@/hooks/use-toast'
-import { Activity, AlertTriangle, Bug, Clock, MemoryStick, RefreshCw, Zap } from 'lucide-react'
+import { Activity, AlertTriangle, Bug, Clock, MemoryStick, RefreshCw, Zap } from '@/lib/optimized-imports'
 
 // ===================================
 // COMPONENTE DE EJEMPLO BÁSICO

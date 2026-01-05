@@ -129,7 +129,7 @@ const SingleItem = ({ item }: { item: any }) => {
 
       {/* Price */}
       <div className='min-w-[180px]'>
-        <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
+        <p className='font-bold text-lg' style={{ color: '#c2410b' }}>
           ${item.discountedPrice.toLocaleString()}
         </p>
         {item.price && item.discountedPrice && item.discountedPrice < item.price && (
@@ -196,7 +196,7 @@ const SingleItem = ({ item }: { item: any }) => {
 
       {/* Subtotal */}
       <div className='min-w-[200px]'>
-        <p className='font-bold text-xl' style={{ color: '#ea5a17' }}>
+        <p className='font-bold text-xl' style={{ color: '#c2410b' }}>
           ${(item.discountedPrice * quantity).toLocaleString()}
         </p>
         {item.price && item.discountedPrice && item.discountedPrice < item.price && (

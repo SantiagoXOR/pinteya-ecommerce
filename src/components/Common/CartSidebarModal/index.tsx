@@ -13,6 +13,8 @@ import Image from 'next/image'
 import CheckoutTransitionAnimation from '@/components/ui/checkout-transition-animation'
 import useCheckoutTransition from '@/hooks/useCheckoutTransition'
 import { useCartWithBackend } from '@/hooks/useCartWithBackend'
+import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings'
+import { ArrowRight } from '@/lib/optimized-imports'
 import {
   Sheet,
   SheetContent,
@@ -26,6 +28,7 @@ const CartSidebarModal = () => {
   const [dragStartY, setDragStartY] = useState<number | null>(null)
   const [dragCurrentY, setDragCurrentY] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const { isLargeText } = useAccessibilitySettings()
 
   // Hook para carrito con backend
   const {
@@ -150,33 +153,65 @@ const CartSidebarModal = () => {
       <Sheet open={isCartModalOpen} onOpenChange={closeCartModal}>
         <SheetContent
           side='bottom'
-          className='h-[88vh] max-h-[88vh] rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden'
+          className={`${isLargeText ? 'h-[85vh] max-h-[85vh]' : 'h-[75vh] max-h-[75vh]'} rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden`}
           style={{
             transform: isDragging && translateY > 0 ? `translateY(${translateY}px)` : undefined,
             transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            willChange: isDragging ? 'transform' : 'auto'
+            willChange: isDragging ? 'transform' : 'auto',
+            maxHeight: isLargeText ? '85vh' : '75vh',
+            height: isLargeText ? '85vh' : '75vh'
           }}
         >
           {/* Título oculto para accesibilidad */}
           <SheetTitle className='sr-only'>Carrito de Compras</SheetTitle>
 
-          {/* Drag Handle - Indicador visual estilo Instagram */}
-          <div 
-            className='flex justify-center pt-3 pb-2 bg-white rounded-t-3xl flex-shrink-0 cursor-grab active:cursor-grabbing touch-none select-none'
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          >
-            <div className='w-12 h-1.5 bg-gray-300 rounded-full pointer-events-none' />
+          {/* Header fijo con drag handle y botón */}
+          <div className='flex flex-col flex-shrink-0 bg-white rounded-t-3xl'>
+            {/* Drag Handle - Indicador visual estilo Instagram */}
+            <div 
+              className='flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing touch-none select-none'
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            >
+              <div className='w-12 h-1.5 bg-gray-300 rounded-full pointer-events-none' />
+            </div>
+
+            {/* Botón "Comprar ahora" - Estilo verde del checkout - Sticky */}
+            {mounted && hasItems && (
+              <div className={`px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pb-1.5' : 'pb-2'} bg-white`}>
+                <button
+                  onClick={startTransition}
+                  disabled={isButtonDisabled || cartLoading}
+                  data-testid='checkout-btn-top'
+                  className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold ${isLargeText ? 'py-1.5 px-3 text-xs' : 'py-2 px-4 text-sm'} rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 z-10 ${
+                    isButtonDisabled || cartLoading
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
+                  {cartLoading
+                    ? 'Cargando carrito...'
+                    : isButtonDisabled
+                      ? 'Procesando...'
+                      : (
+                        <>
+                          Comprar ahora
+                          <ArrowRight className={isLargeText ? 'w-3 h-3' : 'w-4 h-4'} />
+                        </>
+                      )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Content Area - Scrollable */}
-          <div className='flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 pt-4 bg-gray-50 min-h-0'>
-            <div className='flex flex-col gap-4 px-1'>
+          <div className={`flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pt-1' : 'pt-2'} bg-gray-50 min-h-0`} style={{ overflowY: 'auto', minHeight: isLargeText ? '320px' : '280px' }}>
+            <div className={`flex flex-col ${isLargeText ? 'gap-1.5' : 'gap-2'} px-1`}>
               {/* cart items */}
               {mounted && effectiveCartItems.length > 0 ? (
                 effectiveCartItems.map((item: any, key: number) => (
@@ -189,10 +224,10 @@ const CartSidebarModal = () => {
           </div>
 
           {/* Footer - Sticky at bottom */}
-          <div className='border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 pt-3 pb-3 mt-auto flex-shrink-0'>
+          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pt-1.5 pb-1.5' : 'pt-2 pb-2'} mt-auto flex-shrink-0`}>
             {/* Barra de Progreso Envío Gratis */}
             {mounted && effectiveCartItems.length > 0 && (
-              <div className='mb-3'>
+              <div className={isLargeText ? 'mb-1.5' : 'mb-2'}>
                 <ShippingProgressBar 
                   currentAmount={effectiveTotalPrice} 
                   variant='compact' 
@@ -202,22 +237,22 @@ const CartSidebarModal = () => {
             )}
 
             {/* Subtotal */}
-            <div className='flex items-center justify-between gap-3 mb-3'>
-              <p className='font-bold text-lg text-gray-900'>Subtotal:</p>
-              <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
+            <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
+              <p className={isLargeText ? 'text-xs text-gray-600' : 'text-sm text-gray-600'}>Subtotal</p>
+              <p className={isLargeText ? 'text-xs font-semibold' : 'text-sm font-semibold'} style={{ color: '#c2410b' }}>
                 ${mounted ? effectiveTotalPrice.toLocaleString() : '0'}
               </p>
             </div>
 
             {/* Envío */}
             {hasItems && (
-              <div className='flex items-center justify-between gap-3 mb-2'>
-                <p className='text-gray-700'>Envío</p>
-                <p className='font-semibold'>
+              <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
+                <p className={isLargeText ? 'text-xs text-gray-600' : 'text-sm text-gray-600'}>Envío</p>
+                <p className={isLargeText ? 'text-xs font-semibold' : 'text-sm font-semibold'}>
                   {estimatedShippingCost === 0 ? (
                     <span className='text-green-600'>Gratis</span>
                   ) : (
-                    `$${estimatedShippingCost.toLocaleString()}`
+                    <span className='text-yellow-600'>{`$${estimatedShippingCost.toLocaleString()}`}</span>
                   )}
                 </p>
               </div>
@@ -225,46 +260,31 @@ const CartSidebarModal = () => {
 
             {/* Total */}
             {hasItems && (
-              <div className='flex items-center justify-between gap-3 mb-3'>
-                <p className='font-bold text-lg text-gray-900'>Total:</p>
-                <p className='font-bold text-lg' style={{ color: '#ea5a17' }}>
+              <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
+                <p className={isLargeText ? 'font-semibold text-sm text-gray-900' : 'font-semibold text-base text-gray-900'}>Total</p>
+                <p className={isLargeText ? 'font-semibold text-sm' : 'font-semibold text-base'} style={{ color: '#c2410b' }}>
                   ${mounted ? (effectiveTotalPrice + estimatedShippingCost).toLocaleString() : '0'}
                 </p>
               </div>
             )}
 
             {/* Información de pago */}
-            <div className='space-y-2'>
-              {/* Línea informativa de MercadoPago */}
-              <div className='w-full flex items-center justify-center gap-2 py-1 px-2 text-sm text-gray-600'>
-                <Image
-                  src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
-                  alt='MercadoPago'
-                  width={150}
-                  height={48}
-                  className='w-auto h-auto max-w-[150px]'
-                />
-                <span className='font-medium'>Pago seguro</span>
+            {hasItems && (
+              <div className={isLargeText ? 'mt-1' : 'mt-1.5'}>
+                {/* Línea informativa de MercadoPago */}
+                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'py-0.5 px-1' : 'py-1 px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`}>
+                  <Image
+                    src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
+                    alt='MercadoPago'
+                    width={isLargeText ? 90 : 110}
+                    height={isLargeText ? 28 : 35}
+                    className='w-auto h-auto'
+                    style={{ maxWidth: isLargeText ? '90px' : '110px' }}
+                  />
+                  <span className={`font-medium ${isLargeText ? 'text-[10px]' : 'text-xs'}`}>Pago seguro</span>
+                </div>
               </div>
-
-              {/* Botón principal de checkout */}
-              <button
-                onClick={startTransition}
-                disabled={isButtonDisabled || !hasItems || cartLoading}
-                data-testid='checkout-btn'
-                className={`w-full flex justify-center font-bold text-black bg-yellow-400 hover:bg-yellow-500 py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl ${
-                  isButtonDisabled || !hasItems || cartLoading
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:scale-105 active:scale-95'
-                }`}
-              >
-                {cartLoading
-                  ? 'Cargando carrito...'
-                  : isButtonDisabled
-                    ? 'Procesando...'
-                    : 'Finalizar Compra'}
-              </button>
-            </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>

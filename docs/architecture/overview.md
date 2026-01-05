@@ -4,7 +4,7 @@
 
 ## 📐 Arquitectura General
 
-Pinteya E-commerce está construido con una arquitectura moderna de **JAMstack** utilizando Next.js 15 con App Router, optimizada para performance, escalabilidad y mantenibilidad.
+Pinteya E-commerce está construido con una arquitectura moderna de **JAMstack** utilizando Next.js 16 con App Router y Turbopack, optimizada para performance, escalabilidad y mantenibilidad.
 
 ## 🎯 Principios de Diseño
 
@@ -13,7 +13,7 @@ Pinteya E-commerce está construido con una arquitectura moderna de **JAMstack**
 - **Frontend**: Next.js con React para UI/UX
 - **Backend**: APIs serverless con Next.js API Routes
 - **Database**: Supabase PostgreSQL con RLS
-- **Auth**: Clerk para autenticación y autorización
+- **Auth**: NextAuth.js v5 con Google OAuth para autenticación y autorización
 - **Payments**: MercadoPago para procesamiento de pagos
 
 ### **2. Escalabilidad**
@@ -26,7 +26,7 @@ Pinteya E-commerce está construido con una arquitectura moderna de **JAMstack**
 ### **3. Seguridad**
 
 - **RLS**: Row Level Security en Supabase
-- **Auth**: JWT tokens con Clerk
+- **Auth**: JWT tokens con NextAuth.js
 - **HTTPS**: Comunicación encriptada end-to-end
 - **Validation**: Validación de datos con Zod
 
@@ -35,7 +35,7 @@ Pinteya E-commerce está construido con una arquitectura moderna de **JAMstack**
 ```mermaid
 graph TB
     subgraph "Frontend (Vercel)"
-        A[Next.js 15 App Router]
+        A[Next.js 16 App Router]
         B[React Components]
         C[Tailwind CSS + shadcn/ui]
         D[Redux Toolkit]
@@ -44,7 +44,7 @@ graph TB
     subgraph "Backend Services"
         E[Next.js API Routes]
         F[Supabase PostgreSQL]
-        G[Clerk Auth]
+        G[NextAuth.js]
         H[MercadoPago API]
     end
 
@@ -221,4 +221,4 @@ Componentes → Redux Actions → Store → Componentes
 
 ---
 
-_Última actualización: Junio 2025_
+_Última actualización: 15 de Diciembre, 2025_

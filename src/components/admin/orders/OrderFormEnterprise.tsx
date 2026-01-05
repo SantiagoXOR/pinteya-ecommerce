@@ -28,7 +28,7 @@ import {
   MapPin,
   AlertCircle,
   CheckCircle,
-} from 'lucide-react'
+} from '@/lib/optimized-imports'
 import {
   OrderEnterprise,
   CreateOrderRequest,

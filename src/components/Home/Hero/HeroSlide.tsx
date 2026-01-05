@@ -11,7 +11,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { HeroSlideProps } from '@/types/hero'
 import { HeroBadge } from './HeroBadge'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight } from '@/lib/optimized-imports'
 
 /**
  * Resaltar palabras específicas en el título
@@ -117,8 +117,8 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
               className="object-contain drop-shadow-2xl"
               priority={productImages[0].priority ?? false}
               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 80vw, 50vw"
-              quality={90}
-              unoptimized={productImages[0].src.endsWith('.svg')}
+              quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
+              unoptimized={false} // ⚡ OPTIMIZACIÓN: Permitir optimización de Next.js
               style={{ objectPosition: 'center' }}
             />
           </div>
@@ -248,8 +248,8 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
                         className={`object-contain drop-shadow-2xl ${image.className || ''}`}
                         priority={image.priority || index === 0}
                         sizes="(max-width: 1024px) 70vw, 50vw"
-                        quality={90}
-                        unoptimized={image.src.endsWith('.svg')}
+                        quality={80} // ⚡ OPTIMIZACIÓN: Balance tamaño/calidad para WebP
+                        unoptimized={false} // ⚡ OPTIMIZACIÓN: Permitir optimización de Next.js
                         style={{ objectPosition: 'center' }}
                       />
                     </div>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Truck } from 'lucide-react'
+import { Truck } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 interface FreeShippingTextProps {

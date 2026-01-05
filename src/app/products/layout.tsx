@@ -1,0 +1,16 @@
+// ⚡ FIX VERCEL: Layout para forzar renderizado dinámico
+// Cambiado a force-dynamic para que Vercel trate esta ruta como lambda explícitamente
+// Esto resuelve el error "Unable to find lambda for route"
+import React from 'react'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+export default function ProductsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return <>{children}</>
+}
+

@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import Image from 'next/image'
-import { Download, Loader2 } from 'lucide-react'
+import { Download, Loader2 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 
 interface WhatsAppQRProps {

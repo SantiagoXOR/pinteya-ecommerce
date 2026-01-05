@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { AlertTriangle, CheckCircle, Clock, Truck, Package, RefreshCw } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Clock, Truck, Package, RefreshCw } from '@/lib/optimized-imports'
 import { OrderEnterprise, OrderStatus } from '@/types/orders-enterprise'
 import {
   formatOrderStatus,

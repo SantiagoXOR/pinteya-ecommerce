@@ -3,17 +3,53 @@ import { supabaseAdmin } from '@/lib/integrations/supabase'
 import { z } from 'zod'
 
 // Schema de validación para actualización de variante
+// ✅ CORREGIDO: Usar preprocess para convertir strings a números automáticamente
 const UpdateVariantSchema = z.object({
   color_name: z.string().optional(),
-  color_hex: z.string().optional(),
+  // ✅ CORREGIDO: Aceptar null para color_hex (puede ser null para limpiar el color)
+  color_hex: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return null
+      return typeof val === 'string' ? val.trim() || null : val
+    },
+    z.string().nullable().optional()
+  ),
   measure: z.string().optional(),
   finish: z.string().optional().nullable(),
-  price_list: z.number().optional(),
-  price_sale: z.number().optional().nullable(),
-  stock: z.number().int().min(0).optional(),
+  // ✅ Convertir strings a números automáticamente
+  price_list: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return undefined
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return isNaN(num) ? undefined : num
+    },
+    z.number().optional()
+  ),
+  price_sale: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '' || val === 0) return null
+      const num = typeof val === 'string' ? parseFloat(val) : val
+      return isNaN(num) ? null : num
+    },
+    z.number().nullable().optional()
+  ),
+  stock: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return undefined
+      const num = typeof val === 'string' ? parseInt(val, 10) : val
+      return isNaN(num) ? undefined : Math.floor(num)
+    },
+    z.number().int().min(0).optional()
+  ),
   is_active: z.boolean().optional(),
   is_default: z.boolean().optional(),
-  image_url: z.string().optional().nullable(), // Cualquier string o null
+  image_url: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return null
+      return typeof val === 'string' ? val.trim() || null : val
+    },
+    z.string().nullable().optional()
+  ),
   aikon_id: z.string().optional(),
 })
 
@@ -56,15 +92,27 @@ export async function PUT(
       aikon_id: body.aikon_id,
     }
     
-    // Remover campos undefined
+    // ✅ CORREGIDO: Incluir image_url y color_hex incluso si es null (para permitir limpiarlos)
     const filteredBody = Object.fromEntries(
-      Object.entries(allowedFields).filter(([_, value]) => value !== undefined)
+      Object.entries(allowedFields).filter(([key, value]) => {
+        // ✅ CORREGIDO: Incluir image_url y color_hex incluso si es null
+        if (key === 'image_url' || key === 'color_hex') return true
+        // Para otros campos, excluir undefined
+        return value !== undefined
+      })
     )
     
     console.log('📦 [PUT Variant] Campos filtrados:', {
       original: Object.keys(body).length,
       filtered: Object.keys(filteredBody).length,
-      filteredBody
+      filteredBody,
+      color_name: filteredBody.color_name,
+      color_nameType: typeof filteredBody.color_name,
+      color_nameInFiltered: 'color_name' in filteredBody,
+      image_url: filteredBody.image_url,
+      image_urlType: typeof filteredBody.image_url,
+      color_hex: filteredBody.color_hex,
+      color_hexType: typeof filteredBody.color_hex,
     })
     
     const validation = UpdateVariantSchema.safeParse(filteredBody)
@@ -72,12 +120,22 @@ export async function PUT(
     if (!validation.success) {
       console.error('❌ [PUT Variant] Validación fallida:', {
         errors: validation.error.errors,
-        filteredBody
+        filteredBody,
+        errorDetails: validation.error.errors.map((err: any) => ({
+          path: err.path.join('.'),
+          message: err.message,
+          code: err.code,
+          receivedValue: err.path.reduce((obj: any, key: string) => obj?.[key], filteredBody),
+        })),
       })
       return NextResponse.json(
         { 
           error: 'Datos inválidos', 
-          details: validation.error.errors,
+          details: validation.error.errors.map((err: any) => ({
+            path: err.path.join('.'),
+            message: err.message,
+            code: err.code,
+          })),
           received: filteredBody
         },
         { status: 400 }
@@ -102,6 +160,31 @@ export async function PUT(
     const numericProductId = parseInt(productId, 10)
     const numericVariantId = parseInt(variantId, 10)
     
+    // ✅ NUEVO: Si se está actualizando aikon_id, verificar que no exista en otra variante
+    if (validatedData.aikon_id !== undefined) {
+      const { data: existingVariantWithAikon } = await supabaseAdmin
+        .from('product_variants')
+        .select('id, aikon_id')
+        .eq('aikon_id', validatedData.aikon_id)
+        .neq('id', numericVariantId) // Excluir la variante actual
+        .single()
+      
+      if (existingVariantWithAikon) {
+        console.error('❌ [PUT Variant] El código Aikon ya existe en otra variante:', {
+          aikon_id: validatedData.aikon_id,
+          existingVariantId: existingVariantWithAikon.id,
+          currentVariantId: numericVariantId
+        })
+        return NextResponse.json(
+          {
+            error: 'El código Aikon ya existe en otra variante',
+            details: `El código ${validatedData.aikon_id} ya está en uso por otra variante`
+          },
+          { status: 400 }
+        )
+      }
+    }
+    
     // Preparar datos de actualización
     const updateData: Record<string, any> = {
       ...validatedData,
@@ -110,10 +193,18 @@ export async function PUT(
     
     console.log('🔍 [PUT Variant] updateData antes de enviar a Supabase:', {
       updateData,
+      color_name: updateData.color_name,
+      color_nameType: typeof updateData.color_name,
+      color_nameInUpdate: 'color_name' in updateData,
       hasStock: 'stock' in updateData,
       stockValue: updateData.stock,
       stockType: typeof updateData.stock,
-      allKeys: Object.keys(updateData)
+      allKeys: Object.keys(updateData),
+      allValues: Object.entries(updateData).slice(0, 10).map(([key, value]) => ({
+        key,
+        value: typeof value === 'string' ? value.substring(0, 50) : value,
+        type: typeof value,
+      })),
     })
     
     // Si se marca como default, desmarcar las demás
@@ -143,7 +234,9 @@ export async function PUT(
         details: error.details,
         hint: error.hint,
         code: error.code,
-        updateData
+        updateData,
+        color_name: updateData.color_name,
+        color_nameInUpdate: 'color_name' in updateData,
       })
       return NextResponse.json(
         { error: 'Error al actualizar variante', details: error.message },
@@ -161,6 +254,10 @@ export async function PUT(
     
     console.log('✅ [PUT Variant] Variante actualizada exitosamente:', {
       id: (variant as any).id,
+      color_name: (variant as any).color_name,
+      color_nameInVariant: variant ? 'color_name' in (variant as any) : false,
+      updateData_color_name: updateData.color_name,
+      updateData_color_nameInUpdate: 'color_name' in updateData,
       measure: (variant as any).measure,
       stockAntes: body.stock,
       stockDespues: (variant as any).stock,

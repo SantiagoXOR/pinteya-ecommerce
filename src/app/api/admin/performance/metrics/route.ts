@@ -99,8 +99,7 @@ async function checkMemory(): Promise<boolean> {
 // Verificar rendimiento general
 async function checkPerformance(): Promise<boolean> {
   try {
-    const analytics = new APIAnalytics()
-    const report = analytics.generateReport()
+    const report = APIAnalytics.getAggregatedMetrics()
     // Considerar unhealthy si el tiempo promedio es > 2s o error rate > 10%
     return report.averageResponseTime < 2000 && report.errorRate < 0.1
   } catch {
@@ -160,14 +159,13 @@ export async function GET(request: NextRequest) {
 
     const startTime = now - timeWindow
 
-    // Obtener métricas del sistema de monitoring
-    const analytics = new APIAnalytics()
-    const report = analytics.generateReport()
+    // Obtener métricas del sistema de monitoring usando métodos estáticos
+    const report = APIAnalytics.getAggregatedMetrics(timeWindow)
 
     // Filtrar métricas por ventana de tiempo
     const filteredMetrics = metricsStore.filter(metric => metric.timestamp >= startTime)
 
-    // Calcular endpoints más lentos
+    // Calcular endpoints más lentos desde las métricas filtradas
     const endpointTimes = new Map<string, number[]>()
     filteredMetrics.forEach(metric => {
       const path = metric.url
@@ -176,22 +174,25 @@ export async function GET(request: NextRequest) {
       }
       // Usar renderTime como tiempo de respuesta si está disponible
       const responseTime = metric.metrics.renderTime || metric.metrics.TTI || 0
-      endpointTimes.get(path)!.push(responseTime)
+      if (responseTime > 0) {
+        endpointTimes.get(path)!.push(responseTime)
+      }
     })
 
     const slowestEndpoints = Array.from(endpointTimes.entries())
       .map(([path, times]) => ({
         path,
-        avgTime: times.reduce((a, b) => a + b, 0) / times.length,
+        avgTime: times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0,
       }))
+      .filter(e => e.avgTime > 0)
       .sort((a, b) => b.avgTime - a.avgTime)
       .slice(0, 10)
 
-    // Calcular errores por código de estado (simulado)
-    const errorsByStatus: Record<number, number> = {
-      404: Math.floor(Math.random() * 10),
-      500: Math.floor(Math.random() * 5),
-      503: Math.floor(Math.random() * 3),
+    // Usar errores del reporte de analytics o valores por defecto
+    const errorsByStatus = report.errorsByStatus || {
+      404: 0,
+      500: 0,
+      503: 0,
     }
 
     // Incluir health check si se solicita
@@ -206,10 +207,10 @@ export async function GET(request: NextRequest) {
       timeWindow,
       timeWindowHuman: formatTimeWindow(timeWindow),
       metrics: {
-        totalRequests: filteredMetrics.length,
-        averageResponseTime: report.averageResponseTime,
-        errorRate: report.errorRate,
-        slowestEndpoints,
+        totalRequests: report.totalRequests || filteredMetrics.length,
+        averageResponseTime: report.averageResponseTime || 0,
+        errorRate: report.errorRate || 0,
+        slowestEndpoints: report.slowestEndpoints.length > 0 ? report.slowestEndpoints : slowestEndpoints,
         errorsByStatus,
       },
       healthCheck,
