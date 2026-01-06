@@ -6,7 +6,7 @@ import { ProductVariant } from '@/lib/api/product-variants'
 import { RelatedProduct } from '@/lib/api/related-products'
 import { getEffectivePrice } from '@/lib/api/product-variants'
 import React from 'react'
-import { formatCurrency as formatCurrencyCentralized } from '@/lib/utils/consolidated-utils'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 interface Product {
   id: number
