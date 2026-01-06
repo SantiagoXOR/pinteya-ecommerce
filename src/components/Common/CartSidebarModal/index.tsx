@@ -185,7 +185,7 @@ const CartSidebarModal = () => {
             {/* Información de pago - Mercado Pago */}
             {mounted && hasItems && (
               <div className={`px-4 sm:px-7.5 lg:px-11 pb-0 bg-white`}>
-                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'py-0.5 px-1' : 'py-1 px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`}>
+                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'pt-0.5 pb-0 px-1' : 'pt-1 pb-0 px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`}>
                   <Image
                     src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
                     alt='MercadoPago'
@@ -261,7 +261,7 @@ const CartSidebarModal = () => {
 
             {/* Botón "Comprar ahora" - Estilo verde del checkout - Sticky */}
             {mounted && hasItems && (
-              <div className={isLargeText ? 'mt-1' : 'mt-1.5'}>
+              <div className={`${isLargeText ? 'mt-1 mb-2' : 'mt-1.5 mb-3'}`}>
                 <button
                   onClick={startTransition}
                   disabled={isButtonDisabled || cartLoading}
