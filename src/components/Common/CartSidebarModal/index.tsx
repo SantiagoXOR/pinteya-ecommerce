@@ -184,17 +184,17 @@ const CartSidebarModal = () => {
 
             {/* Información de pago - Mercado Pago */}
             {mounted && hasItems && (
-              <div className={`px-4 sm:px-7.5 lg:px-11 bg-white`} style={{ paddingTop: '4px', paddingBottom: '0px' }}>
-                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'px-1' : 'px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`} style={{ paddingTop: '0px', paddingBottom: '0px' }}>
+              <div className={`px-4 sm:px-7.5 lg:px-11 bg-white`} style={{ paddingTop: '2px', paddingBottom: '0px', marginBottom: '0px' }}>
+                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'px-1' : 'px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`} style={{ paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px' }}>
                   <Image
                     src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
                     alt='MercadoPago'
                     width={isLargeText ? 90 : 110}
                     height={isLargeText ? 28 : 35}
                     className='w-auto h-auto'
-                    style={{ maxWidth: isLargeText ? '90px' : '110px', margin: '0' }}
+                    style={{ maxWidth: isLargeText ? '90px' : '110px', margin: '0', display: 'block' }}
                   />
-                  <span className={`font-medium ${isLargeText ? 'text-[10px]' : 'text-xs'}`}>Pago seguro</span>
+                  <span className={`font-medium ${isLargeText ? 'text-[10px]' : 'text-xs'}`} style={{ margin: '0' }}>Pago seguro</span>
                 </div>
               </div>
             )}
@@ -215,7 +215,7 @@ const CartSidebarModal = () => {
           </div>
 
           {/* Footer - Sticky at bottom */}
-          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0`} style={{ paddingTop: '12px', paddingBottom: '24px' }}>
+          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0`} style={{ paddingTop: '12px', paddingBottom: '32px', marginBottom: '0px' }}>
             {/* Barra de Progreso Envío Gratis */}
             {mounted && effectiveCartItems.length > 0 && (
               <div className={isLargeText ? 'mb-1.5' : 'mb-2'}>
@@ -229,7 +229,7 @@ const CartSidebarModal = () => {
 
             {/* Subtotal */}
             <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
-              <p className={isLargeText ? 'text-xs text-gray-600' : 'text-sm text-gray-600'}>Subtotal</p>
+              <p className={isLargeText ? 'text-xs text-gray-600 font-light' : 'text-sm text-gray-600 font-light'}>Subtotal</p>
               <p className={isLargeText ? 'text-xs font-semibold' : 'text-sm font-semibold'} style={{ color: '#c2410b' }}>
                 {mounted ? formatCurrency(effectiveTotalPrice) : formatCurrency(0)}
               </p>
@@ -261,7 +261,7 @@ const CartSidebarModal = () => {
 
             {/* Botón "Comprar ahora" - Estilo verde del checkout - Sticky */}
             {mounted && hasItems && (
-              <div style={{ marginTop: '8px', marginBottom: '16px' }}>
+              <div style={{ marginTop: '8px', marginBottom: '0px', paddingBottom: '0px' }}>
                 <button
                   onClick={startTransition}
                   disabled={isButtonDisabled || cartLoading}
