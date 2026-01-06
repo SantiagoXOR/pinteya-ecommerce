@@ -373,7 +373,7 @@ export const MetaCheckoutWizard: React.FC = () => {
         </div>
 
         {/* Contenido scrollable con padding para elementos fixed */}
-        <div className='max-w-4xl mx-auto px-4 pt-24 pb-32 w-full'>
+        <div className='max-w-4xl mx-auto px-4 pt-20 pb-32 w-full'>
 
           {/* Contenido del paso */}
           {state.currentStep === 'summary' ? (
@@ -390,31 +390,6 @@ export const MetaCheckoutWizard: React.FC = () => {
                   freeShippingThreshold={50000}
                 />
               </div>
-
-              {/* Botón "Comprar ahora" - Después del resumen de totales */}
-              <div className='mb-4'>
-                <Button
-                  size='lg'
-                  onClick={handleStepComplete}
-                  disabled={!canProceed || isLoading}
-                  className={cn(
-                    'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold',
-                    (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                      Procesando...
-                    </>
-                  ) : (
-                    <>
-                      Comprar ahora
-                      <ArrowRight className='w-4 h-4 ml-2' />
-                    </>
-                  )}
-                </Button>
-              </div>
             </>
           ) : (
             <>
@@ -429,6 +404,35 @@ export const MetaCheckoutWizard: React.FC = () => {
             </>
           )}
         </div>
+
+        {/* Botón fixed "Comprar ahora" - Para paso summary - Fijo abajo */}
+        {state.currentStep === 'summary' && (
+          <div className='fixed bottom-0 left-0 right-0 z-50 shadow-lg'>
+            <div className='max-w-4xl mx-auto px-4 py-4'>
+              <Button
+                size='lg'
+                onClick={handleStepComplete}
+                disabled={!canProceed || isLoading}
+                className={cn(
+                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold shadow-lg',
+                  (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    Comprar ahora
+                    <ArrowRight className='w-4 h-4 ml-2' />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Botón fixed "Continuar" - Para pasos intermedios - Fijo abajo */}
         {state.currentStep !== 'confirmation' && state.currentStep !== 'summary' && (
