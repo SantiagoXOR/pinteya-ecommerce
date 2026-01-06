@@ -344,57 +344,102 @@ export const MetaCheckoutWizard: React.FC = () => {
         </div>
       )}
 
-      <div className='min-h-screen'>
-      <div className='max-w-4xl mx-auto px-4 py-8'>
-        {/* Header con progreso */}
-        <div className='mb-4'>
-          <div className='bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-gray-200/50'>
-            <div className='flex items-center justify-between mb-4'>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={handleBackNavigation}
-                className='flex items-center gap-2 text-gray-800 hover:text-gray-900 hover:bg-gray-100 font-medium'
-              >
-                <ArrowLeft className='w-4 h-4' />
-                {currentStepIndex > 0 ? 'Atrás' : 'Carrito'}
-              </Button>
-              <Badge variant='secondary' className='bg-blue-600 text-white font-semibold shadow-sm'>
-                Paso {currentStepIndex + 1} de {STEP_ORDER.length}
-              </Badge>
+      <div className='min-h-screen flex flex-col'>
+        {/* Header con progreso - Sticky arriba */}
+        <div className='sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-md border-b border-gray-200/50'>
+          <div className='max-w-4xl mx-auto px-4 py-3'>
+            <div className='bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-gray-200/50'>
+              <div className='flex items-center justify-between mb-4'>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={handleBackNavigation}
+                  className='flex items-center gap-2 text-gray-800 hover:text-gray-900 hover:bg-gray-100 font-medium'
+                >
+                  <ArrowLeft className='w-4 h-4' />
+                  {currentStepIndex > 0 ? 'Atrás' : 'Carrito'}
+                </Button>
+                <Badge variant='secondary' className='bg-blue-600 text-white font-semibold shadow-sm'>
+                  Paso {currentStepIndex + 1} de {STEP_ORDER.length}
+                </Badge>
+              </div>
+              <ProgressIndicator
+                currentStep={currentStepIndex + 1}
+                totalSteps={STEP_ORDER.length}
+                labels={STEP_ORDER.map((step) => STEP_LABELS[step])}
+              />
             </div>
-            <ProgressIndicator
-              currentStep={currentStepIndex + 1}
-              totalSteps={STEP_ORDER.length}
-              labels={STEP_ORDER.map((step) => STEP_LABELS[step])}
-            />
           </div>
         </div>
 
-        {/* Contenido del paso */}
-        {state.currentStep === 'summary' ? (
-          <>
-            <div className='mb-4'>
-              {renderStepContent()}
-            </div>
-            {/* Footer con resumen - Solo en paso summary */}
-            <div className='mb-4'>
-              <CartSummaryFooter
-                subtotal={totalPrice}
-                shipping={totalPrice >= 50000 ? 0 : 10000}
-                total={totalPrice + (totalPrice >= 50000 ? 0 : 10000)}
-                freeShippingThreshold={50000}
-              />
-            </div>
+        {/* Contenido scrollable con padding para elementos sticky */}
+        <div className='flex-1 max-w-4xl mx-auto px-4 py-6 w-full'>
 
-            {/* Botón "Comprar ahora" - Después del resumen de totales */}
-            <div className='mb-4'>
+          {/* Contenido del paso */}
+          {state.currentStep === 'summary' ? (
+            <>
+              <div className='mb-4'>
+                {renderStepContent()}
+              </div>
+              {/* Footer con resumen - Solo en paso summary */}
+              <div className='mb-4'>
+                <CartSummaryFooter
+                  subtotal={totalPrice}
+                  shipping={totalPrice >= 50000 ? 0 : 10000}
+                  total={totalPrice + (totalPrice >= 50000 ? 0 : 10000)}
+                  freeShippingThreshold={50000}
+                />
+              </div>
+
+              {/* Botón "Comprar ahora" - Después del resumen de totales */}
+              <div className='mb-24 pb-4'>
+                <Button
+                  size='lg'
+                  onClick={handleStepComplete}
+                  disabled={!canProceed || isLoading}
+                  className={cn(
+                    'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold',
+                    (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
+                  )}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      Comprar ahora
+                      <ArrowRight className='w-4 h-4 ml-2' />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Card className='mb-6 shadow-xl border-0'>
+                <CardContent>
+                  {renderStepContent()}
+                </CardContent>
+              </Card>
+
+              {/* Espaciador para evitar que el contenido quede oculto detrás del botón sticky */}
+              <div className='mb-24' />
+            </>
+          )}
+        </div>
+
+        {/* Botón sticky "Continuar" - Para pasos intermedios - Fijo abajo */}
+        {state.currentStep !== 'confirmation' && state.currentStep !== 'summary' && (
+          <div className='sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200/50 shadow-lg'>
+            <div className='max-w-4xl mx-auto px-4 py-4'>
               <Button
                 size='lg'
                 onClick={handleStepComplete}
                 disabled={!canProceed || isLoading}
                 className={cn(
-                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold',
+                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold shadow-lg',
                   (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
                 )}
               >
@@ -405,85 +450,45 @@ export const MetaCheckoutWizard: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    Comprar ahora
+                    Continuar
                     <ArrowRight className='w-4 h-4 ml-2' />
                   </>
                 )}
               </Button>
             </div>
-          </>
-        ) : (
-          <>
-            <Card className='mb-6 shadow-xl border-0'>
-              <CardContent>
-                {renderStepContent()}
-              </CardContent>
-            </Card>
-
-            {/* Botón sticky "Continuar" - Para pasos intermedios */}
-            {state.currentStep !== 'confirmation' && (
-              <div className='sticky bottom-0 z-50 mb-4 pb-4'>
-                <div className='max-w-4xl mx-auto px-4'>
-                  <Button
-                    size='lg'
-                    onClick={handleStepComplete}
-                    disabled={!canProceed || isLoading}
-                    className={cn(
-                      'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold',
-                      (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
-                    )}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                        Procesando...
-                      </>
-                    ) : (
-                      <>
-                        Continuar
-                        <ArrowRight className='w-4 h-4 ml-2' />
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Botón sticky "Pagar" - Solo en etapa de confirmación */}
-            {state.currentStep === 'confirmation' && (
-              <div className='sticky bottom-0 z-50 mb-4 pb-4'>
-                <div className='max-w-4xl mx-auto px-4'>
-                  <Button
-                    size='lg'
-                    onClick={handleStepComplete}
-                    disabled={isLoading}
-                    className={cn(
-                      'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 py-6',
-                      isLoading && 'opacity-50 cursor-not-allowed'
-                    )}
-                  >
-                    {isLoading ? (
-                      <div className='flex items-center gap-3'>
-                        <Loader2 className='w-6 h-6 animate-spin' />
-                        <span className='text-base font-medium'>Procesando pago...</span>
-                      </div>
-                    ) : (
-                      <div className='flex items-center justify-center gap-2'>
-                        <CreditCard className='w-5 h-5' />
-                        <span className='text-lg font-bold'>
-                          Confirmar Pedido ({formatCurrency(totalPrice + (totalPrice >= 50000 ? 0 : 10000))})
-                        </span>
-                      </div>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Testimonios removidos para mantener túnel de compra limpio */}
-          </>
+          </div>
         )}
-      </div>
+
+        {/* Botón sticky "Confirmar Pedido" - Solo en etapa de confirmación - Fijo abajo */}
+        {state.currentStep === 'confirmation' && (
+          <div className='sticky bottom-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200/50 shadow-lg'>
+            <div className='max-w-4xl mx-auto px-4 py-4'>
+              <Button
+                size='lg'
+                onClick={handleStepComplete}
+                disabled={isLoading}
+                className={cn(
+                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 py-6',
+                  isLoading && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {isLoading ? (
+                  <div className='flex items-center gap-3'>
+                    <Loader2 className='w-6 h-6 animate-spin' />
+                    <span className='text-base font-medium'>Procesando pago...</span>
+                  </div>
+                ) : (
+                  <div className='flex items-center justify-center gap-2'>
+                    <CreditCard className='w-5 h-5' />
+                    <span className='text-lg font-bold'>
+                      Confirmar Pedido ({formatCurrency(totalPrice + (totalPrice >= 50000 ? 0 : 10000))})
+                    </span>
+                  </div>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   )
