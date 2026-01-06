@@ -220,7 +220,7 @@ const SheetContent = React.forwardRef<
         // Reducir opacidad para evitar efecto overlay visible
         <div
           ref={overlayRef}
-          className="fixed z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          className="fixed z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           style={{ 
             top: 0,
             left: 0,
