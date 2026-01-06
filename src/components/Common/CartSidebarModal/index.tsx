@@ -160,8 +160,7 @@ const CartSidebarModal = () => {
             transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: isDragging ? 'transform' : 'auto',
             maxHeight: isLargeText ? '85vh' : '75vh',
-            height: isLargeText ? '85vh' : '75vh',
-            zIndex: 1200
+            height: isLargeText ? '85vh' : '75vh'
           }}
         >
           {/* Título oculto para accesibilidad */}
