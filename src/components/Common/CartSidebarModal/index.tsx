@@ -215,7 +215,7 @@ const CartSidebarModal = () => {
           </div>
 
           {/* Footer - Sticky at bottom */}
-          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0`} style={{ paddingTop: '12px', paddingBottom: '48px', marginBottom: '0px' }}>
+          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0 relative z-0`} style={{ paddingTop: '12px', paddingBottom: '48px', marginBottom: '0px' }}>
             {/* Barra de Progreso Envío Gratis */}
             {mounted && effectiveCartItems.length > 0 && (
               <div className={isLargeText ? 'mb-1.5' : 'mb-2'}>
@@ -266,7 +266,7 @@ const CartSidebarModal = () => {
                   onClick={startTransition}
                   disabled={isButtonDisabled || cartLoading}
                   data-testid='checkout-btn-bottom'
-                  className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold ${isLargeText ? 'py-1.5 px-3 text-xs' : 'py-2 px-4 text-sm'} rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 z-10 ${
+                  className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold ${isLargeText ? 'py-1.5 px-3 text-xs' : 'py-2 px-4 text-sm'} rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${
                     isButtonDisabled || cartLoading
                       ? 'opacity-50 cursor-not-allowed'
                       : ''
