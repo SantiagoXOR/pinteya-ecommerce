@@ -141,8 +141,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         style={{
           bottom: 'env(safe-area-inset-bottom, 0px)',
           borderRadius: '24px 24px 0px 0px',
-          background: 'unset',
-          backgroundColor: 'unset',
+          backgroundColor: 'white',
           borderTopColor: 'var(--glass-bg-strong)',
           boxShadow: 'inset 0px 4px 6px 0px rgba(0, 0, 0, 0.15)',
           backdropFilter: 'none',
