@@ -123,11 +123,9 @@ export const hasDiscount = (
  * Formatea un precio con decimales en superíndice (formato ARS)
  * Usa la función centralizada formatCurrency para consistencia
  */
-import { formatCurrency as formatCurrencyCentralized } from '@/lib/utils/consolidated-utils'
-
 export const formatPrice = (value: number): React.ReactNode => {
   // Usar función centralizada y luego separar decimales para superíndice
-  const formatted = formatCurrencyCentralized(value)
+  const formatted = formatCurrency(value)
   const commaIndex = formatted.lastIndexOf(',')
   if (commaIndex === -1) {
     // Si no hay decimales, devolver tal cual (ya incluye el símbolo $)
