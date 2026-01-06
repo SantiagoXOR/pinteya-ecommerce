@@ -160,7 +160,8 @@ const CartSidebarModal = () => {
             transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: isDragging ? 'transform' : 'auto',
             maxHeight: isLargeText ? '85vh' : '75vh',
-            height: isLargeText ? '85vh' : '75vh'
+            height: isLargeText ? '85vh' : '75vh',
+            zIndex: 1200
           }}
         >
           {/* Título oculto para accesibilidad */}
@@ -215,7 +216,7 @@ const CartSidebarModal = () => {
           </div>
 
           {/* Footer - Sticky at bottom */}
-          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0`} style={{ paddingTop: '12px', paddingBottom: '32px', marginBottom: '0px' }}>
+          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0`} style={{ paddingTop: '12px', paddingBottom: '48px', marginBottom: '0px' }}>
             {/* Barra de Progreso Envío Gratis */}
             {mounted && effectiveCartItems.length > 0 && (
               <div className={isLargeText ? 'mb-1.5' : 'mb-2'}>

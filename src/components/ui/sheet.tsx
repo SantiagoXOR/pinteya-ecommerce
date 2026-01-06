@@ -219,13 +219,14 @@ const SheetContent = React.forwardRef<
         // Usar pointer-events: none para que los eventos pasen al bottom bar
         <div
           ref={overlayRef}
-          className="fixed z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          className="fixed bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           style={{ 
             top: 0,
             left: 0,
             right: 0,
             bottom: '64px',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            zIndex: 1200
           }}
           data-radix-dialog-overlay
         />
@@ -244,7 +245,8 @@ const SheetContent = React.forwardRef<
         className={cn(sheetVariants({ side }), isBottom && '!bottom-[64px] !max-h-[calc(100vh-64px)]', className)} 
         style={isBottom ? { 
           bottom: '64px',
-          maxHeight: 'calc(100vh - 64px)'
+          maxHeight: 'calc(100vh - 64px)',
+          zIndex: 1200
         } : undefined}
         onPointerDown={(e) => {
           if (isBottom) {
