@@ -184,7 +184,7 @@ const CartSidebarModal = () => {
 
             {/* Información de pago - Mercado Pago */}
             {mounted && hasItems && (
-              <div className={`px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pb-1.5' : 'pb-2'} bg-white`}>
+              <div className={`px-4 sm:px-7.5 lg:px-11 pb-0 bg-white`}>
                 <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'py-0.5 px-1' : 'py-1 px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`}>
                   <Image
                     src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
@@ -215,7 +215,7 @@ const CartSidebarModal = () => {
           </div>
 
           {/* Footer - Sticky at bottom */}
-          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pt-1.5 pb-1.5' : 'pt-2 pb-2'} mt-auto flex-shrink-0`}>
+          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pt-1.5 pb-4' : 'pt-2 pb-4'} mt-auto flex-shrink-0`}>
             {/* Barra de Progreso Envío Gratis */}
             {mounted && effectiveCartItems.length > 0 && (
               <div className={isLargeText ? 'mb-1.5' : 'mb-2'}>
