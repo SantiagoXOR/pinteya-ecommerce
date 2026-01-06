@@ -172,28 +172,32 @@ export const useBestSellerProducts = ({
     // ⚡ OPTIMIZACIÓN: staleTime de 10 minutos para reducir refetches innecesarios
     staleTime: 10 * 60 * 1000, // 10 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos en caché
-    retry: 1, // Reducir retries para evitar esperas largas
-    retryDelay: 2000, // 2 segundos entre retries
+    // ✅ FIX: Aumentar retries para dar más oportunidades (igual que otras secciones)
+    retry: 2, // Cambiar de 1 a 2 (igual que useFilteredProducts)
+    // ✅ FIX: Usar exponential backoff como otras secciones
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
-    refetchOnMount: false, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
+    // ✅ MANTENER: refetchOnMount: false para optimización (igual que otras secciones)
+    refetchOnMount: false, // React Query maneja el cache inteligentemente
     refetchOnReconnect: true, // Refetch si se reconecta
   })
 
   // ⚡ OPTIMIZACIÓN: Eliminado useEffect que fuerza refetch - React Query maneja esto automáticamente
   // ⚡ OPTIMIZACIÓN: Eliminado useEffect de logging - no es necesario para producción
 
-  // ✅ FIX CRÍTICO: Determinar loading de forma más confiable
-  // isLoading puede quedarse en true si la query nunca se completa
-  // Si hay datos, no mostrar loading aunque isLoading sea true
-  // Si hay error, no mostrar loading
-  // Usar isLoading directamente pero verificar que no haya datos
+  // ✅ FIX: Mejorar detección de loading - mostrar productos en cache incluso si está "loading"
+  // Si hay datos disponibles, no mostrar loading (incluso si React Query dice que está loading)
+  // Considerar que está cargando solo si isLoading es true Y no hay datos Y no hay error
   const isActuallyLoading = isLoading && !data && !error
 
   console.log('🟡 [useBestSellerProducts] Retornando valores:', {
     productsCount: Array.isArray(data) ? data.length : 0,
     isActuallyLoading,
-    hasError: !!error
+    isLoading,
+    isFetching,
+    hasError: !!error,
+    hasData: !!data
   })
 
   return {

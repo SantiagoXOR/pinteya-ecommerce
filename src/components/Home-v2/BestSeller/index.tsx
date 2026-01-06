@@ -48,56 +48,20 @@ const BestSeller: React.FC = React.memo(() => {
   const shouldShowHelpCard = bestSellerProducts.length > 0 && 
     (bestSellerProducts.length % 4 !== 0 || bestSellerProducts.length % 2 !== 0)
 
-  // ✅ FIX CRÍTICO: Mejor manejo del estado de loading con timeout y detección de datos
-  const [showTimeout, setShowTimeout] = React.useState(false)
+  // ✅ FIX: Siempre mostrar productos si están disponibles (incluso si está "loading")
+  // Solo mostrar skeletons si NO hay productos Y está cargando
   const hasProducts = bestSellerProducts.length > 0
-  
-  React.useEffect(() => {
-    // Si hay productos, resetear timeout
-    if (hasProducts) {
-      setShowTimeout(false)
-      return
-    }
-    
-    // Si está cargando y no hay productos, iniciar timeout
-    if (isLoading && !hasProducts) {
-      const timeout = setTimeout(() => {
-        setShowTimeout(true)
-      }, 6000) // 6 segundos - más agresivo
-      
-      return () => clearTimeout(timeout)
-    } else {
-      setShowTimeout(false)
-    }
-  }, [isLoading, hasProducts])
+  const shouldShowSkeletons = isLoading && !hasProducts
 
-  // ✅ FIX CRÍTICO: Mostrar skeletons solo si:
-  // 1. Está cargando
-  // 2. No hay productos
-  // 3. No hay timeout
-  // 4. No hay error
-  const shouldShowSkeletons = isLoading && !hasProducts && !showTimeout && !error
-
-  if (shouldShowSkeletons) {
-    return (
-      <section className='overflow-hidden py-2 sm:py-3 bg-transparent'>
-        <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
-          {/* ⚡ OPTIMIZACIÓN: Reducir skeletons en dispositivos de bajo rendimiento */}
-          <ProductSkeletonGrid count={initialProductCount} />
-        </div>
-      </section>
-    )
-  }
-
-  // Si hay timeout o error, mostrar contenido vacío o mensaje
-  if (error || showTimeout) {
-    return null
-  }
-
+  // ✅ FIX: Siempre renderizar la sección, nunca retornar null
   return (
     <section className='overflow-x-hidden py-1 sm:py-1.5 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
-        {/* Grid de productos mejorado - 4 columnas en desktop - Gap igual al padding para calles y medianeras iguales */}
+        {shouldShowSkeletons ? (
+          // Mostrar skeletons solo durante la carga inicial sin datos
+          <ProductSkeletonGrid count={initialProductCount} />
+        ) : (
+          // Grid de productos mejorado - 4 columnas en desktop
           <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
             {bestSellerProducts.length > 0 ? (
               <>
@@ -108,30 +72,31 @@ const BestSeller: React.FC = React.memo(() => {
                 {shouldShowHelpCard && <PaintVisualizerCard />}
               </>
             ) : (
-            <div className='col-span-full'>
-              <Card variant='outlined' className='border-gray-200'>
-                <CardContent className='p-12 text-center'>
-                  <div className='flex flex-col items-center gap-4'>
-                    <div className='w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center'>
-                      <Trophy className='w-8 h-8 text-yellow-500' />
+              <div className='col-span-full'>
+                <Card variant='outlined' className='border-gray-200'>
+                  <CardContent className='p-12 text-center'>
+                    <div className='flex flex-col items-center gap-4'>
+                      <div className='w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center'>
+                        <Trophy className='w-8 h-8 text-yellow-500' />
+                      </div>
+                      <div>
+                        <h3 className='font-semibold text-white mb-2'>
+                          No hay productos disponibles
+                        </h3>
+                        <p className='text-white/80 text-sm mb-4'>
+                          No se encontraron productos en este momento.
+                        </p>
+                        <Button variant='outline' asChild>
+                          <Link href='/products'>Ver Catálogo Completo</Link>
+                        </Button>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className='font-semibold text-white mb-2'>
-                        No hay productos disponibles
-                      </h3>
-                      <p className='text-white/80 text-sm mb-4'>
-                        No se encontraron productos en este momento.
-                      </p>
-                      <Button variant='outline' asChild>
-                        <Link href='/products'>Ver Catálogo Completo</Link>
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   )
