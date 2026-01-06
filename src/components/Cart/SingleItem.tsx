@@ -9,6 +9,7 @@ import { getValidImageUrl } from '@/lib/adapters/product-adapter'
 import { normalizeVariantLabel } from '@/lib/utils/variant-normalizer'
 import { useCartWithBackend } from '@/hooks/useCartWithBackend'
 import { toast } from 'react-hot-toast'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 const SingleItem = ({ item }: { item: any }) => {
   const [quantity, setQuantity] = useState(item.quantity)
@@ -130,10 +131,10 @@ const SingleItem = ({ item }: { item: any }) => {
       {/* Price */}
       <div className='min-w-[180px]'>
         <p className='font-bold text-lg' style={{ color: '#c2410b' }}>
-          ${item.discountedPrice.toLocaleString()}
+          {formatCurrency(item.discountedPrice)}
         </p>
         {item.price && item.discountedPrice && item.discountedPrice < item.price && (
-          <p className='text-sm text-gray-500 line-through'>${item.price.toLocaleString()}</p>
+          <p className='text-sm text-gray-500 line-through'>{formatCurrency(item.price)}</p>
         )}
       </div>
 
@@ -197,11 +198,11 @@ const SingleItem = ({ item }: { item: any }) => {
       {/* Subtotal */}
       <div className='min-w-[200px]'>
         <p className='font-bold text-xl' style={{ color: '#c2410b' }}>
-          ${(item.discountedPrice * quantity).toLocaleString()}
+          {formatCurrency(item.discountedPrice * quantity)}
         </p>
         {item.price && item.discountedPrice && item.discountedPrice < item.price && (
           <p className='text-sm font-semibold text-green-600'>
-            Ahorro: ${((item.price - item.discountedPrice) * quantity).toLocaleString()}
+            Ahorro: {formatCurrency((item.price - item.discountedPrice) * quantity)}
           </p>
         )}
       </div>

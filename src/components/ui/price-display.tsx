@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 const priceDisplayVariants = cva('flex flex-col gap-0.5 w-full max-w-full', {
   variants: {
@@ -81,30 +82,23 @@ export interface PriceDisplayProps
 
 /**
  * Formatea y renderiza un precio con decimales en superíndice
+ * Usa formatCurrency centralizado para consistencia
  */
 const renderPrice = (
   amount: number,
   currency: string = 'ARS',
   currencySymbol?: string
 ): React.ReactNode => {
+  // amount viene en centavos, convertir a pesos
   const price = amount / 100
 
-  // Construir string formateado base
-  const formatted = currencySymbol
-    ? `${currencySymbol}${price.toLocaleString('es-AR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`
-    : price.toLocaleString('es-AR', {
-        style: 'currency',
-        currency: currency,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
+  // Usar función centralizada que garantiza formato correcto
+  const formatted = formatCurrency(price, currency)
 
   // Separar parte entera y decimales (formato es-AR usa coma para decimales)
   const commaIndex = formatted.lastIndexOf(',')
   if (commaIndex === -1) {
+    // Si no hay decimales (precio entero), mostrar sin superíndice
     return formatted
   }
   const integerWithSeparator = formatted.slice(0, commaIndex + 1) // incluye la coma

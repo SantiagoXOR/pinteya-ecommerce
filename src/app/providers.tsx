@@ -149,10 +149,12 @@ DeferredProviders.displayName = 'DeferredProviders'
 // ⚡ FASE 4: Componente wrapper para diferir componentes UI no críticos después del LCP
 const DeferredComponents = React.memo(({ 
   isAdminRoute, 
-  isAuthRoute 
+  isAuthRoute,
+  isCheckoutRoute
 }: { 
   isAdminRoute: boolean
   isAuthRoute: boolean
+  isCheckoutRoute: boolean
 }) => {
   // ⚡ FASE 4: Diferir hidratación de componentes UI no críticos después del LCP
   // ⚡ FIX: En desarrollo, hidratar inmediatamente para evitar recargas molestas
@@ -169,7 +171,7 @@ const DeferredComponents = React.memo(({
   return (
     <>
       <ScrollToTop />
-      {!isAdminRoute && !isAuthRoute && <MercadoLibreBottomNav />}
+      {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MercadoLibreBottomNav />}
       <Toaster />
     </>
   )
@@ -244,7 +246,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                         isAuthRoute={isAuthRoute}
                       >
                         {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
-                        {!isAdminRoute && !isAuthRoute && <MemoizedHeader />}
+                        {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MemoizedHeader />}
 
                         {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
                         {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
@@ -254,13 +256,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                         <DeferredComponents
                           isAdminRoute={isAdminRoute}
                           isAuthRoute={isAuthRoute}
+                          isCheckoutRoute={isCheckoutRoute}
                         />
 
                         {/* Contenido principal */}
                         {children}
 
                         {/* Footer solo para rutas públicas - Memoizado */}
-                        {!isAdminRoute && !isAuthRoute && <MemoizedFooter />}
+                        {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MemoizedFooter />}
                       </DeferredProviders>
                     </PreviewSliderProvider>
                   </CartModalProvider>

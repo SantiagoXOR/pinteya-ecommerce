@@ -96,7 +96,7 @@ export default function PaymentMethodSelector({ selectedMethod = 'cash', onMetho
                 </div>
                 <div className="flex-1">
                   <h4 className="text-base font-bold text-gray-900 mb-1">Mercado Pago</h4>
-                  <p className="text-sm text-gray-600"><span className="text-yellow-600">Tarjetas</span> y más opciones</p>
+                  <p className="text-sm text-gray-600">Pagá online en cuotas. Tarjetas de crédito, débito o dinero en cuenta.</p>
                 </div>
               </div>
               

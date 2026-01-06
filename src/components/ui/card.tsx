@@ -7,6 +7,7 @@ import { PriceDisplay } from './price-display'
 import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { StockIndicator } from './stock-indicator'
 import { ShippingInfo } from './shipping-info'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 const cardVariants = cva('rounded-card bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-transform duration-200 ease-out', {
   variants: {
@@ -302,7 +303,7 @@ const ProductCard = React.memo(
                     className='font-bold text-lg sm:text-xl leading-tight truncate'
                     style={{ color: '#EA5A17' }}
                   >
-                    ${price?.toLocaleString('es-AR') || '0'}
+                    {formatCurrency(price)}
                   </span>
                   
                   {/* Badge de descuento inline con el precio */}
@@ -322,7 +323,7 @@ const ProductCard = React.memo(
                   
                   {originalPrice && originalPrice > (price || 0) && (
                     <span className='text-gray-400 line-through text-sm truncate'>
-                      ${originalPrice.toLocaleString('es-AR')}
+                      {formatCurrency(originalPrice)}
                     </span>
                   )}
                 </div>
@@ -330,7 +331,7 @@ const ProductCard = React.memo(
                 {/* Cuotas en verde oscuro */}
                 {showInstallments && installments && (
                   <div className='text-green-800 text-sm font-medium'>
-                    {installments.quantity}x de ${installments.amount.toLocaleString('es-AR')}
+                    {installments.quantity}x de {formatCurrency(installments.amount)}
                     {installments.interestFree ? ' sin interés' : ''}
                   </div>
                 )}

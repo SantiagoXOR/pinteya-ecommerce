@@ -68,46 +68,10 @@ export function formatDateRelative(date: string | Date): string {
 
 /**
  * Formatea un valor monetario
+ * @deprecated Use formatCurrency from '@/lib/utils/consolidated-utils' instead
+ * Esta función se mantiene para compatibilidad hacia atrás pero re-exporta la función consolidada
  */
-export function formatCurrency(
-  amount: number | string | null | undefined,
-  currency: string = 'ARS',
-  options?: Intl.NumberFormatOptions
-): string {
-  // PROTECCIÓN TOTAL: Verificar que amount es válido
-  let safeAmount: number
-
-  if (typeof amount === 'number' && !isNaN(amount) && isFinite(amount)) {
-    safeAmount = amount
-  } else if (typeof amount === 'string') {
-    const parsed = parseFloat(amount)
-    if (!isNaN(parsed) && isFinite(parsed)) {
-      safeAmount = parsed
-    } else {
-      safeAmount = 0
-    }
-  } else {
-    safeAmount = 0
-  }
-
-  const defaultOptions: Intl.NumberFormatOptions = {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-    ...options,
-  }
-
-  // Configuración específica para pesos argentinos
-  if (currency.toUpperCase() === 'ARS') {
-    return new Intl.NumberFormat('es-AR', {
-      ...defaultOptions,
-      currency: 'ARS',
-    }).format(safeAmount)
-  }
-
-  return new Intl.NumberFormat('es-AR', defaultOptions).format(safeAmount)
-}
+export { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 /**
  * Formatea un número con separadores de miles

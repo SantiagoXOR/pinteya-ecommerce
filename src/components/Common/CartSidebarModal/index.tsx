@@ -20,6 +20,7 @@ import {
   SheetContent,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext()
@@ -240,7 +241,7 @@ const CartSidebarModal = () => {
             <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
               <p className={isLargeText ? 'text-xs text-gray-600' : 'text-sm text-gray-600'}>Subtotal</p>
               <p className={isLargeText ? 'text-xs font-semibold' : 'text-sm font-semibold'} style={{ color: '#c2410b' }}>
-                ${mounted ? effectiveTotalPrice.toLocaleString() : '0'}
+                {mounted ? formatCurrency(effectiveTotalPrice) : formatCurrency(0)}
               </p>
             </div>
 
@@ -252,7 +253,7 @@ const CartSidebarModal = () => {
                   {estimatedShippingCost === 0 ? (
                     <span className='text-green-600'>Gratis</span>
                   ) : (
-                    <span className='text-yellow-600'>{`$${estimatedShippingCost.toLocaleString()}`}</span>
+                    <span className='text-yellow-600'>{formatCurrency(estimatedShippingCost)}</span>
                   )}
                 </p>
               </div>
@@ -263,7 +264,7 @@ const CartSidebarModal = () => {
               <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
                 <p className={isLargeText ? 'font-semibold text-sm text-gray-900' : 'font-semibold text-base text-gray-900'}>Total</p>
                 <p className={isLargeText ? 'font-semibold text-sm' : 'font-semibold text-base'} style={{ color: '#c2410b' }}>
-                  ${mounted ? (effectiveTotalPrice + estimatedShippingCost).toLocaleString() : '0'}
+                  {mounted ? formatCurrency(effectiveTotalPrice + estimatedShippingCost) : formatCurrency(0)}
                 </p>
               </div>
             )}

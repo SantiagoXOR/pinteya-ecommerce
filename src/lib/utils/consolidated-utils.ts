@@ -142,12 +142,21 @@ export function formatCurrency(
     const defaultOptions: Intl.NumberFormatOptions = {
       style: 'currency',
       currency: currency.toUpperCase(),
-      minimumFractionDigits: 0,
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
       ...options,
     }
 
-    return new Intl.NumberFormat('es-AR', defaultOptions).format(safeAmount)
+    // Formatear con siempre 2 decimales
+    const formatted = new Intl.NumberFormat('es-AR', defaultOptions).format(safeAmount)
+    
+    // Si el precio es entero (termina en ,00), remover los decimales para mejor UX
+    // Esto evita mostrar $100,00 y muestra $100 en su lugar
+    if (formatted.endsWith(',00')) {
+      return formatted.replace(',00', '')
+    }
+    
+    return formatted
   } catch (error) {
     console.error('Error formatting currency:', error)
     return `$${amount || 0}`

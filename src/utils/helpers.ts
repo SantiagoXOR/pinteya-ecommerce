@@ -4,16 +4,12 @@
 
 /**
  * Formats a price in Argentine peso format
+ * Usa la función centralizada formatCurrency para consistencia
  */
-export function formatPrice(price: number | null | undefined): string {
-  if (price === null || price === undefined || isNaN(price)) {
-    return '$0'
-  }
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
-  const roundedPrice = Math.round(price)
-  // Simple format without spaces for consistency
-  const formatted = roundedPrice.toLocaleString('es-AR')
-  return `$${formatted}`
+export function formatPrice(price: number | null | undefined): string {
+  return formatCurrency(price)
 }
 
 /**

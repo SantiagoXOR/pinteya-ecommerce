@@ -6,6 +6,7 @@ import { ProductVariant } from '@/lib/api/product-variants'
 import { RelatedProduct } from '@/lib/api/related-products'
 import { getEffectivePrice } from '@/lib/api/product-variants'
 import React from 'react'
+import { formatCurrency as formatCurrencyCentralized } from '@/lib/utils/consolidated-utils'
 
 interface Product {
   id: number
@@ -120,21 +121,23 @@ export const hasDiscount = (
 
 /**
  * Formatea un precio con decimales en superíndice (formato ARS)
+ * Usa la función centralizada formatCurrency para consistencia
  */
+import { formatCurrency as formatCurrencyCentralized } from '@/lib/utils/consolidated-utils'
+
 export const formatPrice = (value: number): React.ReactNode => {
-  const formatted = value.toLocaleString('es-AR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
+  // Usar función centralizada y luego separar decimales para superíndice
+  const formatted = formatCurrencyCentralized(value)
   const commaIndex = formatted.lastIndexOf(',')
   if (commaIndex === -1) {
-    return `$${formatted}`
+    // Si no hay decimales, devolver tal cual (ya incluye el símbolo $)
+    return formatted
   }
   const integerWithSep = formatted.slice(0, commaIndex + 1)
   const decimals = formatted.slice(commaIndex + 1)
   return (
     <span>
-      ${integerWithSep}
+      {integerWithSep}
       <span className='align-super text-xs'>{decimals}</span>
     </span>
   )

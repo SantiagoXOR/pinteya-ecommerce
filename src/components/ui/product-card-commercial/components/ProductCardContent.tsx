@@ -3,6 +3,7 @@
 import React from 'react'
 import { cleanTitleForIncoloroProduct, isTransparentColor } from '../utils/color-utils'
 import type { ProductCardContentProps } from '../types'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 /**
  * Componente de contenido del ProductCard
@@ -61,10 +62,7 @@ export const ProductCardContent = React.memo(function ProductCardContent({
           {/* Precio anterior tachado - arriba */}
           {displayOriginalPrice && displayOriginalPrice > (displayPrice ?? 0) && (
             <div className='text-gray-400 line-through text-[9px] md:text-[10px] mb-0 leading-none -mt-0.5'>
-              {`$${displayOriginalPrice.toLocaleString('es-AR', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}`}
+              {formatCurrency(displayOriginalPrice, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </div>
           )}
           
@@ -75,10 +73,7 @@ export const ProductCardContent = React.memo(function ProductCardContent({
                 className='text-sm sm:text-base md:text-xl font-light drop-shadow-sm'
                 style={{ color: '#EA5A17' }}
               >
-                {`$${(displayPrice ?? 0).toLocaleString('es-AR', {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}`}
+                {formatCurrency(displayPrice ?? 0, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </div>
 
               {/* Badge de descuento - horizontal y pequeño */}

@@ -1,6 +1,7 @@
 import { selectTotalPrice } from '@/redux/features/cart-slice'
 import { useAppSelector } from '@/redux/store'
 import React from 'react'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 import { useSelector } from 'react-redux'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

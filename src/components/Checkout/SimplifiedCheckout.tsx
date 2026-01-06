@@ -24,6 +24,7 @@ import {
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 const SimplifiedCheckout = () => {
   const router = useRouter()
@@ -401,7 +402,7 @@ const SimplifiedCheckout = () => {
                 }
                 stock={item.quantity} // Mostrar cantidad en el carrito como stock
                 productId={item.id}
-                cta={`Total: $${(item.discountedPrice * item.quantity).toLocaleString()}`}
+                cta={`Total: ${formatCurrency(item.discountedPrice * item.quantity)}`}
                 onAddToCart={() => {
                   // En checkout, no necesitamos agregar más al carrito
                 }}
@@ -419,7 +420,7 @@ const SimplifiedCheckout = () => {
         <div className='space-y-2'>
           <div className='flex justify-between text-sm'>
             <span>Subtotal</span>
-            <span>${totalPrice.toLocaleString()}</span>
+            <span>{formatCurrency(totalPrice)}</span>
           </div>
           <div className='flex justify-between text-sm'>
             <span>Envío</span>
@@ -427,20 +428,20 @@ const SimplifiedCheckout = () => {
               {shippingCost === 0 ? (
                 <span className='text-green-600 font-medium'>Gratis</span>
               ) : (
-                `$${shippingCost.toLocaleString()}`
+                formatCurrency(shippingCost)
               )}
             </span>
           </div>
           {discount > 0 && (
             <div className='flex justify-between text-sm text-green-600'>
               <span>Descuento</span>
-              <span>-${discount.toLocaleString()}</span>
+              <span>-{formatCurrency(discount)}</span>
             </div>
           )}
           <Separator />
           <div className='flex justify-between font-semibold text-lg'>
             <span>Total</span>
-            <span className='text-primary'>${finalTotal ? finalTotal.toLocaleString() : '0'}</span>
+            <span className='text-primary'>{formatCurrency(finalTotal || 0)}</span>
           </div>
         </div>
 

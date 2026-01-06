@@ -11,7 +11,8 @@ import { ProgressIndicator } from './UXOptimizers'
 import { useMetaCheckout, MetaCheckoutStep } from '@/hooks/useMetaCheckout'
 import { SimplifiedOrderSummary } from '@/components/ui/simplified-order-summary'
 import { CartSummaryFooter } from './CartSummaryFooter'
-import Testimonials from '@/components/Home-v2/Testimonials'
+// Testimonios removidos del checkout para mantener túnel de compra limpio
+// import Testimonials from '@/components/Home-v2/Testimonials'
 import PaymentMethodSelector from '../PaymentMethodSelector'
 import MercadoPagoWallet, { MercadoPagoWalletFallback } from '../MercadoPagoWallet'
 import {
@@ -31,7 +32,7 @@ import { cn } from '@/lib/utils'
 import { trackCustomEvent } from '@/lib/meta-pixel'
 import { trackEvent } from '@/lib/google-analytics'
 import Image from 'next/image'
-import { validateDNI } from '@/lib/utils/consolidated-utils'
+import { validateDNI, formatCurrency } from '@/lib/utils/consolidated-utils'
 import { AddressMapSelectorAdvanced } from '@/components/ui/AddressMapSelectorAdvanced'
 
 const STEP_LABELS: Record<MetaCheckoutStep, string> = {
@@ -291,7 +292,7 @@ export const MetaCheckoutWizard: React.FC = () => {
                       streetAddress: state.formData.shipping.streetAddress,
                       ...(state.formData.shipping.apartment && { apartment: state.formData.shipping.apartment }),
                       ...(state.formData.shipping.observations && { observations: state.formData.shipping.observations }),
-                      isValidated: state.formData.shipping.isValidated,
+                      ...(state.formData.shipping.isValidated !== undefined && { isValidated: state.formData.shipping.isValidated }),
                     }}
                     errors={errors}
                     onUpdate={updateShipping}
@@ -386,36 +387,29 @@ export const MetaCheckoutWizard: React.FC = () => {
               />
             </div>
 
-            {/* Botón sticky "Comprar ahora" - Solo en paso summary */}
-            <div className='sticky bottom-0 z-50 mb-4 pb-4'>
-              <div className='max-w-4xl mx-auto px-4'>
-                <Button
-                  size='lg'
-                  onClick={handleStepComplete}
-                  disabled={!canProceed || isLoading}
-                  className={cn(
-                    'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold',
-                    (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                      Procesando...
-                    </>
-                  ) : (
-                    <>
-                      Comprar ahora
-                      <ArrowRight className='w-4 h-4 ml-2' />
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Sección de Testimonios - Debajo del botón en paso summary */}
-            <div className='mt-4'>
-              <Testimonials />
+            {/* Botón "Comprar ahora" - Después del resumen de totales */}
+            <div className='mb-4'>
+              <Button
+                size='lg'
+                onClick={handleStepComplete}
+                disabled={!canProceed || isLoading}
+                className={cn(
+                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold',
+                  (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className='w-4 h-4 mr-2 animate-spin' />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    Comprar ahora
+                    <ArrowRight className='w-4 h-4 ml-2' />
+                  </>
+                )}
+              </Button>
             </div>
           </>
         ) : (
@@ -477,7 +471,7 @@ export const MetaCheckoutWizard: React.FC = () => {
                       <div className='flex items-center justify-center gap-2'>
                         <CreditCard className='w-5 h-5' />
                         <span className='text-lg font-bold'>
-                          Pagar ${(totalPrice + (totalPrice >= 50000 ? 0 : 10000)).toLocaleString('es-AR')}
+                          Confirmar Pedido ({formatCurrency(totalPrice + (totalPrice >= 50000 ? 0 : 10000))})
                         </span>
                       </div>
                     )}
@@ -486,12 +480,7 @@ export const MetaCheckoutWizard: React.FC = () => {
               </div>
             )}
 
-            {/* Sección de Testimonios - Debajo del botón de continuar en todas las etapas */}
-            {state.currentStep !== 'confirmation' && (
-              <div className='mt-4'>
-                <Testimonials />
-              </div>
-            )}
+            {/* Testimonios removidos para mantener túnel de compra limpio */}
           </>
         )}
       </div>
@@ -558,7 +547,7 @@ const ContactStep: React.FC<{
     <div className='space-y-6'>
       <div>
         <p className='text-sm text-gray-600 mb-6'>
-          Necesitamos tu nombre y teléfono para confirmar tu pedido y contactarte.
+          Ingresá tus datos para que sepamos a quién entregarle el pedido.
         </p>
       </div>
 
@@ -702,7 +691,7 @@ const ShippingStep: React.FC<{
     <div className='space-y-6'>
       <div>
         <p className='text-sm text-gray-600 mb-6'>
-          Ingresá la dirección donde querés recibir tu pedido.
+          ¿A dónde te llevamos tus pinturas?
         </p>
       </div>
 
@@ -830,10 +819,10 @@ const ConfirmationStep: React.FC<{
         <CheckCircle className='w-6 h-6 text-green-600 flex-shrink-0' />
         <div>
           <h3 className='font-semibold text-gray-900 mb-1'>
-            Revisá tu pedido antes de confirmar
+            ¡Ya casi es tuyo!
           </h3>
           <p className='text-sm text-gray-600'>
-            Verificá que todos los datos sean correctos antes de proceder al pago.
+            Dale un último vistazo a los detalles antes de finalizar la compra.
           </p>
         </div>
       </div>
@@ -861,12 +850,12 @@ const ConfirmationStep: React.FC<{
                 <div className='flex-1 min-w-0'>
                   <p className='font-medium text-gray-900 truncate'>{item.title}</p>
                   <p className='text-sm text-gray-600'>
-                    Cantidad: {item.quantity} × ${(item.discountedPrice || item.price).toLocaleString('es-AR')}
+                    Cantidad: {item.quantity} × {formatCurrency(item.discountedPrice || item.price)}
                   </p>
                 </div>
                 <div className='text-right'>
                   <p className='font-bold text-gray-900'>
-                    ${((item.discountedPrice || item.price) * item.quantity).toLocaleString('es-AR')}
+                    {formatCurrency((item.discountedPrice || item.price) * item.quantity)}
                   </p>
                 </div>
               </div>

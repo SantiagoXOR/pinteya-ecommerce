@@ -24,6 +24,7 @@ import ExpressForm from './ExpressForm'
 import PaymentMethodSelector from './PaymentMethodSelector'
 import MercadoPagoWallet, { MercadoPagoWalletFallback } from './MercadoPagoWallet'
 import { SimplifiedOrderSummary } from '@/components/ui/simplified-order-summary'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 interface CheckoutExpressProps {
   onBackToCart?: () => void
@@ -485,7 +486,7 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
                 <div className='flex items-center gap-4'>
                   <div className='text-right'>
                     <span className='font-bold text-2xl text-green-600' data-testid='final-total'>
-                      ${finalTotal ? finalTotal.toLocaleString() : '0'}
+                      {formatCurrency(finalTotal || 0)}
                     </span>
                     <div className='text-xs text-gray-500 uppercase tracking-wide'>Total</div>
                   </div>
@@ -547,7 +548,7 @@ const CheckoutExpress: React.FC<CheckoutExpressProps> = ({ onBackToCart }) => {
                   <CreditCard className='w-6 h-6' />
                   <div className='text-center'>
                     <div className='text-lg font-bold'>
-                      Pagar ${finalTotal ? finalTotal.toLocaleString() : '0'}
+                      Confirmar Pedido ({formatCurrency(finalTotal || 0)})
                     </div>
                   </div>
                 </div>

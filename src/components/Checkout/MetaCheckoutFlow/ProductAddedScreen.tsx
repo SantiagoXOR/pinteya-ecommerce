@@ -14,6 +14,7 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { trackCustomEvent } from '@/lib/meta-pixel'
 import { trackEvent } from '@/lib/google-analytics'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 interface ProductAddedScreenProps {
   product?: {
@@ -237,11 +238,11 @@ export const ProductAddedScreen: React.FC<ProductAddedScreenProps> = ({
                   <h2 className='text-2xl font-bold text-gray-900 mb-2'>{productName}</h2>
                   <div className='flex items-center gap-3 mb-4'>
                     <span className='text-3xl font-bold text-green-600'>
-                      ${productPrice.toLocaleString('es-AR')}
+                      {formatCurrency(productPrice)}
                     </span>
                     {displayedProduct.price && typeof displayedProduct.price === 'number' && displayedProduct.price > productPrice && (
                       <span className='text-xl text-gray-400 line-through'>
-                        ${displayedProduct.price.toLocaleString('es-AR')}
+                        {formatCurrency(displayedProduct.price)}
                       </span>
                     )}
                   </div>

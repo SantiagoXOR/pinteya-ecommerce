@@ -3,6 +3,7 @@
 import React from 'react'
 import ShippingProgressBar from '@/components/ui/shipping-progress-bar'
 import Image from 'next/image'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 interface CartSummaryFooterProps {
   subtotal: number
@@ -42,7 +43,7 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
       <div className='flex items-center justify-between gap-3 mb-3'>
         <p className='font-medium text-lg text-gray-900'>Subtotal:</p>
         <p className='font-medium text-lg' style={{ color: '#c2410b' }}>
-          ${subtotal.toLocaleString()}
+          {formatCurrency(subtotal)}
         </p>
       </div>
 
@@ -54,7 +55,7 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
             {estimatedShippingCost === 0 ? (
               <span className='text-green-600'>Gratis</span>
             ) : (
-              `$${estimatedShippingCost.toLocaleString()}`
+              formatCurrency(estimatedShippingCost)
             )}
           </p>
         </div>
@@ -65,7 +66,7 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
         <div className='flex items-center justify-between gap-3 mb-0'>
           <p className='font-bold text-lg text-gray-900'>Total:</p>
           <p className='font-bold text-lg' style={{ color: '#c2410b' }}>
-            ${total.toLocaleString()}
+            {formatCurrency(total)}
           </p>
         </div>
       )}

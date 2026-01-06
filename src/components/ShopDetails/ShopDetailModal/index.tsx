@@ -52,6 +52,7 @@ import { ProductImageGallery } from './components/ProductImageGallery'
 import { ProductInfo } from './components/ProductInfo'
 import { ProductSpecifications } from './components/ProductSpecifications'
 import { AddToCartSection } from './components/AddToCartSection'
+import { StickyAddToCart } from './components/StickyAddToCart'
 import { RelatedProducts } from './components/RelatedProducts'
 import { QuantitySelector } from './components/QuantitySelector'
 import { GrainSelector } from './components/VariantSelectors/GrainSelector'
@@ -806,7 +807,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         </DialogHeader>
 
         <ScrollArea className="h-full">
-          <div className="p-6">
+          <div className="p-6 pb-24 md:pb-6">
             {loadingProductData ? (
               <ProductModalSkeleton />
             ) : (
@@ -967,6 +968,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           </div>
         </ScrollArea>
       </DialogContent>
+      
+      {/* Sticky Add to Cart Button - Solo visible en móvil */}
+      <StickyAddToCart
+        price={finalCurrentPrice}
+        onAddToCart={handleAddToCart}
+        disabled={isLoading || effectiveStock === 0}
+        isLoading={isLoading}
+      />
     </Dialog>
   )
 }
