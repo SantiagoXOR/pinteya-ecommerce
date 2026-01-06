@@ -185,7 +185,7 @@ const CartSidebarModal = () => {
             {/* Información de pago - Mercado Pago */}
             {mounted && hasItems && (
               <div className={`px-4 sm:px-7.5 lg:px-11 py-1 bg-white`}>
-                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'px-1' : 'px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`}>
+                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'px-1' : 'px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600 h-fit`}>
                   <Image
                     src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
                     alt='MercadoPago'
@@ -198,21 +198,25 @@ const CartSidebarModal = () => {
                 </div>
               </div>
             )}
+
+            {/* Cart Items - Movidos al header */}
+            {mounted && effectiveCartItems.length > 0 && (
+              <div className={`px-4 sm:px-7.5 lg:px-11 py-1 bg-white`}>
+                {effectiveCartItems.map((item: any, key: number) => (
+                  <SingleItem key={key} item={item} />
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Content Area - Scrollable */}
-          <div className={`flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 ${hasItems ? 'pt-0' : isLargeText ? 'pt-1' : 'pt-2'} bg-gray-50 min-h-0`} style={{ overflowY: 'auto', minHeight: isLargeText ? '320px' : '280px' }}>
-            <div className={`flex flex-col ${isLargeText ? 'gap-1.5' : 'gap-2'} px-1`}>
-              {/* cart items */}
-              {mounted && effectiveCartItems.length > 0 ? (
-                effectiveCartItems.map((item: any, key: number) => (
-                  <SingleItem key={key} item={item} />
-                ))
-              ) : (
+          {/* Content Area - Empty Cart (si no hay items) */}
+          {mounted && effectiveCartItems.length === 0 && (
+            <div className={`flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pt-1' : 'pt-2'} bg-gray-50 min-h-0`} style={{ overflowY: 'auto', minHeight: isLargeText ? '320px' : '280px' }}>
+              <div className={`flex flex-col ${isLargeText ? 'gap-1.5' : 'gap-2'} px-1`}>
                 <EmptyCart />
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Footer - Sticky at bottom */}
           <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pt-1.5 pb-6' : 'pt-2 pb-6'} mt-auto flex-shrink-0`}>
