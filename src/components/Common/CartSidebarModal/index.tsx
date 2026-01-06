@@ -182,30 +182,20 @@ const CartSidebarModal = () => {
               <div className='w-12 h-1.5 bg-gray-300 rounded-full pointer-events-none' />
             </div>
 
-            {/* Botón "Comprar ahora" - Estilo verde del checkout - Sticky */}
+            {/* Información de pago - Mercado Pago */}
             {mounted && hasItems && (
               <div className={`px-4 sm:px-7.5 lg:px-11 ${isLargeText ? 'pb-1.5' : 'pb-2'} bg-white`}>
-                <button
-                  onClick={startTransition}
-                  disabled={isButtonDisabled || cartLoading}
-                  data-testid='checkout-btn-top'
-                  className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold ${isLargeText ? 'py-1.5 px-3 text-xs' : 'py-2 px-4 text-sm'} rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 z-10 ${
-                    isButtonDisabled || cartLoading
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
-                  }`}
-                >
-                  {cartLoading
-                    ? 'Cargando carrito...'
-                    : isButtonDisabled
-                      ? 'Procesando...'
-                      : (
-                        <>
-                          Comprar ahora
-                          <ArrowRight className={isLargeText ? 'w-3 h-3' : 'w-4 h-4'} />
-                        </>
-                      )}
-                </button>
+                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'py-0.5 px-1' : 'py-1 px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`}>
+                  <Image
+                    src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
+                    alt='MercadoPago'
+                    width={isLargeText ? 90 : 110}
+                    height={isLargeText ? 28 : 35}
+                    className='w-auto h-auto'
+                    style={{ maxWidth: isLargeText ? '90px' : '110px' }}
+                  />
+                  <span className={`font-medium ${isLargeText ? 'text-[10px]' : 'text-xs'}`}>Pago seguro</span>
+                </div>
               </div>
             )}
           </div>
@@ -269,21 +259,30 @@ const CartSidebarModal = () => {
               </div>
             )}
 
-            {/* Información de pago */}
-            {hasItems && (
+            {/* Botón "Comprar ahora" - Estilo verde del checkout - Sticky */}
+            {mounted && hasItems && (
               <div className={isLargeText ? 'mt-1' : 'mt-1.5'}>
-                {/* Línea informativa de MercadoPago */}
-                <div className={`w-full flex items-center justify-center gap-2 ${isLargeText ? 'py-0.5 px-1' : 'py-1 px-2'} ${isLargeText ? 'text-[10px]' : 'text-xs'} text-gray-600`}>
-                  <Image
-                    src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
-                    alt='MercadoPago'
-                    width={isLargeText ? 90 : 110}
-                    height={isLargeText ? 28 : 35}
-                    className='w-auto h-auto'
-                    style={{ maxWidth: isLargeText ? '90px' : '110px' }}
-                  />
-                  <span className={`font-medium ${isLargeText ? 'text-[10px]' : 'text-xs'}`}>Pago seguro</span>
-                </div>
+                <button
+                  onClick={startTransition}
+                  disabled={isButtonDisabled || cartLoading}
+                  data-testid='checkout-btn-bottom'
+                  className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold ${isLargeText ? 'py-1.5 px-3 text-xs' : 'py-2 px-4 text-sm'} rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 z-10 ${
+                    isButtonDisabled || cartLoading
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
+                  {cartLoading
+                    ? 'Cargando carrito...'
+                    : isButtonDisabled
+                      ? 'Procesando...'
+                      : (
+                        <>
+                          Comprar ahora
+                          <ArrowRight className={isLargeText ? 'w-3 h-3' : 'w-4 h-4'} />
+                        </>
+                      )}
+                </button>
               </div>
             )}
           </div>
