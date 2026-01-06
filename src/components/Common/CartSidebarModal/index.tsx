@@ -154,13 +154,14 @@ const CartSidebarModal = () => {
       <Sheet open={isCartModalOpen} onOpenChange={closeCartModal}>
         <SheetContent
           side='bottom'
-          className={`${isLargeText ? 'h-[85vh] max-h-[85vh]' : 'h-[75vh] max-h-[75vh]'} rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden`}
+          className={`${isLargeText ? 'h-screen max-h-screen' : 'h-screen max-h-screen'} rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden`}
           style={{
             transform: isDragging && translateY > 0 ? `translateY(${translateY}px)` : undefined,
             transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: isDragging ? 'transform' : 'auto',
-            maxHeight: isLargeText ? '85vh' : '75vh',
-            height: isLargeText ? '85vh' : '75vh'
+            maxHeight: '100vh',
+            height: '100vh',
+            bottom: 0
           }}
         >
           {/* Título oculto para accesibilidad */}

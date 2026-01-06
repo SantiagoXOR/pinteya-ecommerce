@@ -161,3 +161,6 @@ npx playwright test tests/e2e/rerender-investigation.spec.ts
 
 Las optimizaciones implementadas deberían reducir significativamente los rerenders durante la carga de la aplicación, mejorando el rendimiento general y la experiencia del usuario.
 
+
+
+

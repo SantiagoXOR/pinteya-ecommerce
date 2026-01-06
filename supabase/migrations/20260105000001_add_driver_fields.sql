@@ -28,3 +28,6 @@ COMMENT ON COLUMN drivers.license_plate IS 'Placa del vehículo (para compatibil
 COMMENT ON COLUMN drivers.max_capacity IS 'Capacidad máxima de envíos que puede manejar el driver';
 
 
+
+
+

@@ -678,6 +678,7 @@ export function PaintVisualizer({ isOpen, onClose, productName, productCategory 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent
+        data-testid="paint-visualizer-modal"
         className={cn(
           'p-0 overflow-hidden',
           viewMode === 'camera'

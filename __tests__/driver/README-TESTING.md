@@ -99,3 +99,6 @@ npm run test:coverage -- __tests__/driver
 - Los tests verifican campos nuevos (`current_location`, etc.)
 
 
+
+
+

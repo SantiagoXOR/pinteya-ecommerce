@@ -373,3 +373,6 @@ export async function POST(request: NextRequest) {
 - [ ] Testing en producción
 - [ ] Monitoreo de errores configurado
 
+
+
+

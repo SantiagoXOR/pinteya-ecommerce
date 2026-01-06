@@ -215,8 +215,7 @@ const SheetContent = React.forwardRef<
   return (
     <SheetPortal>
       {isBottom ? (
-        // Overlay personalizado que excluye el área del bottom bar (64px)
-        // Usar pointer-events: none para que los eventos pasen al bottom bar
+        // Overlay personalizado que cubre toda la pantalla cuando el bottom nav está oculto
         // Reducir opacidad para evitar efecto overlay visible
         <div
           ref={overlayRef}
@@ -225,7 +224,7 @@ const SheetContent = React.forwardRef<
             top: 0,
             left: 0,
             right: 0,
-            bottom: '64px',
+            bottom: 0,
             pointerEvents: 'none',
             backgroundColor: 'rgba(0, 0, 0, 0.3)',
             backdropFilter: 'none'
@@ -244,10 +243,10 @@ const SheetContent = React.forwardRef<
           }
           contentRef.current = node;
         }} 
-        className={cn(sheetVariants({ side }), isBottom && '!bottom-[64px] !max-h-[calc(100vh-64px)]', className)} 
+        className={cn(sheetVariants({ side }), isBottom && '!bottom-0 !max-h-screen', className)} 
         style={isBottom ? { 
-          bottom: '64px',
-          maxHeight: 'calc(100vh - 64px)'
+          bottom: 0,
+          maxHeight: '100vh'
         } : undefined}
         onPointerDown={(e) => {
           if (isBottom) {

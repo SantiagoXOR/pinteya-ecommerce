@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { SessionProvider } from 'next-auth/react'
 import { useDeferredHydration } from '@/hooks/useDeferredHydration'
+import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 
 // ⚡ PERFORMANCE: Providers críticos (carga inmediata - solo los esenciales)
 import { ReduxProvider } from '@/redux/provider'
@@ -147,6 +148,32 @@ const DeferredProviders = React.memo(({
 DeferredProviders.displayName = 'DeferredProviders'
 
 // ⚡ FASE 4: Componente wrapper para diferir componentes UI no críticos después del LCP
+// Componente wrapper para bottom nav que se oculta cuando el cart modal está abierto
+const BottomNavWrapper = ({ 
+  isAdminRoute, 
+  isAuthRoute,
+  isCheckoutRoute
+}: { 
+  isAdminRoute: boolean
+  isAuthRoute: boolean
+  isCheckoutRoute: boolean
+}) => {
+  // Obtener estado del cart modal para ocultar bottom nav cuando está abierto
+  let isCartModalOpen = false
+  try {
+    const cartContext = useCartModalContext()
+    isCartModalOpen = cartContext.isCartModalOpen
+  } catch {
+    // Si el contexto no está disponible, continuar sin error
+  }
+
+  if (isAdminRoute || isAuthRoute || isCheckoutRoute || isCartModalOpen) {
+    return null
+  }
+
+  return <MercadoLibreBottomNav />
+}
+
 const DeferredComponents = React.memo(({ 
   isAdminRoute, 
   isAuthRoute,
@@ -171,7 +198,11 @@ const DeferredComponents = React.memo(({
   return (
     <>
       <ScrollToTop />
-      {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MercadoLibreBottomNav />}
+      <BottomNavWrapper 
+        isAdminRoute={isAdminRoute}
+        isAuthRoute={isAuthRoute}
+        isCheckoutRoute={isCheckoutRoute}
+      />
       <Toaster />
     </>
   )

@@ -158,3 +158,6 @@ function extractComponentName(text) {
 // Ejecutar
 monitorRerenders().catch(console.error)
 
+
+
+

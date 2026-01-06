@@ -271,3 +271,6 @@ ON drivers USING GIN (current_location);
 **Conclusión**: El sistema tiene funcionalidad implementada pero **requiere correcciones críticas** en la estructura de datos y el código para funcionar correctamente en producción.
 
 
+
+
+

@@ -187,3 +187,6 @@ Si detectas rerenders excesivos:
 - [React Performance Optimization](https://react.dev/learn/render-and-commit#optimizing-performance)
 - [Redux Performance](https://redux.js.org/usage/deriving-data-selectors#optimizing-selectors-with-memoization)
 
+
+
+

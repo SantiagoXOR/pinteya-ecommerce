@@ -131,3 +131,6 @@ Los tests están configurados para ejecutarse en CI/CD con:
 - Los tests de geolocalización usan mocks para evitar depender de GPS real
 
 
+
+
+

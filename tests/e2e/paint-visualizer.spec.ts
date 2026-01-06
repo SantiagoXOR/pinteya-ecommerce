@@ -2,28 +2,29 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Paint Visualizer', () => {
   test.beforeEach(async ({ page }) => {
-    // Navegar a la página principal
-    await page.goto('http://localhost:3000')
-    // Esperar a que la página cargue completamente
-    await page.waitForLoadState('networkidle')
+    // Navegar a la página principal en producción
+    await page.goto('https://pinteya.com', { waitUntil: 'domcontentloaded', timeout: 60000 })
+    // Esperar un momento para que los scripts se ejecuten
+    await page.waitForTimeout(2000)
   })
 
   test('debería abrir el modal del Paint Visualizer', async ({ page }) => {
     // Buscar el botón o card del Paint Visualizer
     // Puede estar en la sección de "Best Seller" o similar
-    const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
-      page.getByText('Probar PinteYa ColorMate').first()
-    )
+    const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').first()
 
+    // Scroll hacia el card si es necesario
+    await paintVisualizerCard.scrollIntoViewIfNeeded()
+    
     // Verificar que el card existe
-    await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+    await expect(paintVisualizerCard).toBeVisible({ timeout: 15000 })
 
     // Hacer clic para abrir el modal
     await paintVisualizerCard.click()
 
-    // Verificar que el modal se abre
-    const modal = page.locator('[role="dialog"]').first()
-    await expect(modal).toBeVisible()
+    // Verificar que el modal se abre (usar el data-testid específico)
+    const modal = page.locator('[data-testid="paint-visualizer-modal"]')
+    await expect(modal).toBeVisible({ timeout: 10000 })
 
     // Verificar que el modal aparece por encima del header y bottom bar
     // El modal debería tener z-index mayor que header (1100) y bottom-nav (1300)
@@ -35,19 +36,22 @@ test.describe('Paint Visualizer', () => {
   })
 
   test('flujo completo: selección de producto, color, cámara y procesamiento', async ({ page, context }) => {
-    // Otorgar permisos de cámara
-    await context.grantPermissions(['camera'])
+    // Otorgar permisos de cámara (solo para Chromium)
+    try {
+      await context.grantPermissions(['camera'])
+    } catch (e) {
+      // Firefox y Safari no soportan 'camera' como permiso, continuar sin él
+    }
 
     // Buscar y abrir el modal
-    const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
-      page.getByText('Probar PinteYa ColorMate').first()
-    )
-    await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+    const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').first()
+    await paintVisualizerCard.scrollIntoViewIfNeeded()
+    await expect(paintVisualizerCard).toBeVisible({ timeout: 15000 })
     await paintVisualizerCard.click()
 
-    // Esperar a que el modal se abra
-    const modal = page.locator('[role="dialog"]').first()
-    await expect(modal).toBeVisible()
+    // Esperar a que el modal se abra (usar el data-testid específico)
+    const modal = page.locator('[data-testid="paint-visualizer-modal"]')
+    await expect(modal).toBeVisible({ timeout: 10000 })
 
     // PASO 1: Vista de selección de productos
     // Verificar que estamos en la vista de selección
@@ -117,14 +121,13 @@ test.describe('Paint Visualizer', () => {
 
   test('el modal debería estar por encima del header y bottom bar', async ({ page }) => {
     // Abrir el modal
-    const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
-      page.getByText('Probar PinteYa ColorMate').first()
-    )
-    await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+    const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').first()
+    await paintVisualizerCard.scrollIntoViewIfNeeded()
+    await expect(paintVisualizerCard).toBeVisible({ timeout: 15000 })
     await paintVisualizerCard.click()
 
-    const modal = page.locator('[role="dialog"]').first()
-    await expect(modal).toBeVisible()
+    const modal = page.locator('[data-testid="paint-visualizer-modal"]')
+    await expect(modal).toBeVisible({ timeout: 10000 })
 
     // Obtener z-index del modal
     const modalZIndex = await modal.evaluate((el) => {
@@ -167,14 +170,13 @@ test.describe('Paint Visualizer', () => {
 
   test('debería cerrar el modal correctamente', async ({ page }) => {
     // Abrir el modal
-    const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').or(
-      page.getByText('Probar PinteYa ColorMate').first()
-    )
-    await expect(paintVisualizerCard).toBeVisible({ timeout: 10000 })
+    const paintVisualizerCard = page.locator('[data-testid="paint-visualizer-card"]').first()
+    await paintVisualizerCard.scrollIntoViewIfNeeded()
+    await expect(paintVisualizerCard).toBeVisible({ timeout: 15000 })
     await paintVisualizerCard.click()
 
-    const modal = page.locator('[role="dialog"]').first()
-    await expect(modal).toBeVisible()
+    const modal = page.locator('[data-testid="paint-visualizer-modal"]')
+    await expect(modal).toBeVisible({ timeout: 10000 })
 
     // Cerrar el modal con el botón de cerrar
     const closeButton = page.getByRole('button', { name: /cerrar/i }).first().or(
