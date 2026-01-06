@@ -49,7 +49,7 @@ export const calculateEffectivePrice = (
       return measure
     }
     const widthKey = extractWidthFromMeasure(selectedWidth)
-    if (widthToPriceMap[widthKey]) {
+    if (widthKey && widthToPriceMap[widthKey]) {
       const priceData = widthToPriceMap[widthKey]
       return parseFloat(priceData.discounted_price || priceData.price)
     }
@@ -99,7 +99,7 @@ export const calculateOriginalPrice = (
       return measure
     }
     const widthKey = extractWidthFromMeasure(selectedWidth)
-    if (widthToPriceMap[widthKey]) {
+    if (widthKey && widthToPriceMap[widthKey]) {
       return parseFloat(widthToPriceMap[widthKey].price)
     }
   }
