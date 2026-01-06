@@ -141,10 +141,14 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         style={{
           bottom: 'env(safe-area-inset-bottom, 0px)',
           borderRadius: '24px 24px 0px 0px',
-          background: 'linear-gradient(90deg, rgba(189, 189, 189, 0.7) 0%, rgba(255, 255, 255, 1) 100%)',
+          background: 'unset',
+          backgroundColor: 'unset',
           borderTopColor: 'var(--glass-bg-strong)',
-          boxShadow: '0px 0px 0px 0px rgba(0, 0, 0, 0), 0px 10px 15px -3px rgba(0, 0, 0, 0.1), inset 0px 4px 6px 0px rgba(0, 0, 0, 0.15)',
-          backdropFilter: 'blur(1px)',
+          boxShadow: 'inset 0px 4px 6px 0px rgba(0, 0, 0, 0.15)',
+          backdropFilter: 'none',
+          letterSpacing: '0px',
+          lineHeight: '14px',
+          opacity: '1',
         }}
         {...props}
       >
@@ -194,7 +198,13 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               ? 'bg-blaze-orange-50 border-2 border-blaze-orange-200 shadow-sm'
                               : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
                           )}
-                          style={{ marginTop: '-4px' }}
+                          style={{
+                            marginTop: '0px',
+                            paddingTop: '0px',
+                            paddingBottom: '0px',
+                            ...(hasBadge && !isCartPressed && { borderColor: 'rgba(235, 99, 19, 1)' }),
+                            borderImage: 'none',
+                          }}
                         >
                           <Icon
                             className={cn(
