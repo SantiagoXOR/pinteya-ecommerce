@@ -371,6 +371,8 @@ const HomeV3 = () => {
   
   // ⚡ OPTIMIZACIÓN CRÍTICA: Detectar si es móvil para deshabilitar efectos costosos
   const [isMobile, setIsMobile] = React.useState(false)
+  // ⚡ FIX: Detectar si es desktop con un breakpoint más tolerante (1000px en lugar de 1024px)
+  const [isDesktop, setIsDesktop] = React.useState(false)
   
   React.useEffect(() => {
     const checkMobile = () => {
@@ -379,6 +381,16 @@ const HomeV3 = () => {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  React.useEffect(() => {
+    // ⚡ FIX: Usar breakpoint más tolerante (1000px) para evitar problemas cuando la ventana es ligeramente menor que 1024px
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1000)
+    }
+    checkDesktop()
+    window.addEventListener('resize', checkDesktop)
+    return () => window.removeEventListener('resize', checkDesktop)
   }, [])
   
   // ⚡ FASE 1B: Aplicar delays basados en LCP y rendimiento del dispositivo
@@ -537,7 +549,9 @@ const HomeV3 = () => {
       {/* ⚡ FASE 23: Contenedor hero-lcp-container con imagen estática y carousel */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
       {/* Mobile: full width */}
-      <div className='pt-1 sm:pt-2 w-full lg:hidden' key="hero-container-wrapper-mobile" style={{ width: '100%', maxWidth: '100%' }}>
+      {/* ⚡ FIX: Usar estado isDesktop con breakpoint más tolerante (1000px) en lugar de lg:hidden (1024px) */}
+      {!isDesktop && (
+        <div className='pt-1 sm:pt-2 w-full' key="hero-container-wrapper-mobile" style={{ width: '100%', maxWidth: '100%' }}>
         <div 
           className="hero-lcp-container relative w-full overflow-hidden"
           style={{ 
@@ -577,17 +591,11 @@ const HomeV3 = () => {
           />
         </div>
       </div>
+      )}
       {/* Desktop: con márgenes */}
-      {(() => {
-        if (typeof window !== 'undefined') {
-          console.log('[HomeV3] 🖥️ Rendering desktop hero container', {
-            windowWidth: window.innerWidth,
-            isDesktop: window.innerWidth >= 1024,
-            timestamp: Date.now()
-          })
-        }
-        return (
-          <div className='hidden lg:block pt-1 sm:pt-2 -mt-[105px]' key="hero-container-wrapper-desktop">
+      {/* ⚡ FIX: Usar estado isDesktop con breakpoint más tolerante (1000px) en lugar de lg:block (1024px) */}
+      {isDesktop && (
+        <div className='pt-1 sm:pt-2 -mt-[105px]' key="hero-container-wrapper-desktop">
             <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 pt-[105px]'>
               <div 
                 className="hero-lcp-container relative overflow-hidden rounded-3xl"
@@ -643,8 +651,7 @@ const HomeV3 = () => {
               </div>
             </div>
           </div>
-        )
-      })()}
+      )}
 
       {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
       <React.Suspense

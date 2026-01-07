@@ -28,9 +28,13 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   // ⚡ FIX: Inicializar matchesBreakpoint basándose en el prop isDesktop y el ancho de la ventana
+  // ⚡ CRITICAL: Usar un breakpoint más tolerante (1000px en lugar de 1024px) para evitar problemas
+  // cuando la ventana es ligeramente menor que el breakpoint de Tailwind
   const [matchesBreakpoint, setMatchesBreakpoint] = useState(() => {
     if (typeof window !== 'undefined') {
-      const isDesktopBreakpoint = window.innerWidth >= 1024
+      // Usar 1000px como breakpoint más tolerante (vs 1024px de Tailwind)
+      // Esto permite que el carousel se renderice incluso si la ventana es ligeramente menor
+      const isDesktopBreakpoint = window.innerWidth >= 1000
       return isDesktop ? isDesktopBreakpoint : !isDesktopBreakpoint
     }
     return false
@@ -165,11 +169,14 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       // Verificar después de un pequeño delay para asegurar que el DOM esté listo
       setTimeout(checkParentVisibility, 100)
       
-      // Tailwind lg breakpoint es 1024px
-      const mediaQuery = window.matchMedia('(min-width: 1024px)')
+      // ⚡ CRITICAL: Usar un breakpoint más tolerante (1000px en lugar de 1024px) para evitar problemas
+      // cuando la ventana es ligeramente menor que el breakpoint de Tailwind
+      // También verificar directamente window.innerWidth como fallback
+      const mediaQuery = window.matchMedia('(min-width: 1000px)')
       
       const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
-        const isDesktopBreakpoint = e.matches
+        // Verificar tanto la media query como window.innerWidth directamente
+        const isDesktopBreakpoint = e.matches || window.innerWidth >= 1000
         // Si el prop isDesktop es true, debe coincidir con el breakpoint
         // Si el prop isDesktop es false, debe NO coincidir con el breakpoint
         const shouldRender = isDesktop ? isDesktopBreakpoint : !isDesktopBreakpoint
@@ -177,8 +184,9 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
         console.log(`[HeroOptimized] 📊 Breakpoint check for ${carouselId}:`, {
           isDesktop,
           isDesktopBreakpoint,
-          shouldRender,
+          mediaQueryMatches: e.matches,
           windowWidth: window.innerWidth,
+          shouldRender,
           matchesBreakpoint: shouldRender
         })
       }
@@ -250,7 +258,19 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       console.warn(`[HeroOptimized] Breakpoint doesn't match for ${carouselId}`, {
         isDesktop,
         windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'N/A',
-        expectedBreakpoint: isDesktop ? '>= 1024px' : '< 1024px'
+        expectedBreakpoint: isDesktop ? '>= 1000px' : '< 1000px',
+        // ⚡ DEBUG: Verificar si el contenedor padre está visible
+        parentContainerVisible: typeof window !== 'undefined' ? (() => {
+          const staticImage = document.getElementById(staticImageId)
+          if (staticImage) {
+            const parentWrapper = staticImage.closest('[class*="hero-container-wrapper"]')
+            if (parentWrapper) {
+              const style = window.getComputedStyle(parentWrapper)
+              return style.display !== 'none'
+            }
+          }
+          return false
+        })() : 'N/A'
       })
       return
     }
