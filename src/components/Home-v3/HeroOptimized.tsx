@@ -155,23 +155,50 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
   useEffect(() => {
     if (!shouldLoadCarousel) return
 
-    // Usar requestAnimationFrame para ocultar en el siguiente frame (ocultar inmediatamente)
+    // Usar múltiples requestAnimationFrame para asegurar que se ejecute después de que el carousel se renderice
     requestAnimationFrame(() => {
-      // ⚡ FIX CRÍTICO: Seleccionar SOLO la imagen estática por su ID específico (usar el prop)
-      // NO seleccionar todas las imágenes porque eso afectaría también las del carousel
-      const staticImage = document.getElementById(staticImageId)
-      
-      if (staticImage && staticImage instanceof HTMLElement) {
-        // Ocultar imagen estática cuando el carousel comienza a cargar
-        // Usar opacity: 0 y visibility: hidden para asegurar que no sea visible
-        staticImage.style.opacity = '0'
-        staticImage.style.visibility = 'hidden'
-        staticImage.style.pointerEvents = 'none'
-        staticImage.style.position = 'absolute'
-        staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
-      }
+      requestAnimationFrame(() => {
+        // ⚡ FIX CRÍTICO: Seleccionar SOLO la imagen estática por su ID específico (usar el prop)
+        // NO seleccionar todas las imágenes porque eso afectaría también las del carousel
+        const staticImage = document.getElementById(staticImageId)
+        
+        if (staticImage && staticImage instanceof HTMLElement) {
+          // Ocultar imagen estática cuando el carousel comienza a cargar
+          // Usar opacity: 0 y visibility: hidden para asegurar que no sea visible
+          staticImage.style.opacity = '0'
+          staticImage.style.visibility = 'hidden'
+          staticImage.style.pointerEvents = 'none'
+          staticImage.style.position = 'absolute'
+          staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
+          staticImage.style.display = 'none' // ⚡ FIX: Agregar display: none para asegurar que esté completamente oculta
+          
+          console.log(`[HeroOptimized] Imagen estática ${staticImageId} ocultada`, {
+            opacity: staticImage.style.opacity,
+            visibility: staticImage.style.visibility,
+            display: staticImage.style.display,
+            zIndex: staticImage.style.zIndex
+          })
+        } else {
+          console.warn(`[HeroOptimized] No se encontró la imagen estática con ID ${staticImageId}`)
+        }
+        
+        // ⚡ FIX: Verificar que el carousel esté visible
+        const carouselContainer = document.querySelector(`[data-hero-optimized="${carouselId}"]`)
+        if (carouselContainer) {
+          const carouselStyle = window.getComputedStyle(carouselContainer)
+          console.log(`[HeroOptimized] Estado del carousel ${carouselId}:`, {
+            opacity: carouselStyle.opacity,
+            visibility: carouselStyle.visibility,
+            display: carouselStyle.display,
+            zIndex: carouselStyle.zIndex,
+            position: carouselStyle.position
+          })
+        } else {
+          console.warn(`[HeroOptimized] No se encontró el contenedor del carousel con ID ${carouselId}`)
+        }
+      })
     })
-  }, [shouldLoadCarousel, staticImageId])
+  }, [shouldLoadCarousel, staticImageId, carouselId])
 
   // ⚡ FASE 23: La imagen estática se renderiza en el contenedor hero-lcp-container (HomeV3/index.tsx)
   // El carousel se renderiza en el MISMO contenedor que la imagen estática para que coincidan exactamente
@@ -209,7 +236,7 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       {/* ⚡ FIX: Solo renderizar si el breakpoint coincide y el carousel debe cargarse */}
       {isMounted && matchesBreakpoint && shouldLoadCarousel && (
         <div
-          className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100"
+          className="absolute inset-0 z-20 transition-opacity duration-500"
           data-hero-optimized={carouselId}
           style={{
             position: 'absolute',
@@ -220,6 +247,10 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
             width: '100%',
             height: '100%',
             maxWidth: '100%',
+            opacity: 1,
+            visibility: 'visible',
+            display: 'block',
+            zIndex: 20,
           }}
         >
           {/* #region agent log */}
