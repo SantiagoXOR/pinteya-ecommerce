@@ -180,47 +180,66 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
   useEffect(() => {
     if (!shouldLoadCarousel) return
 
-    // Usar múltiples requestAnimationFrame para asegurar que se ejecute después de que el carousel se renderice
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        // ⚡ FIX CRÍTICO: Seleccionar SOLO la imagen estática por su ID específico (usar el prop)
-        // NO seleccionar todas las imágenes porque eso afectaría también las del carousel
+    // ⚡ FIX: Esperar a que el DOM esté completamente listo antes de buscar elementos
+    const hideStaticImage = () => {
+      // Intentar encontrar la imagen estática con múltiples intentos
+      let attempts = 0
+      const maxAttempts = 10
+      
+      const tryHideImage = () => {
+        attempts++
         const staticImage = document.getElementById(staticImageId)
         
         if (staticImage && staticImage instanceof HTMLElement) {
           // Ocultar imagen estática cuando el carousel comienza a cargar
-          // Usar opacity: 0 y visibility: hidden para asegurar que no sea visible
           staticImage.style.opacity = '0'
           staticImage.style.visibility = 'hidden'
           staticImage.style.pointerEvents = 'none'
           staticImage.style.position = 'absolute'
-          staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
-          staticImage.style.display = 'none' // ⚡ FIX: Agregar display: none para asegurar que esté completamente oculta
+          staticImage.style.zIndex = '1'
+          staticImage.style.display = 'none'
           
-          console.log(`[HeroOptimized] Imagen estática ${staticImageId} ocultada`, {
+          console.log(`[HeroOptimized] ✅ Imagen estática ${staticImageId} ocultada`, {
             opacity: staticImage.style.opacity,
             visibility: staticImage.style.visibility,
             display: staticImage.style.display,
-            zIndex: staticImage.style.zIndex
+            zIndex: staticImage.style.zIndex,
+            attempts
           })
+        } else if (attempts < maxAttempts) {
+          // Reintentar después de un pequeño delay
+          setTimeout(tryHideImage, 100)
         } else {
-          console.warn(`[HeroOptimized] No se encontró la imagen estática con ID ${staticImageId}`)
+          console.warn(`[HeroOptimized] ⚠️ No se encontró la imagen estática con ID ${staticImageId} después de ${maxAttempts} intentos`)
         }
+      }
+      
+      tryHideImage()
+    }
+    
+    // Usar múltiples requestAnimationFrame para asegurar que se ejecute después del render
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        hideStaticImage()
         
-        // ⚡ FIX: Verificar que el carousel esté visible
-        const carouselContainer = document.querySelector(`[data-hero-optimized="${carouselId}"]`)
-        if (carouselContainer) {
-          const carouselStyle = window.getComputedStyle(carouselContainer)
-          console.log(`[HeroOptimized] Estado del carousel ${carouselId}:`, {
-            opacity: carouselStyle.opacity,
-            visibility: carouselStyle.visibility,
-            display: carouselStyle.display,
-            zIndex: carouselStyle.zIndex,
-            position: carouselStyle.position
-          })
-        } else {
-          console.warn(`[HeroOptimized] No se encontró el contenedor del carousel con ID ${carouselId}`)
-        }
+        // Verificar el carousel después de un delay adicional
+        setTimeout(() => {
+          const carouselContainer = document.querySelector(`[data-hero-optimized="${carouselId}"]`)
+          if (carouselContainer) {
+            const carouselStyle = window.getComputedStyle(carouselContainer)
+            console.log(`[HeroOptimized] ✅ Estado del carousel ${carouselId}:`, {
+              opacity: carouselStyle.opacity,
+              visibility: carouselStyle.visibility,
+              display: carouselStyle.display,
+              zIndex: carouselStyle.zIndex,
+              position: carouselStyle.position,
+              width: carouselStyle.width,
+              height: carouselStyle.height
+            })
+          } else {
+            console.warn(`[HeroOptimized] ⚠️ No se encontró el contenedor del carousel con ID ${carouselId} - el carousel podría no haberse renderizado`)
+          }
+        }, 500)
       })
     })
   }, [shouldLoadCarousel, staticImageId, carouselId])
@@ -228,6 +247,19 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
   // ⚡ FASE 23: La imagen estática se renderiza en el contenedor hero-lcp-container (HomeV3/index.tsx)
   // El carousel se renderiza en el MISMO contenedor que la imagen estática para que coincidan exactamente
   // Solo renderizamos el carousel aquí, que se carga después del LCP
+  
+  // ⚡ DEBUG: Log del estado del componente en cada render
+  if (typeof window !== 'undefined') {
+    console.log(`[HeroOptimized] 🔄 Render de ${carouselId}:`, {
+      isMounted,
+      matchesBreakpoint,
+      shouldLoadCarousel,
+      isDesktop,
+      windowWidth: window.innerWidth,
+      shouldRenderCarousel: isMounted && matchesBreakpoint && shouldLoadCarousel
+    })
+  }
+  
   return (
     <>
       {/* #region agent log */}
