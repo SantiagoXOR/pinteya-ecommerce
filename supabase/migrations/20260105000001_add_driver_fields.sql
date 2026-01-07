@@ -31,3 +31,4 @@ COMMENT ON COLUMN drivers.max_capacity IS 'Capacidad máxima de envíos que pued
 
 
 
+

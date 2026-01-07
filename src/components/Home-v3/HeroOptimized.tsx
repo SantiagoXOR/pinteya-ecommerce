@@ -74,6 +74,42 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
     
     // ⚡ FIX: Usar media query para detectar breakpoint lg (1024px+) de forma confiable
     if (typeof window !== 'undefined') {
+      // ⚡ CRITICAL: Verificar inmediatamente si la imagen existe
+      const checkImageExists = () => {
+        const staticImage = document.getElementById(staticImageId)
+        const allImages = Array.from(document.querySelectorAll('img')).map(img => img.id || img.src)
+        const allContainers = Array.from(document.querySelectorAll('.hero-lcp-container')).map(container => ({
+          id: container.id,
+          className: container.className,
+          display: window.getComputedStyle(container).display,
+          children: Array.from(container.children).map(child => ({
+            tagName: child.tagName,
+            id: child.id,
+            className: child.className
+          }))
+        }))
+        
+        console.log(`[HeroOptimized] 🔍 Initial DOM check for ${carouselId}:`, {
+          staticImageExists: !!staticImage,
+          staticImageId,
+          allImagesWithId: allImages.filter(img => typeof img === 'string' && img.includes('hero-lcp')),
+          allContainers,
+          documentReadyState: document.readyState
+        })
+        
+        if (!staticImage) {
+          console.error(`[HeroOptimized] ❌ CRITICAL: Static image ${staticImageId} NOT FOUND in DOM during mount`)
+          console.error(`[HeroOptimized] Available images with IDs:`, Array.from(document.querySelectorAll('img[id]')).map(img => img.id))
+          console.error(`[HeroOptimized] All hero-lcp containers:`, allContainers)
+        }
+      }
+      
+      // Verificar inmediatamente y después de delays
+      checkImageExists()
+      setTimeout(checkImageExists, 100)
+      setTimeout(checkImageExists, 500)
+      setTimeout(checkImageExists, 1000)
+      
       // Verificar si el contenedor padre está visible
       const checkParentVisibility = () => {
         const staticImage = document.getElementById(staticImageId)
@@ -101,7 +137,7 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
             })
           }
         } else {
-          console.warn(`[HeroOptimized] ⚠️ Static image ${staticImageId} not found during mount check`)
+          console.warn(`[HeroOptimized] ⚠️ Static image ${staticImageId} not found during visibility check`)
         }
       }
       
