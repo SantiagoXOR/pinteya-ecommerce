@@ -157,9 +157,11 @@ export const useBestSellerProducts = ({
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
-    // ⚡ OPTIMIZACIÓN: refetchOnMount: 'always' para asegurar datos frescos sin bloquear UI
-    // Si hay datos en cache, se muestran inmediatamente y se actualizan en segundo plano
-    refetchOnMount: 'always',
+    // ⚡ FIX: Cambiar de 'always' a false para evitar recargas innecesarias
+    // TanStack Query usará los datos en cache si están frescos (dentro de staleTime)
+    // placeholderData mantendrá los datos anteriores durante actualizaciones en segundo plano
+    // Solo se refetcheará si los datos están stale (más antiguos que staleTime)
+    refetchOnMount: false,
     refetchOnReconnect: true, // Refetch si se reconecta
   })
 

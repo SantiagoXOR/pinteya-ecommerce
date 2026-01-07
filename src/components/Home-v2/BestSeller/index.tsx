@@ -48,12 +48,15 @@ const BestSeller: React.FC = React.memo(() => {
 
   // ⚡ OPTIMIZACIÓN: Eliminados skeletons - TanStack Query maneja el cache automáticamente
   // Los datos en cache se muestran inmediatamente mientras se actualizan en segundo plano
+  // Con refetchOnMount: false, no habrá recargas innecesarias si hay datos frescos en cache
   
   return (
     <section className='overflow-x-hidden py-1 sm:py-1.5 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-8'>
         {/* Grid de productos mejorado - 4 columnas en desktop */}
         <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
+          {/* ⚡ FIX: Mostrar productos si existen (incluso si está cargando con placeholderData) */}
+          {/* Con placeholderData, siempre habrá datos si hubo una carga previa */}
           {bestSellerProducts.length > 0 ? (
             <>
               {bestSellerProducts.map((item, index) => (
@@ -68,7 +71,9 @@ const BestSeller: React.FC = React.memo(() => {
               </div>
             </>
           ) : (
-            // Solo mostrar mensaje si no está cargando (para evitar mostrar mensaje mientras carga)
+            // ⚡ FIX: Solo mostrar mensaje vacío si realmente no hay datos Y no está cargando
+            // Con placeholderData y refetchOnMount: false, deberíamos tener datos incluso durante refetch
+            // Solo mostrar mensaje vacío si definitivamente no hay productos (no está cargando y no hay datos)
             !isLoading && (
               <div className='col-span-full'>
                 <Card variant='outlined' className='border-gray-200'>
