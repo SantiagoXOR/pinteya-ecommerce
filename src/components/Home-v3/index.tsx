@@ -536,8 +536,8 @@ const HomeV3 = () => {
       {/* 0. Hero Optimized - Imagen estática inicial, carousel después del FCP */}
       {/* ⚡ FASE 23: Contenedor hero-lcp-container con imagen estática y carousel */}
       {/* La imagen estática se renderiza en HTML inicial para descubrimiento temprano y LCP óptimo */}
-      {/* ⚡ FIX: Full width con estilos correctos */}
-      <div className='pt-1 sm:pt-2 w-full' key="hero-container-wrapper" style={{ width: '100%', maxWidth: '100%' }}>
+      {/* Mobile: full width */}
+      <div className='pt-1 sm:pt-2 w-full lg:hidden' key="hero-container-wrapper-mobile" style={{ width: '100%', maxWidth: '100%' }}>
         <div 
           className="hero-lcp-container relative w-full overflow-hidden"
           style={{ 
@@ -546,14 +546,14 @@ const HomeV3 = () => {
             maxWidth: '100%',
             margin: '0 auto',
           }}
-          key="hero-lcp-container"
+          key="hero-lcp-container-mobile"
         >
           {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
           {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
           {/* ⚡ FIX: Full width con object-fit cover para mejor visualización */}
           <img
-            id="hero-lcp-image"
-            key="hero-lcp-image-static"
+            id="hero-lcp-image-mobile"
+            key="hero-lcp-image-static-mobile"
             src="/images/hero/hero2/hero1.webp"
             alt="Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad - Pinteya"
             fetchPriority="high"
@@ -569,7 +569,45 @@ const HomeV3 = () => {
               objectFit: 'cover',
             }}
           />
-          <HeroOptimized key="hero-optimized-component" />
+          <HeroOptimized key="hero-optimized-component-mobile" />
+        </div>
+      </div>
+      {/* Desktop: con márgenes */}
+      <div className='hidden lg:block pt-1 sm:pt-2 -mt-[105px]' key="hero-container-wrapper-desktop">
+        <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 pt-[105px]'>
+          <div 
+            className="hero-lcp-container relative w-full overflow-hidden rounded-3xl"
+            style={{ 
+              aspectRatio: '2.77',
+              width: '100%',
+              maxWidth: '100%',
+              margin: '0 auto',
+            }}
+            key="hero-lcp-container-desktop"
+          >
+            {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
+            {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
+            {/* ⚡ FIX: Full width con object-fit cover para mejor visualización */}
+            <img
+              id="hero-lcp-image"
+              key="hero-lcp-image-static"
+              src="/images/hero/hero2/hero1.webp"
+              alt="Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad - Pinteya"
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
+              className="object-cover"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+            <HeroOptimized key="hero-optimized-component" />
+          </div>
         </div>
       </div>
 
