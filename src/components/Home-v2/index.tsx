@@ -312,8 +312,17 @@ const HomeV2 = () => {
       {/* NUEVO ORDEN OPTIMIZADO */}
 
       {/* 0. Hero Carousel - Primer elemento después del header */}
-      <div className='pt-1 sm:pt-2 md:pt-3'>
+      {/* Mobile: full width */}
+      <div className='pt-1 sm:pt-2 md:pt-3 lg:hidden'>
         <HeroCarousel />
+      </div>
+      {/* Desktop: con márgenes */}
+      <div className='hidden lg:block pt-1 sm:pt-2 md:pt-3 -mt-[105px]'>
+        <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 pt-[105px]'>
+          <div className='relative rounded-3xl overflow-hidden'>
+            <HeroCarousel />
+          </div>
+        </div>
       </div>
 
       {/* 1. Navegación rápida por categorías - Espaciado mínimo */}
