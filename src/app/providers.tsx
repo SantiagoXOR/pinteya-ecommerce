@@ -9,41 +9,39 @@ import { SessionProvider } from 'next-auth/react'
 import { useDeferredHydration } from '@/hooks/useDeferredHydration'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 
-// ⚡ FASE 2.1-2.2: Lazy load de React Query y Redux para reducir "Other" Work (5,520ms)
-// Estos providers se cargan después del TTI para no bloquear carga inicial
+// ⚡ FIX CRÍTICO: Redux debe cargarse inmediatamente - componentes lo necesitan en render inicial
+// Revertir lazy load de Redux porque componentes críticos (cart, buy) lo usan inmediatamente
+import { ReduxProvider } from '@/redux/provider'
+
+// ⚡ FASE 2.1: Solo lazy load de React Query (no crítico para render inicial)
+// Redux se mantiene crítico porque componentes lo usan inmediatamente
 const QueryClientProviderLazy = dynamic(() => import('@/components/providers/QueryClientProvider').then(m => ({ default: m.QueryClientProvider })), {
   ssr: true, // SSR necesario para data fetching inicial
   loading: () => null,
 })
-const ReduxProviderLazy = dynamic(() => import('@/redux/provider').then(m => ({ default: m.ReduxProvider })), {
-  ssr: true, // SSR necesario para state management inicial
-  loading: () => null,
-})
 
-// ⚡ FASE 2.1-2.2: Wrapper para diferir carga de providers hasta después del TTI
-const DeferredDataProviders = React.memo(({ children }: { children: React.ReactNode }) => {
-  // ⚡ Diferir carga hasta después del TTI (Time to Interactive)
-  // Esto reduce "Other" Work de 5,520ms significativamente
+// ⚡ FASE 2.1: Wrapper para diferir solo React Query hasta después del TTI
+const DeferredQueryProvider = React.memo(({ children }: { children: React.ReactNode }) => {
+  // ⚡ Diferir carga de React Query hasta después del TTI
+  // Redux se carga inmediatamente porque es crítico
   const shouldLoad = useDeferredHydration({
-    minDelay: process.env.NODE_ENV === 'development' ? 0 : 3000, // 3s en prod para esperar TTI
-    maxDelay: process.env.NODE_ENV === 'development' ? 0 : 5000, // 5s máximo en prod
+    minDelay: process.env.NODE_ENV === 'development' ? 0 : 2000, // 2s en prod (reducido de 3s)
+    maxDelay: process.env.NODE_ENV === 'development' ? 0 : 4000, // 4s máximo (reducido de 5s)
     useIdleCallback: process.env.NODE_ENV === 'production',
   })
 
   if (!shouldLoad) {
-    // Renderizar sin providers de datos - componentes usarán fallbacks
+    // Renderizar sin React Query - componentes usarán fallbacks o esperarán
     return <>{children}</>
   }
 
   return (
     <QueryClientProviderLazy>
-      <ReduxProviderLazy>
-        {children}
-      </ReduxProviderLazy>
+      {children}
     </QueryClientProviderLazy>
   )
 })
-DeferredDataProviders.displayName = 'DeferredDataProviders'
+DeferredQueryProvider.displayName = 'DeferredQueryProvider'
 
 // ⚡ PERFORMANCE: Error boundary crítico (carga inmediata)
 import { AdvancedErrorBoundary } from '@/lib/error-boundary/advanced-error-boundary'
@@ -294,8 +292,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           enableReporting={true}
           recoveryTimeout={10000}
         >
-          {/* ⚡ FASE 2.1-2.2: Query client y Redux lazy loaded - Cargar después de TTI para reducir "Other" Work (5,520ms) */}
-          <DeferredDataProviders>
+          {/* ⚡ FIX: Redux crítico - cargar inmediatamente. React Query lazy loaded */}
+          <ReduxProvider>
+            <DeferredQueryProvider>
             {/* 3. Cart persistence - Crítico para carrito */}
             <CartPersistenceProvider>
               {/* 4. Modal provider - Crítico para UI */}
