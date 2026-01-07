@@ -63,10 +63,51 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
 
   // ⚡ FIX: Marcar como montado y verificar breakpoint usando media query
   useEffect(() => {
+    console.log(`[HeroOptimized] 🚀 Component mounting for ${carouselId}`, {
+      isDesktop,
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'N/A',
+      staticImageId,
+      carouselId
+    })
+    
     setIsMounted(true)
     
     // ⚡ FIX: Usar media query para detectar breakpoint lg (1024px+) de forma confiable
     if (typeof window !== 'undefined') {
+      // Verificar si el contenedor padre está visible
+      const checkParentVisibility = () => {
+        const staticImage = document.getElementById(staticImageId)
+        if (staticImage) {
+          const parentContainer = staticImage.closest('.hero-lcp-container')
+          const parentWrapper = staticImage.closest('[class*="hero-container-wrapper"]')
+          
+          if (parentWrapper) {
+            const wrapperStyle = window.getComputedStyle(parentWrapper)
+            console.log(`[HeroOptimized] 📍 Parent wrapper visibility for ${carouselId}:`, {
+              display: wrapperStyle.display,
+              visibility: wrapperStyle.visibility,
+              opacity: wrapperStyle.opacity,
+              isVisible: wrapperStyle.display !== 'none'
+            })
+          }
+          
+          if (parentContainer) {
+            const containerStyle = window.getComputedStyle(parentContainer)
+            console.log(`[HeroOptimized] 📍 Container visibility for ${carouselId}:`, {
+              display: containerStyle.display,
+              visibility: containerStyle.visibility,
+              opacity: containerStyle.opacity,
+              isVisible: containerStyle.display !== 'none'
+            })
+          }
+        } else {
+          console.warn(`[HeroOptimized] ⚠️ Static image ${staticImageId} not found during mount check`)
+        }
+      }
+      
+      // Verificar después de un pequeño delay para asegurar que el DOM esté listo
+      setTimeout(checkParentVisibility, 100)
+      
       // Tailwind lg breakpoint es 1024px
       const mediaQuery = window.matchMedia('(min-width: 1024px)')
       
@@ -76,11 +117,12 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
         // Si el prop isDesktop es false, debe NO coincidir con el breakpoint
         const shouldRender = isDesktop ? isDesktopBreakpoint : !isDesktopBreakpoint
         setMatchesBreakpoint(shouldRender)
-        console.log(`[HeroOptimized] Breakpoint check for ${carouselId}:`, {
+        console.log(`[HeroOptimized] 📊 Breakpoint check for ${carouselId}:`, {
           isDesktop,
           isDesktopBreakpoint,
           shouldRender,
-          windowWidth: window.innerWidth
+          windowWidth: window.innerWidth,
+          matchesBreakpoint: shouldRender
         })
       }
       
