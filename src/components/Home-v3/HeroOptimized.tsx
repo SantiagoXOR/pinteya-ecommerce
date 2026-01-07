@@ -96,7 +96,6 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       }
       
       return () => {
-        clearTimeout(initialCheck)
         if (mediaQuery.removeEventListener) {
           mediaQuery.removeEventListener('change', handleMediaChange)
         } else {
