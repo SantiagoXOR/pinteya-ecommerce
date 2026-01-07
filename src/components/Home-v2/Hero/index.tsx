@@ -150,7 +150,7 @@ const Hero = () => {
       {/* Layout desktop - PEGADO COMPLETAMENTE al header */}
       <div className='hidden lg:block relative w-full -mt-[105px]'>
         <div className='w-full pt-[105px]'>
-          <div className='max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-8 overflow-hidden relative z-10'>
+          <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 overflow-hidden relative z-10'>
             <div className='relative rounded-3xl overflow-hidden'>
               <div className='relative w-full h-[360px]'>
                 {/* ⚡ CRITICAL: Imagen estática para LCP - se renderiza inmediatamente sin JavaScript */}

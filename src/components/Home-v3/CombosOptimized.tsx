@@ -63,51 +63,78 @@ export default function CombosOptimized() {
   // ⚡ OPTIMIZACIÓN: Renderizar ambos componentes y usar transición suave
   // La imagen estática se desvanece cuando el carousel está listo
   // Esto evita el doble render completo del componente
-  // ⚡ FIX: Contenedor con márgenes en desktop para consistencia con otros componentes
+  // ⚡ FIX: Contenedor con márgenes solo en desktop para consistencia con otros componentes
   return (
     <div className="relative w-full pt-1 sm:pt-2">
-      <div className="max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-8">
-        <div 
-          className="relative w-full overflow-hidden" 
-          style={{ 
-            aspectRatio: '2.77',
-            width: '100%',
-            maxWidth: '100%',
-          }}
-        >
-          {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
-          {/* Se desvanece suavemente cuando el carousel está listo */}
-          {/* ⚡ FIX: Full width con object-cover para mejor visualización */}
-          <div 
-            className={`absolute inset-0 z-10 transition-opacity duration-500 ${
-              showCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
-            }`}
-          >
-            <Image
-              src="/images/hero/hero2/hero4.webp"
-              alt="Combo destacado - Plavicon Fibrado"
-              fill
-              priority
-              fetchPriority="high"
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-              quality={80}
-              loading="eager"
-              aria-hidden={showCarousel ? 'true' : 'false'}
-            />
+      {/* Mobile: sin contenedor, full width */}
+      <div className="lg:hidden relative w-full overflow-hidden" style={{ aspectRatio: '2.77', width: '100%', maxWidth: '100%' }}>
+        {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
+        <div className={`absolute inset-0 z-10 transition-opacity duration-500 ${showCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <Image
+            src="/images/hero/hero2/hero4.webp"
+            alt="Combo destacado - Plavicon Fibrado"
+            fill
+            priority
+            fetchPriority="high"
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+            quality={80}
+            loading="eager"
+            aria-hidden={showCarousel ? 'true' : 'false'}
+          />
+        </div>
+        {isMounted && (
+          <div className={`relative z-20 transition-opacity duration-500 ${showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <CombosSection />
           </div>
-          
-          {/* ⚡ PERFORMANCE: Carousel carga dinámicamente después del LCP */}
-          {/* Pre-cargar pero mantener oculto hasta que esté listo para evitar re-render */}
-          {isMounted && (
+        )}
+      </div>
+      
+      {/* Desktop: con contenedor y márgenes */}
+      <div className="hidden lg:block">
+        <div className="max-w-[1170px] mx-auto lg:px-8 xl:px-8">
+          <div 
+            className="relative w-full overflow-hidden" 
+            style={{ 
+              aspectRatio: '2.77',
+              width: '100%',
+              maxWidth: '100%',
+            }}
+          >
+            {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
+            {/* Se desvanece suavemente cuando el carousel está listo */}
+            {/* ⚡ FIX: Full width con object-cover para mejor visualización */}
             <div 
-              className={`relative z-20 transition-opacity duration-500 ${
-                showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              className={`absolute inset-0 z-10 transition-opacity duration-500 ${
+                showCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
               }`}
             >
-              <CombosSection />
+              <Image
+                src="/images/hero/hero2/hero4.webp"
+                alt="Combo destacado - Plavicon Fibrado"
+                fill
+                priority
+                fetchPriority="high"
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                quality={80}
+                loading="eager"
+                aria-hidden={showCarousel ? 'true' : 'false'}
+              />
             </div>
-          )}
+            
+            {/* ⚡ PERFORMANCE: Carousel carga dinámicamente después del LCP */}
+            {/* Pre-cargar pero mantener oculto hasta que esté listo para evitar re-render */}
+            {isMounted && (
+              <div 
+                className={`relative z-20 transition-opacity duration-500 ${
+                  showCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+              >
+                <CombosSection />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

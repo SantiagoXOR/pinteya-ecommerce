@@ -339,8 +339,15 @@ const HomeV2 = () => {
 
       {/* 4. Productos Destacados (Combos) - Misma estructura que HeroCarousel */}
       <div className='mt-4 sm:mt-6 product-section'>
-        <div className='max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-8'>
+        {/* Mobile: sin contenedor, full width */}
+        <div className='lg:hidden'>
           <CombosSection />
+        </div>
+        {/* Desktop: con contenedor y márgenes */}
+        <div className='hidden lg:block'>
+          <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8'>
+            <CombosSection />
+          </div>
         </div>
       </div>
 
