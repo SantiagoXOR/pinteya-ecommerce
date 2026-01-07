@@ -573,6 +573,7 @@ const HomeV3 = () => {
             key="hero-optimized-component-mobile" 
             staticImageId="hero-lcp-image-mobile"
             carouselId="hero-optimized-mobile"
+            isDesktop={false}
           />
         </div>
       </div>
@@ -615,6 +616,7 @@ const HomeV3 = () => {
               key="hero-optimized-component" 
               staticImageId="hero-lcp-image"
               carouselId="hero-optimized-desktop"
+              isDesktop={true}
             />
           </div>
         </div>

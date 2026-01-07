@@ -21,12 +21,13 @@ const HeroCarousel = dynamic(() => import('./Hero/Carousel'), {
 interface HeroOptimizedProps {
   staticImageId?: string
   carouselId?: string
+  isDesktop?: boolean // ⚡ FIX: Prop para indicar si es desktop, evita verificación de visibilidad compleja
 }
 
-const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'hero-optimized' }: HeroOptimizedProps) => {
+const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'hero-optimized', isDesktop = false }: HeroOptimizedProps) => {
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
-  const [isContainerVisible, setIsContainerVisible] = useState(false)
+  const [matchesBreakpoint, setMatchesBreakpoint] = useState(false)
   
   // #region agent log
   useEffect(() => {
@@ -53,71 +54,46 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
   }, []);
   // #endregion
 
-  // ⚡ FIX: Marcar como montado después del primer render y verificar visibilidad del contenedor
+  // ⚡ FIX: Marcar como montado y verificar breakpoint usando media query
   useEffect(() => {
     setIsMounted(true)
     
-    // ⚡ FIX: Verificar si el contenedor está visible (para evitar renderizar carousel en contenedores ocultos)
+    // ⚡ FIX: Usar media query para detectar breakpoint lg (1024px+) de forma confiable
     if (typeof window !== 'undefined') {
-      const checkVisibility = () => {
-        const staticImage = document.getElementById(staticImageId)
-        if (staticImage) {
-          // Verificar el contenedor hero-lcp-container
-          const container = staticImage.closest('.hero-lcp-container')
-          // Verificar también el contenedor padre (el div con hidden lg:block o lg:hidden)
-          const parentWrapper = staticImage.closest('[class*="hero-container-wrapper"]')
-          
-          if (container) {
-            const containerStyle = window.getComputedStyle(container)
-            const parentStyle = parentWrapper ? window.getComputedStyle(parentWrapper) : null
-            
-            // Verificar visibilidad del contenedor y del padre
-            const containerVisible = containerStyle.display !== 'none' && 
-                                   containerStyle.visibility !== 'hidden' &&
-                                   containerStyle.opacity !== '0'
-            
-            const parentVisible = !parentStyle || (
-              parentStyle.display !== 'none' && 
-              parentStyle.visibility !== 'hidden' &&
-              parentStyle.opacity !== '0'
-            )
-            
-            const isVisible = containerVisible && parentVisible
-            
-            setIsContainerVisible(isVisible)
-            console.log(`[HeroOptimized] Container visibility for ${carouselId}:`, isVisible, {
-              containerDisplay: containerStyle.display,
-              containerVisibility: containerStyle.visibility,
-              containerOpacity: containerStyle.opacity,
-              parentDisplay: parentStyle?.display,
-              parentVisibility: parentStyle?.visibility,
-              parentOpacity: parentStyle?.opacity,
-            })
-          } else {
-            console.warn(`[HeroOptimized] No se encontró el contenedor para ${carouselId}`)
-            setIsContainerVisible(false)
-          }
-        } else {
-          console.warn(`[HeroOptimized] No se encontró la imagen estática con ID ${staticImageId}`)
-          setIsContainerVisible(false)
-        }
+      // Tailwind lg breakpoint es 1024px
+      const mediaQuery = window.matchMedia('(min-width: 1024px)')
+      
+      const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+        const isDesktopBreakpoint = e.matches
+        // Si el prop isDesktop es true, debe coincidir con el breakpoint
+        // Si el prop isDesktop es false, debe NO coincidir con el breakpoint
+        const shouldRender = isDesktop ? isDesktopBreakpoint : !isDesktopBreakpoint
+        setMatchesBreakpoint(shouldRender)
+        console.log(`[HeroOptimized] Breakpoint check for ${carouselId}:`, {
+          isDesktop,
+          isDesktopBreakpoint,
+          shouldRender,
+          windowWidth: window.innerWidth
+        })
       }
       
-      // Verificar después de múltiples delays para asegurar que los estilos están aplicados
-      // Tailwind aplica los estilos después del render, así que necesitamos esperar
-      checkVisibility()
-      const timeout1 = setTimeout(checkVisibility, 50)
-      const timeout2 = setTimeout(checkVisibility, 200)
-      const timeout3 = setTimeout(checkVisibility, 500)
+      // Verificar inmediatamente
+      handleMediaChange(mediaQuery)
       
-      // También verificar en resize para manejar cambios de breakpoint
-      window.addEventListener('resize', checkVisibility)
+      // Escuchar cambios
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleMediaChange)
+      } else {
+        // Fallback para navegadores antiguos
+        mediaQuery.addListener(handleMediaChange)
+      }
       
       return () => {
-        clearTimeout(timeout1)
-        clearTimeout(timeout2)
-        clearTimeout(timeout3)
-        window.removeEventListener('resize', checkVisibility)
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener('change', handleMediaChange)
+        } else {
+          mediaQuery.removeListener(handleMediaChange)
+        }
       }
     }
     
@@ -144,16 +120,19 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       }).catch(() => {});
     }
     // #endregion
-  }, [staticImageId, carouselId])
+  }, [isDesktop, carouselId])
 
   // ⚡ OPTIMIZACIÓN: Cargar carousel después de 3 segundos (mejor UX sin afectar LCP)
   // Lighthouse evalúa LCP típicamente en ~2.5s, así que 3s es seguro
   // La imagen estática sigue visible durante la evaluación de Lighthouse
-  // ⚡ FIX: Solo cargar el carousel si el contenedor está visible
+  // ⚡ FIX: Solo cargar el carousel si el breakpoint coincide
   useEffect(() => {
-    if (!isMounted || !isContainerVisible) return
+    if (!isMounted || !matchesBreakpoint) {
+      console.log(`[HeroOptimized] Not loading carousel for ${carouselId}`, { isMounted, matchesBreakpoint, isDesktop })
+      return
+    }
 
-    console.log(`[HeroOptimized] Scheduling carousel load for ${carouselId}`, { isMounted, isContainerVisible })
+    console.log(`[HeroOptimized] Scheduling carousel load for ${carouselId}`, { isMounted, matchesBreakpoint, isDesktop })
     
     const carouselTimeout = setTimeout(() => {
       console.log(`[HeroOptimized] Loading carousel for ${carouselId}`)
@@ -161,7 +140,7 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
     }, 3000) // 3 segundos - mejor UX sin afectar LCP
 
     return () => clearTimeout(carouselTimeout)
-  }, [isMounted, isContainerVisible, carouselId])
+  }, [isMounted, matchesBreakpoint, carouselId, isDesktop])
 
   // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel se carga (ocultar inmediatamente para evitar superposición visual)
   // El delay de 3s ya es suficiente para Lighthouse, así que ocultamos inmediatamente cuando el carousel comienza a cargar
@@ -221,8 +200,8 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       {/* La imagen estática está en el contenedor hero-lcp-container para descubrimiento temprano */}
       {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
       {/* ⚡ FIX: Verificar que no hay otro carousel ya renderizado en el MISMO contenedor para prevenir duplicación */}
-      {/* ⚡ FIX: Solo renderizar si el contenedor está visible */}
-      {isMounted && isContainerVisible && shouldLoadCarousel && (() => {
+      {/* ⚡ FIX: Solo renderizar si el breakpoint coincide */}
+      {isMounted && matchesBreakpoint && shouldLoadCarousel && (() => {
         // ⚡ FIX: Verificar que no hay otro carousel ya renderizado con el mismo ID
         // Esto previene duplicación en producción donde React puede renderizar dos veces
         // Pero permite que mobile y desktop tengan sus propios carouseles
