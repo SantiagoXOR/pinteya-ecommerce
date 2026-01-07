@@ -576,12 +576,13 @@ const HomeV3 = () => {
       <div className='hidden lg:block pt-1 sm:pt-2 -mt-[105px]' key="hero-container-wrapper-desktop">
         <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 pt-[105px]'>
           <div 
-            className="hero-lcp-container relative w-full overflow-hidden rounded-3xl"
+            className="hero-lcp-container relative overflow-hidden rounded-3xl"
             style={{ 
               aspectRatio: '2.77',
               width: '100%',
               maxWidth: '100%',
               margin: '0 auto',
+              position: 'relative',
             }}
             key="hero-lcp-container-desktop"
           >
@@ -596,7 +597,7 @@ const HomeV3 = () => {
               fetchPriority="high"
               loading="eager"
               decoding="async"
-              className="object-cover"
+              className="object-cover rounded-3xl"
               style={{
                 position: 'absolute',
                 top: 0,
