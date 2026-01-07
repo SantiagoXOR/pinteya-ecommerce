@@ -116,7 +116,9 @@ export const useProductsByCategory = ({
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
     refetchOnMount: false, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
-    refetchOnReconnect: true,
+    refetchOnReconnect: false, // ⚡ FIX: Cambiar a false para evitar refetches durante montaje inicial
+    // ⚡ FIX: Agregar placeholderData para mantener datos anteriores mientras carga
+    placeholderData: (previousData) => previousData,
   })
 
   // ⚡ OPTIMIZACIÓN: Eliminado useEffect que fuerza refetch - React Query maneja esto automáticamente

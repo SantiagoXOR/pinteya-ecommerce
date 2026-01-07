@@ -112,7 +112,10 @@ export const useFilteredProducts = (filters: ProductFilters = {}) => {
     retry: 2,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     enabled: true, // Siempre habilitado, incluso sin filtros
-    refetchOnMount: false, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
+    refetchOnMount: false,
+    refetchOnReconnect: false, // ⚡ FIX: Cambiar a false para evitar refetches durante montaje inicial
+    // ⚡ FIX: Agregar placeholderData para mantener datos anteriores mientras carga
+    placeholderData: (previousData) => previousData, // ⚡ OPTIMIZACIÓN: React Query ya maneja el cache, no forzar refetch
     refetchOnWindowFocus: false,
   })
 }
