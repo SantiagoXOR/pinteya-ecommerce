@@ -77,8 +77,10 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
         })
       }
       
-      // Verificar inmediatamente
-      handleMediaChange(mediaQuery)
+      // Verificar inmediatamente con un pequeño delay para asegurar que el DOM está listo
+      const initialCheck = setTimeout(() => {
+        handleMediaChange(mediaQuery)
+      }, 0)
       
       // Escuchar cambios
       if (mediaQuery.addEventListener) {
@@ -89,6 +91,7 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       }
       
       return () => {
+        clearTimeout(initialCheck)
         if (mediaQuery.removeEventListener) {
           mediaQuery.removeEventListener('change', handleMediaChange)
         } else {
@@ -199,76 +202,60 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       {/* ⚡ FASE 23: Carousel carga dinámicamente después del LCP */}
       {/* La imagen estática está en el contenedor hero-lcp-container para descubrimiento temprano */}
       {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
-      {/* ⚡ FIX: Verificar que no hay otro carousel ya renderizado en el MISMO contenedor para prevenir duplicación */}
-      {/* ⚡ FIX: Solo renderizar si el breakpoint coincide */}
-      {isMounted && matchesBreakpoint && shouldLoadCarousel && (() => {
-        // ⚡ FIX: Verificar que no hay otro carousel ya renderizado con el mismo ID
-        // Esto previene duplicación en producción donde React puede renderizar dos veces
-        // Pero permite que mobile y desktop tengan sus propios carouseles
-        // ⚡ DEBUG: Agregar verificación más robusta para desktop
-        if (typeof window !== 'undefined') {
-          const existingCarousel = document.querySelector(`[data-hero-optimized="${carouselId}"]`)
-          // ⚡ FIX: Solo bloquear si el carousel existente está en el mismo contenedor visible
-          // En desktop, el contenedor mobile está oculto (lg:hidden), así que no debería interferir
-          if (existingCarousel) {
-            // Verificar si el contenedor padre está visible
-            const parentContainer = existingCarousel.closest('.hero-lcp-container')
-            if (parentContainer) {
-              const isParentVisible = window.getComputedStyle(parentContainer).display !== 'none'
-              if (isParentVisible) {
-                // Ya hay un carousel renderizado y visible con este ID, no renderizar otro
-                console.log(`[HeroOptimized] Carousel ${carouselId} ya existe y está visible, no renderizando duplicado`)
-                return null
-              }
-            }
-          }
-        }
-        
-        console.log(`[HeroOptimized] Renderizando carousel ${carouselId}`, { isMounted, shouldLoadCarousel })
-        
-        return (
-          <div
-            className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100"
-            data-hero-optimized={carouselId}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100%',
-              height: '100%',
-              maxWidth: '100%',
-            }}
-          >
-            {/* #region agent log */}
-            {typeof window !== 'undefined' && (() => {
-              fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  location: 'HeroOptimized.tsx:carousel-render',
-                  message: 'Carousel rendering',
-                  data: {
-                    timestamp: Date.now(),
-                    timeSincePageLoad: performance.now(),
-                    containerCount: document.querySelectorAll('.hero-lcp-container').length,
-                    carouselCount: document.querySelectorAll('[data-hero-optimized]').length,
-                    carouselId,
-                  },
+      {/* ⚡ FIX: Solo renderizar si el breakpoint coincide y el carousel debe cargarse */}
+      {isMounted && matchesBreakpoint && shouldLoadCarousel && (
+        <div
+          className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100"
+          data-hero-optimized={carouselId}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            maxWidth: '100%',
+          }}
+        >
+          {/* #region agent log */}
+          {typeof window !== 'undefined' && (() => {
+            console.log(`[HeroOptimized] Renderizando carousel ${carouselId}`, { 
+              isMounted, 
+              matchesBreakpoint, 
+              shouldLoadCarousel,
+              isDesktop,
+              windowWidth: window.innerWidth
+            })
+            fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                location: 'HeroOptimized.tsx:carousel-render',
+                message: 'Carousel rendering',
+                data: {
                   timestamp: Date.now(),
-                  sessionId: 'debug-session',
-                  runId: 'initial',
-                  hypothesisId: 'F'
-                })
-              }).catch(() => {});
-              return null;
-            })()}
-            {/* #endregion */}
-            <HeroCarousel />
-          </div>
-        )
-      })()}
+                  timeSincePageLoad: performance.now(),
+                  containerCount: document.querySelectorAll('.hero-lcp-container').length,
+                  carouselCount: document.querySelectorAll('[data-hero-optimized]').length,
+                  carouselId,
+                  isMounted,
+                  matchesBreakpoint,
+                  shouldLoadCarousel,
+                  isDesktop,
+                },
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'initial',
+                hypothesisId: 'F'
+              })
+            }).catch(() => {});
+            return null;
+          })()}
+          {/* #endregion */}
+          <HeroCarousel />
+        </div>
+      )}
     </>
   )
 })
