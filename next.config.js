@@ -155,10 +155,10 @@ const nextConfig = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 15000, // ⚡ FASE 3.2: REDUCIDO a 15 KB para chunks aún más pequeños
-          minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
-          maxAsyncRequests: 120, // ⚡ FASE 3.2: AUMENTADO a 120 para permitir más chunks paralelos
-          maxInitialRequests: 50, // ⚡ FASE 1B: AUMENTADO a 50 para permitir más chunks iniciales
+          maxSize: 10000, // ⚡ FASE 1.3: REDUCIDO a 10 KB para chunks aún más pequeños y reducir Script Evaluation
+          minSize: 3000, // ⚡ FASE 1.3: Reducido a 3 KB mínimo para más granularidad
+          maxAsyncRequests: 150, // ⚡ FASE 1.3: AUMENTADO a 150 para permitir más chunks paralelos
+          maxInitialRequests: 60, // ⚡ FASE 1.3: AUMENTADO a 60 para permitir más chunks iniciales
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
             // ⚡ Framework core (React, Next.js) - Prioridad alta
@@ -166,7 +166,7 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
               name: 'framework',
               priority: 40,
-              maxSize: 50000, // ⚡ FASE 1 PLAN 90+: REDUCIDO a 50 KB para reducir main thread work
+              maxSize: 30000, // ⚡ FASE 1.3: REDUCIDO a 30 KB para reducir Script Evaluation de 6,812ms
               reuseExistingChunk: true,
             },
             // ⚡ React Query - Separado para mejor code splitting
@@ -226,8 +226,8 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts|@tanstack|redux)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 15000, // ⚡ FASE 3.2: REDUCIDO a 15 KB para reducir main thread work
-              minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
+              maxSize: 10000, // ⚡ FASE 1.3: REDUCIDO a 10 KB para reducir Script Evaluation
+              minSize: 3000, // ⚡ FASE 1.3: Reducido a 3 KB mínimo para más granularidad
               reuseExistingChunk: true,
             },
             // ⚡ FASE 1B: Chunk separado para componentes de HomeV3 con tamaño reducido
@@ -235,8 +235,8 @@ const nextConfig = {
               test: /[\\/]src[\\/]components[\\/]Home-v3[\\/]/,
               name: 'home-v3',
               priority: 25,
-              maxSize: 15000, // ⚡ FASE 3.2: REDUCIDO a 15 KB
-              minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB
+              maxSize: 10000, // ⚡ FASE 1.3: REDUCIDO a 10 KB para reducir Script Evaluation
+              minSize: 3000, // ⚡ FASE 1.3: Reducido a 3 KB
               reuseExistingChunk: true,
             },
             // ⚡ FASE 19: Chunk separado para componentes de página (Home, etc.)
@@ -244,8 +244,8 @@ const nextConfig = {
               test: /[\\/]src[\\/](app|components[\\/]Home)[\\/]/,
               name: 'pages',
               priority: 20,
-              maxSize: 15000, // ⚡ FASE 3.2: REDUCIDO a 15 KB para reducir main thread work
-              minSize: 5000, // ⚡ FASE 1 PLAN 90+: Reducido a 5 KB mínimo para más granularidad
+              maxSize: 10000, // ⚡ FASE 1.3: REDUCIDO a 10 KB para reducir Script Evaluation
+              minSize: 3000, // ⚡ FASE 1.3: Reducido a 3 KB mínimo para más granularidad
               reuseExistingChunk: true,
             },
           },

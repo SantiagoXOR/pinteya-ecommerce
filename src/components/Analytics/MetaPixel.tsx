@@ -76,10 +76,10 @@ const MetaPixel: React.FC = () => {
       const interactionEvents = ['mousedown', 'touchstart', 'keydown', 'scroll']
       const onInteraction = () => {
         markUserActive()
-        // ⚡ FASE 18: Delay reducido a 0.5s para balance entre unused JS y LCP
+        // ⚡ FASE 1.2: Delay aumentado a 2s para reducir Script Evaluation crítico
         setTimeout(() => {
           loadPixel()
-        }, 500)
+        }, 2000)
       }
 
       interactionEvents.forEach(event => {
@@ -87,10 +87,10 @@ const MetaPixel: React.FC = () => {
         interactionListeners.push({ event, handler: onInteraction })
       })
 
-      // ⚡ FASE 6: Aumentar delay a 20 segundos para diferir más agresivamente
+      // ⚡ FASE 1.2: Aumentar delay a 25 segundos para reducir Script Evaluation crítico (6,812ms)
       // Meta Pixel es pesado (90.53KB según Lighthouse), mejor cargarlo mucho después del LCP
-      // Esto reduce main thread work y mejora LCP significativamente
-      loadTimeout = setTimeout(loadPixel, 20000) // ⚡ FASE 6: Aumentado a 20s para reducir main thread work y mejorar LCP
+      // Esto reduce Script Evaluation y mejora TBT significativamente
+      loadTimeout = setTimeout(loadPixel, 25000) // ⚡ FASE 1.2: Aumentado a 25s para reducir Script Evaluation
       loadHandler = loadAfterLCP
     }
 
