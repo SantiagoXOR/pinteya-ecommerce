@@ -9,39 +9,11 @@ import { SessionProvider } from 'next-auth/react'
 import { useDeferredHydration } from '@/hooks/useDeferredHydration'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 
-// ⚡ FIX CRÍTICO: Redux debe cargarse inmediatamente - componentes lo necesitan en render inicial
-// Revertir lazy load de Redux porque componentes críticos (cart, buy) lo usan inmediatamente
+// ⚡ FIX CRÍTICO: Redux y React Query deben cargarse inmediatamente
+// Componentes críticos los usan en render inicial (cart, buy, categories, bestseller, etc.)
+// Lazy load de estos providers causaba errores: "Cannot destructure property 'store'" y "No QueryClient set"
 import { ReduxProvider } from '@/redux/provider'
-
-// ⚡ FASE 2.1: Solo lazy load de React Query (no crítico para render inicial)
-// Redux se mantiene crítico porque componentes lo usan inmediatamente
-const QueryClientProviderLazy = dynamic(() => import('@/components/providers/QueryClientProvider').then(m => ({ default: m.QueryClientProvider })), {
-  ssr: true, // SSR necesario para data fetching inicial
-  loading: () => null,
-})
-
-// ⚡ FASE 2.1: Wrapper para diferir solo React Query hasta después del TTI
-const DeferredQueryProvider = React.memo(({ children }: { children: React.ReactNode }) => {
-  // ⚡ Diferir carga de React Query hasta después del TTI
-  // Redux se carga inmediatamente porque es crítico
-  const shouldLoad = useDeferredHydration({
-    minDelay: process.env.NODE_ENV === 'development' ? 0 : 2000, // 2s en prod (reducido de 3s)
-    maxDelay: process.env.NODE_ENV === 'development' ? 0 : 4000, // 4s máximo (reducido de 5s)
-    useIdleCallback: process.env.NODE_ENV === 'production',
-  })
-
-  if (!shouldLoad) {
-    // Renderizar sin React Query - componentes usarán fallbacks o esperarán
-    return <>{children}</>
-  }
-
-  return (
-    <QueryClientProviderLazy>
-      {children}
-    </QueryClientProviderLazy>
-  )
-})
-DeferredQueryProvider.displayName = 'DeferredQueryProvider'
+import { QueryClientProvider } from '@/components/providers/QueryClientProvider'
 
 // ⚡ PERFORMANCE: Error boundary crítico (carga inmediata)
 import { AdvancedErrorBoundary } from '@/lib/error-boundary/advanced-error-boundary'
@@ -292,9 +264,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           enableReporting={true}
           recoveryTimeout={10000}
         >
-          {/* ⚡ FIX: Redux crítico - cargar inmediatamente. React Query lazy loaded */}
-          <ReduxProvider>
-            <DeferredQueryProvider>
+          {/* ⚡ FIX: Redux y React Query críticos - cargar inmediatamente */}
+          <QueryClientProvider>
+            <ReduxProvider>
             {/* 3. Cart persistence - Crítico para carrito */}
             <CartPersistenceProvider>
               {/* 4. Modal provider - Crítico para UI */}
@@ -331,8 +303,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 </CartModalProvider>
               </ModalProvider>
             </CartPersistenceProvider>
-            </DeferredQueryProvider>
           </ReduxProvider>
+        </QueryClientProvider>
         </AdvancedErrorBoundary>
       </>
     )
