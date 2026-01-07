@@ -1,18 +1,29 @@
 /**
- * ⚡ OPTIMIZACIÓN: Fuentes optimizadas para Turbopack
+ * ⚡ OPTIMIZACIÓN: Fuentes optimizadas con next/font/google
  * 
- * NOTA: Turbopack tiene un bug conocido con next/font/local que genera URLs mal formateadas.
- * Por ahora usamos una variable CSS simple para mantener compatibilidad con Turbopack.
- * Las fuentes se cargan mediante CSS manual en layout.tsx
+ * Work Sans - Tipografía humanista con excelente legibilidad numérica
+ * Ideal para e-commerce (precios, cantidades, etc.)
+ * Compatible con Turbopack (a diferencia de next/font/local que tenía bugs)
  */
 
-// ⚡ FIX Turbopack: Usamos variable CSS simple en lugar de next/font/local
-// hasta que se solucione el bug con URLs mal formateadas
-export const euclidCircularA = {
-  variable: '--font-euclid',
-  className: 'font-euclid',
+import { Work_Sans } from 'next/font/google'
+
+export const workSans = Work_Sans({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-work-sans',
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+  adjustFontFallback: true,
+})
+
+// Mantener compatibilidad con el sistema actual
+export const workSansFont = {
+  variable: workSans.variable,
+  className: workSans.className,
   style: {
-    fontFamily: 'var(--font-euclid), "Euclid Circular A", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: workSans.style.fontFamily,
   },
 }
 

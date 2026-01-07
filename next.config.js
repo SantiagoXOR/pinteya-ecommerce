@@ -480,7 +480,7 @@ module.exports.__esModule = true;
         headers: [
           {
             key: 'Link',
-            value: '</fonts/EuclidCircularA-Regular.woff2>; rel="preload"; as="font"; type="font/woff2"; crossorigin="anonymous", </fonts/EuclidCircularA-SemiBold.woff2>; rel="preload"; as="font"; type="font/woff2"; crossorigin="anonymous", </images/hero/hero2/hero1.webp>; rel="preload"; as="image"; fetchpriority="high"',
+            value: '</images/hero/hero2/hero1.webp>; rel="preload"; as="image"; fetchpriority="high"',
           },
         ],
       },

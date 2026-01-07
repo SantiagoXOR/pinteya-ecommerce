@@ -1,12 +1,10 @@
 // Force redeploy to fix Server Action error - 2025-08-02T00:30:00.000Z
 import Providers from './providers'
 import React, { Suspense } from 'react'
-// ⚡ PERFORMANCE: Fuentes optimizadas para Turbopack
-import { euclidCircularA } from './fonts'
+// ⚡ PERFORMANCE: Fuentes optimizadas con next/font/google
+import { workSans } from './fonts'
 // ⚡ PERFORMANCE: CSS crítico inline, CSS no crítico carga asíncrono
 import './css/style.css'
-// ⚡ FIX Turbopack: Importar CSS manual de fuentes (next/font/local tiene bug con Turbopack)
-import './css/euclid-fonts-turbopack.css'
 // ⚡ OPTIMIZACIÓN: CSS no crítico movido a carga diferida via DeferredCSS
 // - mobile-performance.css: Carga diferida (solo afecta animaciones)
 // - disable-all-effects.css: Carga diferida (solo deshabilita efectos costosos)
@@ -41,7 +39,7 @@ export { viewport } from './viewport'
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // ⚡ DEBUG: Simplificar layout para identificar el problema
   return (
-    <html lang='es' className={euclidCircularA.variable} suppressHydrationWarning>
+    <html lang='es' className={workSans.variable} suppressHydrationWarning>
       <head>
         {/* ⚡ CRITICAL: Preload de imagen hero LCP - MÁXIMA PRIORIDAD */}
         {/* ⚡ DEBE estar PRIMERO para descubrimiento inmediato sin esperar CSS o JS */}
@@ -309,17 +307,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.pinteya.com" />
         
-        {/* ⚡ FIX CLS: Preload de fuente Bold usada en hero y header (above-the-fold) */}
-        {/* Esto previene layout shift de 0.556 causado por carga tardía de fuente Bold */}
-        <link
-          rel="preload"
-          as="font"
-          href="/fonts/EuclidCircularA-Bold.woff2"
-          type="font/woff2"
-          crossOrigin="anonymous"
-          fetchPriority="high"
-        />
-        
         {/* ⚡ CRITICAL CSS - Inline para FCP rápido (-0.2s) */}
         <style dangerouslySetInnerHTML={{__html: `
           /* CSS Variables - Inline para eliminar archivo bloqueante */
@@ -380,7 +367,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           /* Reset y base styles */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;overflow-y:auto!important;max-width:100vw;width:100%;height:100%}
-          body{margin:0;font-family:var(--font-euclid),'Euclid Circular A',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
+          body{margin:0;font-family:var(--font-work-sans),'Work Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
           #__next{overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;height:auto;position:relative}
           main{overflow-x:hidden!important;overflow-y:hidden!important;position:relative}
           header[class*="fixed"],nav[class*="fixed"]{position:fixed!important;z-index:1100!important}
@@ -429,13 +416,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .z-modal{z-index:200}
           .z-toast{z-index:300}
           
-          /* ⚡ CRITICAL: @font-face inline completo para eliminar dependencia del CSS externo */
-          /* Esto reduce la latencia de ruta crítica de 2,124 ms */
-          /* ⚡ FIX CLS: font-display: optional para prevenir layout shifts por fuentes */
-          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:optional;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
-          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:optional;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
-          @font-face{font-family:'Euclid Circular A';src:url('/fonts/EuclidCircularA-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:optional;unicode-range:U+0020-007F,U+00A0-00FF,U+0100-017F}
-          @font-face{font-family:'Euclid Circular A Fallback';ascent-override:93.26%;descent-override:24.99%;line-gap-override:0.00%;size-adjust:107.23%;src:local('Arial')}
+          /* ⚡ OPTIMIZACIÓN: next/font/google genera @font-face automáticamente */
           
           /* ⚡ LEGIBILIDAD: Textos oscuros por defecto en contenedores blancos - EXCLUYENDO product cards */
           /* Aplicar color por defecto al contenedor (sin !important para que clases de color lo sobrescriban) */
@@ -461,28 +442,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
         
-        {/* ⚡ FASE 4: Preload de fuentes críticas - DESPUÉS del preload de imagen hero */}
-        {/* Esto reduce la latencia de ruta crítica de 2,124 ms */}
-        {/* Regular es crítica para FCP, SemiBold puede cargarse después del FCP */}
-        <link
-          rel="preload"
-          href="/fonts/EuclidCircularA-Regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-          fetchPriority="high"
-        />
-        {/* ⚡ FASE 4: SemiBold puede diferirse ligeramente - no es crítica para FCP */}
-        <link
-          rel="preload"
-          href="/fonts/EuclidCircularA-SemiBold.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-          fetchPriority="high"
-        />
-        
-        {/* ⚡ PERFORMANCE: Bold se carga diferidamente cuando se necesita */}
+        {/* ⚡ OPTIMIZACIÓN: next/font/google maneja preloads de fuentes automáticamente */}
         
         {/* ⚡ OPTIMIZACIÓN: Next.js con optimizeCss: true inlina CSS crítico automáticamente */}
         {/* NOTA: El script de interceptación CSS está al INICIO del head para máxima efectividad */}

@@ -134,20 +134,45 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
   // La imagen estática sigue visible durante la evaluación de Lighthouse
   // ⚡ FIX: Solo cargar el carousel si el breakpoint coincide
   useEffect(() => {
-    if (!isMounted || !matchesBreakpoint) {
-      console.log(`[HeroOptimized] Not loading carousel for ${carouselId}`, { isMounted, matchesBreakpoint, isDesktop })
+    console.log(`[HeroOptimized] useEffect carousel load check for ${carouselId}:`, {
+      isMounted,
+      matchesBreakpoint,
+      isDesktop,
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'N/A',
+      shouldLoadCarousel
+    })
+    
+    if (!isMounted) {
+      console.warn(`[HeroOptimized] Component not mounted yet for ${carouselId}`)
+      return
+    }
+    
+    if (!matchesBreakpoint) {
+      console.warn(`[HeroOptimized] Breakpoint doesn't match for ${carouselId}`, {
+        isDesktop,
+        windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'N/A',
+        expectedBreakpoint: isDesktop ? '>= 1024px' : '< 1024px'
+      })
       return
     }
 
-    console.log(`[HeroOptimized] Scheduling carousel load for ${carouselId}`, { isMounted, matchesBreakpoint, isDesktop })
+    console.log(`[HeroOptimized] ✅ All conditions met! Scheduling carousel load for ${carouselId}`, { 
+      isMounted, 
+      matchesBreakpoint, 
+      isDesktop,
+      windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'N/A'
+    })
     
     const carouselTimeout = setTimeout(() => {
-      console.log(`[HeroOptimized] Loading carousel for ${carouselId}`)
+      console.log(`[HeroOptimized] 🚀 Loading carousel for ${carouselId} - setting shouldLoadCarousel to true`)
       setShouldLoadCarousel(true)
     }, 3000) // 3 segundos - mejor UX sin afectar LCP
 
-    return () => clearTimeout(carouselTimeout)
-  }, [isMounted, matchesBreakpoint, carouselId, isDesktop])
+    return () => {
+      console.log(`[HeroOptimized] Cleanup: clearing timeout for ${carouselId}`)
+      clearTimeout(carouselTimeout)
+    }
+  }, [isMounted, matchesBreakpoint, carouselId, isDesktop, shouldLoadCarousel])
 
   // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel se carga (ocultar inmediatamente para evitar superposición visual)
   // El delay de 3s ya es suficiente para Lighthouse, así que ocultamos inmediatamente cuando el carousel comienza a cargar
@@ -234,7 +259,18 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       {/* La imagen estática está en el contenedor hero-lcp-container para descubrimiento temprano */}
       {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
       {/* ⚡ FIX: Solo renderizar si el breakpoint coincide y el carousel debe cargarse */}
-      {isMounted && matchesBreakpoint && shouldLoadCarousel && (
+      {(() => {
+        const shouldRender = isMounted && matchesBreakpoint && shouldLoadCarousel
+        console.log(`[HeroOptimized] Render check for ${carouselId}:`, {
+          shouldRender,
+          isMounted,
+          matchesBreakpoint,
+          shouldLoadCarousel,
+          isDesktop,
+          windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'N/A'
+        })
+        return shouldRender
+      })() && (
         <div
           className="absolute inset-0 z-20 transition-opacity duration-500"
           data-hero-optimized={carouselId}

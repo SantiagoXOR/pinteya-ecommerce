@@ -36,9 +36,8 @@ const config: Config = {
   theme: {
     fontFamily: {
       // ⚡ OPTIMIZACIÓN: Usar variables de next/font para mejor performance
-      'euclid-circular-a': ['var(--font-euclid)', 'Euclid Circular A', 'system-ui', 'sans-serif'],
-      euclid: ['var(--font-euclid)', 'Euclid Circular A', 'system-ui', 'sans-serif'],
-      sans: ['var(--font-euclid)', 'Inter', 'system-ui', 'sans-serif'],
+      'work-sans': ['var(--font-work-sans)', 'Work Sans', 'system-ui', 'sans-serif'],
+      sans: ['var(--font-work-sans)', 'Work Sans', 'system-ui', 'sans-serif'],
       inter: ['Inter', 'system-ui', 'sans-serif'],
     },
     container: {
