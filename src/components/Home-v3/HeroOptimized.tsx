@@ -18,7 +18,12 @@ const HeroCarousel = dynamic(() => import('./Hero/Carousel'), {
  * 
  * Impacto esperado: -1.5s a -2.0s en Speed Index, -1,000 ms a -1,570 ms en retraso LCP
  */
-const HeroOptimized = memo(() => {
+interface HeroOptimizedProps {
+  staticImageId?: string
+  carouselId?: string
+}
+
+const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'hero-optimized' }: HeroOptimizedProps) => {
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   
@@ -95,9 +100,9 @@ const HeroOptimized = memo(() => {
 
     // Usar requestAnimationFrame para ocultar en el siguiente frame (ocultar inmediatamente)
     requestAnimationFrame(() => {
-      // ⚡ FIX CRÍTICO: Seleccionar SOLO la imagen estática por su ID específico
+      // ⚡ FIX CRÍTICO: Seleccionar SOLO la imagen estática por su ID específico (usar el prop)
       // NO seleccionar todas las imágenes porque eso afectaría también las del carousel
-      const staticImage = document.getElementById('hero-lcp-image')
+      const staticImage = document.getElementById(staticImageId)
       
       if (staticImage && staticImage instanceof HTMLElement) {
         // Ocultar imagen estática cuando el carousel comienza a cargar
@@ -109,7 +114,7 @@ const HeroOptimized = memo(() => {
         staticImage.style.zIndex = '1' // Detrás del carousel (z-20)
       }
     })
-  }, [shouldLoadCarousel])
+  }, [shouldLoadCarousel, staticImageId])
 
   // ⚡ FASE 23: La imagen estática se renderiza en el contenedor hero-lcp-container (HomeV3/index.tsx)
   // El carousel se renderiza en el MISMO contenedor que la imagen estática para que coincidan exactamente
@@ -144,14 +149,15 @@ const HeroOptimized = memo(() => {
       {/* ⚡ FASE 23: Carousel carga dinámicamente después del LCP */}
       {/* La imagen estática está en el contenedor hero-lcp-container para descubrimiento temprano */}
       {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
-      {/* ⚡ FIX: Verificar que no hay otro carousel ya renderizado para prevenir duplicación */}
+      {/* ⚡ FIX: Verificar que no hay otro carousel ya renderizado en el MISMO contenedor para prevenir duplicación */}
       {isMounted && shouldLoadCarousel && (() => {
-        // ⚡ FIX: Verificar que no hay otro carousel ya renderizado
+        // ⚡ FIX: Verificar que no hay otro carousel ya renderizado con el mismo ID
         // Esto previene duplicación en producción donde React puede renderizar dos veces
+        // Pero permite que mobile y desktop tengan sus propios carouseles
         if (typeof window !== 'undefined') {
-          const existingCarousels = document.querySelectorAll('[data-hero-optimized]')
-          if (existingCarousels.length > 0) {
-            // Ya hay un carousel renderizado, no renderizar otro
+          const existingCarousel = document.querySelector(`[data-hero-optimized="${carouselId}"]`)
+          if (existingCarousel) {
+            // Ya hay un carousel renderizado con este ID, no renderizar otro
             return null
           }
         }
@@ -159,7 +165,7 @@ const HeroOptimized = memo(() => {
         return (
           <div
             className="absolute inset-0 z-20 transition-opacity duration-500 opacity-100"
-            data-hero-optimized="true"
+            data-hero-optimized={carouselId}
             style={{
               position: 'absolute',
               top: 0,

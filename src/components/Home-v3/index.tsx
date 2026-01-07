@@ -569,7 +569,11 @@ const HomeV3 = () => {
               objectFit: 'cover',
             }}
           />
-          <HeroOptimized key="hero-optimized-component-mobile" />
+          <HeroOptimized 
+            key="hero-optimized-component-mobile" 
+            staticImageId="hero-lcp-image-mobile"
+            carouselId="hero-optimized-mobile"
+          />
         </div>
       </div>
       {/* Desktop: con márgenes */}
@@ -607,7 +611,11 @@ const HomeV3 = () => {
                 objectFit: 'cover',
               }}
             />
-            <HeroOptimized key="hero-optimized-component" />
+            <HeroOptimized 
+              key="hero-optimized-component" 
+              staticImageId="hero-lcp-image"
+              carouselId="hero-optimized-desktop"
+            />
           </div>
         </div>
       </div>
