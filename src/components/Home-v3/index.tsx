@@ -578,49 +578,73 @@ const HomeV3 = () => {
         </div>
       </div>
       {/* Desktop: con márgenes */}
-      <div className='hidden lg:block pt-1 sm:pt-2 -mt-[105px]' key="hero-container-wrapper-desktop">
-        <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 pt-[105px]'>
-          <div 
-            className="hero-lcp-container relative overflow-hidden rounded-3xl"
-            style={{ 
-              aspectRatio: '2.77',
-              width: '100%',
-              maxWidth: '100%',
-              margin: '0 auto',
-              position: 'relative',
-            }}
-            key="hero-lcp-container-desktop"
-          >
-            {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
-            {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
-            {/* ⚡ FIX: Full width con object-fit cover para mejor visualización */}
-            <img
-              id="hero-lcp-image"
-              key="hero-lcp-image-static"
-              src="/images/hero/hero2/hero1.webp"
-              alt="Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad - Pinteya"
-              fetchPriority="high"
-              loading="eager"
-              decoding="async"
-              className="object-cover rounded-3xl"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-            <HeroOptimized 
-              key="hero-optimized-component" 
-              staticImageId="hero-lcp-image"
-              carouselId="hero-optimized-desktop"
-              isDesktop={true}
-            />
+      {(() => {
+        if (typeof window !== 'undefined') {
+          console.log('[HomeV3] 🖥️ Rendering desktop hero container', {
+            windowWidth: window.innerWidth,
+            isDesktop: window.innerWidth >= 1024,
+            timestamp: Date.now()
+          })
+        }
+        return (
+          <div className='hidden lg:block pt-1 sm:pt-2 -mt-[105px]' key="hero-container-wrapper-desktop">
+            <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 pt-[105px]'>
+              <div 
+                className="hero-lcp-container relative overflow-hidden rounded-3xl"
+                style={{ 
+                  aspectRatio: '2.77',
+                  width: '100%',
+                  maxWidth: '100%',
+                  margin: '0 auto',
+                  position: 'relative',
+                }}
+                key="hero-lcp-container-desktop"
+              >
+                {/* ⚡ CRITICAL: Imagen estática para LCP - tag <img> nativo para máximo descubrimiento temprano */}
+                {/* Se renderiza inmediatamente en HTML sin JavaScript, antes de React hydration */}
+                {/* ⚡ FIX: Full width con object-fit cover para mejor visualización */}
+                <img
+                  id="hero-lcp-image"
+                  key="hero-lcp-image-static"
+                  src="/images/hero/hero2/hero1.webp"
+                  alt="Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad - Pinteya"
+                  fetchPriority="high"
+                  loading="eager"
+                  decoding="async"
+                  className="object-cover rounded-3xl"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                  }}
+                  onLoad={() => {
+                    console.log('[HomeV3] ✅ Desktop hero image loaded', {
+                      imageId: 'hero-lcp-image',
+                      timestamp: Date.now()
+                    })
+                  }}
+                  onError={(e) => {
+                    console.error('[HomeV3] ❌ Desktop hero image failed to load', {
+                      imageId: 'hero-lcp-image',
+                      error: e,
+                      timestamp: Date.now()
+                    })
+                  }}
+                />
+                <HeroOptimized 
+                  key="hero-optimized-component" 
+                  staticImageId="hero-lcp-image"
+                  carouselId="hero-optimized-desktop"
+                  isDesktop={true}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        )
+      })()}
 
       {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
       <React.Suspense
