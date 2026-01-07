@@ -131,28 +131,29 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
     // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
 // Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     return (
-      <nav
-        ref={ref}
-        className={cn(
-          'fixed left-0 right-0 z-bottom-nav border-t shadow-lg',
-          'safe-area-bottom', // Para dispositivos con notch - usa bottom: env(safe-area-inset-bottom)
-          className
-        )}
-        style={{
-          bottom: 'env(safe-area-inset-bottom, 0px)',
-          borderRadius: '24px 24px 0px 0px',
-          backgroundColor: 'white',
-          borderTopColor: 'var(--glass-bg-strong)',
-          boxShadow: 'inset 0px 4px 6px 0px rgba(0, 0, 0, 0.15)',
-          backdropFilter: 'none',
-          letterSpacing: '0px',
-          lineHeight: '14px',
-          opacity: '1',
-        }}
-        {...props}
-      >
-        {/* Mobile: max-w-md */}
-        <div className='flex items-center justify-around max-w-md mx-auto w-full h-14 sm:h-16 lg:hidden'>
+      <>
+        {/* Mobile: full width */}
+        <nav
+          ref={ref}
+          className={cn(
+            'fixed left-0 right-0 z-bottom-nav border-t shadow-lg lg:hidden',
+            'safe-area-bottom',
+            className
+          )}
+          style={{
+            bottom: 'env(safe-area-inset-bottom, 0px)',
+            borderRadius: '24px 24px 0px 0px',
+            backgroundColor: 'white',
+            borderTopColor: 'var(--glass-bg-strong)',
+            boxShadow: 'inset 0px 4px 6px 0px rgba(0, 0, 0, 0.15)',
+            backdropFilter: 'none',
+            letterSpacing: '0px',
+            lineHeight: '14px',
+            opacity: '1',
+          }}
+          {...props}
+        >
+          <div className='flex items-center justify-around max-w-md mx-auto w-full h-14 sm:h-16'>
           {navItems.map((item) => {
             const Icon = item.icon
             const isItemActive = item.active
@@ -405,8 +406,99 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
               </div>
             )
           })}
-        </div>
-      </nav>
+          </div>
+        </nav>
+
+        {/* Desktop: con márgenes en el fondo también */}
+        <nav
+          ref={ref}
+          className={cn(
+            'fixed left-0 right-0 z-bottom-nav hidden lg:block',
+            'safe-area-bottom',
+            className
+          )}
+          style={{
+            bottom: 'env(safe-area-inset-bottom, 0px)',
+          }}
+          {...props}
+        >
+          <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8'>
+            <div
+              className='border-t shadow-lg'
+              style={{
+                borderRadius: '24px 24px 0px 0px',
+                backgroundColor: 'white',
+                borderTopColor: 'var(--glass-bg-strong)',
+                boxShadow: 'inset 0px 4px 6px 0px rgba(0, 0, 0, 0.15)',
+                backdropFilter: 'none',
+                letterSpacing: '0px',
+                lineHeight: '14px',
+                opacity: '1',
+              }}
+            >
+              <div className='flex items-center justify-around w-full h-14'>
+                {navItems.map((item) => {
+                  const Icon = item.icon
+                  const isItemActive = item.active
+                  const hasBadge = item.id === 'cart' && item.badge !== undefined && item.badge > 0
+                  const showBadge = item.id === 'cart' && item.badge !== undefined
+
+                  return (
+                    <div key={item.id} className='flex-1 flex flex-col items-center justify-center relative'>
+                      {/* Desktop navigation items - mismo código que mobile pero sin max-w-md */}
+                      {item.id === 'cart' || item.id === 'back' || item.id === 'whatsapp' || item.id === 'search' ? (
+                        <button
+                          onClick={item.onClick}
+                          className={cn(
+                            'flex flex-col items-center justify-center w-full py-1 transition-all duration-200',
+                            isItemActive ? 'text-blaze-orange-600' : 'text-gray-600',
+                            'hover:text-blaze-orange-600 active:scale-95'
+                          )}
+                          aria-label={item.label}
+                        >
+                          <div className='relative'>
+                            <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
+                            {showBadge && (
+                              <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center'>
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium', isItemActive && 'text-blaze-orange-600')}>
+                            {item.label}
+                          </span>
+                        </button>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          className={cn(
+                            'flex flex-col items-center justify-center w-full py-1 transition-all duration-200',
+                            isItemActive ? 'text-blaze-orange-600' : 'text-gray-600',
+                            'hover:text-blaze-orange-600 active:scale-95'
+                          )}
+                          aria-label={item.label}
+                        >
+                          <div className='relative'>
+                            <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
+                            {showBadge && (
+                              <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center'>
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium', isItemActive && 'text-blaze-orange-600')}>
+                            {item.label}
+                          </span>
+                        </Link>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        </nav>
+      </>
     )
   }
 )

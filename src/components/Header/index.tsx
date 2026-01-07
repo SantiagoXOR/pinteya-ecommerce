@@ -254,9 +254,10 @@ const Header = () => {
 
   return (
     <>
+      {/* Mobile: header full width */}
       <header
         className={`
-        fixed left-0 right-0 w-full z-header
+        fixed left-0 right-0 w-full z-header lg:hidden
         rounded-b-3xl
         header-sticky-transition
         ${isSticky ? 'glass-header-sticky' : 'glass-header'}
@@ -268,26 +269,122 @@ const Header = () => {
         style={{
           top: 'env(safe-area-inset-top, 0px)',
           boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-          // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
-          // El CSS global ya lo deshabilita
         }}
       >
-        {/* ScrollingBanner integrado en la parte superior del header */}
-        {/* Mobile: full width */}
-        <div className='w-full lg:hidden'>
+        <div className='w-full'>
           <ScrollingBanner />
         </div>
-        {/* Desktop: con márgenes */}
-        <div className='hidden lg:block'>
-          <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8'>
-            <ScrollingBanner />
+        <div className='max-w-md mx-auto px-3 sm:px-4 py-1.5 sm:py-2'>
+          <div className='flex items-center justify-between gap-1 sm:gap-2 min-h-[48px] sm:min-h-[52px]'>
+            {/* Mobile header content - mismo que desktop pero sin md: clases */}
+            <Link 
+              href='/' 
+              className={cn(
+                'flex-shrink-0 transition-all duration-300',
+                isSearchExpanded ? 'hidden' : 'flex',
+                'p-0 m-0 inline-flex items-center justify-center',
+                'relative z-10'
+              )}
+            >
+              <HeaderLogo
+                isMobile={false}
+                className={cn(
+                  'h-16 sm:h-20 w-auto transition-all duration-300 ease-out',
+                  'hover:scale-110 cursor-pointer',
+                  isSticky ? 'logo-sticky-scale scale-95' : 'scale-100',
+                  'object-contain block',
+                  'opacity-100 visible'
+                )}
+                style={{
+                  minHeight: '64px',
+                  minWidth: '160px',
+                }}
+              />
+            </Link>
+            
+            {isSearchExpanded && (
+              <div className='flex-1 animate-in fade-in zoom-in-95 duration-200'>
+                <div className='relative w-full'>
+                  <div className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring glass-search-bar rounded-full'>
+                    <MemoizedSearchAutocomplete
+                      ref={expandedSearchRef}
+                      placeholder='Buscar productos...'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      style={{
+                        '--input-bg': 'rgba(255, 255, 255, 0.3)',
+                      } as React.CSSProperties & { '--input-bg'?: string }}
+                      debounceMs={100}
+                      maxSuggestions={6}
+                      showRecentSearches={true}
+                      showTrendingSearches={true}
+                      autoFocus={true}
+                    />
+                    <button
+                      onClick={handleSearchCollapse}
+                      className='absolute right-2 w-7 h-7 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg z-10'
+                      aria-label='Cerrar búsqueda'
+                    >
+                      <X className='w-4 h-4 text-white' strokeWidth={2.5} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {!isSearchExpanded && (
+              <div 
+                className='flex-1 max-w-xl sm:max-w-2xl mx-2 sm:mx-4 cursor-pointer'
+                onClick={handleSearchClick}
+              >
+                <div className='relative w-full'>
+                  <div className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring glass-search-bar rounded-full'>
+                    <MemoizedSearchAutocomplete
+                      placeholder='Buscar productos...'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      style={{
+                        '--input-bg': 'rgba(255, 255, 255, 0.3)',
+                      } as React.CSSProperties & { '--input-bg'?: string }}
+                      debounceMs={100}
+                      maxSuggestions={6}
+                      showRecentSearches={true}
+                      showTrendingSearches={true}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-        {/* Header principal - Con expansión de búsqueda al hacer click */}
-        {/* ⚡ FIX: Usar el mismo ancho que el bottom bar (max-w-md) en móvil, mismo ancho que BestSeller en desktop */}
-        <div className='max-w-md md:max-w-[1170px] mx-auto px-3 sm:px-4 md:px-4 lg:px-8 xl:px-8 py-1.5 sm:py-2'>
-          <div className='flex items-center justify-between md:justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px]'>
-            {/* 1. Logo - Ocultar cuando search está expandido */}
+      </header>
+
+      {/* Desktop: header con márgenes en el fondo también */}
+      <header
+        className={`
+        fixed left-0 right-0 z-header hidden lg:block
+        safe-area-top
+      `}
+        style={{
+          top: 'env(safe-area-inset-top, 0px)',
+        }}
+      >
+        <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8'>
+          <div
+            className={`
+            rounded-b-3xl
+            header-sticky-transition
+            ${isSticky ? 'glass-header-sticky' : 'glass-header'}
+            ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
+            transition-all duration-300 ease-in-out
+            overflow-x-hidden overflow-y-visible
+          `}
+            style={{
+              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <ScrollingBanner />
+            <div className='px-3 sm:px-4 py-1.5 sm:py-2'>
+              <div className='flex items-center justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px]'>
+                {/* 1. Logo - Ocultar cuando search está expandido */}
             {/* ⚡ FIX: Remover contenedor innecesario que causa el div rectangular */}
             <Link 
               href='/' 
@@ -389,6 +486,8 @@ const Header = () => {
                 </div>
               </div>
             )}
+              </div>
+            </div>
           </div>
         </div>
       </header>
