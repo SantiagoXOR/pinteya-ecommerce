@@ -26,6 +26,7 @@ interface HeroOptimizedProps {
 const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'hero-optimized' }: HeroOptimizedProps) => {
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
+  const [isContainerVisible, setIsContainerVisible] = useState(false)
   
   // #region agent log
   useEffect(() => {
@@ -52,9 +53,44 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
   }, []);
   // #endregion
 
-  // ⚡ FIX: Marcar como montado después del primer render
+  // ⚡ FIX: Marcar como montado después del primer render y verificar visibilidad del contenedor
   useEffect(() => {
     setIsMounted(true)
+    
+    // ⚡ FIX: Verificar si el contenedor está visible (para evitar renderizar carousel en contenedores ocultos)
+    if (typeof window !== 'undefined') {
+      const checkVisibility = () => {
+        const staticImage = document.getElementById(staticImageId)
+        if (staticImage) {
+          const container = staticImage.closest('.hero-lcp-container')
+          if (container) {
+            const computedStyle = window.getComputedStyle(container)
+            const isVisible = computedStyle.display !== 'none' && 
+                             computedStyle.visibility !== 'hidden' &&
+                             computedStyle.opacity !== '0'
+            setIsContainerVisible(isVisible)
+            console.log(`[HeroOptimized] Container visibility for ${carouselId}:`, isVisible, {
+              display: computedStyle.display,
+              visibility: computedStyle.visibility,
+              opacity: computedStyle.opacity
+            })
+          }
+        }
+      }
+      
+      // Verificar inmediatamente y después de un pequeño delay para asegurar que los estilos están aplicados
+      checkVisibility()
+      const timeout = setTimeout(checkVisibility, 100)
+      
+      // También verificar en resize para manejar cambios de breakpoint
+      window.addEventListener('resize', checkVisibility)
+      
+      return () => {
+        clearTimeout(timeout)
+        window.removeEventListener('resize', checkVisibility)
+      }
+    }
+    
     // #region agent log
     if (typeof window !== 'undefined') {
       fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
@@ -67,7 +103,8 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
             timestamp: Date.now(),
             timeSincePageLoad: performance.now(),
             containerCount: document.querySelectorAll('.hero-lcp-container').length,
-            imageCount: document.querySelectorAll('#hero-lcp-image').length,
+            imageCount: document.querySelectorAll(`#${staticImageId}`).length,
+            carouselId,
           },
           timestamp: Date.now(),
           sessionId: 'debug-session',
@@ -77,20 +114,24 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       }).catch(() => {});
     }
     // #endregion
-  }, [])
+  }, [staticImageId, carouselId])
 
   // ⚡ OPTIMIZACIÓN: Cargar carousel después de 3 segundos (mejor UX sin afectar LCP)
   // Lighthouse evalúa LCP típicamente en ~2.5s, así que 3s es seguro
   // La imagen estática sigue visible durante la evaluación de Lighthouse
+  // ⚡ FIX: Solo cargar el carousel si el contenedor está visible
   useEffect(() => {
-    if (!isMounted) return
+    if (!isMounted || !isContainerVisible) return
 
+    console.log(`[HeroOptimized] Scheduling carousel load for ${carouselId}`, { isMounted, isContainerVisible })
+    
     const carouselTimeout = setTimeout(() => {
+      console.log(`[HeroOptimized] Loading carousel for ${carouselId}`)
       setShouldLoadCarousel(true)
     }, 3000) // 3 segundos - mejor UX sin afectar LCP
 
     return () => clearTimeout(carouselTimeout)
-  }, [isMounted])
+  }, [isMounted, isContainerVisible, carouselId])
 
   // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel se carga (ocultar inmediatamente para evitar superposición visual)
   // El delay de 3s ya es suficiente para Lighthouse, así que ocultamos inmediatamente cuando el carousel comienza a cargar
@@ -150,17 +191,31 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       {/* La imagen estática está en el contenedor hero-lcp-container para descubrimiento temprano */}
       {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
       {/* ⚡ FIX: Verificar que no hay otro carousel ya renderizado en el MISMO contenedor para prevenir duplicación */}
-      {isMounted && shouldLoadCarousel && (() => {
+      {/* ⚡ FIX: Solo renderizar si el contenedor está visible */}
+      {isMounted && isContainerVisible && shouldLoadCarousel && (() => {
         // ⚡ FIX: Verificar que no hay otro carousel ya renderizado con el mismo ID
         // Esto previene duplicación en producción donde React puede renderizar dos veces
         // Pero permite que mobile y desktop tengan sus propios carouseles
+        // ⚡ DEBUG: Agregar verificación más robusta para desktop
         if (typeof window !== 'undefined') {
           const existingCarousel = document.querySelector(`[data-hero-optimized="${carouselId}"]`)
+          // ⚡ FIX: Solo bloquear si el carousel existente está en el mismo contenedor visible
+          // En desktop, el contenedor mobile está oculto (lg:hidden), así que no debería interferir
           if (existingCarousel) {
-            // Ya hay un carousel renderizado con este ID, no renderizar otro
-            return null
+            // Verificar si el contenedor padre está visible
+            const parentContainer = existingCarousel.closest('.hero-lcp-container')
+            if (parentContainer) {
+              const isParentVisible = window.getComputedStyle(parentContainer).display !== 'none'
+              if (isParentVisible) {
+                // Ya hay un carousel renderizado y visible con este ID, no renderizar otro
+                console.log(`[HeroOptimized] Carousel ${carouselId} ya existe y está visible, no renderizando duplicado`)
+                return null
+              }
+            }
           }
         }
+        
+        console.log(`[HeroOptimized] Renderizando carousel ${carouselId}`, { isMounted, shouldLoadCarousel })
         
         return (
           <div
@@ -190,6 +245,7 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
                     timeSincePageLoad: performance.now(),
                     containerCount: document.querySelectorAll('.hero-lcp-container').length,
                     carouselCount: document.querySelectorAll('[data-hero-optimized]').length,
+                    carouselId,
                   },
                   timestamp: Date.now(),
                   sessionId: 'debug-session',
