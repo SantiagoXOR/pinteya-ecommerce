@@ -62,31 +62,61 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       const checkVisibility = () => {
         const staticImage = document.getElementById(staticImageId)
         if (staticImage) {
+          // Verificar el contenedor hero-lcp-container
           const container = staticImage.closest('.hero-lcp-container')
+          // Verificar también el contenedor padre (el div con hidden lg:block o lg:hidden)
+          const parentWrapper = staticImage.closest('[class*="hero-container-wrapper"]')
+          
           if (container) {
-            const computedStyle = window.getComputedStyle(container)
-            const isVisible = computedStyle.display !== 'none' && 
-                             computedStyle.visibility !== 'hidden' &&
-                             computedStyle.opacity !== '0'
+            const containerStyle = window.getComputedStyle(container)
+            const parentStyle = parentWrapper ? window.getComputedStyle(parentWrapper) : null
+            
+            // Verificar visibilidad del contenedor y del padre
+            const containerVisible = containerStyle.display !== 'none' && 
+                                   containerStyle.visibility !== 'hidden' &&
+                                   containerStyle.opacity !== '0'
+            
+            const parentVisible = !parentStyle || (
+              parentStyle.display !== 'none' && 
+              parentStyle.visibility !== 'hidden' &&
+              parentStyle.opacity !== '0'
+            )
+            
+            const isVisible = containerVisible && parentVisible
+            
             setIsContainerVisible(isVisible)
             console.log(`[HeroOptimized] Container visibility for ${carouselId}:`, isVisible, {
-              display: computedStyle.display,
-              visibility: computedStyle.visibility,
-              opacity: computedStyle.opacity
+              containerDisplay: containerStyle.display,
+              containerVisibility: containerStyle.visibility,
+              containerOpacity: containerStyle.opacity,
+              parentDisplay: parentStyle?.display,
+              parentVisibility: parentStyle?.visibility,
+              parentOpacity: parentStyle?.opacity,
             })
+          } else {
+            console.warn(`[HeroOptimized] No se encontró el contenedor para ${carouselId}`)
+            setIsContainerVisible(false)
           }
+        } else {
+          console.warn(`[HeroOptimized] No se encontró la imagen estática con ID ${staticImageId}`)
+          setIsContainerVisible(false)
         }
       }
       
-      // Verificar inmediatamente y después de un pequeño delay para asegurar que los estilos están aplicados
+      // Verificar después de múltiples delays para asegurar que los estilos están aplicados
+      // Tailwind aplica los estilos después del render, así que necesitamos esperar
       checkVisibility()
-      const timeout = setTimeout(checkVisibility, 100)
+      const timeout1 = setTimeout(checkVisibility, 50)
+      const timeout2 = setTimeout(checkVisibility, 200)
+      const timeout3 = setTimeout(checkVisibility, 500)
       
       // También verificar en resize para manejar cambios de breakpoint
       window.addEventListener('resize', checkVisibility)
       
       return () => {
-        clearTimeout(timeout)
+        clearTimeout(timeout1)
+        clearTimeout(timeout2)
+        clearTimeout(timeout3)
         window.removeEventListener('resize', checkVisibility)
       }
     }
