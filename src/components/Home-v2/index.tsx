@@ -339,7 +339,9 @@ const HomeV2 = () => {
 
       {/* 4. Productos Destacados (Combos) - Misma estructura que HeroCarousel */}
       <div className='mt-4 sm:mt-6 product-section'>
-        <CombosSection />
+        <div className='max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-8'>
+          <CombosSection />
+        </div>
       </div>
 
       {/* 5. Carrusel Dinámico - Solo Envío Gratis */}

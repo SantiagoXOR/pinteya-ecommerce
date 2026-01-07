@@ -278,7 +278,7 @@ const Header = () => {
         </div>
         {/* Header principal - Con expansión de búsqueda al hacer click */}
         {/* ⚡ FIX: Usar el mismo ancho que el bottom bar (max-w-md) en móvil, mismo ancho que BestSeller en desktop */}
-        <div className='max-w-md md:max-w-[1170px] mx-auto px-3 sm:px-4 md:px-4 lg:px-8 xl:px-0 py-1.5 sm:py-2'>
+        <div className='max-w-md md:max-w-[1170px] mx-auto px-3 sm:px-4 md:px-4 lg:px-8 xl:px-8 py-1.5 sm:py-2'>
           <div className='flex items-center justify-between md:justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px]'>
             {/* 1. Logo - Ocultar cuando search está expandido */}
             {/* ⚡ FIX: Remover contenedor innecesario que causa el div rectangular */}

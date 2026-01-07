@@ -63,17 +63,18 @@ export default function CombosOptimized() {
   // ⚡ OPTIMIZACIÓN: Renderizar ambos componentes y usar transición suave
   // La imagen estática se desvanece cuando el carousel está listo
   // Esto evita el doble render completo del componente
-  // ⚡ FIX: Full width sin padding ni max-width (igual que hero)
+  // ⚡ FIX: Contenedor con márgenes en desktop para consistencia con otros componentes
   return (
-    <div className="relative w-full pt-1 sm:pt-2" style={{ width: '100%', maxWidth: '100%' }}>
-      <div 
-        className="relative w-full overflow-hidden" 
-        style={{ 
-          aspectRatio: '2.77',
-          width: '100%',
-          maxWidth: '100%',
-        }}
-      >
+    <div className="relative w-full pt-1 sm:pt-2">
+      <div className="max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-8">
+        <div 
+          className="relative w-full overflow-hidden" 
+          style={{ 
+            aspectRatio: '2.77',
+            width: '100%',
+            maxWidth: '100%',
+          }}
+        >
           {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
           {/* Se desvanece suavemente cuando el carousel está listo */}
           {/* ⚡ FIX: Full width con object-cover para mejor visualización */}
@@ -108,6 +109,7 @@ export default function CombosOptimized() {
             </div>
           )}
         </div>
+      </div>
     </div>
   )
 }

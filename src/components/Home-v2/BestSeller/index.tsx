@@ -56,7 +56,7 @@ const BestSeller: React.FC = React.memo(() => {
   // ✅ FIX: Siempre renderizar la sección, nunca retornar null
   return (
     <section className='overflow-x-hidden py-1 sm:py-1.5 bg-transparent'>
-      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
+      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-8'>
         {shouldShowSkeletons ? (
           // Mostrar skeletons solo durante la carga inicial sin datos
           <ProductSkeletonGrid count={initialProductCount} />
