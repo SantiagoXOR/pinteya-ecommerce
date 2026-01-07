@@ -27,6 +27,18 @@ body [data-admin-layout] {
   padding: 0 !important;
 }
 
+/* Asegurar que el main content pueda hacer scroll correctamente */
+[data-admin-layout] main {
+  min-height: 0 !important;
+  max-height: 100% !important;
+}
+
+/* Fallback para navegadores que no soportan :has() */
+[data-admin-layout] {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
 /* Scrollbar horizontal siempre visible para tablas de productos */
 .products-table-scroll {
   /* Firefox */
