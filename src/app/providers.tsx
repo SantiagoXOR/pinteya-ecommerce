@@ -9,9 +9,43 @@ import { SessionProvider } from 'next-auth/react'
 import { useDeferredHydration } from '@/hooks/useDeferredHydration'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 
-// ⚡ PERFORMANCE: Providers críticos (carga inmediata - solo los esenciales)
-import { ReduxProvider } from '@/redux/provider'
-import { QueryClientProvider } from '@/components/providers/QueryClientProvider'
+// ⚡ FASE 2.1-2.2: Lazy load de React Query y Redux para reducir "Other" Work (5,520ms)
+// Estos providers se cargan después del TTI para no bloquear carga inicial
+const QueryClientProviderLazy = dynamic(() => import('@/components/providers/QueryClientProvider').then(m => ({ default: m.QueryClientProvider })), {
+  ssr: true, // SSR necesario para data fetching inicial
+  loading: () => null,
+})
+const ReduxProviderLazy = dynamic(() => import('@/redux/provider').then(m => ({ default: m.ReduxProvider })), {
+  ssr: true, // SSR necesario para state management inicial
+  loading: () => null,
+})
+
+// ⚡ FASE 2.1-2.2: Wrapper para diferir carga de providers hasta después del TTI
+const DeferredDataProviders = React.memo(({ children }: { children: React.ReactNode }) => {
+  // ⚡ Diferir carga hasta después del TTI (Time to Interactive)
+  // Esto reduce "Other" Work de 5,520ms significativamente
+  const shouldLoad = useDeferredHydration({
+    minDelay: process.env.NODE_ENV === 'development' ? 0 : 3000, // 3s en prod para esperar TTI
+    maxDelay: process.env.NODE_ENV === 'development' ? 0 : 5000, // 5s máximo en prod
+    useIdleCallback: process.env.NODE_ENV === 'production',
+  })
+
+  if (!shouldLoad) {
+    // Renderizar sin providers de datos - componentes usarán fallbacks
+    return <>{children}</>
+  }
+
+  return (
+    <QueryClientProviderLazy>
+      <ReduxProviderLazy>
+        {children}
+      </ReduxProviderLazy>
+    </QueryClientProviderLazy>
+  )
+})
+DeferredDataProviders.displayName = 'DeferredDataProviders'
+
+// ⚡ PERFORMANCE: Error boundary crítico (carga inmediata)
 import { AdvancedErrorBoundary } from '@/lib/error-boundary/advanced-error-boundary'
 
 // ⚡ CRITICAL: Lazy load de providers no críticos para reducir Script Evaluation
@@ -260,48 +294,45 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           enableReporting={true}
           recoveryTimeout={10000}
         >
-          {/* 1. Query client - Crítico para data fetching */}
-          <QueryClientProvider>
-            {/* 2. Redux - Crítico para state management */}
-            <ReduxProvider>
-              {/* 3. Cart persistence - Crítico para carrito */}
-              <CartPersistenceProvider>
-                {/* 4. Modal provider - Crítico para UI */}
-                <ModalProvider>
-                  <CartModalProvider>
-                    <PreviewSliderProvider>
-                      {/* ⚡ FASE 4: Providers diferidos después del LCP para reducir TBT */}
-                      <DeferredProviders
+          {/* ⚡ FASE 2.1-2.2: Query client y Redux lazy loaded - Cargar después de TTI para reducir "Other" Work (5,520ms) */}
+          <DeferredDataProviders>
+            {/* 3. Cart persistence - Crítico para carrito */}
+            <CartPersistenceProvider>
+              {/* 4. Modal provider - Crítico para UI */}
+              <ModalProvider>
+                <CartModalProvider>
+                  <PreviewSliderProvider>
+                    {/* ⚡ FASE 4: Providers diferidos después del LCP para reducir TBT */}
+                    <DeferredProviders
+                      isAdminRoute={isAdminRoute}
+                      isCheckoutRoute={isCheckoutRoute}
+                      isAuthRoute={isAuthRoute}
+                    >
+                      {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
+                      {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MemoizedHeader />}
+
+                      {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
+                      {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
+                      <PreviewSliderModal />
+                      
+                      {/* ⚡ FASE 4: Componentes diferidos después del LCP */}
+                      <DeferredComponents
                         isAdminRoute={isAdminRoute}
-                        isCheckoutRoute={isCheckoutRoute}
                         isAuthRoute={isAuthRoute}
-                      >
-                        {/* Header y Footer solo para rutas públicas - Memoizados para performance */}
-                        {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MemoizedHeader />}
+                        isCheckoutRoute={isCheckoutRoute}
+                      />
 
-                        {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
-                        {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
-                        <PreviewSliderModal />
-                        
-                        {/* ⚡ FASE 4: Componentes diferidos después del LCP */}
-                        <DeferredComponents
-                          isAdminRoute={isAdminRoute}
-                          isAuthRoute={isAuthRoute}
-                          isCheckoutRoute={isCheckoutRoute}
-                        />
+                      {/* Contenido principal */}
+                      {children}
 
-                        {/* Contenido principal */}
-                        {children}
-
-                        {/* Footer solo para rutas públicas - Memoizado */}
-                        {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MemoizedFooter />}
-                      </DeferredProviders>
-                    </PreviewSliderProvider>
-                  </CartModalProvider>
-                </ModalProvider>
-              </CartPersistenceProvider>
-            </ReduxProvider>
-          </QueryClientProvider>
+                      {/* Footer solo para rutas públicas - Memoizado */}
+                      {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MemoizedFooter />}
+                    </DeferredProviders>
+                  </PreviewSliderProvider>
+                </CartModalProvider>
+              </ModalProvider>
+            </CartPersistenceProvider>
+          </DeferredDataProviders>
         </AdvancedErrorBoundary>
       </>
     )
