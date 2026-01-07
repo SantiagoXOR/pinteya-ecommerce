@@ -3,18 +3,20 @@
  * Previene double scroll forzando que solo el contenido haga scroll
  */
 
-/* Permitir scroll en páginas de admin que lo necesiten (como analytics) */
+/* Prevenir scroll en el body cuando estamos en admin */
 html:has(body [data-admin-layout]),
 body:has([data-admin-layout]) {
-  /* Removido overflow: hidden para permitir scroll en analytics */
+  overflow: hidden !important;
+  height: 100vh !important;
   width: 100vw !important;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-/* Asegurar que el contenedor raíz permita scroll cuando sea necesario */
+/* Asegurar que el contenedor raíz no tenga scroll */
 #__next:has([data-admin-layout]) {
-  /* Removido overflow: hidden para permitir scroll */
+  height: 100vh !important;
+  overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
 }
