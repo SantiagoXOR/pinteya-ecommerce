@@ -74,8 +74,14 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
     
     // ⚡ FIX: Usar media query para detectar breakpoint lg (1024px+) de forma confiable
     if (typeof window !== 'undefined') {
-      // ⚡ CRITICAL: Verificar inmediatamente si la imagen existe
+      // ⚡ CRITICAL: Verificar si la imagen existe, pero solo cuando el DOM esté listo
       const checkImageExists = () => {
+        // Solo verificar si el documento está listo
+        if (document.readyState === 'loading') {
+          console.log(`[HeroOptimized] ⏳ Document still loading for ${carouselId}, waiting...`)
+          return
+        }
+        
         const staticImage = document.getElementById(staticImageId)
         const allImages = Array.from(document.querySelectorAll('img')).map(img => img.id || img.src)
         const allContainers = Array.from(document.querySelectorAll('.hero-lcp-container')).map(container => ({
@@ -89,7 +95,7 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
           }))
         }))
         
-        console.log(`[HeroOptimized] 🔍 Initial DOM check for ${carouselId}:`, {
+        console.log(`[HeroOptimized] 🔍 DOM check for ${carouselId}:`, {
           staticImageExists: !!staticImage,
           staticImageId,
           allImagesWithId: allImages.filter(img => typeof img === 'string' && img.includes('hero-lcp')),
@@ -98,17 +104,32 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
         })
         
         if (!staticImage) {
-          console.error(`[HeroOptimized] ❌ CRITICAL: Static image ${staticImageId} NOT FOUND in DOM during mount`)
-          console.error(`[HeroOptimized] Available images with IDs:`, Array.from(document.querySelectorAll('img[id]')).map(img => img.id))
-          console.error(`[HeroOptimized] All hero-lcp containers:`, allContainers)
+          console.warn(`[HeroOptimized] ⚠️ Static image ${staticImageId} not found yet (readyState: ${document.readyState})`)
+          if (document.readyState === 'complete') {
+            console.error(`[HeroOptimized] ❌ CRITICAL: Static image ${staticImageId} NOT FOUND after DOM complete`)
+            console.error(`[HeroOptimized] Available images with IDs:`, Array.from(document.querySelectorAll('img[id]')).map(img => img.id))
+            console.error(`[HeroOptimized] All hero-lcp containers:`, allContainers)
+          }
         }
       }
       
-      // Verificar inmediatamente y después de delays
-      checkImageExists()
-      setTimeout(checkImageExists, 100)
-      setTimeout(checkImageExists, 500)
-      setTimeout(checkImageExists, 1000)
+      // Esperar a que el DOM esté listo antes de verificar
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        // DOM ya está listo, verificar inmediatamente
+        checkImageExists()
+      } else {
+        // Esperar a que el DOM esté listo
+        const handleDOMReady = () => {
+          checkImageExists()
+        }
+        document.addEventListener('DOMContentLoaded', handleDOMReady)
+        window.addEventListener('load', handleDOMReady)
+        
+        // También verificar después de delays por si acaso
+        setTimeout(checkImageExists, 100)
+        setTimeout(checkImageExists, 500)
+        setTimeout(checkImageExists, 1000)
+      }
       
       // Verificar si el contenedor padre está visible
       const checkParentVisibility = () => {
