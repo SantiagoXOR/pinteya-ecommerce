@@ -98,15 +98,34 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (dbError) {
+      // ⚡ FIX: Manejar error graciosamente - tabla puede no existir
+      // Si la tabla no existe (error PGRST205), solo loguear y continuar
+      // No romper la aplicación por falta de tabla de monitoreo
+      if (dbError.code === 'PGRST205' || dbError.message?.includes('Could not find the table')) {
+        console.warn('⚠️ Tabla error_reports no existe. El reporte no se almacenará, pero la aplicación continúa funcionando.')
+        console.warn('💡 Para habilitar almacenamiento de errores, crea la tabla error_reports en Supabase.')
+        
+        // Retornar éxito aunque no se almacenó (no romper la app)
+        return NextResponse.json({
+          success: true,
+          message: 'Reporte de error procesado (tabla no disponible)',
+          errorId: errorReport.errorId,
+          stored: false,
+          warning: 'Tabla error_reports no existe en la base de datos',
+        })
+      }
+      
+      // Para otros errores, loguear pero no romper
       console.error('❌ Error almacenando reporte:', dbError)
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Error almacenando reporte',
-          details: dbError.message,
-        },
-        { status: 500 }
-      )
+      
+      // Retornar éxito parcial para no romper la aplicación
+      return NextResponse.json({
+        success: true,
+        message: 'Reporte de error procesado (almacenamiento falló)',
+        errorId: errorReport.errorId,
+        stored: false,
+        warning: 'No se pudo almacenar en base de datos',
+      })
     }
 
     // Analizar severidad y enviar alertas si es necesario
@@ -180,6 +199,28 @@ export async function GET(request: NextRequest) {
     const { data: errors, error: dbError } = await query
 
     if (dbError) {
+      // ⚡ FIX: Si la tabla no existe, retornar lista vacía en lugar de error
+      if (dbError.code === 'PGRST205' || dbError.message?.includes('Could not find the table')) {
+        console.warn('⚠️ Tabla error_reports no existe. Retornando lista vacía.')
+        return NextResponse.json({
+          success: true,
+          data: {
+            errors: [],
+            stats: null,
+            pagination: {
+              limit,
+              offset,
+              total: 0,
+            },
+            filters: {
+              level,
+              component,
+              timeframe,
+            },
+          },
+        })
+      }
+      
       console.error('❌ Error obteniendo reportes:', dbError)
       return NextResponse.json(
         {
@@ -321,6 +362,10 @@ async function checkErrorPatterns(errorReport: ErrorReport) {
       .gte('timestamp', oneDayAgo.toISOString())
 
     if (error) {
+      // ⚡ FIX: Si la tabla no existe, simplemente no verificar patrones
+      if (error.code === 'PGRST205' || error.message?.includes('Could not find the table')) {
+        return // Salir silenciosamente
+      }
       console.error('❌ Error verificando patrones:', error)
       return
     }
@@ -358,6 +403,10 @@ async function getErrorStats(startTime: Date) {
       .gte('timestamp', startTime.toISOString())
 
     if (error) {
+      // ⚡ FIX: Si la tabla no existe, retornar null sin error
+      if (error.code === 'PGRST205' || error.message?.includes('Could not find the table')) {
+        return null // Retornar null sin loguear error
+      }
       console.error('❌ Error obteniendo estadísticas:', error)
       return null
     }
