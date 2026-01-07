@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AdminSidebar } from './AdminSidebar'
 import { AdminHeader } from './AdminHeader'
 import { cn } from '@/lib/core/utils'
@@ -27,11 +27,24 @@ export function AdminLayout({
 }: AdminLayoutProps) {
   // Estado para móvil (abierto/cerrado)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const mainRef = useRef<HTMLElement>(null)
 
   // Toggle para móvil
   const handleMobileToggle = () => {
     setSidebarOpen(!sidebarOpen)
   }
+
+  // CRÍTICO: Aplicar estilos de scroll después de que el componente se monte
+  // Esto sobrescribe los estilos inline del layout.tsx raíz
+  useEffect(() => {
+    if (mainRef.current) {
+      // Aplicar estilos directamente al elemento usando setProperty con important
+      mainRef.current.style.setProperty('overflow-y', 'auto', 'important')
+      mainRef.current.style.setProperty('overflow-x', 'hidden', 'important')
+      mainRef.current.style.setProperty('min-height', '0', 'important')
+      mainRef.current.style.setProperty('max-height', '100%', 'important')
+    }
+  }, [])
 
   return (
     <div data-admin-layout className='flex h-screen bg-gray-50 overflow-hidden'>
@@ -65,11 +78,19 @@ export function AdminLayout({
 
         {/* Page Content */}
         <main
+          ref={mainRef}
+          data-admin-main
           className={cn(
             'flex-1 min-h-0 overflow-y-auto py-4 bg-gray-50/80 w-full',
             'scroll-smooth [scroll-padding-top:3.5rem]',
             className
           )}
+          style={{
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            minHeight: 0,
+            maxHeight: '100%',
+          }}
         >
           {children}
         </main>

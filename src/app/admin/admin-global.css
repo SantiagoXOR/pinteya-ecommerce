@@ -1,9 +1,10 @@
 /**
  * Estilos globales específicos para el panel admin
  * Previene double scroll forzando que solo el contenido haga scroll
+ * CRÍTICO: Estos estilos deben sobrescribir los estilos inline del layout.tsx
  */
 
-/* Prevenir scroll en el body cuando estamos en admin */
+/* Prevenir scroll en el body cuando estamos en admin - Mayor especificidad */
 html:has(body [data-admin-layout]),
 body:has([data-admin-layout]) {
   overflow: hidden !important;
@@ -11,12 +12,15 @@ body:has([data-admin-layout]) {
   width: 100vw !important;
   margin: 0 !important;
   padding: 0 !important;
+  padding-top: 0 !important;
 }
 
-/* Asegurar que el contenedor raíz no tenga scroll */
+/* Asegurar que el contenedor raíz no tenga scroll - Mayor especificidad */
 #__next:has([data-admin-layout]) {
   height: 100vh !important;
   overflow: hidden !important;
+  overflow-y: hidden !important;
+  overflow-x: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
 }
@@ -27,10 +31,22 @@ body [data-admin-layout] {
   padding: 0 !important;
 }
 
-/* Asegurar que el main content pueda hacer scroll correctamente */
-[data-admin-layout] main {
+/* CRÍTICO: Permitir scroll SOLO en el main del admin - Mayor especificidad que estilos inline */
+/* Usar múltiples selectores para máxima especificidad */
+[data-admin-layout] main,
+[data-admin-main],
+body:has([data-admin-layout]) main,
+#__next:has([data-admin-layout]) main,
+html:has([data-admin-layout]) body main,
+html:has(body [data-admin-layout]) main,
+body:has([data-admin-layout]) [data-admin-main],
+#__next:has([data-admin-layout]) [data-admin-main] {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   min-height: 0 !important;
   max-height: 100% !important;
+  position: relative !important;
+  height: auto !important;
 }
 
 /* Fallback para navegadores que no soportan :has() */
