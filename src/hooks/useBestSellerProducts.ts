@@ -162,7 +162,7 @@ export const useBestSellerProducts = ({
     // placeholderData mantendrá los datos anteriores durante actualizaciones en segundo plano
     // Solo se refetcheará si los datos están stale (más antiguos que staleTime)
     refetchOnMount: false,
-    refetchOnReconnect: true, // Refetch si se reconecta
+    refetchOnReconnect: false, // ⚡ FIX: Cambiar a false para evitar refetches durante montaje inicial
   })
 
   // ⚡ OPTIMIZACIÓN: Detección mejorada de loading
