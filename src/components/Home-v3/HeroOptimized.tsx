@@ -27,7 +27,14 @@ interface HeroOptimizedProps {
 const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'hero-optimized', isDesktop = false }: HeroOptimizedProps) => {
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
-  const [matchesBreakpoint, setMatchesBreakpoint] = useState(false)
+  // ⚡ FIX: Inicializar matchesBreakpoint basándose en el prop isDesktop y el ancho de la ventana
+  const [matchesBreakpoint, setMatchesBreakpoint] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const isDesktopBreakpoint = window.innerWidth >= 1024
+      return isDesktop ? isDesktopBreakpoint : !isDesktopBreakpoint
+    }
+    return false
+  })
   
   // #region agent log
   useEffect(() => {
@@ -77,10 +84,8 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
         })
       }
       
-      // Verificar inmediatamente con un pequeño delay para asegurar que el DOM está listo
-      const initialCheck = setTimeout(() => {
-        handleMediaChange(mediaQuery)
-      }, 0)
+      // Verificar inmediatamente
+      handleMediaChange(mediaQuery)
       
       // Escuchar cambios
       if (mediaQuery.addEventListener) {
