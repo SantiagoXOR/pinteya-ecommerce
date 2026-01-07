@@ -15,6 +15,13 @@ import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
 
 // ⚡ OPTIMIZACIÓN: Componente memoizado para evitar re-renders innecesarios
 const BestSeller: React.FC = React.memo(() => {
+  // ⚡ FIX HIDRATACIÓN: Asegurar que el componente se monte correctamente
+  const [isMounted, setIsMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para reducir productos iniciales
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
@@ -25,9 +32,21 @@ const BestSeller: React.FC = React.memo(() => {
   // Fetch productos según categoría seleccionada
   // Sin categoría: 10 productos específicos hardcodeados
   // Con categoría: Todos los productos de la categoría (limit 50)
-  const { products, isLoading, error } = useBestSellerProducts({
+  const { products, isLoading, error, refetch } = useBestSellerProducts({
     categorySlug: selectedCategory,
   })
+
+  // ⚡ FIX HIDRATACIÓN: Forzar refetch después de la hidratación si no hay datos
+  React.useEffect(() => {
+    if (isMounted && !isLoading && (!products || products.length === 0) && !error) {
+      // Esperar un poco para asegurar que React Query esté completamente hidratado
+      const timer = setTimeout(() => {
+        console.log('[BestSeller] 🔄 Forzando refetch después de hidratación')
+        refetch()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [isMounted, isLoading, products, error, refetch])
 
   // Memoizar ordenamiento y filtrado de productos
   const bestSellerProducts = useMemo(() => {

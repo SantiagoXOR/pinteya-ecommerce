@@ -178,8 +178,9 @@ export const useBestSellerProducts = ({
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
-    // ✅ MANTENER: refetchOnMount: false para optimización (igual que otras secciones)
-    refetchOnMount: false, // React Query maneja el cache inteligentemente
+    // ⚡ FIX HIDRATACIÓN: refetchOnMount: true para asegurar que se ejecute durante la hidratación
+    // Esto asegura que los datos se carguen correctamente incluso si no están en cache
+    refetchOnMount: true, // Cambiar a true para asegurar carga durante hidratación
     refetchOnReconnect: true, // Refetch si se reconecta
   })
 

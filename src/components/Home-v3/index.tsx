@@ -237,46 +237,33 @@ const LazyTestimonials = React.memo(() => {
 LazyTestimonials.displayName = 'LazyTestimonials'
 
 const LazyBestSeller = React.memo(({ delay = 0 }: { delay?: number }) => {
-  // ⚡ FIX: Inicializar como true para SSR (asumiendo delay === 0 durante SSR)
-  // Esto asegura que el servidor y cliente rendericen lo mismo inicialmente
-  const [shouldRender, setShouldRender] = React.useState(true)
-  const [isHydrated, setIsHydrated] = React.useState(false)
-  const [hasRendered, setHasRendered] = React.useState(false)
+  // ⚡ FIX HIDRATACIÓN: Inicializar shouldRender basándose en si estamos en el cliente
+  // Durante SSR, siempre renderizar el componente (no skeleton)
+  // Durante hidratación inicial, mantener el mismo estado que SSR
+  const [shouldRender, setShouldRender] = React.useState(() => {
+    // En SSR, siempre renderizar (delay se aplica solo después de hidratación)
+    if (typeof window === 'undefined') return true
+    // En cliente, si delay es 0, renderizar inmediatamente
+    return delay === 0
+  })
+  const [isMounted, setIsMounted] = React.useState(false)
 
-  // ⚡ FIX: Marcar como hidratado después del primer render del cliente
+  // ⚡ FIX: Marcar como montado después de la hidratación
   React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
-  // ⚡ FIX: Marcar como renderizado cuando el contenido se muestra por primera vez
-  React.useEffect(() => {
-    if (shouldRender && !hasRendered) {
-      setHasRendered(true)
-    }
-  }, [shouldRender, hasRendered])
-
-  React.useEffect(() => {
-    // Solo procesar cambios de delay después de la hidratación para evitar mismatch
-    if (!isHydrated) return
-
-    // ⚡ FIX: Si el contenido ya se renderizó, NO cambiarlo a false aunque el delay cambie
-    // Esto previene que el contenido desaparezca después de la hidratación
-    if (hasRendered && shouldRender) return
-
-    if (delay > 0) {
-      // Si delay es > 0 y el contenido aún no se ha renderizado, mostrar skeleton primero
-      setShouldRender(false)
+    setIsMounted(true)
+    // Si hay un delay y aún no se ha renderizado, aplicar el delay
+    if (delay > 0 && !shouldRender) {
       const timer = setTimeout(() => {
         setShouldRender(true)
       }, delay)
       return () => clearTimeout(timer)
-    } else {
-      // Si delay es 0, renderizar inmediatamente
-      setShouldRender(true)
     }
-  }, [delay, isHydrated, hasRendered, shouldRender])
+  }, [delay, shouldRender])
 
-  if (!shouldRender) {
+  // ⚡ FIX: Durante la hidratación inicial, siempre renderizar el componente
+  // para evitar mismatch entre servidor y cliente
+  // Solo mostrar skeleton si estamos en cliente, montado, y hay delay activo
+  if (typeof window !== 'undefined' && isMounted && !shouldRender && delay > 0) {
     return (
       <div className='mt-4 sm:mt-6 product-section'>
         <ProductSkeletonGrid count={4} />
