@@ -335,13 +335,29 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       {/* ⚡ FIX: Solo renderizar si el breakpoint coincide y el carousel debe cargarse */}
       {(() => {
         const shouldRender = isMounted && matchesBreakpoint && shouldLoadCarousel
-        console.log(`[HeroOptimized] Render check for ${carouselId}:`, {
+        
+        // ⚡ DEBUG: Verificar si la imagen estática existe antes de renderizar el carousel
+        if (shouldRender && typeof window !== 'undefined') {
+          const staticImage = document.getElementById(staticImageId)
+          if (!staticImage) {
+            console.error(`[HeroOptimized] ❌ CRITICAL: Static image ${staticImageId} not found when trying to render carousel ${carouselId}`)
+            console.error(`[HeroOptimized] Available images in DOM:`, Array.from(document.querySelectorAll('img')).map(img => img.id || img.src))
+            console.error(`[HeroOptimized] Available containers:`, Array.from(document.querySelectorAll('.hero-lcp-container')).map(container => ({
+              id: container.id,
+              className: container.className,
+              display: window.getComputedStyle(container).display
+            })))
+          }
+        }
+        
+        console.log(`[HeroOptimized] 🎨 Render check for ${carouselId}:`, {
           shouldRender,
           isMounted,
           matchesBreakpoint,
           shouldLoadCarousel,
           isDesktop,
-          windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'N/A'
+          windowWidth: typeof window !== 'undefined' ? window.innerWidth : 'N/A',
+          staticImageExists: typeof window !== 'undefined' ? !!document.getElementById(staticImageId) : 'N/A'
         })
         return shouldRender
       })() && (

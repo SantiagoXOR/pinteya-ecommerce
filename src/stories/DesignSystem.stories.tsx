@@ -35,7 +35,7 @@ Sistema de diseño completo mobile-first especializado en productos de pinturer�
 ## 🎨 Tokens de Diseño
 
 - **Colores**: Tahiti Gold + semánticos
-- **Tipografía**: Work Sans
+- **Tipografía**: Plus Jakarta Sans
 - **Espaciado**: Escala base 4px
 - **Animaciones**: 200ms suaves
 

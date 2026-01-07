@@ -2,7 +2,7 @@
 import Providers from './providers'
 import React, { Suspense } from 'react'
 // ⚡ PERFORMANCE: Fuentes optimizadas con next/font/google
-import { workSans } from './fonts'
+import { plusJakartaSans } from './fonts'
 // ⚡ PERFORMANCE: CSS crítico inline, CSS no crítico carga asíncrono
 import './css/style.css'
 // ⚡ OPTIMIZACIÓN: CSS no crítico movido a carga diferida via DeferredCSS
@@ -39,7 +39,7 @@ export { viewport } from './viewport'
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // ⚡ DEBUG: Simplificar layout para identificar el problema
   return (
-    <html lang='es' className={workSans.variable} suppressHydrationWarning>
+    <html lang='es' className={plusJakartaSans.variable} suppressHydrationWarning>
       <head>
         {/* ⚡ CRITICAL: Preload de imagen hero LCP - MÁXIMA PRIORIDAD */}
         {/* ⚡ DEBE estar PRIMERO para descubrimiento inmediato sin esperar CSS o JS */}
@@ -367,7 +367,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           /* Reset y base styles */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;overflow-y:auto!important;max-width:100vw;width:100%;height:100%}
-          body{margin:0;font-family:var(--font-work-sans),'Work Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
+          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
           #__next{overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;height:auto;position:relative}
           main{overflow-x:hidden!important;overflow-y:hidden!important;position:relative}
           header[class*="fixed"],nav[class*="fixed"]{position:fixed!important;z-index:1100!important}

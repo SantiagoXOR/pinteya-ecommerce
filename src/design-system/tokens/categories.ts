@@ -131,7 +131,7 @@ export const categorySpacing = {
 export const categoryTypography = {
   // Font families
   fontFamily: {
-    sans: ['Work Sans', 'system-ui', 'sans-serif'],
+    sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
     mono: ['Fira Code', 'monospace'],
   },
 

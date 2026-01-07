@@ -6,9 +6,9 @@
 
 // Familias de fuentes
 export const fontFamilies = {
-  // Fuente principal - Humanista con excelente legibilidad numérica
+  // Fuente principal - Humanista moderna con excelente legibilidad numérica
   primary: [
-    'Work Sans',
+    'Plus Jakarta Sans',
     'system-ui',
     '-apple-system',
     'BlinkMacSystemFont',
@@ -21,7 +21,7 @@ export const fontFamilies = {
   ].join(', '),
 
   // Fuente secundaria - Para títulos y elementos destacados (misma familia para consistencia)
-  secondary: ['Work Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'].join(', '),
+  secondary: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'].join(', '),
 
   // Fuente monoespaciada - Para códigos y datos técnicos
   mono: [

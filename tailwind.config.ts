@@ -36,8 +36,8 @@ const config: Config = {
   theme: {
     fontFamily: {
       // ⚡ OPTIMIZACIÓN: Usar variables de next/font para mejor performance
-      'work-sans': ['var(--font-work-sans)', 'Work Sans', 'system-ui', 'sans-serif'],
-      sans: ['var(--font-work-sans)', 'Work Sans', 'system-ui', 'sans-serif'],
+      'plus-jakarta-sans': ['var(--font-plus-jakarta-sans)', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      sans: ['var(--font-plus-jakarta-sans)', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
       inter: ['Inter', 'system-ui', 'sans-serif'],
     },
     container: {
