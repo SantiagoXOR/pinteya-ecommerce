@@ -273,8 +273,15 @@ const Header = () => {
         }}
       >
         {/* ScrollingBanner integrado en la parte superior del header */}
-        <div className='w-full'>
+        {/* Mobile: full width */}
+        <div className='w-full lg:hidden'>
           <ScrollingBanner />
+        </div>
+        {/* Desktop: con márgenes */}
+        <div className='hidden lg:block'>
+          <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8'>
+            <ScrollingBanner />
+          </div>
         </div>
         {/* Header principal - Con expansión de búsqueda al hacer click */}
         {/* ⚡ FIX: Usar el mismo ancho que el bottom bar (max-w-md) en móvil, mismo ancho que BestSeller en desktop */}
