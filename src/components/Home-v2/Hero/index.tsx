@@ -148,11 +148,10 @@ const Hero = () => {
       </div>
 
       {/* Layout desktop - Con márgenes en el fondo también */}
-      <div className='hidden lg:block relative w-full -mt-[105px]'>
+      <div className='hidden lg:block relative -mt-[105px]'>
         <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 pt-[105px]'>
-          <div className='overflow-hidden relative z-10'>
-            <div className='relative rounded-3xl overflow-hidden'>
-              <div className='relative w-full h-[360px]'>
+          <div className='relative rounded-3xl overflow-hidden'>
+            <div className='relative w-full h-[360px]'>
                 {/* ⚡ CRITICAL: Imagen estática para LCP - se renderiza inmediatamente sin JavaScript */}
                 {/* Elimina el retraso de 1,250ms en la carga de recursos */}
                 {/* Estrategia dual: <img> estático para descubrimiento temprano + Image component para optimización */}
