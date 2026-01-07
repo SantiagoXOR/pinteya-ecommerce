@@ -11,17 +11,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from './HelpCard'
 import { PaintVisualizerCard } from '@/components/PaintVisualizer'
-import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
-
 // ⚡ OPTIMIZACIÓN: Componente memoizado para evitar re-renders innecesarios
 const BestSeller: React.FC = React.memo(() => {
-  // ⚡ FIX HIDRATACIÓN: Asegurar que el componente se monte correctamente
-  const [isMounted, setIsMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para reducir productos iniciales
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
@@ -32,21 +23,9 @@ const BestSeller: React.FC = React.memo(() => {
   // Fetch productos según categoría seleccionada
   // Sin categoría: 10 productos específicos hardcodeados
   // Con categoría: Todos los productos de la categoría (limit 50)
-  const { products, isLoading, error, refetch } = useBestSellerProducts({
+  const { products, isLoading, error } = useBestSellerProducts({
     categorySlug: selectedCategory,
   })
-
-  // ⚡ FIX HIDRATACIÓN: Forzar refetch después de la hidratación si no hay datos
-  React.useEffect(() => {
-    if (isMounted && !isLoading && (!products || products.length === 0) && !error) {
-      // Esperar un poco para asegurar que React Query esté completamente hidratado
-      const timer = setTimeout(() => {
-        console.log('[BestSeller] 🔄 Forzando refetch después de hidratación')
-        refetch()
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [isMounted, isLoading, products, error, refetch])
 
   // Memoizar ordenamiento y filtrado de productos
   const bestSellerProducts = useMemo(() => {
@@ -67,30 +46,30 @@ const BestSeller: React.FC = React.memo(() => {
   const shouldShowHelpCard = bestSellerProducts.length > 0 && 
     (bestSellerProducts.length % 4 !== 0 || bestSellerProducts.length % 2 !== 0)
 
-  // ✅ FIX: Siempre mostrar productos si están disponibles (incluso si está "loading")
-  // Solo mostrar skeletons si NO hay productos Y está cargando
-  const hasProducts = bestSellerProducts.length > 0
-  const shouldShowSkeletons = isLoading && !hasProducts
-
-  // ✅ FIX: Siempre renderizar la sección, nunca retornar null
+  // ⚡ OPTIMIZACIÓN: Eliminados skeletons - TanStack Query maneja el cache automáticamente
+  // Los datos en cache se muestran inmediatamente mientras se actualizan en segundo plano
+  
   return (
     <section className='overflow-x-hidden py-1 sm:py-1.5 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-8'>
-        {shouldShowSkeletons ? (
-          // Mostrar skeletons solo durante la carga inicial sin datos
-          <ProductSkeletonGrid count={initialProductCount} />
-        ) : (
-          // Grid de productos mejorado - 4 columnas en desktop
-          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-            {bestSellerProducts.length > 0 ? (
-              <>
-                {bestSellerProducts.map((item, index) => (
-                  <ProductItem key={`${item.id}-${index}`} product={item} />
-                ))}
-                {shouldShowHelpCard && <HelpCard categoryName={selectedCategory} />}
-                {shouldShowHelpCard && <PaintVisualizerCard />}
-              </>
-            ) : (
+        {/* Grid de productos mejorado - 4 columnas en desktop */}
+        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
+          {bestSellerProducts.length > 0 ? (
+            <>
+              {bestSellerProducts.map((item, index) => (
+                <ProductItem key={`${item.id}-${index}`} product={item} />
+              ))}
+              {/* ⚡ FIX: Renderizar siempre pero ocultar condicionalmente para evitar problemas de hooks */}
+              <div style={{ display: shouldShowHelpCard ? 'block' : 'none' }}>
+                <HelpCard categoryName={selectedCategory} />
+              </div>
+              <div style={{ display: shouldShowHelpCard ? 'block' : 'none' }}>
+                <PaintVisualizerCard />
+              </div>
+            </>
+          ) : (
+            // Solo mostrar mensaje si no está cargando (para evitar mostrar mensaje mientras carga)
+            !isLoading && (
               <div className='col-span-full'>
                 <Card variant='outlined' className='border-gray-200'>
                   <CardContent className='p-12 text-center'>
@@ -113,9 +92,9 @@ const BestSeller: React.FC = React.memo(() => {
                   </CardContent>
                 </Card>
               </div>
-            )}
-          </div>
-        )}
+            )
+          )}
+        </div>
       </div>
     </section>
   )

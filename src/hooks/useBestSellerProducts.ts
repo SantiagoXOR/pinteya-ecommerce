@@ -60,13 +60,6 @@ export const useBestSellerProducts = ({
   enableCache = true,
 }: UseBestSellerProductsOptions): UseBestSellerProductsReturn => {
   
-  // ✅ LOG: Verificar que el hook se está ejecutando
-  console.log('🟡 [useBestSellerProducts] HOOK EJECUTÁNDOSE', {
-    categorySlug,
-    timestamp: new Date().toISOString(),
-    isClient: typeof window !== 'undefined'
-  })
-  
   // ✅ FIX: Usar el mismo formato que useProductsByCategory para evitar errores de TypeScript
   // ⚡ OPTIMIZACIÓN: Normalizar filtros para compartir cache con useFilteredProducts
   const filters = {
@@ -86,14 +79,12 @@ export const useBestSellerProducts = ({
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey,
     queryFn: async (): Promise<Product[]> => {
-      console.log('🟡 [useBestSellerProducts] INICIANDO QUERY', { categorySlug })
       try {
         // ⚡ OPTIMIZACIÓN: Usar los mismos filtros normalizados que se usaron en queryKey
         // Esto asegura consistencia y permite compartir cache con useFilteredProducts
         const filters: any = normalizedFilters
 
         // Fetch productos usando la función de API existente
-        console.log('🟡 [useBestSellerProducts] Llamando getProducts con filters:', filters)
         const response = await getProducts(filters)
         
         // ✅ FIX: Verificar que response existe antes de acceder a sus propiedades
@@ -101,30 +92,20 @@ export const useBestSellerProducts = ({
           throw new Error('Respuesta vacía del servidor')
         }
         
-        console.log('🟡 [useBestSellerProducts] Respuesta recibida:', {
-          success: response?.success,
-          hasData: !!response?.data,
-          dataLength: Array.isArray(response?.data) ? response.data.length : 'NO ARRAY',
-          message: response?.message
-        })
-        
         // ✅ FIX CRÍTICO: Si la respuesta no es exitosa, lanzar error para que la query se complete
         if (!response || !response.success) {
           const errorMessage = response?.message || response?.error || 'Error al cargar productos'
-          console.error('🟡 [useBestSellerProducts] ❌ Respuesta no exitosa:', errorMessage)
           throw new Error(errorMessage)
         }
 
         // ✅ FIX: Verificar que hay datos antes de procesar
         if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-          console.warn('🟡 [useBestSellerProducts] ⚠️ No hay datos en la respuesta, devolviendo array vacío')
           // Si no hay datos pero la respuesta fue exitosa, devolver array vacío (no es error)
           return []
         }
 
         // Adaptar productos del formato API al formato legacy
         const fetchedProducts = adaptApiProductsToLegacy(response.data)
-        console.log('🟡 [useBestSellerProducts] Productos adaptados:', fetchedProducts.length)
         
         let finalProducts: Product[]
         
@@ -141,10 +122,6 @@ export const useBestSellerProducts = ({
           finalProducts = fetchedProducts
         }
 
-        console.log('🟡 [useBestSellerProducts] ✅ Query completada exitosamente:', {
-          finalProductsCount: finalProducts.length,
-          categorySlug
-        })
         return finalProducts
       } catch (err) {
         // ✅ FIX: Asegurar que siempre se lance un error válido para que la query se complete
@@ -163,12 +140,14 @@ export const useBestSellerProducts = ({
           errorMessage = 'Error inesperado al cargar productos'
         }
         
-        console.error('🟡 [useBestSellerProducts] ❌ Error en queryFn:', errorMessage, err)
         throw new Error(errorMessage)
       }
     },
     // ✅ FIX: Asegurar que la query siempre se ejecute
     enabled: true,
+    // ⚡ OPTIMIZACIÓN: placeholderData para mantener datos anteriores mientras carga (reemplaza skeletons)
+    // Esto mejora la UX mostrando datos en cache inmediatamente mientras se actualizan en segundo plano
+    placeholderData: (previousData) => previousData,
     // ⚡ OPTIMIZACIÓN: staleTime de 10 minutos para reducir refetches innecesarios
     staleTime: 10 * 60 * 1000, // 10 minutos
     gcTime: 10 * 60 * 1000, // 10 minutos en caché
@@ -178,36 +157,26 @@ export const useBestSellerProducts = ({
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     // No refetch automático en focus para mejor performance
     refetchOnWindowFocus: false,
-    // ⚡ FIX HIDRATACIÓN: refetchOnMount: true para asegurar que se ejecute durante la hidratación
-    // Esto asegura que los datos se carguen correctamente incluso si no están en cache
-    refetchOnMount: true, // Cambiar a true para asegurar carga durante hidratación
+    // ⚡ OPTIMIZACIÓN: refetchOnMount: 'always' para asegurar datos frescos sin bloquear UI
+    // Si hay datos en cache, se muestran inmediatamente y se actualizan en segundo plano
+    refetchOnMount: 'always',
     refetchOnReconnect: true, // Refetch si se reconecta
   })
 
-  // ⚡ OPTIMIZACIÓN: Eliminado useEffect que fuerza refetch - React Query maneja esto automáticamente
-  // ⚡ OPTIMIZACIÓN: Eliminado useEffect de logging - no es necesario para producción
-
-  // ✅ FIX: Mejorar detección de loading - mostrar productos en cache incluso si está "loading"
-  // Si hay datos disponibles, no mostrar loading (incluso si React Query dice que está loading)
-  // Considerar que está cargando solo si isLoading es true Y no hay datos Y no hay error
+  // ⚡ OPTIMIZACIÓN: Detección mejorada de loading
+  // Con placeholderData, TanStack Query mantiene los datos anteriores mientras carga
+  // Solo consideramos que está cargando si no hay datos Y está haciendo la primera carga
+  // isFetching indica si está actualizando datos en segundo plano (con datos en cache)
   const isActuallyLoading = isLoading && !data && !error
-
-  console.log('🟡 [useBestSellerProducts] Retornando valores:', {
-    productsCount: Array.isArray(data) ? data.length : 0,
-    isActuallyLoading,
-    isLoading,
-    isFetching,
-    hasError: !!error,
-    hasData: !!data
-  })
 
   return {
     products: Array.isArray(data) ? data : [],
+    // ⚡ OPTIMIZACIÓN: Solo retornar loading true si realmente no hay datos
+    // Si hay datos en cache (placeholderData), no mostrar loading para mejor UX
     isLoading: isActuallyLoading,
     // Convertir Error a string para mantener compatibilidad con componentes
     error: error ? (error instanceof Error ? error.message : String(error)) : null,
     refetch: () => {
-      console.log('🟡 [useBestSellerProducts] refetch() llamado manualmente')
       refetch()
     },
   }
