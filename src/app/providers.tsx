@@ -331,7 +331,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 </CartModalProvider>
               </ModalProvider>
             </CartPersistenceProvider>
-          </DeferredDataProviders>
+            </DeferredQueryProvider>
+          </ReduxProvider>
         </AdvancedErrorBoundary>
       </>
     )
