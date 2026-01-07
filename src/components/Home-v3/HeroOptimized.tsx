@@ -250,7 +250,7 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
       console.log(`[HeroOptimized] Cleanup: clearing timeout for ${carouselId}`)
       clearTimeout(carouselTimeout)
     }
-  }, [isMounted, matchesBreakpoint, carouselId, isDesktop, shouldLoadCarousel])
+  }, [isMounted, matchesBreakpoint, carouselId, isDesktop])
 
   // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel se carga (ocultar inmediatamente para evitar superposición visual)
   // El delay de 3s ya es suficiente para Lighthouse, así que ocultamos inmediatamente cuando el carousel comienza a cargar
