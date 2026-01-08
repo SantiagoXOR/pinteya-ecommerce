@@ -12,17 +12,20 @@ export default async function middleware(req: NextRequest) {
   const isProduction = process.env.NODE_ENV === 'production'
   const startTime = Date.now()
 
+  // BYPASS AUTH - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
+  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+  // ✅ CRÍTICO: Verificar BYPASS_AUTH ANTES de acceder a cualquier propiedad del request
+  if (process.env.BYPASS_AUTH === 'true') {
+    console.log(`[BYPASS] ✅ Permitiendo acceso sin autenticación a: ${nextUrl.pathname} (NODE_ENV: ${process.env.NODE_ENV})`)
+    // ✅ CRÍTICO: Retornar inmediatamente sin acceder a headers ni procesar el request
+    // Esto evita que Next.js intente leer el body antes de que el handler lo lea
+    return NextResponse.next()
+  }
+
   // ✅ FIX: Detectar multipart/form-data y evitar leer el body
   const contentType = req.headers.get('content-type') || ''
   const isMultipart = contentType.includes('multipart/form-data')
   const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
-
-  // BYPASS AUTH - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
-  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
-  if (process.env.BYPASS_AUTH === 'true') {
-    console.log(`[BYPASS] ✅ Permitiendo acceso sin autenticación a: ${nextUrl.pathname} (NODE_ENV: ${process.env.NODE_ENV})`)
-    return NextResponse.next()
-  }
 
   // ✅ CRÍTICO: Para multipart/form-data, NO llamar getToken porque intenta leer el body
   // Si BYPASS_AUTH no está activo, tratar como no autenticado para rutas protegidas

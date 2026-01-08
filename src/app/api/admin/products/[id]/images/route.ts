@@ -103,26 +103,24 @@ async function deleteImageFromStorage(path: string) {
  * Upload new image for product
  */
 const postHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
-  // ✅ CORREGIDO: Usar supabaseAdmin directamente y obtener user del auth
+  // ✅ CORREGIDO: Usar supabaseAdmin directamente
   const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  
+  // ✅ CRÍTICO: Leer el body PRIMERO, antes de hacer cualquier otra cosa
+  // Esto evita que cualquier acceso al request cause que Next.js intente leer el body
+  const formData = await request.formData()
   
   // ✅ FIX: Si BYPASS_AUTH está activo, no intentar leer auth() porque puede causar que se lea el body
   // El middleware withAdminAuth ya verificó la autenticación, así que no necesitamos verificar aquí
   let user = null
   if (process.env.BYPASS_AUTH !== 'true') {
     try {
-      const contentType = request.headers.get('content-type') || ''
-      const isMultipart = contentType.includes('multipart/form-data')
-      const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
-      
-      // Solo llamar auth() si NO es multipart (para evitar leer el body)
-      if (!(isMultipart || isFormUrlEncoded)) {
-        const { auth } = await import('@/lib/auth/config')
-        const session = await auth()
-        user = session?.user || null
-      }
+      // Solo intentar obtener usuario si no es multipart (ya leímos el body arriba)
+      const { auth } = await import('@/lib/auth/config')
+      const session = await auth()
+      user = session?.user || null
     } catch (authError: any) {
-      // Si auth() falla, simplemente continuar sin usuario (BYPASS_AUTH está activo o es multipart)
+      // Si auth() falla, simplemente continuar sin usuario
       console.warn('[POST /images] No se pudo obtener usuario, continuando sin autenticación')
       user = null
     }
@@ -151,10 +149,7 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
     throw new NotFoundError('Producto')
   }
 
-  // Parse form data
-  // ✅ CRÍTICO: El body solo debe leerse UNA VEZ, aquí en el handler
-  // Si algún middleware intentó leerlo antes, esto fallará
-  const formData = await request.formData()
+  // ✅ CRÍTICO: El body ya fue leído arriba, ahora extraer los datos
   const file = formData.get('file') as File
   const altText = formData.get('alt_text') as string
   const isPrimary = formData.get('is_primary') === 'true'
