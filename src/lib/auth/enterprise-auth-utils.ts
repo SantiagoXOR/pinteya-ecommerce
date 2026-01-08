@@ -577,8 +577,9 @@ export async function requireAdminAuth(
       const fs = require('fs')
       const path = require('path')
       const envLocalPath = path.join(process.cwd(), '.env.local')
-      if (fs.existsSync(envLocalPath)) {
-        console.log('[Enterprise Auth] BYPASS AUTH ENABLED - requireAdminAuth')
+      // En producción, permitir bypass directamente si BYPASS_AUTH está configurado
+      if (fs.existsSync(envLocalPath) || process.env.NODE_ENV === 'production') {
+        console.log(`[Enterprise Auth] BYPASS AUTH ENABLED - requireAdminAuth (NODE_ENV: ${process.env.NODE_ENV})`)
 
         const { createClient } = await import('@supabase/supabase-js')
         const supabase = createClient(

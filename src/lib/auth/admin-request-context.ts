@@ -71,7 +71,8 @@ export async function getAdminRequestContext(): Promise<AdminRequestContextResul
 
     if (bypassEnabled) {
       const envLocalPath = path.join(process.cwd(), '.env.local')
-      if (existsSync(envLocalPath)) {
+      // En producción, permitir bypass directamente si BYPASS_AUTH está configurado
+      if (existsSync(envLocalPath) || process.env.NODE_ENV === 'production') {
         const actor = await resolveBypassActor(ADMIN_BYPASS_EMAIL)
 
         return {

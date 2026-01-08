@@ -43,12 +43,12 @@ async function validateAdminAuth() {
     // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
     // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
     if (process.env.BYPASS_AUTH === 'true') {
-      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
+      // En producción, permitir bypass directamente si BYPASS_AUTH está configurado
       try {
         const fs = require('fs')
         const path = require('path')
         const envLocalPath = path.join(process.cwd(), '.env.local')
-        if (fs.existsSync(envLocalPath)) {
+        if (fs.existsSync(envLocalPath) || process.env.NODE_ENV === 'production') {
           return {
             user: {
               id: 'dev-admin',
