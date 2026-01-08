@@ -221,21 +221,12 @@ export async function checkCRUDPermissions(
   error?: string
 }> {
   try {
-    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
-    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
-      try {
-        const fs = require('fs')
-        const path = require('path')
-        const envLocalPath = path.join(process.cwd(), '.env.local')
-        if (fs.existsSync(envLocalPath)) {
-          console.log(`[AUTH] BYPASS AUTH ENABLED - checkCRUDPermissions ${operation} en ${resource}`)
-          return {
-            allowed: true,
-          }
-        }
-      } catch (error) {
-        console.warn('[AUTH] No se pudo verificar .env.local, bypass deshabilitado')
+    // BYPASS - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
+    // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+    if (process.env.BYPASS_AUTH === 'true') {
+      console.log(`[AUTH] BYPASS AUTH ENABLED - checkCRUDPermissions ${operation} en ${resource} (NODE_ENV: ${process.env.NODE_ENV})`)
+      return {
+        allowed: true,
       }
     }
 
