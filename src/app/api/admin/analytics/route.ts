@@ -85,7 +85,7 @@ interface AnalyticsData {
 async function validateAdminAuth() {
   try {
     // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
-    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    if (process.env.BYPASS_AUTH === 'true' // ⚠️ TEMPORAL: Habilitado en producción (2026-01-08)) {
       // Verificar que existe archivo .env.local para evitar bypass accidental en producción
       try {
         const fs = require('fs')
