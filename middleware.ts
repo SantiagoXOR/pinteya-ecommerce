@@ -9,16 +9,35 @@ import { NextResponse, NextRequest } from 'next/server'
 
 export default async function middleware(req: NextRequest) {
   const { nextUrl } = req
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-  const isLoggedIn = !!token
   const isProduction = process.env.NODE_ENV === 'production'
   const startTime = Date.now()
+
+  // ✅ FIX: Detectar multipart/form-data y evitar leer el body
+  const contentType = req.headers.get('content-type') || ''
+  const isMultipart = contentType.includes('multipart/form-data')
+  const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
 
   // BYPASS AUTH - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
   // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
   if (process.env.BYPASS_AUTH === 'true') {
     console.log(`[BYPASS] ✅ Permitiendo acceso sin autenticación a: ${nextUrl.pathname} (NODE_ENV: ${process.env.NODE_ENV})`)
     return NextResponse.next()
+  }
+
+  // ✅ CRÍTICO: Para multipart/form-data, NO llamar getToken porque intenta leer el body
+  // Si BYPASS_AUTH no está activo, tratar como no autenticado para rutas protegidas
+  let token = null
+  let isLoggedIn = false
+  
+  if (isMultipart || isFormUrlEncoded) {
+    // Para multipart, no intentar leer token (evita leer body)
+    // Esto significa que las rutas protegidas requerirán BYPASS_AUTH o autenticación por cookies
+    console.log(`[Middleware] Multipart request detectado, saltando getToken para evitar leer body`)
+    isLoggedIn = false // Tratar como no autenticado si no hay bypass
+  } else {
+    // Para otros tipos, obtener token normalmente
+    token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    isLoggedIn = !!token
   }
 
   // Logging optimizado - Solo para rutas críticas o desarrollo
