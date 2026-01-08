@@ -189,8 +189,9 @@ export async function getEnterpriseAuthContext(
       }
     }
 
-    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
-    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    // BYPASS - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
+    // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+    if (process.env.BYPASS_AUTH === 'true') {
       // Verificar que existe archivo .env.local para evitar bypass accidental en producción
       try {
         const fs = require('fs')
@@ -568,7 +569,8 @@ export async function requireAdminAuth(
   requiredPermissions: string[] = ['admin_access']
 ): Promise<EnterpriseAuthResult> {
   // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
-  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
+  if (process.env.BYPASS_AUTH === 'true') {
     // Verificar que existe archivo .env.local para evitar bypass accidental en producción
     try {
       const fs = require('fs')

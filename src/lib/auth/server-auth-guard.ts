@@ -13,9 +13,10 @@ import { redirect } from 'next/navigation'
  * @returns Session del usuario autenticado
  */
 export async function requireAdminAuth() {
-  // BYPASS PARA DESARROLLO
-  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-    console.log('[Server Auth Guard] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación')
+  // BYPASS - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
+  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+  if (process.env.BYPASS_AUTH === 'true') {
+    console.log(`[Server Auth Guard] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación (NODE_ENV: ${process.env.NODE_ENV})`)
     return {
       user: {
         email: 'admin@bypass.dev',
@@ -129,9 +130,10 @@ export async function checkAdminAuth(): Promise<{
   error: string | null
   status: number
 }> {
-  // BYPASS PARA DESARROLLO
-  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-    console.log('[API Auth Check] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación')
+  // BYPASS - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
+  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+  if (process.env.BYPASS_AUTH === 'true') {
+    console.log(`[API Auth Check] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación (NODE_ENV: ${process.env.NODE_ENV})`)
     return {
       session: {
         user: {

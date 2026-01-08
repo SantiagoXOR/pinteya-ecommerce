@@ -66,7 +66,8 @@ async function resolveBypassActor(email: string) {
 export async function getAdminRequestContext(): Promise<AdminRequestContextResult> {
   try {
     const bypassEnabled =
-      process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true'
+      // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
+      process.env.BYPASS_AUTH === 'true'
 
     if (bypassEnabled) {
       const envLocalPath = path.join(process.cwd(), '.env.local')

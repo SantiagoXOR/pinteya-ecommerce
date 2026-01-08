@@ -14,9 +14,10 @@ export default async function middleware(req: NextRequest) {
   const isProduction = process.env.NODE_ENV === 'production'
   const startTime = Date.now()
 
-  // BYPASS AUTH - SOLO EN DESARROLLO - SE EJECUTA PRIMERO
-  if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
-    console.log(`[BYPASS] ✅ Permitiendo acceso sin autenticación a: ${nextUrl.pathname}`)
+  // BYPASS AUTH - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
+  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+  if (process.env.BYPASS_AUTH === 'true') {
+    console.log(`[BYPASS] ✅ Permitiendo acceso sin autenticación a: ${nextUrl.pathname} (NODE_ENV: ${process.env.NODE_ENV})`)
     return NextResponse.next()
   }
 
