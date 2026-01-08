@@ -230,16 +230,51 @@ export async function checkCRUDPermissions(
       }
     }
 
-    // ✅ CORREGIDO: En NextAuth v5, auth() lee automáticamente las cookies del contexto
-    // No necesitamos pasar el request explícitamente
+    // ✅ FIX: Detectar multipart/form-data y usar getServerSession en lugar de getToken
+    // getToken intenta leer el body, lo cual falla con multipart/form-data
+    const contentType = request?.headers?.get('content-type') || ''
+    const isMultipart = contentType.includes('multipart/form-data')
+    const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
+    
     let session
     try {
-      // NextAuth v5 lee automáticamente las cookies del contexto de la request
-      session = await auth()
+      if (isMultipart || isFormUrlEncoded) {
+        // Para multipart/form-data, usar getServerSession que no necesita leer el body
+        const { getServerSession } = await import('next-auth/next')
+        const { authOptions } = await import('@/auth')
+        session = await getServerSession(authOptions)
+      } else if (request) {
+        // Para otros tipos, usar getToken con el request
+        const { getToken } = await import('next-auth/jwt')
+        const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+        if (!token) {
+          return {
+            allowed: false,
+            error: 'Usuario no autenticado',
+          }
+        }
+        // Convertir token a formato de sesión
+        session = {
+          user: {
+            id: (token.userId as string) || token.sub,
+            email: token.email as string,
+            name: token.name as string,
+            image: token.picture as string,
+            role: (token.role as string) || 'customer',
+          },
+        }
+      } else {
+        // Sin request, usar getServerSession
+        const { getServerSession } = await import('next-auth/next')
+        const { authOptions } = await import('@/auth')
+        session = await getServerSession(authOptions)
+      }
     } catch (authError: any) {
       console.error('[AUTH] Error al leer sesión:', {
         error: authError.message,
         stack: authError.stack,
+        contentType,
+        isMultipart,
       })
       // Si falla, retornar error de autenticación
       return {
