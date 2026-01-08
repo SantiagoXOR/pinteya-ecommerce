@@ -318,8 +318,6 @@ module.exports.__esModule = true;
   turbopack: {
     resolveAlias: {
       'react/cache': require('path').resolve(process.cwd(), 'node_modules/react/cache.js'),
-      // Fix para next-auth/react después de migración a v4
-      'next-auth/react': require('path').resolve(process.cwd(), 'node_modules/next-auth/react/index.js'),
     },
   },
 
