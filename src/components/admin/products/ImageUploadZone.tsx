@@ -176,10 +176,13 @@ export function ImageUploadZone({
           : `/api/admin/upload/image`
         
         // ✅ CORREGIDO: Incluir credentials para enviar cookies de autenticación
+        // ✅ CRÍTICO: NO establecer Content-Type manualmente - el navegador lo hace automáticamente con boundary
+        // Establecer Content-Type manualmente rompe el boundary y causa errores en producción
         const response = await fetch(uploadUrl, {
           method: 'POST',
           body: formData,
           credentials: 'include', // Incluir cookies de autenticación
+          // NO incluir headers['Content-Type'] - el navegador lo establece automáticamente con el boundary correcto
         })
 
         clearInterval(progressInterval)

@@ -106,15 +106,33 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   // ✅ CORREGIDO: Usar supabaseAdmin directamente
   const { supabaseAdmin } = await import('@/lib/integrations/supabase')
   
+  // ✅ CRÍTICO: Verificar Content-Type ANTES de leer el body para diagnóstico en producción
+  // En producción (Vercel), el Content-Type puede no estar presente o estar modificado
+  const contentType = request.headers.get('content-type') || ''
+  console.log('[POST /images] Content-Type recibido:', contentType)
+  
   // ✅ CRÍTICO: Leer el body PRIMERO, antes de hacer cualquier otra cosa
   // Esto evita que cualquier acceso al request cause que Next.js intente leer el body
-  // Si el body ya fue leído, intentar clonar el request primero
   let formData: FormData
   try {
     formData = await request.formData()
   } catch (error: any) {
-    // Si el body ya fue leído, intentar clonar el request y leerlo de nuevo
-    if (error.message?.includes('already been read') || error.message?.includes('unusable')) {
+    // Si el error es sobre Content-Type, es porque Next.js está validando antes de tiempo
+    // En producción, esto puede pasar si Vercel procesa el request de manera diferente
+    if (error.message?.includes('Content-Type')) {
+      console.error('[POST /images] Error de Content-Type:', {
+        contentType,
+        error: error.message,
+        stack: error.stack,
+      })
+      // Lanzar error más descriptivo
+      throw new ApiError(
+        `Error al procesar imagen: Content-Type no válido. Recibido: "${contentType}". Se requiere multipart/form-data`,
+        400,
+        'INVALID_CONTENT_TYPE',
+        { contentType, originalError: error.message }
+      )
+    } else if (error.message?.includes('already been read') || error.message?.includes('unusable')) {
       console.warn('[POST /images] Body ya fue leído, intentando clonar request')
       try {
         const clonedRequest = request.clone()
