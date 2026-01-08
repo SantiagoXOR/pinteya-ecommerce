@@ -41,7 +41,8 @@ const UpdateOrderSchema = z.object({
 async function validateAdminAuth() {
   try {
     // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
-    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
+    if (process.env.BYPASS_AUTH === 'true') {
       // Verificar que existe archivo .env.local para evitar bypass accidental en producción
       try {
         const fs = require('fs')

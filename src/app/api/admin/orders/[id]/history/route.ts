@@ -10,7 +10,8 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 async function validateAdminAuth() {
   try {
     // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
-    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_AUTH === 'true') {
+    // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
+    if (process.env.BYPASS_AUTH === 'true') {
       try {
         const fs = require('fs')
         const path = require('path')
