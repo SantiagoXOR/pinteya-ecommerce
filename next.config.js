@@ -149,10 +149,7 @@ const nextConfig = {
       'react/jsx-runtime': path.join(reactPath, 'jsx-runtime.js'),
       'react/jsx-dev-runtime': path.join(reactPath, 'jsx-dev-runtime.js'),
       // CRÍTICO: Resolver react/cache al polyfill
-      // Intentar primero usar la versión compilada de Next.js si existe
-      'react/cache': fs.existsSync(path.join(process.cwd(), 'node_modules/next/dist/compiled/react/cache.js'))
-        ? path.join(process.cwd(), 'node_modules/next/dist/compiled/react/cache.js')
-        : polyfillToUse,
+      'react/cache': polyfillToUse,
     }
     
     // Asegurar que webpack no incluya múltiples instancias de React
