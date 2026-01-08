@@ -81,21 +81,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar Content-Type
-    const contentType = request.headers.get('content-type')
-    if (!contentType || !contentType.includes('multipart/form-data')) {
-      console.error('❌ [Upload] Content-Type inválido:', contentType)
-      return NextResponse.json(
-        {
-          error: 'Content-Type debe ser multipart/form-data',
-          code: 'INVALID_CONTENT_TYPE',
-          received: contentType,
-        },
-        { status: 400 }
-      )
-    }
-
-    // Parse form data
+    // Parse form data (Next.js maneja automáticamente multipart/form-data)
     const formData = await request.formData()
     const file = formData.get('file') as File
 
