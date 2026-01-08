@@ -9,6 +9,9 @@ import { withAdminAuth } from '@/lib/auth/api-auth-middleware'
 import { withValidation } from '@/lib/validation/admin-schemas'
 import { createClient } from '@supabase/supabase-js'
 
+// ✅ CRÍTICO: Usar runtime nodejs para evitar problemas con body parsing en Vercel
+export const runtime = 'nodejs'
+
 // Validation schemas
 const ImageUploadSchema = z.object({
   file: z.any(), // File object

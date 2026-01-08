@@ -3,30 +3,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkCRUDPermissions } from '@/lib/auth/admin-auth'
 
+// ✅ DEBUG: Log para verificar orden de ejecución
+console.log('[api-auth-middleware] Módulo cargado')
+
 export function withAdminAuth(permissions: string[] = []) {
   return function (handler: Function) {
     return async function (request: NextRequest, context: any) {
       try {
-        // ✅ FIX: Detectar multipart/form-data y evitar leer el body
+        // ✅ CRÍTICO: Detectar multipart/form-data PRIMERO, antes de cualquier otra operación
+        // Esto debe ser lo primero que hacemos para evitar que cualquier cosa intente leer el body
         const contentType = request.headers.get('content-type') || ''
         // ✅ FIX: Detectar Content-Type de manera más robusta (puede tener parámetros como boundary)
-        const isMultipart = contentType.toLowerCase().includes('multipart/form-data')
-        const isFormUrlEncoded = contentType.toLowerCase().includes('application/x-www-form-urlencoded')
+        const contentTypeLower = contentType.toLowerCase()
+        const isMultipart = contentTypeLower.includes('multipart/form-data')
+        const isFormUrlEncoded = contentTypeLower.includes('application/x-www-form-urlencoded')
+        const bypassAuth = process.env.BYPASS_AUTH === 'true'
         
         // ✅ DEBUG: Log del Content-Type para diagnóstico
-        console.log('🔐 [withAdminAuth] Content-Type detectado:', {
+        console.log('🔐 [withAdminAuth] INICIO - Content-Type detectado:', {
           contentType,
-          contentTypeLower: contentType.toLowerCase(),
+          contentTypeLower,
           isMultipart,
           isFormUrlEncoded,
-          bypassAuth: process.env.BYPASS_AUTH,
+          bypassAuth,
           url: request.url,
+          method: request.method,
         })
         
         // ✅ CRÍTICO: Si es multipart y BYPASS_AUTH está activo, permitir acceso SIN llamar a checkCRUDPermissions
         // Esto evita que cualquier función intente leer el body
-        if ((isMultipart || isFormUrlEncoded) && process.env.BYPASS_AUTH === 'true') {
-          console.log('🔐 [withAdminAuth] Multipart request con BYPASS_AUTH activo, permitiendo acceso sin verificar permisos')
+        // DEBE ser lo primero que hacemos, antes de cualquier otra operación
+        if ((isMultipart || isFormUrlEncoded) && bypassAuth) {
+          console.log('🔐 [withAdminAuth] ✅ Multipart request con BYPASS_AUTH activo, permitiendo acceso sin verificar permisos - RETORNANDO INMEDIATAMENTE')
           return await handler(request, context)
         }
         
