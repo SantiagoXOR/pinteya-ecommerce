@@ -1,5 +1,5 @@
-import NextAuth from 'next-auth'
-import Google from 'next-auth/providers/google'
+import NextAuth, { NextAuthOptions } from 'next-auth'
+import GoogleProvider from 'next-auth/providers/google'
 import { SupabaseAdapter } from './lib/integrations/supabase/supabase-adapter'
 import { upsertUserProfile, getUserRole } from './lib/auth/role-service'
 
@@ -8,20 +8,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const googleClientId = process.env.AUTH_GOOGLE_ID
 const googleClientSecret = process.env.AUTH_GOOGLE_SECRET
-// NextAuth v5 prefiere AUTH_URL sobre NEXTAUTH_URL
-const authUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL
-const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET
+// NextAuth v4 usa NEXTAUTH_URL
+const nextAuthUrl = process.env.NEXTAUTH_URL
+const nextAuthSecret = process.env.NEXTAUTH_SECRET
 
 // Log de variables de entorno (sin exponer secretos)
-console.log('[NextAuth Init] Checking environment variables...')
-console.log('[NextAuth Init] AUTH_GOOGLE_ID:', googleClientId ? `✅ SET (${googleClientId.substring(0, 20)}...)` : '❌ NOT SET')
-console.log('[NextAuth Init] AUTH_GOOGLE_SECRET:', googleClientSecret ? `✅ SET (${googleClientSecret.substring(0, 10)}...)` : '❌ NOT SET')
-console.log('[NextAuth Init] AUTH_URL:', process.env.AUTH_URL || 'NOT SET')
-console.log('[NextAuth Init] NEXTAUTH_URL:', process.env.NEXTAUTH_URL || 'NOT SET')
-console.log('[NextAuth Init] Using URL:', authUrl || 'NOT SET')
-console.log('[NextAuth Init] AUTH_SECRET:', process.env.AUTH_SECRET ? '✅ SET' : '❌ NOT SET')
-console.log('[NextAuth Init] NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? '✅ SET' : '❌ NOT SET')
-console.log('[NextAuth Init] Using secret:', authSecret ? '✅ CONFIGURED' : '❌ MISSING')
+console.log('[NextAuth v4 Init] Checking environment variables...')
+console.log('[NextAuth v4 Init] AUTH_GOOGLE_ID:', googleClientId ? `✅ SET (${googleClientId.substring(0, 20)}...)` : '❌ NOT SET')
+console.log('[NextAuth v4 Init] AUTH_GOOGLE_SECRET:', googleClientSecret ? `✅ SET (${googleClientSecret.substring(0, 10)}...)` : '❌ NOT SET')
+console.log('[NextAuth v4 Init] NEXTAUTH_URL:', nextAuthUrl || 'NOT SET')
+console.log('[NextAuth v4 Init] NEXTAUTH_SECRET:', nextAuthSecret ? '✅ SET' : '❌ NOT SET')
 
 if (!supabaseUrl) {
   throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not defined')
@@ -39,12 +35,12 @@ if (!googleClientSecret) {
   throw new Error('AUTH_GOOGLE_SECRET is required but not defined. Please configure it in your environment variables.')
 }
 
-if (!authSecret) {
-  throw new Error('AUTH_SECRET or NEXTAUTH_SECRET is required')
+if (!nextAuthSecret) {
+  throw new Error('NEXTAUTH_SECRET is required')
 }
 
-if (!authUrl) {
-  console.warn('[NextAuth] ⚠️ AUTH_URL or NEXTAUTH_URL is not defined. Using default URL. This may cause issues in production.')
+if (!nextAuthUrl) {
+  console.warn('[NextAuth v4] ⚠️ NEXTAUTH_URL is not defined. Using default URL. This may cause issues in production.')
 }
 
 // Verificar que el Client Secret no tenga espacios o caracteres extra
@@ -53,15 +49,15 @@ if (cleanClientSecret !== googleClientSecret) {
   console.warn('[NextAuth] ⚠️ AUTH_GOOGLE_SECRET tiene espacios al inicio/final. Limpiando...')
 }
 
-const nextAuth = NextAuth({
-  secret: authSecret,
+export const authOptions: NextAuthOptions = {
+  secret: nextAuthSecret,
   adapter: SupabaseAdapter({
     url: supabaseUrl,
     secret: supabaseServiceRoleKey,
   }),
   providers: [
-    Google({
-      clientId: googleClientId,
+    GoogleProvider({
+      clientId: googleClientId!,
       clientSecret: cleanClientSecret,
       authorization: {
         params: {
@@ -77,36 +73,36 @@ const nextAuth = NextAuth({
     error: '/auth/error',
   },
   callbacks: {
-    async jwt({ token, user, account, trigger }) {
-      console.log(`[NextAuth JWT] Callback ejecutado - trigger: ${trigger || 'auto'}, hasUser: ${!!user}, hasAccount: ${!!account}, hasTokenUserId: ${!!token.userId}`)
+    async jwt({ token, user, account }) {
+      console.log(`[NextAuth v4 JWT] Callback ejecutado - hasUser: ${!!user}, hasAccount: ${!!account}, hasTokenUserId: ${!!token.userId}`)
       
       // En el primer login, agregar userId
       if (account && user) {
-        console.log(`[NextAuth JWT] Primer login detectado para usuario: ${user.id} (${user.email})`)
+        console.log(`[NextAuth v4 JWT] Primer login detectado para usuario: ${user.id} (${user.email})`)
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
         token.userId = user.id
         // Limpiar el rol para forzar recarga
         delete token.role
-        console.log(`[NextAuth JWT] Token inicializado con userId: ${token.userId}`)
+        console.log(`[NextAuth v4 JWT] Token inicializado con userId: ${token.userId}`)
       }
 
       // Obtener el rol del usuario desde Supabase user_profiles
       if (token.userId) {
         try {
-          console.log(`[NextAuth JWT] Loading role for user ${token.userId} (trigger: ${trigger || 'auto'}, current role: ${token.role || 'none'})`)
+          console.log(`[NextAuth v4 JWT] Loading role for user ${token.userId} (current role: ${token.role || 'none'})`)
           const role = await getUserRole(token.userId as string)
           token.role = role
-          console.log(`[NextAuth JWT] ✅ User role loaded: ${role} for user ${token.userId}`)
+          console.log(`[NextAuth v4 JWT] ✅ User role loaded: ${role} for user ${token.userId}`)
         } catch (error) {
-          console.error('[NextAuth JWT] ❌ Error loading user role:', error)
+          console.error('[NextAuth v4 JWT] ❌ Error loading user role:', error)
           if (!token.role) {
             token.role = 'customer'
-            console.log(`[NextAuth JWT] ⚠️ Using fallback role: customer`)
+            console.log(`[NextAuth v4 JWT] ⚠️ Using fallback role: customer`)
           }
         }
       } else {
-        console.log(`[NextAuth JWT] ⚠️ No userId in token, skipping role load`)
+        console.log(`[NextAuth v4 JWT] ⚠️ No userId in token, skipping role load`)
       }
 
       return token
@@ -118,14 +114,14 @@ const nextAuth = NextAuth({
         session.user.id = token.userId as string
         const role = token.role as string || 'customer'
         session.user.role = role
-        console.log(`[NextAuth Session] Setting role: ${role} for user ${token.userId || 'unknown'}`)
+        console.log(`[NextAuth v4 Session] Setting role: ${role} for user ${token.userId || 'unknown'}`)
       } else {
-        console.log(`[NextAuth Session] ⚠️ No token provided to session callback`)
+        console.log(`[NextAuth v4 Session] ⚠️ No token provided to session callback`)
       }
       return session
     },
     async redirect({ url, baseUrl }) {
-      const base: string = (authUrl || baseUrl || 'http://localhost:3000') as string
+      const base: string = (nextAuthUrl || baseUrl || 'http://localhost:3000') as string
       
       if (url.includes('/api/auth/callback') || url === base || url === `${base}/`) {
         return `${base}/auth/callback`
@@ -187,9 +183,38 @@ const nextAuth = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 días
   },
   debug: process.env.NODE_ENV === 'development',
-})
+}
 
-export const { auth, handlers, signIn, signOut } = nextAuth
+// Exportar handler para NextAuth v4
+export default NextAuth(authOptions)
+
+// Helper para compatibilidad con código existente que usa auth()
+// En NextAuth v4, usamos getServerSession en lugar de auth()
+import { getServerSession } from 'next-auth/next'
+import { NextRequest } from 'next/server'
+
+export async function auth(req?: NextRequest) {
+  // Para uso en Server Components y API routes (sin request)
+  if (!req) {
+    const session = await getServerSession(authOptions)
+    return session
+  }
+  
+  // Si se pasa un request (middleware), usar getToken
+  const { getToken } = await import('next-auth/jwt')
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+  if (!token) return null
+  
+  return {
+    user: {
+      id: (token.userId as string) || token.sub,
+      email: token.email as string,
+      name: token.name as string,
+      image: token.picture as string,
+      role: (token.role as string) || 'customer',
+    },
+  }
+}
 
 // Tipos TypeScript para extender la sesión
 declare module 'next-auth' {

@@ -4,12 +4,13 @@
  * Optimizado para rendimiento y producción
  */
 
-import { auth } from '@/auth'
-import { NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
+import { NextResponse, NextRequest } from 'next/server'
 
-export default auth(async (req) => {
+export default async function middleware(req: NextRequest) {
   const { nextUrl } = req
-  const isLoggedIn = !!req.auth
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+  const isLoggedIn = !!token
   const isProduction = process.env.NODE_ENV === 'production'
   const startTime = Date.now()
 
@@ -75,18 +76,18 @@ export default auth(async (req) => {
 
   // Verificar autorización admin
   if ((isAdminRoute || isApiAdminRoute) && isLoggedIn) {
-    // Obtener el rol desde la sesión (ya está cargado en el JWT)
-    const userRole = req.auth?.user?.role || 'customer'
+    // Obtener el rol desde el token (ya está cargado en el JWT)
+    const userRole = (token?.role as string) || 'customer'
     const isAdmin = userRole === 'admin'
 
     // Logging para debugging
     if (!isProduction || isAdminRoute) {
       console.log(`[Middleware] Admin check - Route: ${nextUrl.pathname}, UserRole: ${userRole}, IsAdmin: ${isAdmin}`)
-      console.log(`[Middleware] req.auth structure:`, JSON.stringify({
-        hasAuth: !!req.auth,
-        hasUser: !!req.auth?.user,
-        userRole: req.auth?.user?.role,
-        userEmail: req.auth?.user?.email,
+      console.log(`[Middleware] token structure:`, JSON.stringify({
+        hasToken: !!token,
+        userRole: token?.role,
+        userEmail: token?.email,
+        userId: token?.userId,
       }, null, 2))
     }
 
@@ -104,8 +105,8 @@ export default auth(async (req) => {
 
   // Verificar autorización driver
   if ((isDriverRoute || isApiDriverRoute) && isLoggedIn) {
-    // Obtener el rol desde la sesión (ya está cargado en el JWT)
-    const userRole = req.auth?.user?.role || 'customer'
+    // Obtener el rol desde el token (ya está cargado en el JWT)
+    const userRole = (token?.role as string) || 'customer'
     const isDriver = userRole === 'driver' || userRole === 'admin' // Admin también puede acceder
 
     if (!isDriver) {

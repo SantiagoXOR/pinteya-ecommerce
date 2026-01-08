@@ -4,10 +4,11 @@
  */
 
 import { redirect } from 'next/navigation'
-import { auth } from '@/auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/auth'
 
 export default async function AuthCallbackPage() {
-  const session = await auth()
+  const session = await getServerSession(authOptions)
 
   if (!session?.user) {
     // Si no hay sesión, redirigir al login
