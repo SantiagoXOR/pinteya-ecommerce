@@ -10,19 +10,39 @@ export function withAdminAuth(permissions: string[] = []) {
   return function (handler: Function) {
     return async function (request: NextRequest, context: any) {
       try {
-        // ✅ CRÍTICO: Detectar multipart/form-data PRIMERO, antes de cualquier otra operación
-        // Esto debe ser lo primero que hacemos para evitar que cualquier cosa intente leer el body
-        const contentType = request.headers.get('content-type') || ''
-        // ✅ FIX: Detectar Content-Type de manera más robusta (puede tener parámetros como boundary)
-        const contentTypeLower = contentType.toLowerCase()
-        const isMultipart = contentTypeLower.includes('multipart/form-data')
-        const isFormUrlEncoded = contentTypeLower.includes('application/x-www-form-urlencoded')
+        // ✅ CRÍTICO: Verificar BYPASS_AUTH PRIMERO, antes de acceder a cualquier propiedad del request
+        // Esto evita que cualquier acceso al request cause que Next.js intente leer el body
         const bypassAuth = process.env.BYPASS_AUTH === 'true'
+        
+        // ✅ CRÍTICO: Si BYPASS_AUTH está activo, permitir acceso INMEDIATAMENTE sin verificar nada
+        // Esto evita que cualquier acceso al request cause que Next.js intente leer el body
+        // DEBE ser lo primero que hacemos, antes de cualquier otra operación
+        if (bypassAuth) {
+          console.log('🔐 [withAdminAuth] ✅ BYPASS_AUTH activo, permitiendo acceso sin verificar permisos')
+          return await handler(request, context)
+        }
+        
+        // ✅ CRÍTICO: Solo verificar Content-Type si BYPASS_AUTH NO está activo
+        // Esto evita que cualquier acceso al request cause que Next.js intente leer el body
+        let contentType = ''
+        let isMultipart = false
+        let isFormUrlEncoded = false
+        
+        try {
+          // Intentar obtener Content-Type de manera segura
+          contentType = request.headers.get('content-type') || ''
+          const contentTypeLower = contentType.toLowerCase()
+          isMultipart = contentTypeLower.includes('multipart/form-data')
+          isFormUrlEncoded = contentTypeLower.includes('application/x-www-form-urlencoded')
+        } catch (headerError: any) {
+          // Si falla al leer headers, retornar error
+          console.error('❌ [withAdminAuth] Error leyendo Content-Type:', headerError)
+          throw headerError
+        }
         
         // ✅ DEBUG: Log del Content-Type para diagnóstico
         console.log('🔐 [withAdminAuth] INICIO - Content-Type detectado:', {
           contentType,
-          contentTypeLower,
           isMultipart,
           isFormUrlEncoded,
           bypassAuth,
@@ -30,12 +50,20 @@ export function withAdminAuth(permissions: string[] = []) {
           method: request.method,
         })
         
-        // ✅ CRÍTICO: Si es multipart y BYPASS_AUTH está activo, permitir acceso SIN llamar a checkCRUDPermissions
-        // Esto evita que cualquier función intente leer el body
-        // DEBE ser lo primero que hacemos, antes de cualquier otra operación
-        if ((isMultipart || isFormUrlEncoded) && bypassAuth) {
-          console.log('🔐 [withAdminAuth] ✅ Multipart request con BYPASS_AUTH activo, permitiendo acceso sin verificar permisos - RETORNANDO INMEDIATAMENTE')
-          return await handler(request, context)
+        // ✅ CRÍTICO: Si es multipart/form-data y NO hay BYPASS_AUTH, retornar error
+        // porque no podemos leer la sesión sin leer el body
+        if (isMultipart || isFormUrlEncoded) {
+          console.error('❌ [withAdminAuth] Request multipart sin BYPASS_AUTH, no se puede autenticar')
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Error de autenticación: No se puede autenticar requests multipart sin BYPASS_AUTH',
+              code: 'AUTH_ERROR',
+              timestamp: new Date().toISOString(),
+              path: request.url,
+            },
+            { status: 401 }
+          )
         }
         
         // ✅ CORREGIDO: Mapear permisos a acciones CRUD
@@ -97,10 +125,23 @@ export function withAdminAuth(permissions: string[] = []) {
         console.log('✅ [withAdminAuth] Autenticación exitosa')
         return await handler(request, context)
       } catch (error: any) {
+        // ✅ CRÍTICO: Si el error es sobre Content-Type y BYPASS_AUTH está activo, permitir acceso
+        const bypassAuth = process.env.BYPASS_AUTH === 'true'
+        const isContentTypeError = error.message?.includes('Content-Type') || 
+                                   error.message?.includes('multipart') ||
+                                   error.message?.includes('form-urlencoded')
+        
+        if (isContentTypeError && bypassAuth) {
+          console.log('🔐 [withAdminAuth] ⚠️ Error de Content-Type pero BYPASS_AUTH está activo, permitiendo acceso')
+          return await handler(request, context)
+        }
+        
         console.error('❌ [withAdminAuth] Error en middleware:', {
           error: error.message,
           stack: error.stack,
           url: request.url,
+          isContentTypeError,
+          bypassAuth,
         })
         return NextResponse.json(
           {
