@@ -6,16 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
 import { ApiResponse } from '@/types/api'
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
-import type { ColorOption } from '@/components/ui/advanced-color-picker'
-// Importar PAINT_COLORS de forma dinámica para evitar problemas en servidor
-let PAINT_COLORS: ColorOption[] = []
-try {
-  const colorPicker = await import('@/components/ui/advanced-color-picker')
-  PAINT_COLORS = colorPicker.PAINT_COLORS || []
-} catch (error) {
-  console.error('Error importing PAINT_COLORS:', error)
-  PAINT_COLORS = []
-}
+import { PAINT_COLORS, type ColorOption } from '@/lib/constants/paint-colors'
 
 // ===================================
 // GET /api/admin/colors - Obtener todos los colores de la paleta
@@ -23,15 +14,14 @@ try {
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<ColorOption[]>>> {
   return withRateLimit(request, RATE_LIMIT_CONFIGS.public, async () => {
     try {
-      // Asegurar que PAINT_COLORS esté cargado
-      if (!PAINT_COLORS || PAINT_COLORS.length === 0) {
-        try {
-          const colorPicker = await import('@/components/ui/advanced-color-picker')
-          PAINT_COLORS = Array.isArray(colorPicker.PAINT_COLORS) ? colorPicker.PAINT_COLORS : []
-        } catch (error) {
-          console.error('Error importing PAINT_COLORS:', error)
-          PAINT_COLORS = []
-        }
+      // Verificar que PAINT_COLORS sea un array válido
+      if (!Array.isArray(PAINT_COLORS) || PAINT_COLORS.length === 0) {
+        console.error('❌ PAINT_COLORS no es un array válido:', typeof PAINT_COLORS, PAINT_COLORS)
+        return NextResponse.json({
+          success: false,
+          error: 'Error al cargar colores predefinidos',
+          data: [],
+        }, { status: 500 })
       }
 
       // Obtener colores personalizados de la base de datos
