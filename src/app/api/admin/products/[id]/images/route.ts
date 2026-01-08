@@ -102,9 +102,29 @@ async function deleteImageFromStorage(path: string) {
 const postHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   // ✅ CORREGIDO: Usar supabaseAdmin directamente y obtener user del auth
   const { supabaseAdmin } = await import('@/lib/integrations/supabase')
-  const { auth } = await import('@/lib/auth/config')
-  const session = await auth()
-  const user = session?.user
+  
+  // ✅ FIX: Solo llamar auth() si NO es multipart o si BYPASS_AUTH no está activo
+  // Para multipart con BYPASS_AUTH, no necesitamos el usuario
+  const contentType = request.headers.get('content-type') || ''
+  const isMultipart = contentType.includes('multipart/form-data')
+  const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
+  
+  let user = null
+  if (!(isMultipart || isFormUrlEncoded) || process.env.BYPASS_AUTH !== 'true') {
+    try {
+      const { auth } = await import('@/lib/auth/config')
+      const session = await auth()
+      user = session?.user || null
+    } catch (authError: any) {
+      // Si auth() falla con error de Content-Type, es porque intentó leer el body
+      if (authError.message?.includes('Content-Type')) {
+        console.warn('[POST /images] auth() intentó leer body multipart, usando BYPASS_AUTH')
+        user = null
+      } else {
+        throw authError
+      }
+    }
+  }
   
   const { id } = await context.params
   const productId = id

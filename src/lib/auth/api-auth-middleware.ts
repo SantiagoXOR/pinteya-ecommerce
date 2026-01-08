@@ -9,12 +9,14 @@ export function withAdminAuth(permissions: string[] = []) {
       try {
         // ✅ FIX: Detectar multipart/form-data y evitar leer el body
         const contentType = request.headers.get('content-type') || ''
-        const isMultipart = contentType.includes('multipart/form-data')
-        const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
+        // ✅ FIX: Detectar Content-Type de manera más robusta (puede tener parámetros como boundary)
+        const isMultipart = contentType.toLowerCase().includes('multipart/form-data')
+        const isFormUrlEncoded = contentType.toLowerCase().includes('application/x-www-form-urlencoded')
         
         // ✅ DEBUG: Log del Content-Type para diagnóstico
         console.log('🔐 [withAdminAuth] Content-Type detectado:', {
           contentType,
+          contentTypeLower: contentType.toLowerCase(),
           isMultipart,
           isFormUrlEncoded,
           bypassAuth: process.env.BYPASS_AUTH,
