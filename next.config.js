@@ -251,7 +251,8 @@ const nextConfig = {
           },
         },
         // ⚡ OPTIMIZACIÓN: Tree shaking mejorado
-        usedExports: true,
+        // ⚡ FIX: Removido usedExports - No compatible con cacheUnaffected en Next.js 16
+        // usedExports: true, // Removido por conflicto con cacheUnaffected
         sideEffects: false,
         concatenateModules: true, // Scope hoisting
         providedExports: true,
