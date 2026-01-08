@@ -23,8 +23,8 @@ const supabase = createClient(
 // =====================================================
 
 async function validateSimpleAuth() {
-  // En desarrollo, permitir acceso directo con validación estricta
-  if (process.env.BYPASS_AUTH === 'true' // ⚠️ TEMPORAL: Habilitado en producción (2026-01-08)) {
+  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
+  if (process.env.BYPASS_AUTH === 'true') {
     // Verificar que existe archivo .env.local para evitar bypass accidental en producción
     try {
       const fs = require('fs')
