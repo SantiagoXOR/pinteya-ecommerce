@@ -30,23 +30,7 @@ interface AdvancedColorPickerProps {
 // PALETA DE COLORES PARA PINTURAS
 // ===================================
 // NOTA: PAINT_COLORS ahora se importa desde @/lib/constants/paint-colors
-// El array original se mantiene aquí solo para referencia histórica
-// TODO: Remover este array duplicado después de verificar que todo funciona
-const _LEGACY_PAINT_COLORS: ColorOption[] = [
-  // ===================================
-  // COLORES PARA PRODUCTOS DE MADERA
-  // ===================================
-  // Tonos naturales y cálidos específicos para productos de madera
-  {
-    id: 'blanco-puro',
-    name: 'blanco-puro',
-    displayName: 'Blanco Puro',
-    hex: '#F5F5F5',
-    category: 'Madera',
-    family: 'Blancos',
-    isPopular: true,
-    description: 'Blanco clásico para madera',
-  },
+// para uso compartido entre cliente y servidor
   {
     id: 'crema',
     name: 'crema',
@@ -608,9 +592,6 @@ const _LEGACY_PAINT_COLORS: ColorOption[] = [
     hex: '#000000',
     category: 'Neutros',
     family: 'Negros',
-  },
-] as ColorOption[]
-
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
