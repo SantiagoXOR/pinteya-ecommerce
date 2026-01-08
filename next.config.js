@@ -141,13 +141,13 @@ const nextConfig = {
     
     config.resolve.alias = {
       ...config.resolve.alias,
-      // Asegurar una sola instancia de React
-      // ⚡ FIX: No forzar reactPath - dejar que Next.js use su versión compilada cuando sea necesario
-      'react': reactPath,
+      // ⚡ FIX: Removido alias de 'react' - Next.js maneja esto internamente
+      // Forzar el alias de react causa conflictos con ReactCurrentDispatcher
+      // 'react': reactPath, // REMOVIDO - Causa conflictos
       'react-dom': reactDomPath,
-      // Resolver jsx-runtime
-      'react/jsx-runtime': path.join(reactPath, 'jsx-runtime.js'),
-      'react/jsx-dev-runtime': path.join(reactPath, 'jsx-dev-runtime.js'),
+      // Resolver jsx-runtime solo si es necesario
+      // 'react/jsx-runtime': path.join(reactPath, 'jsx-runtime.js'), // REMOVIDO - Next.js maneja esto
+      // 'react/jsx-dev-runtime': path.join(reactPath, 'jsx-dev-runtime.js'), // REMOVIDO - Next.js maneja esto
       // CRÍTICO: Resolver react/cache al polyfill
       'react/cache': polyfillToUse,
     }
