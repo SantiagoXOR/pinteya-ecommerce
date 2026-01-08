@@ -12,6 +12,15 @@ export function withAdminAuth(permissions: string[] = []) {
         const isMultipart = contentType.includes('multipart/form-data')
         const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
         
+        // ✅ DEBUG: Log del Content-Type para diagnóstico
+        console.log('🔐 [withAdminAuth] Content-Type detectado:', {
+          contentType,
+          isMultipart,
+          isFormUrlEncoded,
+          bypassAuth: process.env.BYPASS_AUTH,
+          url: request.url,
+        })
+        
         // ✅ CRÍTICO: Si es multipart y BYPASS_AUTH está activo, permitir acceso SIN llamar a checkCRUDPermissions
         // Esto evita que cualquier función intente leer el body
         if ((isMultipart || isFormUrlEncoded) && process.env.BYPASS_AUTH === 'true') {

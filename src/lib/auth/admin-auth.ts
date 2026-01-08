@@ -236,6 +236,15 @@ export async function checkCRUDPermissions(
     const isMultipart = contentType.includes('multipart/form-data')
     const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
     
+    // ✅ DEBUG: Log del Content-Type para diagnóstico
+    console.log('[AUTH] checkCRUDPermissions - Content-Type:', {
+      contentType,
+      isMultipart,
+      isFormUrlEncoded,
+      bypassAuth: process.env.BYPASS_AUTH,
+      hasRequest: !!request,
+    })
+    
     // ✅ CRÍTICO: Si es multipart y BYPASS_AUTH está activo, permitir acceso SIN intentar leer sesión
     if ((isMultipart || isFormUrlEncoded) && process.env.BYPASS_AUTH === 'true') {
       console.log('[AUTH] Multipart request con BYPASS_AUTH activo, permitiendo acceso sin leer sesión')
