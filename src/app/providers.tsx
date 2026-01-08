@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic'
 // ⚡ PERFORMANCE: BrowserCacheUtils se carga dinámicamente en useEffect
 // Esto reduce Script Evaluation inicial (no se carga hasta que se necesita)
 import { usePathname } from 'next/navigation'
-import { SessionProvider } from 'next-auth/react'
 import { useDeferredHydration } from '@/hooks/useDeferredHydration'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 
@@ -102,10 +101,25 @@ const MemoizedHeader = Header // No memoizar ya que no recibe props y los hooks 
 const MemoizedFooter = React.memo(Footer)
 // ScrollToTop y Toaster ya son lazy loaded, no necesitan memoización adicional
 
-// Componente NextAuthWrapper para manejar sesiones
+// ⚡ FIX HMR: NextAuthWrapper carga SessionProvider dinámicamente para evitar errores de HMR con Turbopack
 const NextAuthWrapper = React.memo(({ children }: { children: React.ReactNode }) => {
   // DEBUG: Log de configuración NextAuth
   console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce')
+
+  // Cargar SessionProvider dinámicamente para evitar errores de HMR
+  const [SessionProvider, setSessionProvider] = React.useState<React.ComponentType<{ children: React.ReactNode }> | null>(null)
+
+  React.useEffect(() => {
+    import('next-auth/react').then((mod) => {
+      setSessionProvider(() => mod.SessionProvider)
+    }).catch((error) => {
+      console.error('[NEXTAUTH_PROVIDER] Error loading SessionProvider:', error)
+    })
+  }, [])
+
+  if (!SessionProvider) {
+    return <>{children}</>
+  }
 
   return <SessionProvider>{children}</SessionProvider>
 })
