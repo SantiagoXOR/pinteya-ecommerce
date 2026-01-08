@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { checkCRUDPermissions } from '@/lib/auth/admin-auth'
 import { createClient } from '@supabase/supabase-js'
 
+// Configurar runtime para Node.js (necesario para formData)
+export const runtime = 'nodejs'
+
 // Helper function to get Supabase Storage client
 function getStorageClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -75,6 +78,20 @@ export async function POST(request: NextRequest) {
           code: 'AUTH_ERROR',
         },
         { status: 401 }
+      )
+    }
+
+    // Verificar Content-Type
+    const contentType = request.headers.get('content-type')
+    if (!contentType || !contentType.includes('multipart/form-data')) {
+      console.error('❌ [Upload] Content-Type inválido:', contentType)
+      return NextResponse.json(
+        {
+          error: 'Content-Type debe ser multipart/form-data',
+          code: 'INVALID_CONTENT_TYPE',
+          received: contentType,
+        },
+        { status: 400 }
       )
     }
 
