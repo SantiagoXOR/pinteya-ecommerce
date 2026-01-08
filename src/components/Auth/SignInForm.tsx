@@ -33,9 +33,21 @@ export function SignInForm() {
   const handleSignIn = async (providerId: string) => {
     setIsLoading(true)
     try {
-      await signIn(providerId, { callbackUrl })
+      const result = await signIn(providerId, { 
+        callbackUrl,
+        redirect: true, // Forzar redirección
+      })
+      
+      // Si signIn retorna un error, redirigir a la página de error
+      if (result?.error) {
+        console.error('[SignIn] Error de autenticación:', result.error)
+        window.location.href = `/auth/signin?error=${result.error}`
+        return
+      }
     } catch (error) {
-      console.error('Error al iniciar sesión:', error)
+      console.error('[SignIn] Error al iniciar sesión:', error)
+      // Si hay un error de red (400, 500, etc.), redirigir con error genérico
+      window.location.href = '/auth/signin?error=OAuthSignin'
     } finally {
       setIsLoading(false)
     }

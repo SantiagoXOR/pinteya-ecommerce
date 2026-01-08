@@ -6,6 +6,9 @@ import { upsertUserProfile, getUserRole } from './lib/auth/role-service'
 // Validación de variables de entorno requeridas
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const googleClientId = process.env.AUTH_GOOGLE_ID
+const googleClientSecret = process.env.AUTH_GOOGLE_SECRET
+const nextAuthUrl = process.env.NEXTAUTH_URL
 
 if (!supabaseUrl) {
   throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not defined')
@@ -15,6 +18,18 @@ if (!supabaseServiceRoleKey) {
   throw new Error('SUPABASE_SERVICE_ROLE_KEY is required but not defined')
 }
 
+if (!googleClientId) {
+  throw new Error('AUTH_GOOGLE_ID is required but not defined. Please configure it in your environment variables.')
+}
+
+if (!googleClientSecret) {
+  throw new Error('AUTH_GOOGLE_SECRET is required but not defined. Please configure it in your environment variables.')
+}
+
+if (!nextAuthUrl) {
+  console.warn('[NextAuth] ⚠️ NEXTAUTH_URL is not defined. Using default URL. This may cause issues in production.')
+}
+
 const nextAuth = NextAuth({
   adapter: SupabaseAdapter({
     url: supabaseUrl,
@@ -22,11 +37,13 @@ const nextAuth = NextAuth({
   }),
   providers: [
     Google({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+      clientId: googleClientId,
+      clientSecret: googleClientSecret,
       authorization: {
         params: {
           prompt: 'select_account',
+          access_type: 'offline',
+          response_type: 'code',
         },
       },
     }),
@@ -87,24 +104,30 @@ const nextAuth = NextAuth({
       return session
     },
     async redirect({ url, baseUrl }) {
-      const base: string = (baseUrl || process.env.NEXTAUTH_URL || 'http://localhost:3000') as string
+      // Usar NEXTAUTH_URL o AUTH_URL si está disponible, sino usar baseUrl
+      const base: string = (nextAuthUrl || baseUrl || 'http://localhost:3000') as string
+      
       // Si la URL es el callback de auth, redirigir a nuestra página de callback
       if (url.includes('/api/auth/callback') || url === base || url === `${base}/`) {
         return `${base}/auth/callback`
       }
+      
       // Si la URL es relativa, construir la URL completa
       if (url.startsWith('/')) {
         return `${base}${url}`
       }
+      
       // Si la URL es del mismo dominio, permitirla
       try {
         const urlObj = new URL(url)
-        if (urlObj.origin === base) {
+        const baseObj = new URL(base)
+        if (urlObj.origin === baseObj.origin) {
           return url
         }
       } catch {
         // Si la URL no es válida, continuar
       }
+      
       // Por defecto, redirigir al callback para verificar el rol
       return `${base}/auth/callback`
     },
