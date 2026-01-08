@@ -19,6 +19,8 @@ export function withAdminAuth(permissions: string[] = []) {
         // DEBE ser lo primero que hacemos, antes de cualquier otra operación
         if (bypassAuth) {
           console.log('🔐 [withAdminAuth] ✅ BYPASS_AUTH activo, permitiendo acceso sin verificar permisos')
+          // ✅ CRÍTICO: Pasar el request original directamente al handler
+          // No clonar porque puede causar problemas con el body en requests multipart
           return await handler(request, context)
         }
         

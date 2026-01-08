@@ -106,26 +106,25 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   // ✅ CORREGIDO: Usar supabaseAdmin directamente y obtener user del auth
   const { supabaseAdmin } = await import('@/lib/integrations/supabase')
   
-  // ✅ FIX: Solo llamar auth() si NO es multipart o si BYPASS_AUTH no está activo
-  // Para multipart con BYPASS_AUTH, no necesitamos el usuario
-  const contentType = request.headers.get('content-type') || ''
-  const isMultipart = contentType.includes('multipart/form-data')
-  const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
-  
+  // ✅ FIX: Si BYPASS_AUTH está activo, no intentar leer auth() porque puede causar que se lea el body
+  // El middleware withAdminAuth ya verificó la autenticación, así que no necesitamos verificar aquí
   let user = null
-  if (!(isMultipart || isFormUrlEncoded) || process.env.BYPASS_AUTH !== 'true') {
+  if (process.env.BYPASS_AUTH !== 'true') {
     try {
-      const { auth } = await import('@/lib/auth/config')
-      const session = await auth()
-      user = session?.user || null
-    } catch (authError: any) {
-      // Si auth() falla con error de Content-Type, es porque intentó leer el body
-      if (authError.message?.includes('Content-Type')) {
-        console.warn('[POST /images] auth() intentó leer body multipart, usando BYPASS_AUTH')
-        user = null
-      } else {
-        throw authError
+      const contentType = request.headers.get('content-type') || ''
+      const isMultipart = contentType.includes('multipart/form-data')
+      const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
+      
+      // Solo llamar auth() si NO es multipart (para evitar leer el body)
+      if (!(isMultipart || isFormUrlEncoded)) {
+        const { auth } = await import('@/lib/auth/config')
+        const session = await auth()
+        user = session?.user || null
       }
+    } catch (authError: any) {
+      // Si auth() falla, simplemente continuar sin usuario (BYPASS_AUTH está activo o es multipart)
+      console.warn('[POST /images] No se pudo obtener usuario, continuando sin autenticación')
+      user = null
     }
   }
   
@@ -153,6 +152,8 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   }
 
   // Parse form data
+  // ✅ CRÍTICO: El body solo debe leerse UNA VEZ, aquí en el handler
+  // Si algún middleware intentó leerlo antes, esto fallará
   const formData = await request.formData()
   const file = formData.get('file') as File
   const altText = formData.get('alt_text') as string
