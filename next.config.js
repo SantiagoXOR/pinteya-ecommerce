@@ -297,22 +297,10 @@ module.exports.__esModule = true;
       }
     }
     
-    // CRÍTICO: Interceptar el módulo react para agregar la propiedad cache
-    // Next.js intenta acceder a react.cache directamente, no solo react/cache
-    // Usamos NormalModuleReplacementPlugin para interceptar y modificar el módulo react
-    const webpack = require('webpack')
-    config.plugins = config.plugins || []
-    
-    // Agregar plugin para interceptar react y agregar cache
-    config.plugins.push(
-      new webpack.NormalModuleReplacementPlugin(
-        /^react$/,
-        (resource) => {
-          // Interceptar la resolución de 'react' y agregar cache
-          resource.request = path.join(__dirname, 'src/lib/polyfills/react-with-cache.js')
-        }
-      )
-    )
+    // ⚡ FIX: Removido NormalModuleReplacementPlugin - Estaba rompiendo React internals
+    // En su lugar, confiamos en que react/cache se resuelva correctamente con el alias
+    // Si Next.js intenta acceder a react.cache directamente, puede que necesitemos
+    // actualizar React a una versión que incluya cache nativamente
     
     return config
   },
