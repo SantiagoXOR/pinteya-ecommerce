@@ -51,6 +51,8 @@ if (cleanClientSecret !== googleClientSecret) {
 
 export const authOptions: NextAuthOptions = {
   secret: nextAuthSecret,
+  // Trust host para Vercel y producción
+  trustHost: true,
   adapter: SupabaseAdapter({
     url: supabaseUrl,
     secret: supabaseServiceRoleKey,
