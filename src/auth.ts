@@ -8,7 +8,20 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const googleClientId = process.env.AUTH_GOOGLE_ID
 const googleClientSecret = process.env.AUTH_GOOGLE_SECRET
-const nextAuthUrl = process.env.NEXTAUTH_URL
+// NextAuth v5 prefiere AUTH_URL sobre NEXTAUTH_URL
+const authUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET
+
+// Log de variables de entorno (sin exponer secretos)
+console.log('[NextAuth Init] Checking environment variables...')
+console.log('[NextAuth Init] AUTH_GOOGLE_ID:', googleClientId ? `✅ SET (${googleClientId.substring(0, 20)}...)` : '❌ NOT SET')
+console.log('[NextAuth Init] AUTH_GOOGLE_SECRET:', googleClientSecret ? `✅ SET (${googleClientSecret.substring(0, 10)}...)` : '❌ NOT SET')
+console.log('[NextAuth Init] AUTH_URL:', process.env.AUTH_URL || 'NOT SET')
+console.log('[NextAuth Init] NEXTAUTH_URL:', process.env.NEXTAUTH_URL || 'NOT SET')
+console.log('[NextAuth Init] Using URL:', authUrl || 'NOT SET')
+console.log('[NextAuth Init] AUTH_SECRET:', process.env.AUTH_SECRET ? '✅ SET' : '❌ NOT SET')
+console.log('[NextAuth Init] NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? '✅ SET' : '❌ NOT SET')
+console.log('[NextAuth Init] Using secret:', authSecret ? '✅ CONFIGURED' : '❌ MISSING')
 
 if (!supabaseUrl) {
   throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not defined')
@@ -26,11 +39,22 @@ if (!googleClientSecret) {
   throw new Error('AUTH_GOOGLE_SECRET is required but not defined. Please configure it in your environment variables.')
 }
 
-if (!nextAuthUrl) {
-  console.warn('[NextAuth] ⚠️ NEXTAUTH_URL is not defined. Using default URL. This may cause issues in production.')
+if (!authSecret) {
+  throw new Error('AUTH_SECRET or NEXTAUTH_SECRET is required')
+}
+
+if (!authUrl) {
+  console.warn('[NextAuth] ⚠️ AUTH_URL or NEXTAUTH_URL is not defined. Using default URL. This may cause issues in production.')
+}
+
+// Verificar que el Client Secret no tenga espacios o caracteres extra
+const cleanClientSecret = googleClientSecret.trim()
+if (cleanClientSecret !== googleClientSecret) {
+  console.warn('[NextAuth] ⚠️ AUTH_GOOGLE_SECRET tiene espacios al inicio/final. Limpiando...')
 }
 
 const nextAuth = NextAuth({
+  secret: authSecret,
   adapter: SupabaseAdapter({
     url: supabaseUrl,
     secret: supabaseServiceRoleKey,
@@ -38,7 +62,7 @@ const nextAuth = NextAuth({
   providers: [
     Google({
       clientId: googleClientId,
-      clientSecret: googleClientSecret,
+      clientSecret: cleanClientSecret,
       authorization: {
         params: {
           prompt: 'select_account',
@@ -68,8 +92,6 @@ const nextAuth = NextAuth({
       }
 
       // Obtener el rol del usuario desde Supabase user_profiles
-      // SIEMPRE recargar el rol si userId está presente para asegurar que esté actualizado
-      // Esto es especialmente importante después de cambios en la base de datos
       if (token.userId) {
         try {
           console.log(`[NextAuth JWT] Loading role for user ${token.userId} (trigger: ${trigger || 'auto'}, current role: ${token.role || 'none'})`)
@@ -78,7 +100,6 @@ const nextAuth = NextAuth({
           console.log(`[NextAuth JWT] ✅ User role loaded: ${role} for user ${token.userId}`)
         } catch (error) {
           console.error('[NextAuth JWT] ❌ Error loading user role:', error)
-          // Solo usar 'customer' como fallback si realmente no hay perfil
           if (!token.role) {
             token.role = 'customer'
             console.log(`[NextAuth JWT] ⚠️ Using fallback role: customer`)
@@ -104,20 +125,16 @@ const nextAuth = NextAuth({
       return session
     },
     async redirect({ url, baseUrl }) {
-      // Usar NEXTAUTH_URL o AUTH_URL si está disponible, sino usar baseUrl
-      const base: string = (nextAuthUrl || baseUrl || 'http://localhost:3000') as string
+      const base: string = (authUrl || baseUrl || 'http://localhost:3000') as string
       
-      // Si la URL es el callback de auth, redirigir a nuestra página de callback
       if (url.includes('/api/auth/callback') || url === base || url === `${base}/`) {
         return `${base}/auth/callback`
       }
       
-      // Si la URL es relativa, construir la URL completa
       if (url.startsWith('/')) {
         return `${base}${url}`
       }
       
-      // Si la URL es del mismo dominio, permitirla
       try {
         const urlObj = new URL(url)
         const baseObj = new URL(base)
@@ -128,23 +145,16 @@ const nextAuth = NextAuth({
         // Si la URL no es válida, continuar
       }
       
-      // Por defecto, redirigir al callback para verificar el rol
       return `${base}/auth/callback`
     },
     async signIn({ user, account, profile }) {
-      // Permitir el sign-in para todos los usuarios de Google
       if (account?.provider === 'google') {
         if (!user.email) {
           console.warn('[NextAuth] User email is missing, skipping profile sync')
           return true
         }
-        // Ya verificamos que user.email no es null/undefined arriba
-        // Extraer email con type assertion para evitar problemas de TypeScript
-        // @ts-ignore - user.email es string después del check !user.email arriba
         const email: string = user.email as string
         try {
-          // Sincronizar/crear el perfil del usuario en user_profiles
-          // @ts-ignore - email es string después del check y type assertion
           await upsertUserProfile({
             supabase_user_id: user.id,
             email,
