@@ -6,7 +6,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
 import { ApiResponse } from '@/types/api'
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
-import { PAINT_COLORS, ColorOption } from '@/components/ui/advanced-color-picker'
+import type { ColorOption } from '@/components/ui/advanced-color-picker'
+// Importar PAINT_COLORS de forma dinámica para evitar problemas en servidor
+let PAINT_COLORS: ColorOption[] = []
+try {
+  const colorPicker = await import('@/components/ui/advanced-color-picker')
+  PAINT_COLORS = colorPicker.PAINT_COLORS || []
+} catch (error) {
+  console.error('Error importing PAINT_COLORS:', error)
+  PAINT_COLORS = []
+}
 
 // ===================================
 // GET /api/admin/colors - Obtener todos los colores de la paleta
@@ -14,6 +23,17 @@ import { PAINT_COLORS, ColorOption } from '@/components/ui/advanced-color-picker
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse<ColorOption[]>>> {
   return withRateLimit(request, RATE_LIMIT_CONFIGS.public, async () => {
     try {
+      // Asegurar que PAINT_COLORS esté cargado
+      if (!PAINT_COLORS || PAINT_COLORS.length === 0) {
+        try {
+          const colorPicker = await import('@/components/ui/advanced-color-picker')
+          PAINT_COLORS = Array.isArray(colorPicker.PAINT_COLORS) ? colorPicker.PAINT_COLORS : []
+        } catch (error) {
+          console.error('Error importing PAINT_COLORS:', error)
+          PAINT_COLORS = []
+        }
+      }
+
       // Obtener colores personalizados de la base de datos
       const { data: customColors, error: colorsError } = await supabaseAdmin
         .from('color_palette')
@@ -25,7 +45,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
         // Si falla, devolver solo los predefinidos
         return NextResponse.json({
           success: true,
-          data: PAINT_COLORS,
+          data: Array.isArray(PAINT_COLORS) ? PAINT_COLORS : [],
           message: 'Colores predefinidos (error al cargar personalizados)',
         })
       }
@@ -46,10 +66,14 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       // Los personalizados tienen prioridad si hay duplicados por nombre
       const colorMap = new Map<string, ColorOption>()
 
-      // Primero agregar predefinidos
-      PAINT_COLORS.forEach((color) => {
-        colorMap.set(color.name.toLowerCase(), color)
-      })
+      // Primero agregar predefinidos - verificar que sea un array
+      if (Array.isArray(PAINT_COLORS)) {
+        PAINT_COLORS.forEach((color) => {
+          colorMap.set(color.name.toLowerCase(), color)
+        })
+      } else {
+        console.error('❌ PAINT_COLORS no es un array:', typeof PAINT_COLORS, PAINT_COLORS)
+      }
 
       // Luego agregar/sobrescribir con personalizados
       customColorOptions.forEach((color) => {

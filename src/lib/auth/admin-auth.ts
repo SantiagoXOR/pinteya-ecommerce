@@ -230,8 +230,8 @@ export async function checkCRUDPermissions(
       }
     }
 
-    // ✅ FIX: Detectar multipart/form-data y usar getServerSession en lugar de getToken
-    // getToken intenta leer el body, lo cual falla con multipart/form-data
+    // ✅ FIX: Detectar multipart/form-data y evitar leer el body completamente
+    // Para multipart, solo verificar BYPASS_AUTH o usar cookies directamente sin leer body
     const contentType = request?.headers?.get('content-type') || ''
     const isMultipart = contentType.includes('multipart/form-data')
     const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
@@ -239,10 +239,23 @@ export async function checkCRUDPermissions(
     let session
     try {
       if (isMultipart || isFormUrlEncoded) {
-        // Para multipart/form-data, usar getServerSession que no necesita leer el body
-        const { getServerSession } = await import('next-auth/next')
-        const { authOptions } = await import('@/auth')
-        session = await getServerSession(authOptions)
+        // Para multipart/form-data, NO intentar leer el body
+        // Usar getServerSession que lee cookies del contexto sin tocar el body
+        // Pero si falla, permitir acceso si BYPASS_AUTH está activo
+        try {
+          const { getServerSession } = await import('next-auth/next')
+          const { authOptions } = await import('@/auth')
+          session = await getServerSession(authOptions)
+        } catch (sessionError) {
+          // Si getServerSession falla (puede ser por contexto), verificar BYPASS_AUTH
+          if (process.env.BYPASS_AUTH === 'true') {
+            console.log('[AUTH] getServerSession falló pero BYPASS_AUTH está activo, permitiendo acceso')
+            return {
+              allowed: true,
+            }
+          }
+          throw sessionError
+        }
       } else if (request) {
         // Para otros tipos, usar getToken con el request
         const { getToken } = await import('next-auth/jwt')
@@ -270,6 +283,14 @@ export async function checkCRUDPermissions(
         session = await getServerSession(authOptions)
       }
     } catch (authError: any) {
+      // Si el error es sobre Content-Type y BYPASS_AUTH está activo, permitir acceso
+      if (authError.message?.includes('Content-Type') && process.env.BYPASS_AUTH === 'true') {
+        console.log('[AUTH] Error de Content-Type pero BYPASS_AUTH está activo, permitiendo acceso')
+        return {
+          allowed: true,
+        }
+      }
+      
       console.error('[AUTH] Error al leer sesión:', {
         error: authError.message,
         stack: authError.stack,
