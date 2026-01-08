@@ -129,9 +129,11 @@ const nextConfig = {
     // Asegurar que React se resuelva correctamente y evitar múltiples instancias
     const reactPath = path.resolve(process.cwd(), 'node_modules/react')
     const reactDomPath = path.resolve(process.cwd(), 'node_modules/react-dom')
+    const nextReactPath = path.resolve(process.cwd(), 'node_modules/next/dist/compiled/react')
     
     // CRÍTICO: Configurar alias para react/cache ANTES de configurar otros alias
-    // Necesitamos que react/cache esté disponible antes de que se resuelva react
+    // Next.js 16 usa next/dist/compiled/react internamente, pero necesitamos
+    // asegurar que react/cache se resuelva correctamente
     const fs = require('fs')
     const localPolyfillPath = path.resolve(process.cwd(), 'src/lib/polyfills/react-cache.js')
     const reactCachePath = path.join(reactPath, 'cache.js')
@@ -140,6 +142,7 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       // Asegurar una sola instancia de React
+      // ⚡ FIX: No forzar reactPath - dejar que Next.js use su versión compilada cuando sea necesario
       'react': reactPath,
       'react-dom': reactDomPath,
       // Resolver jsx-runtime
