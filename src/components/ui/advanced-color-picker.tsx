@@ -7,21 +7,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/core/utils'
 import { ProductType } from '@/utils/product-utils'
+// Importar desde archivo compartido para uso en cliente y servidor
+import { PAINT_COLORS, type ColorOption } from '@/lib/constants/paint-colors'
 
-// ===================================
-// TIPOS Y INTERFACES
-// ===================================
-
-export interface ColorOption {
-  id: string
-  name: string
-  displayName: string
-  hex: string
-  category: string
-  family: string
-  isPopular?: boolean
-  description?: string
-}
+// Re-exportar para compatibilidad con código existente
+export type { ColorOption }
+export { PAINT_COLORS }
 
 interface AdvancedColorPickerProps {
   colors?: ColorOption[]
@@ -38,8 +29,10 @@ interface AdvancedColorPickerProps {
 // ===================================
 // PALETA DE COLORES PARA PINTURAS
 // ===================================
-
-export const PAINT_COLORS: ColorOption[] = [
+// NOTA: PAINT_COLORS ahora se importa desde @/lib/constants/paint-colors
+// El array original se mantiene aquí solo para referencia histórica
+// TODO: Remover este array duplicado después de verificar que todo funciona
+const _LEGACY_PAINT_COLORS: ColorOption[] = [
   // ===================================
   // COLORES PARA PRODUCTOS DE MADERA
   // ===================================
@@ -616,7 +609,7 @@ export const PAINT_COLORS: ColorOption[] = [
     category: 'Neutros',
     family: 'Negros',
   },
-]
+] as ColorOption[]
 
 // ===================================
 // FUNCIONES AUXILIARES
