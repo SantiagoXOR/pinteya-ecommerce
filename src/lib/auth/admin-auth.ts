@@ -256,12 +256,28 @@ export async function checkCRUDPermissions(
     let session
     try {
       if (isMultipart || isFormUrlEncoded) {
-        // Para multipart/form-data, NO intentar leer el body
-        // Usar getServerSession que lee cookies del contexto sin tocar el body
-        // Si falla y BYPASS_AUTH está activo, ya fue manejado arriba
-        const { getServerSession } = await import('next-auth/next')
-        const { authOptions } = await import('@/auth')
-        session = await getServerSession(authOptions)
+        // ✅ CRÍTICO: Para multipart/form-data, NO usar getServerSession porque puede intentar leer el body
+        // En su lugar, si BYPASS_AUTH no está activo, intentar leer cookies directamente
+        // o simplemente retornar error de autenticación si no hay bypass
+        if (process.env.BYPASS_AUTH !== 'true') {
+          // Si no hay bypass, intentar usar getServerSession pero capturar el error
+          try {
+            const { getServerSession } = await import('next-auth/next')
+            const { authOptions } = await import('@/auth')
+            session = await getServerSession(authOptions)
+          } catch (sessionError: any) {
+            // Si getServerSession falla con error de Content-Type, es porque intentó leer el body
+            if (sessionError.message?.includes('Content-Type')) {
+              console.error('[AUTH] getServerSession intentó leer body multipart, retornando error')
+              return {
+                allowed: false,
+                error: 'Error de autenticación: No se puede leer sesión en requests multipart sin BYPASS_AUTH',
+              }
+            }
+            throw sessionError
+          }
+        }
+        // Si BYPASS_AUTH está activo, ya retornamos arriba, así que no llegamos aquí
       } else if (request) {
         // Para otros tipos, usar getToken con el request
         const { getToken } = await import('next-auth/jwt')
