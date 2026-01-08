@@ -108,7 +108,25 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   
   // ✅ CRÍTICO: Leer el body PRIMERO, antes de hacer cualquier otra cosa
   // Esto evita que cualquier acceso al request cause que Next.js intente leer el body
-  const formData = await request.formData()
+  // Si el body ya fue leído, intentar clonar el request primero
+  let formData: FormData
+  try {
+    formData = await request.formData()
+  } catch (error: any) {
+    // Si el body ya fue leído, intentar clonar el request y leerlo de nuevo
+    if (error.message?.includes('already been read') || error.message?.includes('unusable')) {
+      console.warn('[POST /images] Body ya fue leído, intentando clonar request')
+      try {
+        const clonedRequest = request.clone()
+        formData = await clonedRequest.formData()
+      } catch (cloneError: any) {
+        // Si clonar también falla, lanzar el error original
+        throw error
+      }
+    } else {
+      throw error
+    }
+  }
   
   // ✅ FIX: Si BYPASS_AUTH está activo, no intentar leer auth() porque puede causar que se lea el body
   // El middleware withAdminAuth ya verificó la autenticación, así que no necesitamos verificar aquí
@@ -257,8 +275,11 @@ export const GET = composeMiddlewares(
   withAdminAuth(['products_read'])
 )(getHandler)
 
+// ✅ CRÍTICO: Orden de middlewares optimizado para requests multipart
+// withAdminAuth debe ejecutarse PRIMERO para retornar inmediatamente cuando BYPASS_AUTH está activo
+// Esto evita que otros middlewares accedan al request antes de que el handler lea el body
 export const POST = composeMiddlewares(
+  withAdminAuth(['products_update']), // Ejecutar PRIMERO para bypass inmediato
   withErrorHandler,
-  withApiLogging,
-  withAdminAuth(['products_update'])
+  withApiLogging
 )(postHandler)

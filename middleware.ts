@@ -173,6 +173,7 @@ export const config = {
      * - /driver/* (driver UI routes)
      * - /api/driver/* (driver API routes)
      * Exclude NextAuth.js routes and static files
+     * Note: Routes with /images are handled specially when BYPASS_AUTH is active
      */
     '/admin/:path*',
     '/api/admin/:path*',

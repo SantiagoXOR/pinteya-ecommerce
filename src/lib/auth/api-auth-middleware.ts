@@ -19,9 +19,16 @@ export function withAdminAuth(permissions: string[] = []) {
         // DEBE ser lo primero que hacemos, antes de cualquier otra operación
         if (bypassAuth) {
           console.log('🔐 [withAdminAuth] ✅ BYPASS_AUTH activo, permitiendo acceso sin verificar permisos')
-          // ✅ CRÍTICO: Pasar el request original directamente al handler
-          // No clonar porque puede causar problemas con el body en requests multipart
-          return await handler(request, context)
+          // ✅ CRÍTICO: Clonar el request ANTES de pasarlo al handler para preservar el body
+          // Esto evita que Next.js procese el body antes de que el handler lo lea
+          try {
+            const clonedRequest = request.clone()
+            return await handler(clonedRequest, context)
+          } catch (cloneError: any) {
+            // Si clonar falla (puede pasar si el body ya fue leído), usar el request original
+            console.warn('🔐 [withAdminAuth] ⚠️ No se pudo clonar request, usando original:', cloneError.message)
+            return await handler(request, context)
+          }
         }
         
         // ✅ CRÍTICO: Solo verificar Content-Type si BYPASS_AUTH NO está activo
