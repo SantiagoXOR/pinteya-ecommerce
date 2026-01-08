@@ -1,8 +1,8 @@
 'use strict';
 
 // Polyfill para react/cache en React 18.3.1
-// Next.js 15 puede requerir esto pero no está disponible en React 18.3.1
-// Este polyfill debe funcionar con todos los patrones de importación
+// Next.js 16 requiere esto pero no está disponible en React 18.3.1
+// Este polyfill debe funcionar con todos los patrones de importación incluyendo (0, _react.cache)
 
 function cacheImpl(fn) {
   if (typeof fn !== 'function') {
@@ -12,38 +12,12 @@ function cacheImpl(fn) {
   return fn;
 }
 
-// CRÍTICO: Crear objeto de exportación que soporte todos los patrones
-// Necesitamos que funcione como objeto (import * as n) y como función (import cache)
-const cacheExport = function(fn) {
-  return cacheImpl(fn);
-};
+// CRÍTICO: Exportar directamente como función para que funcione con (0, _react.cache)
+// Webpack usa este patrón: (0, _react.cache)(fn)
+// Necesitamos que cache sea una función directamente exportada
+module.exports = cacheImpl;
 
-// Agregar propiedades directamente a la función (enumerables para import * as n)
-Object.defineProperty(cacheExport, 'cache', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,  // CRÍTICO: debe ser enumerable para import * as n
-  configurable: false
-});
-
-Object.defineProperty(cacheExport, 'default', {
-  value: cacheImpl,
-  writable: false,
-  enumerable: true,
-  configurable: false
-});
-
-Object.defineProperty(cacheExport, '__esModule', {
-  value: true,
-  writable: false,
-  enumerable: false,
-  configurable: false
-});
-
-// Exportar la función con propiedades
-module.exports = cacheExport;
-
-// Exportar también como objeto para compatibilidad adicional
+// También exportar como propiedad para compatibilidad con otros patrones
 module.exports.cache = cacheImpl;
 module.exports.default = cacheImpl;
 module.exports.__esModule = true;
