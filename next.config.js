@@ -130,6 +130,12 @@ const nextConfig = {
     const reactPath = path.resolve(process.cwd(), 'node_modules/react')
     const reactDomPath = path.resolve(process.cwd(), 'node_modules/react-dom')
     
+    // CRÍTICO: Configurar alias para react/cache ANTES de configurar otros alias
+    // Necesitamos que react/cache esté disponible antes de que se resuelva react
+    const localPolyfillPath = path.resolve(process.cwd(), 'src/lib/polyfills/react-cache.js')
+    const reactCachePath = path.join(reactPath, 'cache.js')
+    const polyfillToUse = fs.existsSync(localPolyfillPath) ? localPolyfillPath : reactCachePath
+    
     config.resolve.alias = {
       ...config.resolve.alias,
       // Asegurar una sola instancia de React
@@ -138,6 +144,8 @@ const nextConfig = {
       // Resolver jsx-runtime
       'react/jsx-runtime': path.join(reactPath, 'jsx-runtime.js'),
       'react/jsx-dev-runtime': path.join(reactPath, 'jsx-dev-runtime.js'),
+      // CRÍTICO: Resolver react/cache al polyfill
+      'react/cache': polyfillToUse,
     }
     
     // Asegurar que webpack no incluya múltiples instancias de React
@@ -265,7 +273,6 @@ const nextConfig = {
     
     // ⚡ FIX: Next.js puede requerir react/cache que no existe en React 18.3.1
     // Usamos un polyfill local en lugar de node_modules para mayor confiabilidad
-    // Primero intentar crear el polyfill en node_modules (para compatibilidad)
     const fs = require('fs')
     const reactCachePath = path.join(reactPath, 'cache.js')
     const localPolyfillPath = path.resolve(process.cwd(), 'src/lib/polyfills/react-cache.js')
@@ -285,11 +292,7 @@ function cacheImpl(fn) {
   if (typeof fn !== 'function') throw new Error('cache requires a function');
   return fn;
 }
-const cacheExport = function(fn) { return cacheImpl(fn); };
-Object.defineProperty(cacheExport, 'cache', { value: cacheImpl, writable: false, enumerable: true, configurable: false });
-Object.defineProperty(cacheExport, 'default', { value: cacheImpl, writable: false, enumerable: true, configurable: false });
-Object.defineProperty(cacheExport, '__esModule', { value: true, writable: false, enumerable: false, configurable: false });
-module.exports = cacheExport;
+module.exports = cacheImpl;
 module.exports.cache = cacheImpl;
 module.exports.default = cacheImpl;
 module.exports.__esModule = true;
@@ -308,6 +311,23 @@ module.exports.__esModule = true;
       config.resolve.fallback = {}
     }
     config.resolve.fallback['react/cache'] = polyfillToUse
+    
+    // CRÍTICO: Interceptar el módulo react para agregar la propiedad cache
+    // Next.js intenta acceder a react.cache directamente, no solo react/cache
+    // Usamos NormalModuleReplacementPlugin para interceptar y modificar el módulo react
+    const webpack = require('webpack')
+    config.plugins = config.plugins || []
+    
+    // Agregar plugin para interceptar react y agregar cache
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(
+        /^react$/,
+        (resource) => {
+          // Interceptar la resolución de 'react' y agregar cache
+          resource.request = path.join(__dirname, 'src/lib/polyfills/react-with-cache.js')
+        }
+      )
+    )
     
     return config
   },
