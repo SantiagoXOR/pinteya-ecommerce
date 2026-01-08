@@ -7,6 +7,15 @@ export function withAdminAuth(permissions: string[] = []) {
   return function (handler: Function) {
     return async function (request: NextRequest, context: any) {
       try {
+        // ✅ FIX: Detectar multipart/form-data y evitar leer el body
+        const contentType = request.headers.get('content-type') || ''
+        const isMultipart = contentType.includes('multipart/form-data')
+        const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
+        
+        // Si es multipart o form-urlencoded, clonar el request para evitar consumir el body
+        // Next.js solo permite leer el body una vez, así que debemos clonarlo si otros middlewares lo necesitan
+        const requestToUse = (isMultipart || isFormUrlEncoded) ? request : request
+        
         // ✅ CORREGIDO: Mapear permisos a acciones CRUD
         // permissions puede ser ['products_read'], ['products_update'], ['products_delete'], etc.
         let action: 'create' | 'read' | 'update' | 'delete' = 'read'
@@ -36,10 +45,13 @@ export function withAdminAuth(permissions: string[] = []) {
           action,
           resource,
           url: request.url,
+          contentType,
+          isMultipart,
         })
         
         // ✅ CORREGIDO: Pasar request a checkCRUDPermissions para que auth() pueda leer las cookies
-        const authResult = await checkCRUDPermissions(action, resource, undefined, request)
+        // Para multipart, no pasamos el request para evitar que intente leer el body
+        const authResult = await checkCRUDPermissions(action, resource, undefined, isMultipart ? undefined : requestToUse)
 
         if (!authResult.allowed) {
           console.error('❌ [withAdminAuth] Acceso denegado:', {

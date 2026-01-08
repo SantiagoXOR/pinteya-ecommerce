@@ -115,6 +115,12 @@ export function withValidation<T extends z.ZodSchema>(schema: T) {
           })
         } else {
           // Validar body para POST/PUT
+          // ✅ FIX: Detectar multipart/form-data y saltar validación de JSON
+          const contentType = request.headers.get('content-type') || ''
+          if (contentType.includes('multipart/form-data') || contentType.includes('application/x-www-form-urlencoded')) {
+            // Para formData, no validar con schema JSON - el handler lo procesará directamente
+            return await handler(request, context)
+          }
           data = await request.json()
         }
 
