@@ -132,6 +132,7 @@ const nextConfig = {
     
     // CRÍTICO: Configurar alias para react/cache ANTES de configurar otros alias
     // Necesitamos que react/cache esté disponible antes de que se resuelva react
+    const fs = require('fs')
     const localPolyfillPath = path.resolve(process.cwd(), 'src/lib/polyfills/react-cache.js')
     const reactCachePath = path.join(reactPath, 'cache.js')
     const polyfillToUse = fs.existsSync(localPolyfillPath) ? localPolyfillPath : reactCachePath
@@ -271,13 +272,8 @@ const nextConfig = {
       }
     }
     
-    // ⚡ FIX: Next.js puede requerir react/cache que no existe en React 18.3.1
-    // Usamos un polyfill local en lugar de node_modules para mayor confiabilidad
-    const fs = require('fs')
-    const reactCachePath = path.join(reactPath, 'cache.js')
-    const localPolyfillPath = path.resolve(process.cwd(), 'src/lib/polyfills/react-cache.js')
-    
-    // Asegurar que el polyfill existe en node_modules (para compatibilidad)
+    // ⚡ FIX: Asegurar que el polyfill existe en node_modules (para compatibilidad)
+    // Nota: reactCachePath, localPolyfillPath y polyfillToUse ya están declarados arriba
     if (!fs.existsSync(reactCachePath)) {
       if (!fs.existsSync(reactPath)) {
         fs.mkdirSync(reactPath, { recursive: true })
@@ -300,17 +296,6 @@ module.exports.__esModule = true;
         fs.writeFileSync(reactCachePath, polyfillContent, 'utf8')
       }
     }
-    
-    // CRÍTICO: Configurar alias para que webpack resuelva react/cache
-    // Priorizar el polyfill local si existe, sino usar el de node_modules
-    const polyfillToUse = fs.existsSync(localPolyfillPath) ? localPolyfillPath : reactCachePath
-    config.resolve.alias['react/cache'] = polyfillToUse
-    
-    // También configurar fallback para asegurar resolución
-    if (!config.resolve.fallback) {
-      config.resolve.fallback = {}
-    }
-    config.resolve.fallback['react/cache'] = polyfillToUse
     
     // CRÍTICO: Interceptar el módulo react para agregar la propiedad cache
     // Next.js intenta acceder a react.cache directamente, no solo react/cache
