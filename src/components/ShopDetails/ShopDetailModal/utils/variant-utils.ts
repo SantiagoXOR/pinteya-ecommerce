@@ -3,7 +3,7 @@
  * Reutiliza normalizeMeasure de ProductCard para evitar duplicación
  */
 
-import { normalizeMeasure } from '@/components/ui/product-card-commercial/utils/measure-utils'
+import { normalizeMeasure } from './measure-utils'
 import { ProductVariant } from '@/lib/api/product-variants'
 import { findVariantByCapacity } from '@/lib/api/product-variants'
 
@@ -70,7 +70,7 @@ export const findVariantByMeasure = (
 }
 
 /**
- * Re-exportar normalizeMeasure de ProductCard para uso en este módulo
+ * Re-exportar normalizeMeasure para uso en otros módulos
  */
-export { normalizeMeasure } from '@/components/ui/product-card-commercial/utils/measure-utils'
+export { normalizeMeasure } from './measure-utils'
 

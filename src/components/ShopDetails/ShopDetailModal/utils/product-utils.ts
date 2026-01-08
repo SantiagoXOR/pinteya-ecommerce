@@ -3,7 +3,7 @@
  * Reutiliza getColorHexFromName de ProductCard para evitar duplicación
  */
 
-import { getColorHexFromName } from '@/components/ui/product-card-commercial/utils/color-utils'
+import { getColorHexFromName } from './color-utils'
 import { ProductVariant } from '@/lib/api/product-variants'
 import { ProductGroup } from '@/lib/api/related-products'
 import { ProductWithCategory } from '@/types/api'

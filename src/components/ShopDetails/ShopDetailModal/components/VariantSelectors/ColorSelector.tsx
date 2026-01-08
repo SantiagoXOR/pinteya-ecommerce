@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
-import { getColorHexFromName, COLOR_MAP } from '@/components/ui/product-card-commercial/utils/color-utils'
+import { getColorHexFromName, COLOR_MAP } from '../../utils/color-utils'
 import { PAINT_COLORS } from '@/components/ui/advanced-color-picker'
 
 interface ColorSelectorProps {

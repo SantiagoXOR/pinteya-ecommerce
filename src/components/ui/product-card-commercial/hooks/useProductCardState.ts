@@ -80,7 +80,14 @@ export const useProductCardState = ({
 
   // Handler para abrir el modal
   const handleOpenModal = React.useCallback(() => {
+    console.log('🔵 [ProductCardState] handleOpenModal llamado')
     setShowShopDetailModal(true)
+    console.log('✅ [ProductCardState] showShopDetailModal establecido en true')
+  }, [])
+
+  // Debug: Rastrear cambios en showShopDetailModal
+  React.useEffect(() => {
+    console.log('📊 [ProductCardState] showShopDetailModal cambió a:', showShopDetailModal, 'para producto:', title)
   }, [showShopDetailModal, title])
 
   // Handler para el modal

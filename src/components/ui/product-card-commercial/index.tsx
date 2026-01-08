@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
 import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
@@ -38,10 +39,67 @@ import {
   DEFAULT_BADGE_CONFIG 
 } from './types'
 
-// Modal con lazy loading
-const ShopDetailModal = React.lazy(() => 
-  import('@/components/ShopDetails/ShopDetailModal').then(mod => ({ default: mod.ShopDetailModal }))
-)
+// Modal con lazy loading - Importar desde el index directamente
+const ShopDetailModal = React.lazy(async () => {
+  const startTime = Date.now()
+  try {
+    console.log('🔄 [ProductCard] Iniciando carga del módulo ShopDetailModal...', {
+      timestamp: new Date().toISOString()
+    })
+    
+    // Agregar timeout para detectar si el import se queda colgado
+    const importPromise = import('@/components/ShopDetails/ShopDetailModal/index')
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout: El import tardó más de 10 segundos')), 10000)
+    )
+    
+    const mod = await Promise.race([importPromise, timeoutPromise]) as any
+    
+    const loadTime = Date.now() - startTime
+    console.log(`📦 [ProductCard] Módulo cargado en ${loadTime}ms:`, {
+      hasShopDetailModal: !!mod.ShopDetailModal,
+      hasDefault: !!mod.default,
+      keys: Object.keys(mod),
+      modType: typeof mod,
+      modConstructor: mod?.constructor?.name
+    })
+    
+    // El módulo exporta tanto ShopDetailModal como default
+    const Component = mod.ShopDetailModal || mod.default
+    
+    if (!Component) {
+      const error = new Error('ShopDetailModal no encontrado en el módulo')
+      console.error('❌ [ProductCard] ShopDetailModal no encontrado:', {
+        mod,
+        keys: Object.keys(mod),
+        hasShopDetailModal: !!mod.ShopDetailModal,
+        hasDefault: !!mod.default
+      })
+      throw error
+    }
+    
+    console.log('✅ [ProductCard] Componente encontrado:', {
+      componentType: typeof Component,
+      componentName: Component?.name || Component?.displayName || 'Sin nombre',
+      isFunction: typeof Component === 'function',
+      isReactComponent: Component?.prototype?.isReactComponent !== undefined
+    })
+    
+    return { default: Component }
+  } catch (error) {
+    const loadTime = Date.now() - startTime
+    console.error(`❌ [ProductCard] Error cargando ShopDetailModal (después de ${loadTime}ms):`, {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name,
+      error: error,
+      errorString: String(error),
+      cause: (error as any)?.cause
+    })
+    // Re-lanzar el error para que el ErrorBoundary lo capture
+    throw error
+  }
+})
 
 /**
  * CommercialProductCard - Componente modularizado
@@ -134,6 +192,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
 
     // Estado para saber si el módulo del modal ya está precargado
     const [isModalPreloaded, setIsModalPreloaded] = React.useState(false)
+    const [preloadError, setPreloadError] = React.useState<Error | null>(null)
 
     // Precargar el modal cuando el componente se monta para evitar retrasos
     // Esto asegura que el módulo esté disponible incluso sin cache
@@ -141,15 +200,35 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       // Precargar el módulo del modal en background
       const preloadModal = async () => {
         try {
-          await import('@/components/ShopDetails/ShopDetailModal')
+          console.log('📦 [ProductCard] Precargando módulo del modal...')
+          const module = await import('@/components/ShopDetails/ShopDetailModal')
+          console.log('✅ [ProductCard] Módulo del modal precargado exitosamente:', {
+            hasShopDetailModal: !!module.ShopDetailModal,
+            hasDefault: !!module.default,
+            keys: Object.keys(module)
+          })
           setIsModalPreloaded(true)
+          setPreloadError(null)
         } catch (error) {
-          // Si falla, aún así marcar como precargado para intentar renderizar
-          setIsModalPreloaded(true)
+          console.error('❌ [ProductCard] Error precargando módulo del modal:', error)
+          setPreloadError(error as Error)
+          // NO marcar como precargado si hay error - forzar renderizado para ver el error
+          setIsModalPreloaded(true) // Permitir renderizar para ver el error en Suspense
         }
       }
       preloadModal()
     }, [])
+
+    // Debug: Rastrear cambios en isModalPreloaded y showShopDetailModal
+    React.useEffect(() => {
+      const shouldRender = isModalPreloaded || state.showShopDetailModal
+      console.log('📊 [ProductCard] Estado del modal:', {
+        isModalPreloaded,
+        showShopDetailModal: state.showShopDetailModal,
+        shouldRender,
+        productTitle: title
+      })
+    }, [isModalPreloaded, state.showShopDetailModal, title])
 
     // Cantidad actual en el carrito
     const currentCartQuantity = React.useMemo(() => {
@@ -235,17 +314,28 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
     // Handler para clic en el card
     const handleCardClick = React.useCallback(
       (e: React.MouseEvent) => {
+        console.log('🟢 [ProductCard] handleCardClick llamado', {
+          target: e.target,
+          currentTarget: e.currentTarget,
+          ignoreClicksUntil: state.ignoreClicksUntilRef.current,
+          now: Date.now()
+        })
+        
         if (Date.now() < state.ignoreClicksUntilRef.current) {
+          console.log('⏸️ [ProductCard] Click ignorado (dentro del período de guardia)')
           e.preventDefault()
           e.stopPropagation()
           return
         }
         if ((e.target as HTMLElement).closest('[data-testid="add-to-cart"]')) {
+          console.log('⏸️ [ProductCard] Click ignorado (botón add-to-cart)')
           return
         }
         e.preventDefault()
         e.stopPropagation()
+        console.log('🚀 [ProductCard] Llamando state.handleOpenModal()')
         state.handleOpenModal()
+        console.log('✅ [ProductCard] state.handleOpenModal() llamado, showShopDetailModal:', state.showShopDetailModal)
       },
       [state]
     )
@@ -423,23 +513,50 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           cartAddCount={state.cartAddCount}
         />
 
-        {/* Modal con Suspense - Renderizar condicionalmente pero con módulo precargado
-            Solo renderizar si el módulo está precargado o si el modal debe estar abierto */}
-        {(isModalPreloaded || state.showShopDetailModal) && (
-          <React.Suspense fallback={null}>
-            <ShopDetailModal
+        {/* Modal con Suspense - Renderizar cuando debe estar abierto
+            El Dialog controla su visibilidad con la prop open */}
+        {state.showShopDetailModal && (
+          <ErrorBoundary
+            fallback={
+              <div style={{ display: 'none' }}>
+                {/* ErrorBoundary fallback - no renderizar nada visible */}
+              </div>
+            }
+            onError={(error, errorInfo) => {
+              // Log detallado del error
+              console.group('❌ [ProductCard] Error en ShopDetailModal')
+              console.error('Error Message:', error?.message)
+              console.error('Error Stack:', error?.stack)
+              console.error('Component Stack:', errorInfo?.componentStack)
+              console.error('Full Error Object:', error)
+              console.error('Full ErrorInfo:', errorInfo)
+              console.groupEnd()
+            }}
+            showDetails={true}
+          >
+            <React.Suspense fallback={
+              <div style={{ display: 'none' }}>
+                {console.log('⏳ [ProductCard] Suspense fallback activo - cargando ShopDetailModal...')}
+              </div>
+            }>
+              {(() => {
+                console.log('🔍 [ProductCard] Intentando renderizar ShopDetailModal, open:', state.showShopDetailModal)
+                return (
+                  <ShopDetailModal
               open={state.showShopDetailModal}
               onOpenChange={state.handleModalOpenChange}
-            product={{
-              id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
-              name: title || '',
-              slug: slug || '',
-              price: variantsData.displayPrice || price || 0,
-              originalPrice: variantsData.displayOriginalPrice || originalPrice,
-              image: image || '',
-              brand: brand || '',
-              stock: stock || 0,
-              description: description || '',
+            product={(() => {
+              try {
+                const modalProduct = {
+                  id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
+                  name: title || '',
+                  slug: slug || '',
+                  price: variantsData.displayPrice || price || 0,
+                  originalPrice: variantsData.displayOriginalPrice || originalPrice,
+                  image: image || '',
+                  brand: brand || '',
+                  stock: stock || 0,
+                  description: description || '',
               colors: colors.uniqueColors.length > 0 ? colors.uniqueColors.map(c => ({
                 id: c.name.toLowerCase().replace(/\s+/g, '-'),
                 name: c.name.toLowerCase(),
@@ -450,9 +567,35 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                 isPopular: false,
                 description: `Color ${c.name}`
               })) : undefined,
-              capacities: measures.uniqueMeasures.length > 0 ? measures.uniqueMeasures : [],
-              ...(variants && variants.length > 0 ? { variants } : {}),
-            } as any}
+                  capacities: measures.uniqueMeasures.length > 0 ? measures.uniqueMeasures : [],
+                  ...(variants && variants.length > 0 ? { variants } : {}),
+                } as any
+                
+                console.log('🎯 [ProductCard] Renderizando ShopDetailModal con:', {
+                  open: state.showShopDetailModal,
+                  productId: modalProduct.id,
+                  productName: modalProduct.name,
+                  hasValidId: modalProduct.id > 0,
+                  hasBrand: !!modalProduct.brand,
+                  hasImage: !!modalProduct.image
+                })
+                
+                return modalProduct
+              } catch (error) {
+                console.error('❌ [ProductCard] Error construyendo objeto product:', error)
+                // Retornar objeto mínimo válido
+                return {
+                  id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
+                  name: title || '',
+                  slug: slug || '',
+                  price: price || 0,
+                  image: image || '',
+                  brand: brand || '',
+                  stock: stock || 0,
+                  description: description || '',
+                }
+              }
+            })()}
             onAddToCart={(productData, modalVariants) => {
                 const images: string[] = Array.isArray((productData as any).images)
                   ? (productData as any).images
@@ -505,7 +648,10 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                 )
             }}
             />
+                )
+              })()}
           </React.Suspense>
+          </ErrorBoundary>
         )}
       </div>
     )

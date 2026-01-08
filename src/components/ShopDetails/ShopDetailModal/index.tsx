@@ -17,7 +17,7 @@ import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
 import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { Ruler } from '@/lib/optimized-imports'
-import { useShopDetailsReducer } from '@/hooks/optimization/useShopDetailsReducer'
+// import { useShopDetailsReducer } from '@/hooks/optimization/useShopDetailsReducer' // No se usa actualmente
 import { useRouter } from 'next/navigation'
 import { ProductModalSkeleton } from '@/components/ui/product-modal-skeleton'
 import {
@@ -45,7 +45,7 @@ import { useProductVariants } from './hooks/useProductVariants'
 import { useRelatedProducts } from './hooks/useRelatedProducts'
 import { useVariantSelection } from './hooks/useVariantSelection'
 import { detectCapacityUnit, extractAvailableCapacities, extractAvailableFinishes, getFinishesForColor } from './utils/product-utils'
-import { getColorHexFromName } from '@/components/ui/product-card-commercial/utils/color-utils'
+import { getColorHexFromName } from './utils/color-utils'
 import { calculateEffectivePrice, calculateOriginalPrice, hasDiscount as hasDiscountUtil, formatPrice } from './utils/price-utils'
 import { findVariantBySelection, normalizeMeasure } from './utils/variant-utils'
 import { ProductImageGallery } from './components/ProductImageGallery'
@@ -62,15 +62,17 @@ import { CapacitySelector } from './components/VariantSelectors/CapacitySelector
 import type { ShopDetailModalProps, Product } from './types'
 
 // Lazy load de componentes pesados
-const SuggestedProductsCarousel = React.lazy(() => 
-  import('../SuggestedProductsCarousel').then(mod => ({ default: mod.default }))
-)
-
-const AdvancedColorPicker = React.lazy(() => 
-  import('@/components/ui/advanced-color-picker').then(mod => ({ 
-    default: mod.AdvancedColorPicker 
-  }))
-)
+// NOTA: SuggestedProductsCarousel se carga dinámicamente en RelatedProducts.tsx
+// para evitar dependencia circular con product-card-commercial
+const AdvancedColorPicker = React.lazy(async () => {
+  try {
+    const mod = await import('@/components/ui/advanced-color-picker')
+    return { default: mod.AdvancedColorPicker || mod.default }
+  } catch (error) {
+    console.error('❌ [ShopDetailModal] Error cargando AdvancedColorPicker:', error)
+    throw error
+  }
+})
 
 export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   product,
@@ -79,6 +81,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   onAddToCart,
   onAddToWishlist,
 }) => {
+  console.log('🎯 [ShopDetailModal] Componente renderizado con:', {
+    open,
+    productId: product?.id,
+    productName: product?.name
+  })
+  
   const router = useRouter()
   const { trackCartAction } = useAnalytics()
   
@@ -789,28 +797,41 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   }, [onAddToWishlist, product, onOpenChange])
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
+    console.log('🔄 [ShopDetailModal] handleOpenChange llamado:', {
+      newOpen,
+      currentOpen: open,
+      productId: product?.id
+    })
     onOpenChange(newOpen)
   }, [onOpenChange, open, product?.id])
 
+  console.log('🎯 [ShopDetailModal] Renderizando Dialog con open:', open)
+  
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
+    <Dialog open={open} onOpenChange={handleOpenChange} modal={true}>
       <DialogContent
-        className="max-w-4xl max-h-[90vh] p-0 gap-0 grid grid-rows-[auto,1fr] overflow-hidden"
+        className="!w-[calc(100vw-1rem)] sm:!w-[calc(100vw-2rem)] !max-w-4xl !max-h-[80vh] sm:!max-h-[85vh] !p-0 !gap-0 flex flex-col"
         showCloseButton={true}
-        onInteractOutside={() => handleOpenChange(false)}
+        onInteractOutside={(e) => {
+          console.log('🖱️ [ShopDetailModal] onInteractOutside llamado:', {
+            target: e.target,
+            currentTarget: e.currentTarget
+          })
+          handleOpenChange(false)
+        }}
       >
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="text-xl font-semibold text-gray-900">
+        <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
+          <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 pr-10">
             {productData?.name || product?.name}
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="h-full">
-          <div className="p-6">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="p-4 sm:p-6">
             {loadingProductData ? (
               <ProductModalSkeleton />
             ) : (
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8'>
                 {/* Imagen del producto */}
                 <ProductImageGallery
                   mainImageUrl={mainImageUrl}
@@ -965,7 +986,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               </React.Suspense>
             )}
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   )
