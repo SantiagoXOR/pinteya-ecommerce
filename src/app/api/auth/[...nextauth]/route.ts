@@ -1,8 +1,7 @@
 import { handlers } from '@/auth'
 
-// NextAuth v5 handlers manejan automáticamente el body parsing
-// No debemos parsear el body manualmente aquí
-export const { GET, POST } = handlers
-
-// Asegurar que NextAuth use el runtime de Node.js en Vercel
+// NextAuth v5 handlers - Exportar directamente
+// El runtime 'nodejs' es necesario para Vercel
 export const runtime = 'nodejs'
+
+export const { GET, POST } = handlers
