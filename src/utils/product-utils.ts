@@ -511,7 +511,24 @@ const COLOR_HEX_MAP: Record<string, string> = {
   'verde inglés': '#355E3B',
   'verde-inglés': '#355E3B',
   'verde noche': '#013220',
-  'verde-noche': '#013220'
+  'verde-noche': '#013220',
+  
+  // Colores adicionales detectados en BD sin color_hex
+  'chocolate': '#7B3F00',
+  'roble claro': '#D4A76A',
+  'roble-claro': '#D4A76A',
+  'roble oscuro': '#5C4033',
+  'roble-oscuro': '#5C4033',
+  'verde cemento': '#9CAF88',
+  'verde-cemento': '#9CAF88',
+  'verde claro': '#90EE90',
+  'verde-claro': '#90EE90',
+  'verde manzana': '#8DB600',
+  'verde-manzana': '#8DB600',
+  'verde oscuro': '#006400',
+  'verde-oscuro': '#006400',
+  'wengue': '#3C2415',
+  'wenge': '#3C2415'
 }
 
 /**

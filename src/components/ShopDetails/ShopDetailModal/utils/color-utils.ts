@@ -118,6 +118,21 @@ export const COLOR_MAP: Record<string, string> = {
   // Nuevos colores agregados
   'siena': '#a0522d',
   'sienna': '#a0522d',
+  
+  // Colores adicionales detectados en BD sin color_hex
+  'chocolate': '#7B3F00',
+  'roble claro': '#D4A76A',
+  'roble-claro': '#D4A76A',
+  'roble oscuro': '#5C4033',
+  'roble-oscuro': '#5C4033',
+  'verde cemento': '#9CAF88',
+  'verde-cemento': '#9CAF88',
+  'verde claro': '#90EE90',
+  'verde-claro': '#90EE90',
+  'verde manzana': '#8DB600',
+  'verde-manzana': '#8DB600',
+  'verde oscuro': '#006400',
+  'verde-oscuro': '#006400',
 }
 
 /**

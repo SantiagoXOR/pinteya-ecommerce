@@ -119,6 +119,18 @@ export const COLOR_MAP: Record<string, string> = {
   'white satin': '#F0F0F0',
   'siena': '#a0522d',
   'sienna': '#a0522d',
+  
+  // Colores adicionales detectados en BD sin color_hex
+  'roble claro': '#D4A76A',
+  'roble-claro': '#D4A76A',
+  'roble oscuro': '#5C4033',
+  'roble-oscuro': '#5C4033',
+  'verde claro': '#90EE90',
+  'verde-claro': '#90EE90',
+  'verde oscuro': '#006400',
+  'verde-oscuro': '#006400',
+  'wengue': '#3C2415',
+  'wenge': '#3C2415',
 }
 
 /**
