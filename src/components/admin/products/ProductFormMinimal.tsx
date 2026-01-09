@@ -982,18 +982,24 @@ export function ProductFormMinimal({
               </label>
                 <input
                   type='number'
+                  min='0'
                   {...register('stock', { 
                     valueAsNumber: false, // ✅ Cambiar a false para permitir strings vacíos
                     onChange: (e) => {
                       const value = e.target.value
+                      // ✅ Validar que no sea negativo
                       if (value === '' || value === null || value === undefined) {
                         setValue('stock', null, { shouldDirty: true })
+                      } else {
+                        const numValue = parseInt(value, 10)
+                        if (!isNaN(numValue) && numValue < 0) {
+                          setValue('stock', 0, { shouldDirty: true })
+                        }
                       }
                     }
                   })}
                   placeholder={newVariants.length > 0 ? 'Opcional' : '0'}
                   className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
-                  placeholder='0'
                 />
               {errors.stock && <p className='text-red-600 text-sm mt-1'>{errors.stock.message}</p>}
             </div>

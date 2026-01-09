@@ -237,6 +237,16 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       return item?.quantity || 0
     }, [cartItems, productId])
 
+    // ✅ NUEVO: Calcular stock efectivo basado en la variante seleccionada
+    // Si hay variante seleccionada con stock definido, usar ese stock
+    // Si no hay variante, usar stock del producto principal
+    const effectiveStock = React.useMemo(() => {
+      if (variantsData.currentVariant?.stock !== undefined && variantsData.currentVariant?.stock !== null) {
+        return variantsData.currentVariant.stock
+      }
+      return stock
+    }, [variantsData.currentVariant, stock])
+
     // Calcular si mostrar envío gratis
     const autoFreeShipping = price ? dsShouldShowFreeShipping(price, config) : false
     const shouldShowFreeShipping = Boolean(freeShipping || autoFreeShipping)
@@ -245,13 +255,14 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
     const handleAddToCart = React.useCallback(
       async (e?: React.MouseEvent) => {
         if (e) e.stopPropagation()
-        if (state.isAddingToCart || stock === 0) return
+        // ✅ Usar effectiveStock (stock de la variante seleccionada o del producto)
+        if (state.isAddingToCart || effectiveStock === 0) return
 
         const quantityToAdd = 1
         const totalQuantityAfterAdd = currentCartQuantity + quantityToAdd
 
-        if (stock !== undefined && stock > 0 && totalQuantityAfterAdd > stock) {
-          toast.error(`Stock insuficiente. Solo hay ${stock} unidades disponibles.`)
+        if (effectiveStock !== undefined && effectiveStock > 0 && totalQuantityAfterAdd > effectiveStock) {
+          toast.error(`Stock insuficiente. Solo hay ${effectiveStock} unidades disponibles.`)
           return
         }
 
@@ -308,7 +319,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           console.error('Error al agregar al carrito:', error)
         }
       },
-      [state.isAddingToCart, stock, currentCartQuantity, showCartAnimation, colors, measures, finishes, variantsData, productId, title, image, variants, price, brand, addProduct, trackCartAction]
+      [state.isAddingToCart, effectiveStock, currentCartQuantity, showCartAnimation, colors, measures, finishes, variantsData, productId, title, image, variants, price, brand, addProduct, trackCartAction]
     )
 
     // Handler para clic en el card
@@ -486,7 +497,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                 onColorSelect={colors.setSelectedColor}
                 onAddToCart={handleAddToCart}
                 isAddingToCart={state.isAddingToCart}
-                stock={stock}
+                stock={effectiveStock}
                 isImpregnante={badges.isImpregnante}
               />
 
@@ -509,7 +520,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         <ProductCardActions
           onAddToCart={handleAddToCart}
           isAddingToCart={state.isAddingToCart}
-          stock={stock}
+          stock={effectiveStock}
           cartAddCount={state.cartAddCount}
         />
 
@@ -555,7 +566,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                   originalPrice: variantsData.displayOriginalPrice || originalPrice,
                   image: image || '',
                   brand: brand || '',
-                  stock: stock || 0,
+                  stock: effectiveStock || 0,
                   description: description || '',
               colors: colors.uniqueColors.length > 0 ? colors.uniqueColors.map(c => ({
                 id: c.name.toLowerCase().replace(/\s+/g, '-'),
@@ -591,7 +602,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                   price: price || 0,
                   image: image || '',
                   brand: brand || '',
-                  stock: stock || 0,
+                  stock: effectiveStock || 0,
                   description: description || '',
                 }
               }
