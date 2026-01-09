@@ -80,20 +80,26 @@ export const TEXTURE_GENERATORS: Record<TextureType, (hex: string) => CSSPropert
   }),
 
   /**
-   * Textura de madera con vetas para impregnantes
+   * Textura de madera con vetas verticales para impregnantes
+   * Restaurada la textura original con vetas a 90° que simula mejor la fibra de madera
    */
   wood: (hex: string) => {
     const darker = darkenHex(hex, 0.35)
+    // Convertir darker rgb a rgba para el radial gradient
+    const darkerRgba = darker.replace('rgb', 'rgba').replace(')', ', 0.18)')
     return {
       backgroundColor: hex,
       backgroundImage: [
         'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
-        `repeating-linear-gradient(25deg, rgba(0,0,0,0.18) 0 2px, rgba(0,0,0,0.0) 2px 8px)`,
-        `repeating-linear-gradient(-25deg, rgba(0,0,0,0.10) 0 1px, rgba(0,0,0,0.0) 1px 7px)`,
-        `radial-gradient(ellipse at 30% 45%, rgba(0,0,0,0.08) 0 3px, rgba(0,0,0,0.0) 4px)`,
-        `radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.06) 0 2px, rgba(255,255,255,0.0) 3px)`,
+        // Vetas verticales principales (90°) - simula la fibra de la madera
+        `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
+        // Vetas secundarias ligeramente inclinadas (100°)
+        `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
+        // Nudos sutiles
+        `radial-gradient(ellipse at 30% 45%, ${darkerRgba} 0 3px, rgba(0,0,0,0) 4px)`,
+        'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)',
       ].join(', '),
-      backgroundSize: '100% 100%, 10px 10px, 12px 12px, 100% 100%, 100% 100%',
+      backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
       backgroundBlendMode: 'multiply' as const,
       boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.10)',
     }
