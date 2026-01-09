@@ -269,6 +269,7 @@ const getHandler = async (request: ValidatedRequest) => {
     const variantColors: Record<number, string[]> = {} // ✅ Array de colores
     const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
     const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
+    const variantTotalStocks: Record<number, number> = {} // ✅ NUEVO: Stock total de variantes por producto
     
     if (productIds.length > 0) {
       // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
@@ -288,9 +289,18 @@ const getHandler = async (request: ValidatedRequest) => {
       
       const { data: variantData, error: variantError } = await supabaseAdmin
         .from('product_variants')
-        .select('product_id,is_default,measure,color_name,aikon_id')
+        .select('product_id,is_default,measure,color_name,aikon_id,stock')
         .in('product_id', productIds)
         .eq('is_active', true)
+      
+      // ✅ NUEVO: Calcular stock total de variantes por producto
+      variantData?.forEach(variant => {
+        // Sumar stock de cada variante activa
+        if (!variantTotalStocks[variant.product_id]) {
+          variantTotalStocks[variant.product_id] = 0
+        }
+        variantTotalStocks[variant.product_id] += variant.stock || 0
+      })
       
       variantData?.forEach(variant => {
         // Obtener TODAS las medidas únicas de las variantes
@@ -364,9 +374,19 @@ const getHandler = async (request: ValidatedRequest) => {
         
         // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
         const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
+        
+        // ✅ NUEVO: Calcular stock efectivo (producto o suma de variantes)
+        // Si el producto tiene stock > 0, usar ese. Si no, usar la suma de stocks de variantes
+        const variantStock = variantTotalStocks[product.id] || 0
+        const hasVariants = variantMeasuresList.length > 0 || variantColorsList.length > 0
+        const effectiveStock = (product.stock !== null && product.stock > 0) 
+          ? product.stock 
+          : (hasVariants ? variantStock : (product.stock || 0))
 
         return {
           ...product,
+          // ✅ NUEVO: Stock efectivo (suma de variantes si no hay stock asignado)
+          stock: effectiveStock,
           category_name: product.category?.name || categories[0]?.name || null,
           category: undefined, // Remove nested object
           product_categories: undefined, // Remove nested object
