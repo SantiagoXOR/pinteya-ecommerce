@@ -264,6 +264,171 @@ export const FINISH_TO_TEXTURE: Record<string, TextureType> = {
 | `src/components/ui/advanced-color-picker.tsx` | ColorSwatch |
 | `src/components/ShopDetails/ShopDetailModal/index.tsx` | Modal de producto |
 
+---
+
+# Guía de Carga de Productos
+
+## Cómo Funcionan las Texturas Automáticamente
+
+El sistema detecta **automáticamente** qué textura aplicar basándose en los datos de la variante. No necesitas configurar nada extra si sigues estas reglas:
+
+### Flujo de Detección Automática
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  VARIANTE EN BASE DE DATOS                                  │
+│  ─────────────────────────────────────────────────────────  │
+│  color_name: "Caoba"                                        │
+│  color_hex: "#8B4513"                                       │
+│  finish: "Brillante"                                        │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  SISTEMA DE TEXTURAS (automático)                           │
+│  ─────────────────────────────────────────────────────────  │
+│  1. ¿Es "Incoloro"? → transparent                           │
+│  2. ¿Es producto madera? → wood                             │
+│  3. ¿Tiene finish? → Buscar en FINISH_TO_TEXTURE            │
+│     "Brillante" → gloss                                     │
+│     "Metálico" → metallic                                   │
+│     "A La Tiza" → chalk                                     │
+│  4. Fallback → solid                                        │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  RESULTADO VISUAL                                           │
+│  ─────────────────────────────────────────────────────────  │
+│  [CAOBA ✓] ← Pill con textura según finish                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Crear/Editar Variantes con Colores
+
+### Campos Importantes en `product_variants`
+
+| Campo | Tipo | Descripción | Ejemplo |
+|-------|------|-------------|---------|
+| `color_name` | VARCHAR | Nombre del color | "Caoba", "Incoloro", "Blanco" |
+| `color_hex` | VARCHAR(7) | Código hexadecimal | "#8B4513", "#F5F5F5" |
+| `finish` | VARCHAR | Acabado/terminación | "Brillante", "Satinado", "Metálico" |
+| `measure` | VARCHAR | Medida/capacidad | "1 Litro", "4 L", "440 CC" |
+
+### Valores de `finish` Reconocidos
+
+El sistema reconoce automáticamente estos valores de `finish`:
+
+| Valor en DB | Textura Aplicada | Efecto Visual |
+|-------------|------------------|---------------|
+| `Brillante` | `gloss` | Brillo intenso |
+| `Satinado` | `satin` | Brillo suave |
+| `Mate` | `matte` | Sin brillo |
+| `Metálico` | `metallic` | Efecto metal cepillado |
+| `A La Tiza` | `chalk` | Textura granulada |
+| `Fluo` | `fluo` | Efecto neón |
+| `Rústico` | `rustic` | Efecto óxido |
+| `Hierro Antiguo` | `rustic` | Efecto óxido |
+| `Perlado` | `pearl` | Efecto perlado |
+
+### Valores de `color_name` Especiales
+
+| Valor | Comportamiento |
+|-------|----------------|
+| `Incoloro` | **SIEMPRE** muestra líneas diagonales (transparent) |
+| `Transparente` | **SIEMPRE** muestra líneas diagonales |
+| `Cristal` | **SIEMPRE** muestra líneas diagonales |
+
+## Ejemplos de INSERT para Variantes
+
+### Producto de Madera (Impregnante)
+```sql
+INSERT INTO product_variants (product_id, color_name, color_hex, finish, measure, price_list)
+VALUES 
+  (123, 'Caoba', '#8B4513', 'Brillante', '1 Litro', 15000),
+  (123, 'Roble', '#8B7355', 'Brillante', '1 Litro', 15000),
+  (123, 'Roble', '#8B7355', 'Satinado', '1 Litro', 15000),
+  (123, 'Cedro', '#CD853F', 'Brillante', '1 Litro', 15000);
+-- ✅ Todos mostrarán vetas de madera (por ser impregnante)
+-- ✅ El usuario puede cambiar entre Brillante/Satinado
+```
+
+### Producto Metálico
+```sql
+INSERT INTO product_variants (product_id, color_name, color_hex, finish, measure, price_list)
+VALUES 
+  (456, 'Cobre', '#B87333', 'Metálico', '440 CC', 12000),
+  (456, 'Oro', '#FFD700', 'Metálico', '440 CC', 12000),
+  (456, 'Plata', '#C0C0C0', 'Metálico', '440 CC', 12000);
+-- ✅ Todos mostrarán efecto metal cepillado
+```
+
+### Producto Incoloro/Barniz
+```sql
+INSERT INTO product_variants (product_id, color_name, color_hex, finish, measure, price_list)
+VALUES 
+  (789, 'Incoloro', '#F5F5F5', 'Brillante', '1 Litro', 8000),
+  (789, 'Incoloro', '#F5F5F5', 'Satinado', '1 Litro', 8000),
+  (789, 'Incoloro', '#F5F5F5', 'Mate', '1 Litro', 8000);
+-- ✅ SIEMPRE muestra líneas diagonales (ignora el finish para textura)
+-- ✅ El usuario ve las opciones Brillante/Satinado/Mate
+```
+
+### Producto con Múltiples Colores y Finishes
+```sql
+INSERT INTO product_variants (product_id, color_name, color_hex, finish, measure, price_list)
+VALUES 
+  (101, 'Blanco', '#FFFFFF', 'Brillante', '1 Litro', 10000),
+  (101, 'Blanco', '#FFFFFF', 'Satinado', '1 Litro', 10000),
+  (101, 'Negro', '#000000', 'Brillante', '1 Litro', 10000),
+  (101, 'Negro', '#000000', 'Mate', '1 Litro', 10000),
+  (101, 'Rojo', '#DC143C', 'Brillante', '1 Litro', 10000);
+-- ✅ La textura cambia dinámicamente al seleccionar finish
+```
+
+## Colores Predefinidos (Opcional)
+
+Si el color ya existe en `PAINT_COLORS` (`src/lib/constants/paint-colors.ts`), el sistema usará el hex predefinido. Si no existe, usará el `color_hex` de la variante.
+
+### Agregar Color a la Paleta (Opcional)
+
+Si quieres que un color esté disponible globalmente:
+
+```typescript
+// src/lib/constants/paint-colors.ts
+export const PAINT_COLORS: ColorOption[] = [
+  // ...
+  {
+    id: 'mi-nuevo-color',
+    name: 'mi-nuevo-color',
+    displayName: 'Mi Nuevo Color',
+    hex: '#ABC123',
+    category: 'Sintético',  // o 'Madera', 'Neutros', etc.
+    family: 'Personalizados',
+    isPopular: false,
+    description: 'Descripción del color',
+    textureType: 'solid',   // opcional: forzar una textura
+  },
+]
+```
+
+## Tabla de Referencia Rápida
+
+### ¿Qué Textura Se Aplicará?
+
+| Tipo de Producto | color_name | finish | Textura Resultante |
+|------------------|------------|--------|-------------------|
+| Impregnante Madera | Caoba | Brillante | `wood` (vetas) |
+| Impregnante Madera | Roble | Satinado | `wood` (vetas) |
+| Barniz | Incoloro | Brillante | `transparent` (líneas) |
+| Barniz | Incoloro | Mate | `transparent` (líneas) |
+| Aerosol Metálico | Cobre | Metálico | `metallic` (metal) |
+| Esmalte Sintético | Blanco | Brillante | `gloss` (brillo) |
+| Esmalte Sintético | Negro | Mate | `matte` (sin brillo) |
+| Pintura Chalk | Azul | A La Tiza | `chalk` (granulado) |
+| Ferroxin | Hierro Antiguo | Rústico | `rustic` (óxido) |
+| Aerosol Fluo | Naranja | Fluo | `fluo` (neón) |
+
 ## Troubleshooting
 
 ### Textura no aparece
@@ -272,14 +437,26 @@ export const FINISH_TO_TEXTURE: Record<string, TextureType> = {
 3. Verificar que el componente reciba `selectedFinish`
 
 ### Madera sin vetas
-1. Verificar que `isImpregnante` sea `true` para el producto
-2. O que `category === 'Madera'` en PAINT_COLORS
-3. O que `textureType === 'wood'` explícitamente
+1. Verificar que el producto sea detectado como "impregnante" o "barniz madera"
+2. El `detectProductType()` en `product-utils.ts` determina si es madera
+3. O agregar `textureType: 'wood'` en PAINT_COLORS
 
 ### Finish no cambia textura
 1. Verificar que `selectedFinish` se pase al componente
-2. Verificar que el finish esté en `FINISH_TEXTURES`
-3. Recordar: Incoloro y Madera NO cambian con finish (por diseño)
+2. Verificar que el finish esté en `FINISH_TO_TEXTURE` (texture-mappings.ts)
+3. Recordar: **Incoloro y Madera NO cambian con finish** (por diseño)
+
+### Color aparece gris
+1. Verificar que `color_hex` tenga un valor válido (no `null`, no truncado)
+2. El hex debe ser formato `#RRGGBB` (7 caracteres)
+3. Verificar en DB: `SELECT color_name, color_hex FROM product_variants WHERE color_hex IS NULL`
+
+### Agregar nuevo finish
+1. Editar `src/lib/textures/texture-mappings.ts`
+2. Agregar al objeto `FINISH_TO_TEXTURE`:
+```typescript
+'nuevo-finish': 'textura-correspondiente',
+```
 
 ---
 
