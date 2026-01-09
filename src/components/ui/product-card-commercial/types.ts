@@ -147,6 +147,8 @@ export interface ProductCardActionsProps {
 export interface ColorData {
   name: string
   hex: string
+  finish?: string        // Acabado de la variante (ej: "Brillante", "Metálico")
+  textureType?: TextureType  // Tipo de textura visual
 }
 
 // Default badge config

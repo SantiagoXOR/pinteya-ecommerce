@@ -75,7 +75,12 @@ export const useProductColors = ({
             }
           }
           
-          colorGroups.set(colorKey, { name: colorName, hex: finalHex })
+          // ✅ Incluir finish de la variante para aplicar texturas
+          colorGroups.set(colorKey, { 
+            name: colorName, 
+            hex: finalHex,
+            finish: v.finish || '' // Pasar el acabado de la variante
+          })
         }
       }
     })
