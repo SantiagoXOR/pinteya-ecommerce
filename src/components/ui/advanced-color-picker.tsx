@@ -9,6 +9,8 @@ import { cn } from '@/lib/core/utils'
 import { ProductType } from '@/utils/product-utils'
 // Importar desde archivo compartido para uso en cliente y servidor
 import { PAINT_COLORS, type ColorOption } from '@/lib/constants/paint-colors'
+// Sistema unificado de texturas
+import { getTextureStyle, isTransparentColor, inferTextureFromColorName } from '@/lib/textures/texture-system'
 
 // Re-exportar para compatibilidad con código existente
 export type { ColorOption }
@@ -350,56 +352,24 @@ interface ColorSwatchProps {
 }
 
 const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick }) => {
-  const isWood = color.category === 'Madera'
-  const isTransparent = color.id === 'incoloro' || color.family === 'Transparentes'
-  
-  const style: React.CSSProperties = isTransparent
-    ? {
-        // Para colores transparentes: efecto de brillo y transparencia
-        backgroundColor: color.hex,
-        backgroundImage: [
-          // Gradiente de brillo sutil
-          'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
-          // Reflejo brillante
-          'linear-gradient(45deg, rgba(255,255,255,0.6) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.3) 100%)',
-          // Patrón de brillo sutil
-          'radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.5) 0%, transparent 50%)',
-          'radial-gradient(ellipse at 70% 70%, rgba(255,255,255,0.3) 0%, transparent 60%)'
-        ].join(', '),
-        backgroundSize: '100% 100%, 100% 100%, 60% 60%, 50% 50%',
-        backgroundBlendMode: 'overlay',
-        boxShadow: [
-          'inset 0 0 0 1px rgba(255,255,255,0.3)',
-          '0 0 8px rgba(255,255,255,0.2)',
-          'inset 0 1px 2px rgba(255,255,255,0.4)'
-        ].join(', '),
-        position: 'relative',
-        overflow: 'hidden',
-      }
-    : isWood
-    ? {
-        // Base de la veta en el color principal
-        backgroundColor: color.hex,
-        // Textura tipo madera con vetas más marcadas y nudos sutiles
-        backgroundImage: [
-          // Luz uniforme muy suave
-          'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
-          // Vetas principales (diagonales)
-          'repeating-linear-gradient(25deg, rgba(0,0,0,0.18) 0 2px, rgba(0,0,0,0.0) 2px 8px)',
-          // Vetas secundarias finas
-          'repeating-linear-gradient(-25deg, rgba(0,0,0,0.10) 0 1px, rgba(0,0,0,0.0) 1px 7px)',
-          // Nudos muy suaves
-          'radial-gradient(ellipse at 30% 45%, rgba(0,0,0,0.08) 0 3px, rgba(0,0,0,0.0) 4px)',
-          'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.06) 0 2px, rgba(255,255,255,0.0) 3px)'
-        ].join(', '),
-        backgroundSize: '100% 100%, 10px 10px, 12px 12px, 100% 100%, 100% 100%',
-        backgroundBlendMode: 'multiply',
-        boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.10)',
-      }
-    : {
-        backgroundColor: color.hex,
-        boxShadow: color.hex === '#FFFFFF' ? 'inset 0 0 0 1px #E5E7EB' : 'none',
-      }
+  // Determinar el tipo de textura:
+  // 1. Usar textureType del color si está definido
+  // 2. Si no, inferir basándose en categoría/nombre
+  const textureType = useMemo(() => {
+    if (color.textureType) return color.textureType
+    // Fallback: inferir por categoría o nombre
+    if (color.category === 'Madera') return 'wood'
+    return inferTextureFromColorName(color.name)
+  }, [color.textureType, color.category, color.name])
+
+  // Verificar si es transparente para efecto adicional
+  const isTransparent = isTransparentColor(color.name) || color.family === 'Transparentes'
+
+  // Obtener estilos del sistema unificado de texturas
+  const textureStyle = useMemo(() => {
+    return getTextureStyle(color.hex, textureType)
+  }, [color.hex, textureType])
+
   return (
     <button
       onClick={onClick}
@@ -409,7 +379,7 @@ const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick })
           ? 'border-blaze-orange-500 ring-2 ring-blaze-orange-200 shadow-md'
           : 'border-gray-300 hover:border-gray-400'
       )}
-      style={style}
+      style={textureStyle}
       title={color.displayName}
       aria-label={`Seleccionar color ${color.displayName}`}
     >

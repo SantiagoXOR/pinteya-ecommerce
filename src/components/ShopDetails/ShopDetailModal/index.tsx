@@ -25,6 +25,7 @@ import {
   ColorOption,
 } from '@/components/ui/advanced-color-picker'
 import { detectProductType, formatCapacity, getDefaultColor, extractColorFromName, getColorHex } from '@/utils/product-utils'
+import { getTextureForProductType } from '@/lib/textures/texture-system'
 import {
   ProductVariant,
   findVariantByCapacity,
@@ -178,6 +179,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     // ✅ CORREGIDO: Asegurar que variants sea siempre un array
     const safeVariants = Array.isArray(variants) ? variants : []
     const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
+    
+    // Obtener textura según tipo de producto
+    const textureType = getTextureForProductType(productType.id)
+    
     if (variantsToUse && variantsToUse.length > 0) {
       const variantNames = Array.from(
         new Set(
@@ -193,7 +198,13 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           c => c.id === slug || c.name === slug || c.displayName.toLowerCase() === name.toLowerCase()
         )
         if (found) {
-          if (!list.find(l => l.id === found.id)) list.push(found)
+          // Usar el color encontrado pero sobrescribir textureType según productType
+          if (!list.find(l => l.id === found.id)) {
+            list.push({
+              ...found,
+              textureType: found.textureType || textureType
+            })
+          }
         } else {
           // ✅ CORREGIDO: Priorizar color_hex de la variante (como ProductCard)
           const variantWithColor = variantsToUse.find((v: any) => 
@@ -208,14 +219,15 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             category: '',
             family: 'Personalizados',
             isPopular: false,
-            description: `Color ${name}`
+            description: `Color ${name}`,
+            textureType // Asignar textura según tipo de producto
           })
         }
       }
       return list.sort((a, b) => a.displayName.localeCompare(b.displayName))
     }
     return []
-  }, [productType.hasColorSelector, variants, product])
+  }, [productType.hasColorSelector, productType.id, variants, product])
 
   // Colores disponibles (fallback)
   // IMPORTANTE: Definir TEMPRANO para evitar errores de inicialización
@@ -224,6 +236,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     // ✅ CORREGIDO: Asegurar que variants sea siempre un array
     const safeVariants = Array.isArray(variants) ? variants : []
     const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
+    
+    // Obtener textura según tipo de producto
+    const textureType = getTextureForProductType(productType.id)
+    
     if (variantsToUse && variantsToUse.length > 0) {
       const uniqueColors = new Set<string>()
       variantsToUse.forEach((variant: any) => {
@@ -236,7 +252,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           c.name.toLowerCase() === colorName.toLowerCase() ||
           c.displayName.toLowerCase() === colorName.toLowerCase()
         )
-        if (existingColor) return existingColor
+        if (existingColor) {
+          return {
+            ...existingColor,
+            textureType: existingColor.textureType || textureType
+          }
+        }
         // ✅ CORREGIDO: Priorizar color_hex de la variante (como ProductCard)
         const variantWithColor = variantsToUse.find((v: any) => 
           v.color_name?.toLowerCase() === colorName.toLowerCase() && v.color_hex
@@ -250,12 +271,13 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           category: '',
           family: 'Personalizados',
           isPopular: false,
-          description: `Color ${colorName}`
+          description: `Color ${colorName}`,
+          textureType
         } as ColorOption
       })
     }
     return product.colors || []
-  }, [variants, productType.hasColorSelector, product])
+  }, [variants, productType.hasColorSelector, productType.id, product])
 
   // Calcular capacityUnit usando utilidad extraída
   const capacityUnit = useMemo(() => {

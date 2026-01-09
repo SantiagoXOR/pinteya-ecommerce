@@ -3,24 +3,19 @@
 import React from 'react'
 import { cn } from '@/lib/core/utils'
 import { Check } from '@/lib/optimized-imports'
+import { getTextColorForBackground } from '../utils/color-utils'
 import { 
-  darkenHex, 
-  getTextColorForBackground, 
-  isBlancoBrillante,
-  isBlancoSatinado,
-  isTransparentColor
-} from '../utils/color-utils'
-import { 
-  getWoodTexture, 
-  getGlossTexture, 
-  getSatinTexture, 
-  getTransparentTexture 
-} from '../utils/texture-utils'
+  getTextureStyle, 
+  isTransparentColor, 
+  inferTextureFromColorName,
+  type TextureType 
+} from '@/lib/textures/texture-system'
 import type { ColorPillProps } from '../types'
 
 /**
  * Componente individual de pill de color
  * Memoizado para evitar re-renders innecesarios
+ * Usa sistema unificado de texturas
  */
 export const ColorPill = React.memo(function ColorPill({
   colorData,
@@ -28,21 +23,23 @@ export const ColorPill = React.memo(function ColorPill({
   onSelect,
   isImpregnante
 }: ColorPillProps) {
-  // Calcular valores derivados con useMemo
-  const darker = React.useMemo(() => darkenHex(colorData.hex, 0.35), [colorData.hex])
-  
-  const woodTexture = React.useMemo(() => {
-    if (!isImpregnante) return {}
-    return getWoodTexture(colorData.hex, darker)
-  }, [isImpregnante, colorData.hex, darker])
+  // Determinar el tipo de textura:
+  // 1. Usar textureType del colorData si está definido
+  // 2. Si isImpregnante=true, usar 'wood'
+  // 3. Si no, inferir del nombre del color
+  const textureType = React.useMemo((): TextureType => {
+    if (colorData.textureType) return colorData.textureType
+    if (isImpregnante) return 'wood'
+    return inferTextureFromColorName(colorData.name)
+  }, [colorData.textureType, colorData.name, isImpregnante])
 
-  const isBlancoBrill = React.useMemo(() => isBlancoBrillante(colorData.name), [colorData.name])
-  const isBlancoSat = React.useMemo(() => isBlancoSatinado(colorData.name), [colorData.name])
+  // Verificar si es transparente para efectos adicionales
   const isTransparent = React.useMemo(() => isTransparentColor(colorData.name), [colorData.name])
 
-  const glossTexture = React.useMemo(() => getGlossTexture(isBlancoBrill, false), [isBlancoBrill])
-  const satinTexture = React.useMemo(() => getSatinTexture(isBlancoSat, false), [isBlancoSat])
-  const transparentTexture = React.useMemo(() => isTransparent ? getTransparentTexture() : {}, [isTransparent])
+  // Obtener estilos del sistema unificado de texturas
+  const textureStyle = React.useMemo(() => {
+    return getTextureStyle(colorData.hex, textureType)
+  }, [colorData.hex, textureType])
 
   // Mantener siempre el color original del pill
   // Para INCOLORO, usar texto negro para mejor legibilidad
@@ -66,18 +63,14 @@ export const ColorPill = React.memo(function ColorPill({
     onSelect(colorData.hex)
   }, [onSelect, colorData.hex])
 
-  // Estilos base sin animaciones no compuestas
+  // Estilos base combinando textura del sistema unificado con estilos de selección
   const baseStyle = React.useMemo(() => ({
-    backgroundColor,
+    ...textureStyle,
+    // Sobrescribir backgroundColor si es blanco puro
+    backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : textureStyle.backgroundColor,
     borderWidth: isSelected ? '1.5px' : '1px',
     borderColor: isSelected ? '#EA5A17' : 'rgba(229, 231, 235, 1)',
-    // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
-    // El CSS global ya lo deshabilita
-    ...(isTransparent ? transparentTexture : {}),
-    ...woodTexture,
-    ...glossTexture,
-    ...satinTexture
-  }), [backgroundColor, isSelected, isTransparent, transparentTexture, woodTexture, glossTexture, satinTexture])
+  }), [textureStyle, colorData.hex, isSelected])
 
   // Box-shadow estático (no animado) - solo cambia opacity del pseudo-elemento
   const shadowOpacity = isSelected ? 1 : 0.6
@@ -132,6 +125,7 @@ export const ColorPill = React.memo(function ColorPill({
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.colorData.hex === nextProps.colorData.hex &&
     prevProps.colorData.name === nextProps.colorData.name &&
+    prevProps.colorData.textureType === nextProps.colorData.textureType &&
     prevProps.isImpregnante === nextProps.isImpregnante
   )
 })

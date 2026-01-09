@@ -3,6 +3,8 @@
 // Archivo compartido para uso en cliente y servidor
 // ===================================
 
+import type { TextureType } from '@/lib/textures/texture-system'
+
 export interface ColorOption {
   id: string
   name: string
@@ -12,6 +14,7 @@ export interface ColorOption {
   family: string
   isPopular?: boolean
   description?: string
+  textureType?: TextureType  // Tipo de textura visual a aplicar
 }
 
 export const PAINT_COLORS: ColorOption[] = [
@@ -28,6 +31,7 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Blancos',
     isPopular: true,
     description: 'Blanco clásico para madera',
+    textureType: 'wood',
   },
   {
     id: 'crema',
@@ -38,6 +42,7 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Blancos',
     isPopular: true,
     description: 'Tono cremoso natural',
+    textureType: 'wood',
   },
   {
     id: 'cedro',
@@ -48,6 +53,7 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Marrones',
     isPopular: true,
     description: 'Tono natural de cedro',
+    textureType: 'wood',
   },
   {
     id: 'caoba',
@@ -58,6 +64,7 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Marrones',
     isPopular: true,
     description: 'Marrón rojizo elegante',
+    textureType: 'wood',
   },
   {
     id: 'roble',
@@ -68,6 +75,7 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Marrones',
     isPopular: true,
     description: 'Tono clásico de roble',
+    textureType: 'wood',
   },
   {
     id: 'roble-britanico',
@@ -78,6 +86,7 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Marrones',
     isPopular: true,
     description: 'Marrón clásico de roble',
+    textureType: 'wood',
   },
   {
     id: 'roble-oscuro-satinado',
@@ -88,6 +97,7 @@ export const PAINT_COLORS: ColorOption[] = [
     family: 'Marrones',
     isPopular: true,
     description: 'Roble oscuro con acabado satinado',
+    textureType: 'wood',
   },
   {
     id: 'nogal',
@@ -97,6 +107,7 @@ export const PAINT_COLORS: ColorOption[] = [
     category: 'Madera',
     family: 'Marrones',
     description: 'Marrón profundo de nogal',
+    textureType: 'wood',
   },
   {
     id: 'pino',
@@ -106,6 +117,7 @@ export const PAINT_COLORS: ColorOption[] = [
     category: 'Madera',
     family: 'Marrones',
     description: 'Tono claro amarillento típico del pino',
+    textureType: 'wood',
   },
   {
     id: 'natural',
@@ -115,6 +127,7 @@ export const PAINT_COLORS: ColorOption[] = [
     category: 'Madera',
     family: 'Marrones',
     description: 'Tono madera natural',
+    textureType: 'wood',
   },
   {
     id: 'cristal',
@@ -124,6 +137,7 @@ export const PAINT_COLORS: ColorOption[] = [
     category: 'Madera',
     family: 'Marrones',
     description: 'Transparente levemente cálido para madera',
+    textureType: 'wood',
   },
   {
     id: 'incoloro',
@@ -133,6 +147,7 @@ export const PAINT_COLORS: ColorOption[] = [
     category: 'Madera',
     family: 'Transparentes',
     description: 'Transparente completamente incoloro con brillo',
+    textureType: 'transparent',
   },
 
   // ===================================

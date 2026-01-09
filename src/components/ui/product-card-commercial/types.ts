@@ -3,6 +3,7 @@
  */
 
 import type React from 'react'
+import type { TextureType } from '@/lib/textures/texture-system'
 
 // Interfaces para variantes de productos
 export interface ProductVariant {
@@ -77,7 +78,7 @@ export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDiv
 
 // Props para ColorPill
 export interface ColorPillProps {
-  colorData: { name: string; hex: string }
+  colorData: { name: string; hex: string; textureType?: TextureType }
   isSelected: boolean
   onSelect: (hex: string) => void
   isImpregnante: boolean
@@ -85,7 +86,7 @@ export interface ColorPillProps {
 
 // Props para ColorPillSelector
 export interface ColorPillSelectorProps {
-  colors: Array<{ name: string; hex: string }>
+  colors: Array<{ name: string; hex: string; textureType?: TextureType }>
   selectedColor?: string
   onColorSelect: (hex: string) => void
   isImpregnante: boolean
