@@ -2,8 +2,8 @@
  * Componente de especificaciones técnicas del producto
  */
 
-import React from 'react'
-import { Package, Ruler, Hash, FileText } from '@/lib/optimized-imports'
+import React, { useState } from 'react'
+import { Package, Ruler, Hash, FileText, ChevronDown, ChevronUp } from '@/lib/optimized-imports'
 
 interface ProductWithCategory {
   description?: string
@@ -25,6 +25,9 @@ interface ProductSpecificationsProps {
   technicalSheetUrl?: string | null
 }
 
+// Número máximo de caracteres antes de truncar
+const MAX_DESCRIPTION_LENGTH = 150
+
 /**
  * Especificaciones del producto memoizadas
  */
@@ -33,9 +36,13 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
   product,
   technicalSheetUrl,
 }) => {
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
+  
   const hasSpecs = fullProductData?.specifications && Object.keys(fullProductData.specifications).length > 0
   const hasFeatures = fullProductData?.features && Object.keys(fullProductData.features).length > 0
-  const hasDescription = fullProductData?.description || product?.description
+  const description = fullProductData?.description || product?.description || ''
+  const hasDescription = !!description
+  const isDescriptionLong = description.length > MAX_DESCRIPTION_LENGTH
   
   // Technical sheet URL can come from prop or fullProductData
   const sheetUrl = technicalSheetUrl || fullProductData?.technical_sheet_url
@@ -44,14 +51,40 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
     return null
   }
 
+  // Función para truncar la descripción
+  const getDisplayDescription = () => {
+    if (!isDescriptionLong || isDescriptionExpanded) {
+      return description
+    }
+    return description.slice(0, MAX_DESCRIPTION_LENGTH).trim() + '...'
+  }
+
   return (
     <div className='space-y-4'>
       {/* Descripción */}
       {hasDescription && (
         <div>
-          <p className='text-gray-600 leading-relaxed'>
-            {fullProductData?.description || product?.description}
+          <p className='text-gray-600 leading-relaxed text-sm'>
+            {getDisplayDescription()}
           </p>
+          {isDescriptionLong && (
+            <button
+              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              className='mt-2 text-sm font-medium text-blaze-orange-600 hover:text-blaze-orange-700 flex items-center gap-1 transition-colors'
+            >
+              {isDescriptionExpanded ? (
+                <>
+                  Ver menos
+                  <ChevronUp className='w-4 h-4' />
+                </>
+              ) : (
+                <>
+                  Ver más
+                  <ChevronDown className='w-4 h-4' />
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
 
@@ -118,19 +151,16 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
 
       {/* Ficha Técnica PDF */}
       {sheetUrl && (
-        <div className='pt-4 border-t border-gray-200'>
+        <div className='pt-3'>
           <a
             href={sheetUrl}
             target='_blank'
             rel='noopener noreferrer'
-            className='inline-flex items-center gap-2 px-4 py-2.5 bg-blaze-orange-600 text-white rounded-lg hover:bg-blaze-orange-700 transition-colors font-medium text-sm shadow-sm'
+            className='inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors'
           >
-            <FileText className='w-5 h-5' />
-            Ver Ficha Técnica
+            <FileText className='w-4 h-4' />
+            <span className='underline underline-offset-2'>Ver ficha técnica (PDF)</span>
           </a>
-          <p className='text-xs text-gray-500 mt-2'>
-            Descarga la ficha técnica del producto en formato PDF
-          </p>
         </div>
       )}
     </div>
