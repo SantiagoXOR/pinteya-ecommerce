@@ -741,7 +741,7 @@ export async function GET(
           .filter((v: any) => v.is_active !== false)
           .reduce((sum: number, v: any) => sum + (v.stock || 0), 0)
         return variantTotalStock > 0 ? variantTotalStock : productStock
-      })()
+      })(),
       // ✅ CORREGIDO: Terminaciones - asegurar que siempre sea array
       terminaciones: (data as any).terminaciones && Array.isArray((data as any).terminaciones) 
         ? (data as any).terminaciones.filter((t: string) => t && t.trim() !== '')
