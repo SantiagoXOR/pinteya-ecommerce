@@ -22,6 +22,7 @@ export type TextureType =
   | 'matte'       // Acabado completamente mate
   | 'transparent' // Efecto vidrio/cristal (incoloro)
   | 'fluo'        // Colores neón/fluorescentes
+  | 'rustic'      // Efecto óxido/hierro antiguo
 
 // ===================================
 // UTILIDADES DE COLOR
@@ -69,216 +70,203 @@ export const lightenHex = (hex: string, factor: number = 0.2): string => {
 // ===================================
 
 /**
+ * Estilos base que se aplican a todas las texturas
+ * para contener los efectos dentro del pill
+ */
+const BASE_STYLE: CSSProperties = {
+  overflow: 'hidden',
+  position: 'relative',
+}
+
+/**
  * Generadores de estilos CSS para cada tipo de textura
+ * NOTA: Efectos reducidos para que el color sea visible
  */
 export const TEXTURE_GENERATORS: Record<TextureType, (hex: string) => CSSProperties> = {
   /**
    * Sin efecto - solo color sólido
    */
   solid: (hex: string) => ({
+    ...BASE_STYLE,
     backgroundColor: hex,
     boxShadow: hex.toUpperCase() === '#FFFFFF' ? 'inset 0 0 0 1px #E5E7EB' : 'none',
   }),
 
   /**
    * Textura de madera con vetas verticales para impregnantes
-   * Restaurada la textura original con vetas a 90° que simula mejor la fibra de madera
+   * Efecto SUTIL - el color debe ser visible
    */
   wood: (hex: string) => {
-    const darker = darkenHex(hex, 0.35)
-    // Convertir darker rgb a rgba para el radial gradient
-    const darkerRgba = darker.replace('rgb', 'rgba').replace(')', ', 0.18)')
+    const darker = darkenHex(hex, 0.25)
     return {
+      ...BASE_STYLE,
       backgroundColor: hex,
       backgroundImage: [
-        'linear-gradient(0deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05))',
-        // Vetas verticales principales (90°) - simula la fibra de la madera
-        `repeating-linear-gradient(90deg, ${darker} 0 2px, transparent 2px 10px)`,
-        // Vetas secundarias ligeramente inclinadas (100°)
-        `repeating-linear-gradient(100deg, ${darker} 0 1px, transparent 1px 8px)`,
-        // Nudos sutiles
-        `radial-gradient(ellipse at 30% 45%, ${darkerRgba} 0 3px, rgba(0,0,0,0) 4px)`,
-        'radial-gradient(ellipse at 70% 65%, rgba(255,255,255,0.08) 0 2px, rgba(255,255,255,0) 3px)',
+        // Vetas verticales sutiles
+        `repeating-linear-gradient(90deg, ${darker} 0 1px, transparent 1px 8px)`,
+        // Vetas secundarias más finas
+        `repeating-linear-gradient(95deg, ${darker} 0 1px, transparent 1px 12px)`,
       ].join(', '),
-      backgroundSize: '100% 100%, 12px 100%, 14px 100%, 100% 100%, 100% 100%',
+      backgroundSize: '10px 100%, 14px 100%',
       backgroundBlendMode: 'multiply' as const,
-      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.10)',
+      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)',
     }
   },
 
   /**
-   * Efecto metalizado con brillo para pinturas metalizadas
-   * Simula metal cepillado con líneas horizontales y reflejos
+   * Efecto metalizado SUTIL para pinturas metalizadas
+   * Líneas horizontales suaves que no ocultan el color
    */
   metallic: (hex: string) => {
-    const lighter = lightenHex(hex, 0.4)
-    const darker = darkenHex(hex, 0.2)
+    const lighter = lightenHex(hex, 0.25)
     return {
+      ...BASE_STYLE,
       backgroundColor: hex,
       backgroundImage: [
-        // Gradiente principal de metal
-        `linear-gradient(135deg, ${lighter} 0%, ${hex} 25%, ${lighter} 50%, ${hex} 75%, ${lighter} 100%)`,
-        // Líneas horizontales tipo metal cepillado
-        `repeating-linear-gradient(90deg, ${darker} 0px, transparent 1px, transparent 2px)`,
-        // Líneas secundarias más finas
-        `repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 1px, transparent 1px, transparent 4px)`,
-        // Reflejo superior brillante
-        'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.6) 0%, transparent 50%)',
-        // Reflejo lateral
-        'radial-gradient(ellipse at 0% 50%, rgba(255,255,255,0.3) 0%, transparent 40%)',
+        // Gradiente sutil de metal
+        `linear-gradient(135deg, ${lighter} 0%, ${hex} 50%, ${lighter} 100%)`,
+        // Líneas horizontales muy sutiles
+        `repeating-linear-gradient(0deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 3px)`,
       ].join(', '),
-      backgroundSize: '100% 100%, 3px 100%, 5px 100%, 100% 60%, 40% 100%',
+      backgroundSize: '100% 100%, 100% 4px',
       backgroundBlendMode: 'overlay' as const,
       boxShadow: [
-        'inset 0 2px 4px rgba(255,255,255,0.6)',
-        'inset 0 -2px 4px rgba(0,0,0,0.3)',
-        'inset 1px 0 2px rgba(255,255,255,0.2)',
-        '0 1px 3px rgba(0,0,0,0.3)',
+        'inset 0 1px 2px rgba(255,255,255,0.4)',
+        'inset 0 -1px 2px rgba(0,0,0,0.15)',
       ].join(', '),
     }
   },
 
   /**
    * Textura rugosa mate tipo pintura a la tiza (chalk paint)
-   * Efecto de superficie porosa y sin brillo característico de chalk paint
+   * Efecto SUTIL de textura granulada
    */
   chalk: (hex: string) => {
-    const darker = darkenHex(hex, 0.15)
+    const darker = darkenHex(hex, 0.1)
     return {
+      ...BASE_STYLE,
       backgroundColor: hex,
       backgroundImage: [
-        // Ruido granulado más visible (SVG noise)
-        'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'0.12\'/%3E%3C/svg%3E")',
-        // Textura de poros/grano grueso
-        `repeating-radial-gradient(circle at 25% 25%, ${darker} 0px, transparent 1px, transparent 3px)`,
-        `repeating-radial-gradient(circle at 75% 75%, ${darker} 0px, transparent 1px, transparent 4px)`,
-        // Textura rugosa diagonal
-        'repeating-linear-gradient(45deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 2px)',
-        'repeating-linear-gradient(-45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px)',
+        // Textura granulada sutil
+        `repeating-radial-gradient(circle at 30% 30%, ${darker} 0px, transparent 1px, transparent 4px)`,
+        `repeating-radial-gradient(circle at 70% 70%, ${darker} 0px, transparent 1px, transparent 5px)`,
       ].join(', '),
-      backgroundSize: '80px 80px, 6px 6px, 8px 8px, 3px 3px, 4px 4px',
+      backgroundSize: '8px 8px, 10px 10px',
       backgroundBlendMode: 'multiply' as const,
-      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)',
-      // Efecto mate sin brillo - desaturado ligeramente
-      filter: 'saturate(0.92) brightness(0.98)',
+      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.05)',
+      filter: 'saturate(0.95)',
     }
   },
 
   /**
-   * Efecto perlado iridiscente
+   * Efecto perlado iridiscente SUTIL
    */
   pearl: (hex: string) => ({
+    ...BASE_STYLE,
     backgroundColor: hex,
     backgroundImage: [
-      'linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,200,220,0.2) 25%, rgba(200,220,255,0.2) 50%, rgba(220,255,200,0.2) 75%, rgba(255,255,255,0.3) 100%)',
-      'radial-gradient(ellipse at 25% 25%, rgba(255,255,255,0.6) 0%, transparent 50%)',
-      'radial-gradient(ellipse at 75% 75%, rgba(255,240,250,0.4) 0%, transparent 50%)',
+      'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,200,220,0.1) 50%, rgba(200,220,255,0.1) 100%)',
     ].join(', '),
-    backgroundSize: '100% 100%, 80% 80%, 60% 60%',
+    backgroundSize: '100% 100%',
     backgroundBlendMode: 'overlay' as const,
-    boxShadow: [
-      'inset 0 0 10px rgba(255,255,255,0.3)',
-      '0 0 5px rgba(255,255,255,0.2)',
-    ].join(', '),
+    boxShadow: 'inset 0 1px 3px rgba(255,255,255,0.3)',
   }),
 
   /**
-   * Brillo intenso para blanco brillante
+   * Brillo intenso SUTIL para brillante
    */
   gloss: (hex: string) => ({
+    ...BASE_STYLE,
     backgroundColor: hex,
     backgroundImage: [
-      'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.05) 100%)',
-      'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%)',
-      'radial-gradient(ellipse at top, rgba(255,255,255,0.6) 0%, transparent 50%)',
+      'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(0,0,0,0.03) 100%)',
     ].join(', '),
-    backgroundSize: '100% 100%, 20px 20px, 100% 100%',
+    backgroundSize: '100% 100%',
     backgroundBlendMode: 'overlay' as const,
-    boxShadow: [
-      'inset 0 1px 3px rgba(255,255,255,0.8)',
-      '0 1px 2px rgba(0,0,0,0.1)',
-    ].join(', '),
+    boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.5)',
   }),
 
   /**
-   * Brillo suave satinado
+   * Brillo suave satinado SUTIL
    */
   satin: (hex: string) => ({
+    ...BASE_STYLE,
     backgroundColor: hex,
     backgroundImage: [
-      'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.02) 100%)',
-      'linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)',
-      'radial-gradient(ellipse at top, rgba(255,255,255,0.3) 0%, transparent 50%)',
+      'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.02) 100%)',
     ].join(', '),
-    backgroundSize: '100% 100%, 30px 30px, 100% 100%',
+    backgroundSize: '100% 100%',
     backgroundBlendMode: 'soft-light' as const,
-    boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3)',
+    boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.2)',
   }),
 
   /**
    * Acabado completamente mate (sin brillo)
    */
   matte: (hex: string) => ({
+    ...BASE_STYLE,
     backgroundColor: hex,
-    backgroundImage: [
-      'linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.01) 100%)',
-    ].join(', '),
-    backgroundSize: '100% 100%',
     boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.03)',
-    // Sin brillo visual
-    filter: 'saturate(0.98) brightness(0.99)',
+    filter: 'saturate(0.98)',
   }),
 
   /**
    * Efecto transparente/vidrio para incoloro
    */
   transparent: (hex: string) => ({
-    backgroundColor: hex || 'rgba(255,255,255,0.1)',
+    ...BASE_STYLE,
+    backgroundColor: hex || 'rgba(245,245,245,0.85)',
     backgroundImage: [
-      'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.2) 100%)',
-      'linear-gradient(45deg, rgba(255,255,255,0.6) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.3) 100%)',
-      'radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.5) 0%, transparent 50%)',
-      'radial-gradient(ellipse at 70% 70%, rgba(255,255,255,0.3) 0%, transparent 60%)',
-      // Patrón de transparencia (cuadritos)
-      'repeating-linear-gradient(45deg, rgba(200,200,200,0.3) 0px, rgba(200,200,200,0.3) 2px, transparent 2px, transparent 4px)',
+      // Patrón de transparencia (cuadritos) sutil
+      'repeating-linear-gradient(45deg, rgba(200,200,200,0.15) 0px, rgba(200,200,200,0.15) 2px, transparent 2px, transparent 4px)',
     ].join(', '),
-    backgroundSize: '100% 100%, 100% 100%, 60% 60%, 50% 50%, 8px 8px',
-    backgroundBlendMode: 'overlay' as const,
-    boxShadow: [
-      'inset 0 0 0 1px rgba(255,255,255,0.3)',
-      '0 0 8px rgba(255,255,255,0.2)',
-      'inset 0 1px 2px rgba(255,255,255,0.4)',
-    ].join(', '),
+    backgroundSize: '6px 6px',
+    boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)',
   }),
 
   /**
    * Efecto neón/fluorescente para colores fluo
-   * Simula el brillo intenso característico de pinturas fluorescentes
+   * Glow exterior contenido
    */
   fluo: (hex: string) => {
-    const lighter = lightenHex(hex, 0.3)
+    const lighter = lightenHex(hex, 0.2)
     return {
+      ...BASE_STYLE,
       backgroundColor: hex,
       backgroundImage: [
-        // Brillo central intenso
-        `radial-gradient(ellipse at 50% 50%, ${lighter} 0%, ${hex} 60%, ${hex} 100%)`,
-        // Efecto de "glow" interno
-        `radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.5) 0%, transparent 50%)`,
-        // Borde luminoso
-        `linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.1) 100%)`,
+        `radial-gradient(ellipse at 50% 30%, ${lighter} 0%, ${hex} 70%)`,
       ].join(', '),
-      backgroundSize: '100% 100%, 100% 100%, 100% 100%',
-      backgroundBlendMode: 'screen' as const,
+      backgroundSize: '100% 100%',
       boxShadow: [
-        // Glow exterior (efecto neón)
-        `0 0 8px ${hex}`,
-        `0 0 4px ${lighter}`,
-        // Brillo interno
-        'inset 0 1px 3px rgba(255,255,255,0.5)',
-        'inset 0 -1px 2px rgba(0,0,0,0.1)',
+        `0 0 4px ${hex}`,
+        'inset 0 1px 2px rgba(255,255,255,0.4)',
       ].join(', '),
-      // Aumentar saturación para efecto más vibrante
-      filter: 'saturate(1.3) brightness(1.05)',
+      filter: 'saturate(1.15) brightness(1.02)',
+    }
+  },
+
+  /**
+   * Efecto óxido/hierro antiguo para acabado rústico
+   * Simula metal oxidado con textura irregular
+   */
+  rustic: (hex: string) => {
+    const darker = darkenHex(hex, 0.2)
+    const lighter = lightenHex(hex, 0.15)
+    return {
+      ...BASE_STYLE,
+      backgroundColor: hex,
+      backgroundImage: [
+        // Manchas irregulares de óxido
+        `radial-gradient(ellipse at 20% 30%, ${darker} 0%, transparent 40%)`,
+        `radial-gradient(ellipse at 70% 60%, ${lighter} 0%, transparent 35%)`,
+        `radial-gradient(ellipse at 50% 80%, ${darker} 0%, transparent 30%)`,
+        // Textura granulada de óxido
+        `repeating-radial-gradient(circle at 40% 40%, ${darker} 0px, transparent 1px, transparent 3px)`,
+      ].join(', '),
+      backgroundSize: '100% 100%, 100% 100%, 100% 100%, 5px 5px',
+      backgroundBlendMode: 'multiply' as const,
+      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)',
+      filter: 'saturate(0.9) contrast(1.05)',
     }
   },
 }
@@ -289,10 +277,11 @@ export const TEXTURE_GENERATORS: Record<TextureType, (hex: string) => CSSPropert
 
 /**
  * Mapeo de tipos de producto a su textura correspondiente
+ * NOTA: barnices NO usa gloss para no afectar colores de madera
  */
 export const PRODUCT_TYPE_TEXTURES: Record<string, TextureType> = {
   'impregnante-madera': 'wood',
-  'barnices': 'gloss',
+  'barnices': 'solid',          // Sin efecto para barnices (madera)
   'esmalte-sintetico': 'satin',
   'pinturas-latex': 'matte',
   'pintura-tiza': 'chalk',
@@ -320,8 +309,11 @@ export const FINISH_TEXTURES: Record<string, TextureType> = {
   'fluo': 'fluo',
   'fluorescente': 'fluo',
   // Acabados secundarios
-  'rústico': 'wood',
-  'rustico': 'wood', // Sin tilde
+  'rústico': 'rustic',       // ✅ Efecto óxido, no madera
+  'rustico': 'rustic',       // Sin tilde
+  'hierro antiguo': 'rustic', // Hierro antiguo también es óxido
+  'antiguo': 'rustic',
+  'oxidado': 'rustic',
   'cerámico': 'satin', // Similar a satinado
   'ceramico': 'satin',
   'natural': 'matte',
