@@ -4,13 +4,28 @@
 
 El sistema de texturas centraliza la generación de efectos visuales CSS para los selectores de color (pills y swatches) en toda la aplicación. Simula diferentes acabados de pintura como madera, metálico, tiza, brillante, etc.
 
-## Ubicación del Código
+## Arquitectura Modular
 
 ```
-src/lib/textures/texture-system.ts    # Sistema principal
-src/components/ui/product-card-commercial/components/ColorPill.tsx
-src/components/ui/advanced-color-picker.tsx  # ColorSwatch
+src/lib/textures/
+├── index.ts              # API pública (exports)
+├── types.ts              # Tipos TypeScript centralizados
+├── utils.ts              # Funciones de color (darkenHex, lightenHex)
+├── color-detection.ts    # Detección de colores especiales
+├── texture-mappings.ts   # Mapeos finish/product → textura
+├── texture-generators.ts # Generadores CSS para cada textura
+└── texture-resolver.ts   # Lógica de prioridad (función principal)
 ```
+
+### Beneficios de la Arquitectura
+
+| Archivo | Responsabilidad | Para Modificar |
+|---------|-----------------|----------------|
+| `types.ts` | Tipos TypeScript | Agregar nuevos tipos |
+| `texture-generators.ts` | CSS de texturas | Cambiar efectos visuales |
+| `texture-mappings.ts` | Mapeos de datos | Agregar nuevos finishes |
+| `texture-resolver.ts` | Lógica de prioridad | Cambiar reglas |
+| `color-detection.ts` | Detectores | Agregar colores especiales |
 
 ## Tipos de Textura Disponibles
 
@@ -66,39 +81,53 @@ FINISH_TEXTURES = {
 
 ## Uso en Componentes
 
+### Función Principal: `resolveTextureType`
+
+```tsx
+import { resolveTextureType, getTextureStyle } from '@/lib/textures'
+
+// Una sola llamada resuelve toda la lógica de prioridad
+const textureType = useMemo(() => resolveTextureType({
+  colorName: colorData.name,
+  colorCategory: colorData.category,     // opcional
+  colorTextureType: colorData.textureType, // opcional
+  colorFinish: colorData.finish,          // opcional
+  isWoodProduct: isImpregnante,           // opcional
+  selectedFinish,                         // opcional
+}), [deps])
+
+// Aplicar estilos
+const style = getTextureStyle(colorData.hex, textureType)
+
+return <button style={style}>...</button>
+```
+
 ### ColorPill (ProductCard)
 
 ```tsx
-import { 
-  getTextureStyle, 
-  isTransparentColor,
-  getTextureForFinish 
-} from '@/lib/textures/texture-system'
+import { resolveTextureType, getTextureStyle, isTransparentColor } from '@/lib/textures'
 
-// Determinar textura
-const textureType = useMemo(() => {
-  if (isTransparentColor(colorData.name)) return 'transparent'
-  if (isImpregnante) return 'wood'
-  if (selectedFinish) {
-    const texture = getTextureForFinish(selectedFinish)
-    if (texture !== 'solid') return texture
-  }
-  // ... fallbacks
-}, [deps])
-
-// Aplicar estilos
-const textureStyle = getTextureStyle(colorData.hex, textureType)
-
-return <button style={textureStyle}>...</button>
+const textureType = useMemo(() => resolveTextureType({
+  colorName: colorData.name,
+  colorTextureType: colorData.textureType,
+  colorFinish: colorData.finish,
+  isWoodProduct: isImpregnante,
+  selectedFinish,
+}), [colorData.name, colorData.textureType, colorData.finish, isImpregnante, selectedFinish])
 ```
 
 ### ColorSwatch (ShopDetailModal)
 
 ```tsx
-// Mismo patrón pero usa color.category para detectar madera
-if (isTransparentColor(color.name)) return 'transparent'
-if (color.category === 'Madera') return 'wood'
-// ... resto igual
+import { resolveTextureType, getTextureStyle, isTransparentColor } from '@/lib/textures'
+
+const textureType = useMemo(() => resolveTextureType({
+  colorName: color.name,
+  colorCategory: color.category,
+  colorTextureType: color.textureType,
+  colorFinish: color.finish,
+  selectedFinish,
+}), [color.name, color.category, color.textureType, color.finish, selectedFinish])
 ```
 
 ## Función Principal: getTextureStyle
@@ -184,16 +213,18 @@ color_hex = '#F5F5F5'
 
 ## Agregar Nueva Textura
 
-1. Agregar tipo en `TextureType`:
+### Paso 1: Agregar tipo en `types.ts`
 ```typescript
+// src/lib/textures/types.ts
 export type TextureType = 
   | 'solid'
   | 'wood'
   | 'nueva-textura'  // ← Agregar aquí
 ```
 
-2. Agregar generador en `TEXTURE_GENERATORS`:
+### Paso 2: Agregar generador en `texture-generators.ts`
 ```typescript
+// src/lib/textures/texture-generators.ts
 'nueva-textura': (hex: string) => ({
   ...BASE_STYLE,
   backgroundColor: hex,
@@ -202,19 +233,36 @@ export type TextureType =
 })
 ```
 
-3. Agregar mapeo en `FINISH_TEXTURES` si corresponde:
+### Paso 3: Agregar mapeo en `texture-mappings.ts` (si corresponde)
 ```typescript
-'nombre del finish': 'nueva-textura',
+// src/lib/textures/texture-mappings.ts
+export const FINISH_TO_TEXTURE: Record<string, TextureType> = {
+  // ...
+  'nombre del finish': 'nueva-textura',
+}
 ```
 
-## Archivos Relacionados
+## Archivos del Sistema
 
 | Archivo | Propósito |
 |---------|-----------|
-| `src/lib/textures/texture-system.ts` | Sistema central |
+| `src/lib/textures/index.ts` | API pública (exports) |
+| `src/lib/textures/types.ts` | Tipos TypeScript |
+| `src/lib/textures/texture-resolver.ts` | Lógica de prioridad |
+| `src/lib/textures/texture-generators.ts` | CSS de cada textura |
+| `src/lib/textures/texture-mappings.ts` | Mapeos finish/product → textura |
+| `src/lib/textures/color-detection.ts` | Detección de colores especiales |
+| `src/lib/textures/utils.ts` | Utilidades de color |
+
+## Archivos Consumidores
+
+| Archivo | Uso |
+|---------|-----|
 | `src/lib/constants/paint-colors.ts` | ColorOption con textureType |
 | `src/components/ui/product-card-commercial/types.ts` | ColorData, ColorPillProps |
-| `src/components/ui/product-card-commercial/hooks/useProductColors.ts` | Extrae finish de variantes |
+| `src/components/ui/product-card-commercial/components/ColorPill.tsx` | Pills de color |
+| `src/components/ui/advanced-color-picker.tsx` | ColorSwatch |
+| `src/components/ShopDetails/ShopDetailModal/index.tsx` | Modal de producto |
 
 ## Troubleshooting
 

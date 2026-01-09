@@ -9,8 +9,8 @@ import { cn } from '@/lib/core/utils'
 import { ProductType } from '@/utils/product-utils'
 // Importar desde archivo compartido para uso en cliente y servidor
 import { PAINT_COLORS, type ColorOption } from '@/lib/constants/paint-colors'
-// Sistema unificado de texturas
-import { getTextureStyle, isTransparentColor, inferTextureFromColorName, getTextureForFinish } from '@/lib/textures/texture-system'
+// Sistema unificado de texturas (modular)
+import { resolveTextureType, getTextureStyle, isTransparentColor } from '@/lib/textures'
 
 // Re-exportar para compatibilidad con código existente
 export type { ColorOption }
@@ -358,33 +358,14 @@ interface ColorSwatchProps {
 }
 
 const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick, selectedFinish }) => {
-  // Determinar el tipo de textura (prioridad):
-  // 1. Incoloro/Transparente → 'transparent' (SIEMPRE líneas diagonales)
-  // 2. Categoría "Madera" o textureType 'wood' → SIEMPRE vetas
-  // 3. selectedFinish (finish actualmente seleccionado) → TEXTURA DINÁMICA
-  // 4. textureType explícito del color
-  // 5. finish del color
-  // 6. Inferir del nombre del color
-  const textureType = useMemo(() => {
-    // ✅ Incoloro/Transparente SIEMPRE tienen líneas (prioridad máxima)
-    if (isTransparentColor(color.name)) return 'transparent'
-    
-    // ✅ Productos de madera SIEMPRE tienen vetas
-    if (color.category === 'Madera') return 'wood'
-    if (color.textureType === 'wood') return 'wood'
-    
-    // Para otros productos, usar el finish seleccionado
-    if (selectedFinish) {
-      const selectedTexture = getTextureForFinish(selectedFinish)
-      if (selectedTexture !== 'solid') return selectedTexture
-    }
-    if (color.textureType) return color.textureType
-    if (color.finish) {
-      const finishTexture = getTextureForFinish(color.finish)
-      if (finishTexture !== 'solid') return finishTexture
-    }
-    return inferTextureFromColorName(color.name)
-  }, [color.name, color.category, selectedFinish, color.textureType, color.finish])
+  // Resolver textura usando función centralizada
+  const textureType = useMemo(() => resolveTextureType({
+    colorName: color.name,
+    colorCategory: color.category,
+    colorTextureType: color.textureType,
+    colorFinish: color.finish,
+    selectedFinish,
+  }), [color.name, color.category, color.textureType, color.finish, selectedFinish])
 
   // Verificar si es transparente para efecto adicional
   const isTransparent = isTransparentColor(color.name) || color.family === 'Transparentes'

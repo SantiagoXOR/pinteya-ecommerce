@@ -3,7 +3,7 @@
 // Archivo compartido para uso en cliente y servidor
 // ===================================
 
-import type { TextureType } from '@/lib/textures/texture-system'
+import type { TextureType } from '@/lib/textures'
 
 export interface ColorOption {
   id: string

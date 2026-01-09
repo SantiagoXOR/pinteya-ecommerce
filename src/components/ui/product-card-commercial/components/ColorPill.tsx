@@ -5,18 +5,16 @@ import { cn } from '@/lib/core/utils'
 import { Check } from '@/lib/optimized-imports'
 import { getTextColorForBackground } from '../utils/color-utils'
 import { 
+  resolveTextureType,
   getTextureStyle, 
-  isTransparentColor, 
-  inferTextureFromColorName,
-  getTextureForFinish,
-  type TextureType 
-} from '@/lib/textures/texture-system'
+  isTransparentColor,
+} from '@/lib/textures'
 import type { ColorPillProps } from '../types'
 
 /**
  * Componente individual de pill de color
  * Memoizado para evitar re-renders innecesarios
- * Usa sistema unificado de texturas
+ * Usa sistema unificado de texturas (modular)
  */
 export const ColorPill = React.memo(function ColorPill({
   colorData,
@@ -25,34 +23,14 @@ export const ColorPill = React.memo(function ColorPill({
   isImpregnante,
   selectedFinish
 }: ColorPillProps) {
-  // Determinar el tipo de textura (prioridad):
-  // 1. Incoloro/Transparente → 'transparent' (SIEMPRE líneas diagonales)
-  // 2. isImpregnante=true → 'wood' (SIEMPRE para productos de madera)
-  // 3. textureType explícito 'wood' → mantener vetas
-  // 4. selectedFinish (finish actualmente seleccionado) → TEXTURA DINÁMICA
-  // 5. textureType explícito del colorData
-  // 6. finish del colorData
-  // 7. Inferir del nombre del color
-  const textureType = React.useMemo((): TextureType => {
-    // ✅ Incoloro/Transparente SIEMPRE tienen líneas (prioridad máxima)
-    if (isTransparentColor(colorData.name)) return 'transparent'
-    
-    // ✅ Productos de madera SIEMPRE tienen vetas
-    if (isImpregnante) return 'wood'
-    if (colorData.textureType === 'wood') return 'wood'
-    
-    // Para otros productos, usar el finish seleccionado
-    if (selectedFinish) {
-      const selectedTexture = getTextureForFinish(selectedFinish)
-      if (selectedTexture !== 'solid') return selectedTexture
-    }
-    if (colorData.textureType) return colorData.textureType
-    if (colorData.finish) {
-      const finishTexture = getTextureForFinish(colorData.finish)
-      if (finishTexture !== 'solid') return finishTexture
-    }
-    return inferTextureFromColorName(colorData.name)
-  }, [colorData.name, isImpregnante, selectedFinish, colorData.textureType, colorData.finish])
+  // Resolver textura usando función centralizada
+  const textureType = React.useMemo(() => resolveTextureType({
+    colorName: colorData.name,
+    colorTextureType: colorData.textureType,
+    colorFinish: colorData.finish,
+    isWoodProduct: isImpregnante,
+    selectedFinish,
+  }), [colorData.name, colorData.textureType, colorData.finish, isImpregnante, selectedFinish])
 
   // Verificar si es transparente para efectos adicionales
   const isTransparent = React.useMemo(() => isTransparentColor(colorData.name), [colorData.name])

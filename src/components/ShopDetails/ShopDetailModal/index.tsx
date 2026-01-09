@@ -25,7 +25,7 @@ import {
   ColorOption,
 } from '@/components/ui/advanced-color-picker'
 import { detectProductType, formatCapacity, getDefaultColor, extractColorFromName, getColorHex } from '@/utils/product-utils'
-import { getTextureForProductType } from '@/lib/textures/texture-system'
+import { getTextureForProductType } from '@/lib/textures'
 import {
   ProductVariant,
   findVariantByCapacity,

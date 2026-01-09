@@ -3,7 +3,7 @@
  */
 
 import type React from 'react'
-import type { TextureType } from '@/lib/textures/texture-system'
+import type { TextureType } from '@/lib/textures'
 
 // Interfaces para variantes de productos
 export interface ProductVariant {
