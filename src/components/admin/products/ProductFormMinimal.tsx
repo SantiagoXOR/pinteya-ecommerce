@@ -15,6 +15,7 @@ import { ColorPickerField } from './ColorPickerField'
 import { VariantBuilder, VariantFormData } from './VariantBuilder'
 import { ImageUploadZone } from './ImageUploadZone'
 import { ProductImageGallery } from './ProductImageGallery'
+import { TechnicalSheetUpload } from './TechnicalSheetUpload'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 import { Save, X, Upload, Plus, Edit, Trash2 } from '@/lib/optimized-imports'
 import Image from 'next/image'
@@ -1302,6 +1303,29 @@ export function ProductFormMinimal({
             </div>
           )}
         </AdminCard>
+
+        {/* Ficha Técnica */}
+        {productId && mode === 'edit' && (
+          <AdminCard title='Ficha Técnica'>
+            <div className='space-y-4'>
+              <p className='text-sm text-gray-600'>
+                Sube la ficha técnica del producto en formato PDF. Esta información estará disponible para los clientes en la tienda.
+              </p>
+              <TechnicalSheetUpload
+                productId={productId}
+                onUploadSuccess={(data) => {
+                  notifications.showInfoMessage('Ficha técnica subida', `Se subió "${data.title}" correctamente`)
+                }}
+                onDelete={() => {
+                  notifications.showInfoMessage('Ficha técnica eliminada', 'La ficha técnica fue eliminada')
+                }}
+                onError={(error) => {
+                  notifications.showErrorMessage(error)
+                }}
+              />
+            </div>
+          </AdminCard>
+        )}
       </form>
 
       {/* Modal de Variante */}

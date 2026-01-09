@@ -3,7 +3,7 @@
  */
 
 import React from 'react'
-import { Package, Ruler, Hash } from '@/lib/optimized-imports'
+import { Package, Ruler, Hash, FileText } from '@/lib/optimized-imports'
 
 interface ProductWithCategory {
   description?: string
@@ -12,6 +12,7 @@ interface ProductWithCategory {
   weight?: string | number
   dimensions?: string | Record<string, any>
   sku?: string
+  technical_sheet_url?: string | null
 }
 
 interface Product {
@@ -21,6 +22,7 @@ interface Product {
 interface ProductSpecificationsProps {
   fullProductData: ProductWithCategory | null
   product: Product | null
+  technicalSheetUrl?: string | null
 }
 
 /**
@@ -29,12 +31,16 @@ interface ProductSpecificationsProps {
 export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
   fullProductData,
   product,
+  technicalSheetUrl,
 }) => {
   const hasSpecs = fullProductData?.specifications && Object.keys(fullProductData.specifications).length > 0
   const hasFeatures = fullProductData?.features && Object.keys(fullProductData.features).length > 0
   const hasDescription = fullProductData?.description || product?.description
+  
+  // Technical sheet URL can come from prop or fullProductData
+  const sheetUrl = technicalSheetUrl || fullProductData?.technical_sheet_url
 
-  if (!hasSpecs && !hasFeatures && !hasDescription && !fullProductData?.weight && !fullProductData?.dimensions && !fullProductData?.sku) {
+  if (!hasSpecs && !hasFeatures && !hasDescription && !fullProductData?.weight && !fullProductData?.dimensions && !fullProductData?.sku && !sheetUrl) {
     return null
   }
 
@@ -109,6 +115,24 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
           </div>
         )}
       </div>
+
+      {/* Ficha Técnica PDF */}
+      {sheetUrl && (
+        <div className='pt-4 border-t border-gray-200'>
+          <a
+            href={sheetUrl}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='inline-flex items-center gap-2 px-4 py-2.5 bg-blaze-orange-600 text-white rounded-lg hover:bg-blaze-orange-700 transition-colors font-medium text-sm shadow-sm'
+          >
+            <FileText className='w-5 h-5' />
+            Ver Ficha Técnica
+          </a>
+          <p className='text-xs text-gray-500 mt-2'>
+            Descarga la ficha técnica del producto en formato PDF
+          </p>
+        </div>
+      )}
     </div>
   )
 })

@@ -50,8 +50,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://www.pinteya.com/images/hero/hero2/hero1.webp"
           fetchPriority="high"
           type="image/webp"
-          imagesizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-          imagesrcset="https://www.pinteya.com/images/hero/hero2/hero1.webp 1200w"
+          imageSizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+          imageSrcSet="https://www.pinteya.com/images/hero/hero2/hero1.webp 1200w"
           crossOrigin="anonymous"
         />
         

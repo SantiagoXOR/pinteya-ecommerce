@@ -12,6 +12,7 @@ import { ProductInventory } from './ProductInventory'
 import { ProductSeo } from './ProductSeo'
 import { CategorySelector } from './CategorySelector'
 import { ProductBadgePreview } from './ProductBadgePreview'
+import { TechnicalSheetUpload } from './TechnicalSheetUpload'
 import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 import { useProductFormReducer } from '@/hooks/optimization/useProductFormReducer'
 import { cn } from '@/lib/core/utils'
@@ -162,6 +163,18 @@ const ProductFormSchema = z
         })
       )
       .optional(),
+
+    // Technical Sheet (PDF)
+    technical_sheet: z
+      .object({
+        id: z.string().optional(),
+        url: z.string().url('URL de ficha técnica inválida'),
+        title: z.string().optional(),
+        original_filename: z.string().optional(),
+        file_size: z.number().optional(),
+      })
+      .optional()
+      .nullable(),
   })
   .refine(
     data => {
@@ -230,6 +243,7 @@ export function ProductForm({
       tags: [],
       meta_keywords: [],
       downloadable_files: [],
+      technical_sheet: null,
       ...initialData,
     },
   })
@@ -760,11 +774,41 @@ export function ProductForm({
 
         {/* Images Tab */}
         {state.activeTab === 'images' && (
-          <ProductImageManager
-            images={watchedData.images || []}
-            onChange={images => setValue('images', images)}
-            error={errors.images?.message}
-          />
+          <div className='space-y-6'>
+            <ProductImageManager
+              images={watchedData.images || []}
+              onChange={images => setValue('images', images)}
+              error={errors.images?.message}
+            />
+
+            {/* Technical Sheet Upload */}
+            <AdminCard title='Ficha Técnica'>
+              <div className='space-y-4'>
+                <p className='text-sm text-gray-600'>
+                  Sube la ficha técnica del producto en formato PDF. Esta información estará disponible para los clientes.
+                </p>
+                <TechnicalSheetUpload
+                  productId={(initialData as any)?.id?.toString()}
+                  existingSheet={watchedData.technical_sheet || undefined}
+                  onUploadSuccess={data => {
+                    setValue('technical_sheet', {
+                      id: data.id,
+                      url: data.url,
+                      title: data.title,
+                      original_filename: data.original_filename,
+                      file_size: data.file_size,
+                    })
+                  }}
+                  onDelete={() => {
+                    setValue('technical_sheet', null)
+                  }}
+                  onError={error => {
+                    console.error('Error uploading technical sheet:', error)
+                  }}
+                />
+              </div>
+            </AdminCard>
+          </div>
         )}
 
         {/* Variants Tab */}

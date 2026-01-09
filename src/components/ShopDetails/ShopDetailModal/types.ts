@@ -19,6 +19,14 @@ export interface Product {
   colors?: ColorOption[]
   capacities?: string[]
   slug?: string
+  technical_sheet_url?: string | null
+  technical_sheet?: {
+    id?: string
+    url: string
+    title?: string
+    original_filename?: string
+    file_size?: number
+  } | null
 }
 
 export interface ShopDetailModalProps {
