@@ -13,8 +13,8 @@ import { redirect } from 'next/navigation'
  * @returns Session del usuario autenticado
  */
 export async function requireAdminAuth() {
-  // BYPASS - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
-  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+  // BYPASS AUTH - Solo para desarrollo/testing
+  // ⚠️ IMPORTANTE: Desactivar en producción (BYPASS_AUTH=false o eliminar variable)
   if (process.env.BYPASS_AUTH === 'true') {
     console.log(`[Server Auth Guard] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación (NODE_ENV: ${process.env.NODE_ENV})`)
     return {
@@ -130,8 +130,8 @@ export async function checkAdminAuth(): Promise<{
   error: string | null
   status: number
 }> {
-  // BYPASS - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
-  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+  // BYPASS AUTH - Solo para desarrollo/testing
+  // ⚠️ IMPORTANTE: Desactivar en producción (BYPASS_AUTH=false o eliminar variable)
   if (process.env.BYPASS_AUTH === 'true') {
     console.log(`[API Auth Check] ⚠️ BYPASS AUTH ENABLED - Permitiendo acceso sin autenticación (NODE_ENV: ${process.env.NODE_ENV})`)
     return {

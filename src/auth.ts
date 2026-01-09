@@ -53,11 +53,11 @@ export const authOptions: NextAuthOptions = {
   secret: nextAuthSecret,
   // Trust host para Vercel y producción
   trustHost: true,
-  // TEMPORALMENTE deshabilitado para debugging del error de JSON parsing
-  // adapter: SupabaseAdapter({
-  //   url: supabaseUrl,
-  //   secret: supabaseServiceRoleKey,
-  // }),
+  // Supabase Adapter para persistencia de usuarios
+  adapter: SupabaseAdapter({
+    url: supabaseUrl,
+    secret: supabaseServiceRoleKey,
+  }),
   providers: [
     GoogleProvider({
       clientId: googleClientId!,

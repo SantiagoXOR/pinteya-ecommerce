@@ -12,8 +12,8 @@ export default async function middleware(req: NextRequest) {
   const isProduction = process.env.NODE_ENV === 'production'
   const startTime = Date.now()
 
-  // BYPASS AUTH - TEMPORALMENTE HABILITADO EN PRODUCCIÓN (2026-01-08)
-  // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy
+  // BYPASS AUTH - Solo para desarrollo/testing
+  // ⚠️ IMPORTANTE: Desactivar en producción (BYPASS_AUTH=false o eliminar variable)
   // ✅ CRÍTICO: Verificar BYPASS_AUTH ANTES de acceder a cualquier propiedad del request
   if (process.env.BYPASS_AUTH === 'true') {
     console.log(`[BYPASS] ✅ Permitiendo acceso sin autenticación a: ${nextUrl.pathname} (NODE_ENV: ${process.env.NODE_ENV})`)
