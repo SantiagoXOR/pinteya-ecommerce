@@ -78,7 +78,7 @@ export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDiv
 
 // Props para ColorPill
 export interface ColorPillProps {
-  colorData: { name: string; hex: string; textureType?: TextureType }
+  colorData: { name: string; hex: string; textureType?: TextureType; finish?: string }
   isSelected: boolean
   onSelect: (hex: string) => void
   isImpregnante: boolean
@@ -86,7 +86,7 @@ export interface ColorPillProps {
 
 // Props para ColorPillSelector
 export interface ColorPillSelectorProps {
-  colors: Array<{ name: string; hex: string; textureType?: TextureType }>
+  colors: Array<{ name: string; hex: string; textureType?: TextureType; finish?: string }>
   selectedColor?: string
   onColorSelect: (hex: string) => void
   isImpregnante: boolean

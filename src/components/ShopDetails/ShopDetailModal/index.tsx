@@ -180,8 +180,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     const safeVariants = Array.isArray(variants) ? variants : []
     const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
     
-    // Obtener textura según tipo de producto
-    const textureType = getTextureForProductType(productType.id)
+    // Obtener textura según tipo de producto (fallback)
+    const defaultTextureType = getTextureForProductType(productType.id)
     
     if (variantsToUse && variantsToUse.length > 0) {
       const variantNames = Array.from(
@@ -194,22 +194,27 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       const list: ColorOption[] = []
       for (const name of variantNames) {
         const slug = name.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, '-').trim()
+        
+        // Buscar la variante para obtener finish y color_hex
+        const variantWithColor = variantsToUse.find((v: any) => 
+          v.color_name?.toLowerCase() === name.toLowerCase()
+        )
+        const variantFinish = variantWithColor?.finish || ''
+        
         const found = PAINT_COLORS.find(
           c => c.id === slug || c.name === slug || c.displayName.toLowerCase() === name.toLowerCase()
         )
         if (found) {
-          // Usar el color encontrado pero sobrescribir textureType según productType
+          // Usar el color encontrado pero agregar finish de la variante
           if (!list.find(l => l.id === found.id)) {
             list.push({
               ...found,
-              textureType: found.textureType || textureType
+              textureType: found.textureType || defaultTextureType,
+              finish: variantFinish // Agregar finish de la variante
             })
           }
         } else {
           // ✅ CORREGIDO: Priorizar color_hex de la variante (como ProductCard)
-          const variantWithColor = variantsToUse.find((v: any) => 
-            v.color_name?.toLowerCase() === name.toLowerCase() && v.color_hex
-          )
           const hexFromMap = variantWithColor?.color_hex || getColorHex(name) || '#E5E7EB'
           list.push({
             id: slug,
@@ -220,7 +225,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             family: 'Personalizados',
             isPopular: false,
             description: `Color ${name}`,
-            textureType // Asignar textura según tipo de producto
+            textureType: defaultTextureType,
+            finish: variantFinish // Agregar finish de la variante
           })
         }
       }
@@ -237,8 +243,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     const safeVariants = Array.isArray(variants) ? variants : []
     const variantsToUse = safeVariants.length > 0 ? safeVariants : (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
     
-    // Obtener textura según tipo de producto
-    const textureType = getTextureForProductType(productType.id)
+    // Obtener textura según tipo de producto (fallback)
+    const defaultTextureType = getTextureForProductType(productType.id)
     
     if (variantsToUse && variantsToUse.length > 0) {
       const uniqueColors = new Set<string>()
@@ -248,6 +254,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         }
       })
       return Array.from(uniqueColors).map(colorName => {
+        // Buscar la variante para obtener finish y color_hex
+        const variantWithColor = variantsToUse.find((v: any) => 
+          v.color_name?.toLowerCase() === colorName.toLowerCase()
+        )
+        const variantFinish = variantWithColor?.finish || ''
+        
         const existingColor = PAINT_COLORS.find(c => 
           c.name.toLowerCase() === colorName.toLowerCase() ||
           c.displayName.toLowerCase() === colorName.toLowerCase()
@@ -255,13 +267,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         if (existingColor) {
           return {
             ...existingColor,
-            textureType: existingColor.textureType || textureType
+            textureType: existingColor.textureType || defaultTextureType,
+            finish: variantFinish
           }
         }
         // ✅ CORREGIDO: Priorizar color_hex de la variante (como ProductCard)
-        const variantWithColor = variantsToUse.find((v: any) => 
-          v.color_name?.toLowerCase() === colorName.toLowerCase() && v.color_hex
-        )
         const hexFromVariant = variantWithColor?.color_hex || getColorHex(colorName) || '#E5E7EB'
         return {
           id: colorName.toLowerCase().replace(/\s+/g, '-'),
@@ -272,7 +282,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           family: 'Personalizados',
           isPopular: false,
           description: `Color ${colorName}`,
-          textureType
+          textureType: defaultTextureType,
+          finish: variantFinish
         } as ColorOption
       })
     }

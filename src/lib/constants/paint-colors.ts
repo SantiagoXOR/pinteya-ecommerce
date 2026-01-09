@@ -15,6 +15,7 @@ export interface ColorOption {
   isPopular?: boolean
   description?: string
   textureType?: TextureType  // Tipo de textura visual a aplicar
+  finish?: string            // Acabado/terminación (ej: "Brillante", "Metálico")
 }
 
 export const PAINT_COLORS: ColorOption[] = [

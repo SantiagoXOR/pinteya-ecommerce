@@ -10,7 +10,7 @@ import { ProductType } from '@/utils/product-utils'
 // Importar desde archivo compartido para uso en cliente y servidor
 import { PAINT_COLORS, type ColorOption } from '@/lib/constants/paint-colors'
 // Sistema unificado de texturas
-import { getTextureStyle, isTransparentColor, inferTextureFromColorName } from '@/lib/textures/texture-system'
+import { getTextureStyle, isTransparentColor, inferTextureFromColorName, getTextureForFinish } from '@/lib/textures/texture-system'
 
 // Re-exportar para compatibilidad con código existente
 export type { ColorOption }
@@ -352,15 +352,21 @@ interface ColorSwatchProps {
 }
 
 const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick }) => {
-  // Determinar el tipo de textura:
-  // 1. Usar textureType del color si está definido
-  // 2. Si no, inferir basándose en categoría/nombre
+  // Determinar el tipo de textura (prioridad):
+  // 1. textureType explícito del color
+  // 2. finish del color (ej: "Brillante", "Metálico")
+  // 3. Categoría "Madera" → 'wood'
+  // 4. Inferir del nombre del color
   const textureType = useMemo(() => {
     if (color.textureType) return color.textureType
+    if (color.finish) {
+      const finishTexture = getTextureForFinish(color.finish)
+      if (finishTexture !== 'solid') return finishTexture
+    }
     // Fallback: inferir por categoría o nombre
     if (color.category === 'Madera') return 'wood'
     return inferTextureFromColorName(color.name)
-  }, [color.textureType, color.category, color.name])
+  }, [color.textureType, color.finish, color.category, color.name])
 
   // Verificar si es transparente para efecto adicional
   const isTransparent = isTransparentColor(color.name) || color.family === 'Transparentes'

@@ -21,6 +21,7 @@ export type TextureType =
   | 'satin'       // Brillo suave satinado
   | 'matte'       // Acabado completamente mate
   | 'transparent' // Efecto vidrio/cristal (incoloro)
+  | 'fluo'        // Colores neón/fluorescentes
 
 // ===================================
 // UTILIDADES DE COLOR
@@ -107,44 +108,61 @@ export const TEXTURE_GENERATORS: Record<TextureType, (hex: string) => CSSPropert
 
   /**
    * Efecto metalizado con brillo para pinturas metalizadas
+   * Simula metal cepillado con líneas horizontales y reflejos
    */
   metallic: (hex: string) => {
-    const lighter = lightenHex(hex, 0.3)
+    const lighter = lightenHex(hex, 0.4)
+    const darker = darkenHex(hex, 0.2)
     return {
       backgroundColor: hex,
       backgroundImage: [
-        `linear-gradient(135deg, ${lighter} 0%, ${hex} 30%, ${lighter} 50%, ${hex} 70%, ${lighter} 100%)`,
-        'repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 3px)',
-        'radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 40%)',
+        // Gradiente principal de metal
+        `linear-gradient(135deg, ${lighter} 0%, ${hex} 25%, ${lighter} 50%, ${hex} 75%, ${lighter} 100%)`,
+        // Líneas horizontales tipo metal cepillado
+        `repeating-linear-gradient(90deg, ${darker} 0px, transparent 1px, transparent 2px)`,
+        // Líneas secundarias más finas
+        `repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 1px, transparent 1px, transparent 4px)`,
+        // Reflejo superior brillante
+        'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.6) 0%, transparent 50%)',
+        // Reflejo lateral
+        'radial-gradient(ellipse at 0% 50%, rgba(255,255,255,0.3) 0%, transparent 40%)',
       ].join(', '),
-      backgroundSize: '100% 100%, 4px 100%, 100% 100%',
+      backgroundSize: '100% 100%, 3px 100%, 5px 100%, 100% 60%, 40% 100%',
       backgroundBlendMode: 'overlay' as const,
       boxShadow: [
-        'inset 0 1px 2px rgba(255,255,255,0.5)',
-        'inset 0 -1px 2px rgba(0,0,0,0.2)',
-        '0 1px 3px rgba(0,0,0,0.2)',
+        'inset 0 2px 4px rgba(255,255,255,0.6)',
+        'inset 0 -2px 4px rgba(0,0,0,0.3)',
+        'inset 1px 0 2px rgba(255,255,255,0.2)',
+        '0 1px 3px rgba(0,0,0,0.3)',
       ].join(', '),
     }
   },
 
   /**
    * Textura rugosa mate tipo pintura a la tiza (chalk paint)
+   * Efecto de superficie porosa y sin brillo característico de chalk paint
    */
-  chalk: (hex: string) => ({
-    backgroundColor: hex,
-    backgroundImage: [
-      // Ruido granulado sutil
-      'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'0.08\'/%3E%3C/svg%3E")',
-      // Textura rugosa
-      'repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 3px)',
-      'repeating-linear-gradient(-45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 4px)',
-    ].join(', '),
-    backgroundSize: '50px 50px, 5px 5px, 6px 6px',
-    backgroundBlendMode: 'multiply' as const,
-    boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.05)',
-    // Efecto mate sin brillo
-    filter: 'saturate(0.95)',
-  }),
+  chalk: (hex: string) => {
+    const darker = darkenHex(hex, 0.15)
+    return {
+      backgroundColor: hex,
+      backgroundImage: [
+        // Ruido granulado más visible (SVG noise)
+        'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'0.12\'/%3E%3C/svg%3E")',
+        // Textura de poros/grano grueso
+        `repeating-radial-gradient(circle at 25% 25%, ${darker} 0px, transparent 1px, transparent 3px)`,
+        `repeating-radial-gradient(circle at 75% 75%, ${darker} 0px, transparent 1px, transparent 4px)`,
+        // Textura rugosa diagonal
+        'repeating-linear-gradient(45deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 2px)',
+        'repeating-linear-gradient(-45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px)',
+      ].join(', '),
+      backgroundSize: '80px 80px, 6px 6px, 8px 8px, 3px 3px, 4px 4px',
+      backgroundBlendMode: 'multiply' as const,
+      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)',
+      // Efecto mate sin brillo - desaturado ligeramente
+      filter: 'saturate(0.92) brightness(0.98)',
+    }
+  },
 
   /**
    * Efecto perlado iridiscente
@@ -232,6 +250,37 @@ export const TEXTURE_GENERATORS: Record<TextureType, (hex: string) => CSSPropert
       'inset 0 1px 2px rgba(255,255,255,0.4)',
     ].join(', '),
   }),
+
+  /**
+   * Efecto neón/fluorescente para colores fluo
+   * Simula el brillo intenso característico de pinturas fluorescentes
+   */
+  fluo: (hex: string) => {
+    const lighter = lightenHex(hex, 0.3)
+    return {
+      backgroundColor: hex,
+      backgroundImage: [
+        // Brillo central intenso
+        `radial-gradient(ellipse at 50% 50%, ${lighter} 0%, ${hex} 60%, ${hex} 100%)`,
+        // Efecto de "glow" interno
+        `radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.5) 0%, transparent 50%)`,
+        // Borde luminoso
+        `linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.1) 100%)`,
+      ].join(', '),
+      backgroundSize: '100% 100%, 100% 100%, 100% 100%',
+      backgroundBlendMode: 'screen' as const,
+      boxShadow: [
+        // Glow exterior (efecto neón)
+        `0 0 8px ${hex}`,
+        `0 0 4px ${lighter}`,
+        // Brillo interno
+        'inset 0 1px 3px rgba(255,255,255,0.5)',
+        'inset 0 -1px 2px rgba(0,0,0,0.1)',
+      ].join(', '),
+      // Aumentar saturación para efecto más vibrante
+      filter: 'saturate(1.3) brightness(1.05)',
+    }
+  },
 }
 
 // ===================================
@@ -250,6 +299,40 @@ export const PRODUCT_TYPE_TEXTURES: Record<string, TextureType> = {
   'metalizado': 'metallic',
   'perlado': 'pearl',
   // Otros tipos usan 'solid' por defecto
+}
+
+// ===================================
+// MAPEO FINISH (ACABADO) -> TEXTURA
+// ===================================
+
+/**
+ * Mapeo de acabados/terminaciones de variantes a su textura correspondiente
+ * Basado en los valores de finish en product_variants de la DB
+ */
+export const FINISH_TEXTURES: Record<string, TextureType> = {
+  // Acabados principales
+  'brillante': 'gloss',
+  'satinado': 'satin',
+  'mate': 'matte',
+  'a la tiza': 'chalk',
+  'metálico': 'metallic',
+  'metalico': 'metallic', // Sin tilde
+  'fluo': 'fluo',
+  'fluorescente': 'fluo',
+  // Acabados secundarios
+  'rústico': 'wood',
+  'rustico': 'wood', // Sin tilde
+  'cerámico': 'satin', // Similar a satinado
+  'ceramico': 'satin',
+  'natural': 'matte',
+  'perlado': 'pearl',
+  'nacarado': 'pearl',
+  // Variantes de nombres
+  'semi-brillante': 'satin',
+  'semi brillante': 'satin',
+  'alto brillo': 'gloss',
+  'super mate': 'matte',
+  'ultra mate': 'matte',
 }
 
 // ===================================
@@ -290,6 +373,24 @@ export function getTextureStyle(
  */
 export function getTextureForProductType(productTypeId: string): TextureType {
   return PRODUCT_TYPE_TEXTURES[productTypeId] || 'solid'
+}
+
+/**
+ * Obtiene la textura apropiada basada en el finish/acabado de la variante
+ * 
+ * @param finish - Acabado de la variante (ej: "Brillante", "Satinado", "Metálico")
+ * @returns El tipo de textura correspondiente
+ * 
+ * @example
+ * ```tsx
+ * const textureType = getTextureForFinish('Metálico') // 'metallic'
+ * const textureType = getTextureForFinish('A La Tiza') // 'chalk'
+ * ```
+ */
+export function getTextureForFinish(finish: string | undefined | null): TextureType {
+  if (!finish) return 'solid'
+  const normalizedFinish = finish.toLowerCase().trim()
+  return FINISH_TEXTURES[normalizedFinish] || 'solid'
 }
 
 /**

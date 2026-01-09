@@ -8,6 +8,7 @@ import {
   getTextureStyle, 
   isTransparentColor, 
   inferTextureFromColorName,
+  getTextureForFinish,
   type TextureType 
 } from '@/lib/textures/texture-system'
 import type { ColorPillProps } from '../types'
@@ -23,15 +24,20 @@ export const ColorPill = React.memo(function ColorPill({
   onSelect,
   isImpregnante
 }: ColorPillProps) {
-  // Determinar el tipo de textura:
-  // 1. Usar textureType del colorData si está definido
-  // 2. Si isImpregnante=true, usar 'wood'
-  // 3. Si no, inferir del nombre del color
+  // Determinar el tipo de textura (prioridad):
+  // 1. textureType explícito del colorData
+  // 2. finish del colorData (ej: "Brillante", "Metálico", "A La Tiza")
+  // 3. isImpregnante=true → 'wood'
+  // 4. Inferir del nombre del color
   const textureType = React.useMemo((): TextureType => {
     if (colorData.textureType) return colorData.textureType
+    if (colorData.finish) {
+      const finishTexture = getTextureForFinish(colorData.finish)
+      if (finishTexture !== 'solid') return finishTexture
+    }
     if (isImpregnante) return 'wood'
     return inferTextureFromColorName(colorData.name)
-  }, [colorData.textureType, colorData.name, isImpregnante])
+  }, [colorData.textureType, colorData.finish, colorData.name, isImpregnante])
 
   // Verificar si es transparente para efectos adicionales
   const isTransparent = React.useMemo(() => isTransparentColor(colorData.name), [colorData.name])
@@ -126,6 +132,7 @@ export const ColorPill = React.memo(function ColorPill({
     prevProps.colorData.hex === nextProps.colorData.hex &&
     prevProps.colorData.name === nextProps.colorData.name &&
     prevProps.colorData.textureType === nextProps.colorData.textureType &&
+    prevProps.colorData.finish === nextProps.colorData.finish &&
     prevProps.isImpregnante === nextProps.isImpregnante
   )
 })
