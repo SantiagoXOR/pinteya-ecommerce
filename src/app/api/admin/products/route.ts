@@ -216,20 +216,10 @@ const getHandler = async (request: ValidatedRequest) => {
       console.log('🔍 [API] Filtro de marca aplicado:', brandFilter)
     }
     
-    // ✅ NUEVO: Filtro de stock status
+    // ✅ NUEVO: Filtro de stock status (se aplicará DESPUÉS de calcular stock efectivo)
+    // No aplicar filtro SQL aquí porque necesitamos considerar el stock de las variantes
     const stockStatus = searchParams.get('stock_status')
-    console.log('🔍 [API] stock_status recibido:', stockStatus)
-    
-    if (stockStatus === 'low_stock') {
-      query = query.gt('stock', 0).lte('stock', 10)
-      console.log('🔍 [API] Filtro LOW_STOCK aplicado: stock > 0 AND stock <= 10')
-    } else if (stockStatus === 'out_of_stock') {
-      query = query.or('stock.eq.0,stock.is.null')
-      console.log('🔍 [API] Filtro OUT_OF_STOCK aplicado: stock = 0 OR stock IS NULL')
-    } else {
-      console.log('🔍 [API] Sin filtro de stock (mostrando todos)')
-    }
-    // Si es 'all' o no se especifica, no aplicar filtro de stock
+    console.log('🔍 [API] stock_status recibido:', stockStatus, '(se aplicará después de calcular stock efectivo)')
 
     // Apply pagination BEFORE sorting (más eficiente)
     const from = (filters.page - 1) * filters.limit
@@ -412,13 +402,24 @@ const getHandler = async (request: ValidatedRequest) => {
         }
       }) || []
 
-    const total = count || 0
-    const totalPages = Math.ceil(total / filters.limit)
+    // ✅ NUEVO: Aplicar filtro de stock DESPUÉS de calcular el stock efectivo
+    let filteredProducts = transformedProducts
+    if (stockStatus === 'out_of_stock') {
+      filteredProducts = transformedProducts.filter(p => p.stock === 0)
+      console.log('🔍 [API] Filtro OUT_OF_STOCK aplicado post-transformación:', filteredProducts.length, 'productos')
+    } else if (stockStatus === 'low_stock') {
+      filteredProducts = transformedProducts.filter(p => p.stock > 0 && p.stock <= 10)
+      console.log('🔍 [API] Filtro LOW_STOCK aplicado post-transformación:', filteredProducts.length, 'productos')
+    }
+
+    // ✅ CORREGIDO: Usar el total filtrado si hay filtro de stock
+    const filteredTotal = stockStatus ? filteredProducts.length : (count || 0)
+    const totalPages = Math.ceil(filteredTotal / filters.limit)
 
     return NextResponse.json({
-      products: transformedProducts,
-      data: transformedProducts,
-      total,
+      products: filteredProducts,
+      data: filteredProducts,
+      total: filteredTotal,
       page: filters.page,
       pageSize: filters.limit,
       totalPages,
