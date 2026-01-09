@@ -63,6 +63,18 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       primaryImageUrl = productImages?.[0]?.url || null
     }
 
+    // ✅ NUEVO: Obtener ficha técnica del producto
+    let technicalSheet: { id: string; url: string; title: string | null; original_filename: string | null; file_size: number | null } | null = null
+    if (product) {
+      const { data: sheet } = await supabase
+        .from('product_technical_sheets')
+        .select('id, url, title, original_filename, file_size')
+        .eq('product_id', id)
+        .single()
+      
+      technicalSheet = sheet || null
+    }
+
     if (error) {
       if (error.code === 'PGRST116') {
         const notFoundResponse: ApiResponse<null> = {
@@ -183,6 +195,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
           // ✅ NUEVO: Agregar image_url desde product_images si está disponible
           image_url: primaryImageUrl || defaultVariant?.image_url || null,
+          // ✅ NUEVO: Agregar ficha técnica
+          technical_sheet: technicalSheet,
+          technical_sheet_url: technicalSheet?.url || null,
         }
       } catch (variantError) {
         // Si hay error obteniendo variantes, continuar con producto original
@@ -207,9 +222,18 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         ...product,
         medida: parsedMedida,
         image_url: primaryImageUrl || null,
+        // ✅ NUEVO: Agregar ficha técnica
+        technical_sheet: technicalSheet,
+        technical_sheet_url: technicalSheet?.url || null,
       }
     } else if (enrichedProduct && !enrichedProduct.image_url) {
       enrichedProduct.image_url = primaryImageUrl || null
+    }
+    
+    // ✅ NUEVO: Asegurar que la ficha técnica esté presente en enrichedProduct
+    if (enrichedProduct && !enrichedProduct.technical_sheet) {
+      enrichedProduct.technical_sheet = technicalSheet
+      enrichedProduct.technical_sheet_url = technicalSheet?.url || null
     }
 
     const response: ApiResponse<ProductWithCategory> = {
