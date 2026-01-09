@@ -53,20 +53,53 @@ export function withAdminAuth(permissions: string[] = []) {
           method: request.method,
         })
         
-        // ✅ CRÍTICO: Si es multipart/form-data y NO hay BYPASS_AUTH, retornar error
-        // porque no podemos leer la sesión sin leer el body
+        // ✅ FIX: Para multipart/form-data, verificar JWT de cookies (no lee el body)
+        // getToken lee el JWT de las cookies sin necesidad de leer el body del request
         if (isMultipart || isFormUrlEncoded) {
-          console.error('❌ [withAdminAuth] Request multipart sin BYPASS_AUTH, no se puede autenticar')
-          return NextResponse.json(
-            {
-              success: false,
-              error: 'Error de autenticación: No se puede autenticar requests multipart sin BYPASS_AUTH',
-              code: 'AUTH_ERROR',
-              timestamp: new Date().toISOString(),
-              path: request.url,
-            },
-            { status: 401 }
-          )
+          const { getToken } = await import('next-auth/jwt')
+          const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+          
+          if (!token) {
+            console.error('❌ [withAdminAuth] Multipart request sin token JWT válido')
+            return NextResponse.json(
+              {
+                success: false,
+                error: 'Usuario no autenticado',
+                code: 'AUTH_ERROR',
+                timestamp: new Date().toISOString(),
+                path: request.url,
+              },
+              { status: 401 }
+            )
+          }
+          
+          // Verificar que sea admin
+          const userRole = (token.role as string) || 'customer'
+          const isAdmin = userRole === 'admin'
+          
+          console.log('🔐 [withAdminAuth] Multipart auth check:', {
+            hasToken: !!token,
+            userRole,
+            isAdmin,
+            email: token.email,
+          })
+          
+          if (!isAdmin) {
+            console.error('❌ [withAdminAuth] Multipart request - usuario no es admin')
+            return NextResponse.json(
+              {
+                success: false,
+                error: 'Acceso denegado - Se requieren permisos de administrador',
+                code: 'FORBIDDEN',
+                timestamp: new Date().toISOString(),
+                path: request.url,
+              },
+              { status: 403 }
+            )
+          }
+          
+          console.log('✅ [withAdminAuth] Multipart request autenticado via JWT cookie')
+          return await handler(request, context)
         }
         
         // ✅ CORREGIDO: Mapear permisos a acciones CRUD
