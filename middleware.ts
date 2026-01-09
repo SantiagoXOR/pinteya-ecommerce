@@ -28,15 +28,27 @@ export default async function middleware(req: NextRequest) {
   const isFormUrlEncoded = contentType.includes('application/x-www-form-urlencoded')
 
   // ✅ CRÍTICO: Para multipart/form-data, NO llamar getToken porque intenta leer el body
-  // Si BYPASS_AUTH no está activo, tratar como no autenticado para rutas protegidas
+  // En su lugar, verificamos la existencia de la cookie de sesión de NextAuth
   let token = null
   let isLoggedIn = false
   
   if (isMultipart || isFormUrlEncoded) {
-    // Para multipart, no intentar leer token (evita leer body)
-    // Esto significa que las rutas protegidas requerirán BYPASS_AUTH o autenticación por cookies
-    console.log(`[Middleware] Multipart request detectado, saltando getToken para evitar leer body`)
-    isLoggedIn = false // Tratar como no autenticado si no hay bypass
+    // Para multipart, verificar cookie de sesión sin leer el body
+    // NextAuth guarda la sesión en cookies, podemos verificar su existencia
+    const sessionCookie = req.cookies.get('next-auth.session-token') || 
+                          req.cookies.get('__Secure-next-auth.session-token')
+    
+    if (sessionCookie?.value) {
+      // ✅ FIX: Para multipart, confiar en la cookie de sesión
+      // La verificación completa de permisos se delega al endpoint
+      console.log(`[Middleware] Multipart request con cookie de sesión válida, delegando auth al endpoint`)
+      isLoggedIn = true
+      // No tenemos el token completo, pero sabemos que hay sesión
+      // El endpoint verificará los permisos específicos
+    } else {
+      console.log(`[Middleware] Multipart request sin cookie de sesión`)
+      isLoggedIn = false
+    }
   } else {
     // Para otros tipos, obtener token normalmente
     token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
@@ -99,29 +111,36 @@ export default async function middleware(req: NextRequest) {
 
   // Verificar autorización admin
   if ((isAdminRoute || isApiAdminRoute) && isLoggedIn) {
-    // Obtener el rol desde el token (ya está cargado en el JWT)
-    const userRole = (token?.role as string) || 'customer'
-    const isAdmin = userRole === 'admin'
+    // ✅ FIX: Para multipart sin token, delegar verificación de rol al endpoint
+    // El endpoint tiene withAdminAuth que verificará los permisos
+    if (!token && (isMultipart || isFormUrlEncoded)) {
+      console.log(`[Middleware] Multipart admin request - delegando verificación de rol al endpoint`)
+      // Permitir pasar, el endpoint verificará permisos
+    } else {
+      // Obtener el rol desde el token (ya está cargado en el JWT)
+      const userRole = (token?.role as string) || 'customer'
+      const isAdmin = userRole === 'admin'
 
-    // Logging para debugging
-    if (!isProduction || isAdminRoute) {
-      console.log(`[Middleware] Admin check - Route: ${nextUrl.pathname}, UserRole: ${userRole}, IsAdmin: ${isAdmin}`)
-      console.log(`[Middleware] token structure:`, JSON.stringify({
-        hasToken: !!token,
-        userRole: token?.role,
-        userEmail: token?.email,
-        userId: token?.userId,
-      }, null, 2))
-    }
+      // Logging para debugging
+      if (!isProduction || isAdminRoute) {
+        console.log(`[Middleware] Admin check - Route: ${nextUrl.pathname}, UserRole: ${userRole}, IsAdmin: ${isAdmin}`)
+        console.log(`[Middleware] token structure:`, JSON.stringify({
+          hasToken: !!token,
+          userRole: token?.role,
+          userEmail: token?.email,
+          userId: token?.userId,
+        }, null, 2))
+      }
 
-    if (!isAdmin) {
-      if (isApiAdminRoute) {
-        return new NextResponse(
-          JSON.stringify({ error: 'Forbidden', message: 'Admin access required' }),
-          { status: 403, headers: { 'Content-Type': 'application/json' } }
-        )
-      } else {
-        return NextResponse.redirect(new URL('/access-denied?type=admin', nextUrl.origin))
+      if (!isAdmin) {
+        if (isApiAdminRoute) {
+          return new NextResponse(
+            JSON.stringify({ error: 'Forbidden', message: 'Admin access required' }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          )
+        } else {
+          return NextResponse.redirect(new URL('/access-denied?type=admin', nextUrl.origin))
+        }
       }
     }
   }
