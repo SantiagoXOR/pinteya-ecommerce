@@ -26,6 +26,7 @@ interface AdvancedColorPickerProps {
   maxDisplayColors?: number
   className?: string
   productType?: ProductType // Nuevo prop para filtrar colores según el tipo de producto
+  selectedFinish?: string   // Finish seleccionado para textura dinámica
 }
 
 // ===================================
@@ -66,6 +67,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
   maxDisplayColors = 24,
   className,
   productType,
+  selectedFinish,
 }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -257,6 +259,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
                 color={color}
                 isSelected={selectedColor === color.id}
                 onClick={() => onColorChange(color.id)}
+                selectedFinish={selectedFinish}
               />
             ))}
           </div>
@@ -291,6 +294,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
                   color={color}
                   isSelected={selectedColor === color.id}
                   onClick={() => onColorChange(color.id)}
+                  selectedFinish={selectedFinish}
                 />
               ))}
           </div>
@@ -307,6 +311,7 @@ export const AdvancedColorPicker: React.FC<AdvancedColorPickerProps> = ({
                 color={color}
                 isSelected={selectedColor === color.id}
                 onClick={() => onColorChange(color.id)}
+                selectedFinish={selectedFinish}
               />
             ))}
           </div>
@@ -349,15 +354,22 @@ interface ColorSwatchProps {
   color: ColorOption
   isSelected: boolean
   onClick: () => void
+  selectedFinish?: string  // Finish seleccionado para textura dinámica
 }
 
-const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick }) => {
+const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick, selectedFinish }) => {
   // Determinar el tipo de textura (prioridad):
-  // 1. textureType explícito del color
-  // 2. finish del color (ej: "Brillante", "Metálico")
-  // 3. Categoría "Madera" → 'wood'
-  // 4. Inferir del nombre del color
+  // 1. selectedFinish (finish actualmente seleccionado por el usuario) → TEXTURA DINÁMICA
+  // 2. textureType explícito del color
+  // 3. finish del color (ej: "Brillante", "Metálico")
+  // 4. Categoría "Madera" → 'wood'
+  // 5. Inferir del nombre del color
   const textureType = useMemo(() => {
+    // ✅ NUEVO: Priorizar el finish seleccionado por el usuario
+    if (selectedFinish) {
+      const selectedTexture = getTextureForFinish(selectedFinish)
+      if (selectedTexture !== 'solid') return selectedTexture
+    }
     if (color.textureType) return color.textureType
     if (color.finish) {
       const finishTexture = getTextureForFinish(color.finish)
@@ -366,7 +378,7 @@ const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick })
     // Fallback: inferir por categoría o nombre
     if (color.category === 'Madera') return 'wood'
     return inferTextureFromColorName(color.name)
-  }, [color.textureType, color.finish, color.category, color.name])
+  }, [selectedFinish, color.textureType, color.finish, color.category, color.name])
 
   // Verificar si es transparente para efecto adicional
   const isTransparent = isTransparentColor(color.name) || color.family === 'Transparentes'

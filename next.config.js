@@ -139,26 +139,40 @@ const nextConfig = {
     const reactCachePath = path.join(reactPath, 'cache.js')
     const polyfillToUse = fs.existsSync(localPolyfillPath) ? localPolyfillPath : reactCachePath
     
+    // ⚡ FIX ReactCurrentDispatcher: Asegurar resolución correcta de React sin forzar alias
+    // Next.js 16 maneja React internamente, pero cuando se usa --webpack puede haber problemas
+    // La solución es asegurar que webpack resuelva React desde node_modules sin forzar alias
     config.resolve.alias = {
       ...config.resolve.alias,
-      // ⚡ FIX: Removido alias de 'react' - Next.js maneja esto internamente
-      // Forzar el alias de react causa conflictos con ReactCurrentDispatcher
-      // 'react': reactPath, // REMOVIDO - Causa conflictos
+      // ⚡ FIX: No forzar alias de 'react' - Next.js debe resolverlo desde node_modules
+      // Forzar el alias causa conflictos con ReactCurrentDispatcher
+      // En su lugar, asegurar que webpack resuelva correctamente desde node_modules
       'react-dom': reactDomPath,
-      // Resolver jsx-runtime solo si es necesario
-      // 'react/jsx-runtime': path.join(reactPath, 'jsx-runtime.js'), // REMOVIDO - Next.js maneja esto
-      // 'react/jsx-dev-runtime': path.join(reactPath, 'jsx-dev-runtime.js'), // REMOVIDO - Next.js maneja esto
       // CRÍTICO: Resolver react/cache al polyfill
       'react/cache': polyfillToUse,
     }
     
-    // Asegurar que webpack no incluya múltiples instancias de React
+    // ⚡ FIX ReactCurrentDispatcher: Asegurar que React se resuelva desde node_modules
+    // Esto previene problemas con ReactCurrentDispatcher cuando se usa --webpack
     if (!config.resolve.modules) {
-      config.resolve.modules = []
+      config.resolve.modules = ['node_modules']
+    } else if (!config.resolve.modules.includes('node_modules')) {
+      config.resolve.modules.unshift('node_modules')
     }
-    if (!config.resolve.modules.includes('node_modules')) {
-      config.resolve.modules.push('node_modules')
+    
+    // ⚡ FIX ReactCurrentDispatcher: Asegurar que webpack use la misma instancia de React
+    // Esto previene múltiples instancias de React que causan el error ReactCurrentDispatcher
+    // symlinks debe ser false para evitar problemas con la resolución de módulos en Windows
+    if (config.resolve.symlinks === undefined) {
+      config.resolve.symlinks = false
     }
+    
+    // ⚡ FIX ReactCurrentDispatcher: Asegurar que webpack resuelva extensiones correctamente
+    if (!config.resolve.extensions) {
+      config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
+    }
+    
+    // ⚡ REMOVIDO: La configuración de modules ya se maneja arriba
     
     // ⚡ OPTIMIZACIÓN: Code splitting mejorado para reducir código sin usar
     // ⚡ FASE 9: Optimización agresiva para reducir 80 KiB JS sin usar

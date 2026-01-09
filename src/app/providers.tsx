@@ -101,25 +101,15 @@ const MemoizedHeader = Header // No memoizar ya que no recibe props y los hooks 
 const MemoizedFooter = React.memo(Footer)
 // ScrollToTop y Toaster ya son lazy loaded, no necesitan memoización adicional
 
-// ⚡ FIX HMR: NextAuthWrapper carga SessionProvider dinámicamente para evitar errores de HMR con Turbopack
+// ⚡ FIX Turbopack HMR: Importar SessionProvider estáticamente para evitar errores con HMR
+// Turbopack maneja mejor las importaciones estáticas que las dinámicas durante HMR
+import { SessionProvider } from 'next-auth/react'
+
+// ⚡ FIX Turbopack HMR: Wrapper simple para SessionProvider
+// Importación estática previene problemas con HMR en Turbopack
 const NextAuthWrapper = React.memo(({ children }: { children: React.ReactNode }) => {
   // DEBUG: Log de configuración NextAuth
   console.log('[NEXTAUTH_PROVIDER] NextAuth.js configurado para Pinteya E-commerce')
-
-  // Cargar SessionProvider dinámicamente para evitar errores de HMR
-  const [SessionProvider, setSessionProvider] = React.useState<React.ComponentType<{ children: React.ReactNode }> | null>(null)
-
-  React.useEffect(() => {
-    import('next-auth/react').then((mod) => {
-      setSessionProvider(() => mod.SessionProvider)
-    }).catch((error) => {
-      console.error('[NEXTAUTH_PROVIDER] Error loading SessionProvider:', error)
-    })
-  }, [])
-
-  if (!SessionProvider) {
-    return <>{children}</>
-  }
 
   return <SessionProvider>{children}</SessionProvider>
 })

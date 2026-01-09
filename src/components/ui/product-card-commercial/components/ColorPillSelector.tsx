@@ -12,7 +12,8 @@ export const ColorPillSelector = React.memo(function ColorPillSelector({
   colors,
   selectedColor,
   onColorSelect,
-  isImpregnante
+  isImpregnante,
+  selectedFinish
 }: ColorPillSelectorProps) {
   if (colors.length === 0) return null
 
@@ -85,6 +86,7 @@ export const ColorPillSelector = React.memo(function ColorPillSelector({
             isSelected={selectedColor === colorData.hex}
             onSelect={onColorSelect}
             isImpregnante={isImpregnante}
+            selectedFinish={selectedFinish}
           />
         ))}
       </div>

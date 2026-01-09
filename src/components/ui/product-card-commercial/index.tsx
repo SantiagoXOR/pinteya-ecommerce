@@ -484,6 +484,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                 selectedColor={colors.selectedColor}
                 onColorSelect={colors.setSelectedColor}
                 isImpregnante={badges.isImpregnante}
+                selectedFinish={finishes.selectedFinish}
               />
 
               {/* Selector de medidas */}

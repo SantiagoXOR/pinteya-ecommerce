@@ -82,6 +82,7 @@ export interface ColorPillProps {
   isSelected: boolean
   onSelect: (hex: string) => void
   isImpregnante: boolean
+  selectedFinish?: string  // Finish seleccionado actualmente (para textura dinámica)
 }
 
 // Props para ColorPillSelector
@@ -90,6 +91,7 @@ export interface ColorPillSelectorProps {
   selectedColor?: string
   onColorSelect: (hex: string) => void
   isImpregnante: boolean
+  selectedFinish?: string  // Finish seleccionado actualmente (para textura dinámica)
 }
 
 // Props para MeasurePill

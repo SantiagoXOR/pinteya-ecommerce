@@ -22,14 +22,21 @@ export const ColorPill = React.memo(function ColorPill({
   colorData,
   isSelected,
   onSelect,
-  isImpregnante
+  isImpregnante,
+  selectedFinish
 }: ColorPillProps) {
   // Determinar el tipo de textura (prioridad):
-  // 1. textureType explícito del colorData
-  // 2. finish del colorData (ej: "Brillante", "Metálico", "A La Tiza")
-  // 3. isImpregnante=true → 'wood'
-  // 4. Inferir del nombre del color
+  // 1. selectedFinish (finish actualmente seleccionado por el usuario) → TEXTURA DINÁMICA
+  // 2. textureType explícito del colorData
+  // 3. finish del colorData (ej: "Brillante", "Metálico", "A La Tiza")
+  // 4. isImpregnante=true → 'wood'
+  // 5. Inferir del nombre del color
   const textureType = React.useMemo((): TextureType => {
+    // ✅ NUEVO: Priorizar el finish seleccionado por el usuario
+    if (selectedFinish) {
+      const selectedTexture = getTextureForFinish(selectedFinish)
+      if (selectedTexture !== 'solid') return selectedTexture
+    }
     if (colorData.textureType) return colorData.textureType
     if (colorData.finish) {
       const finishTexture = getTextureForFinish(colorData.finish)
@@ -37,7 +44,7 @@ export const ColorPill = React.memo(function ColorPill({
     }
     if (isImpregnante) return 'wood'
     return inferTextureFromColorName(colorData.name)
-  }, [colorData.textureType, colorData.finish, colorData.name, isImpregnante])
+  }, [selectedFinish, colorData.textureType, colorData.finish, colorData.name, isImpregnante])
 
   // Verificar si es transparente para efectos adicionales
   const isTransparent = React.useMemo(() => isTransparentColor(colorData.name), [colorData.name])
@@ -133,7 +140,8 @@ export const ColorPill = React.memo(function ColorPill({
     prevProps.colorData.name === nextProps.colorData.name &&
     prevProps.colorData.textureType === nextProps.colorData.textureType &&
     prevProps.colorData.finish === nextProps.colorData.finish &&
-    prevProps.isImpregnante === nextProps.isImpregnante
+    prevProps.isImpregnante === nextProps.isImpregnante &&
+    prevProps.selectedFinish === nextProps.selectedFinish // ✅ Re-render cuando cambia el finish seleccionado
   )
 })
 

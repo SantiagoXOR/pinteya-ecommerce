@@ -94,7 +94,7 @@ export const TEXTURE_GENERATORS: Record<TextureType, (hex: string) => CSSPropert
 
   /**
    * Textura de madera con vetas verticales para impregnantes
-   * Efecto SUTIL - el color debe ser visible
+   * Solo vetas, sin efectos adicionales
    */
   wood: (hex: string) => {
     const darker = darkenHex(hex, 0.25)
@@ -109,7 +109,7 @@ export const TEXTURE_GENERATORS: Record<TextureType, (hex: string) => CSSPropert
       ].join(', '),
       backgroundSize: '10px 100%, 14px 100%',
       backgroundBlendMode: 'multiply' as const,
-      boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)',
+      // Sin boxShadow para evitar efecto glass
     }
   },
 

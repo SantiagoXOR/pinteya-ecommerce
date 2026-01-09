@@ -915,6 +915,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                           maxDisplayColors={(smartColors && smartColors.length > 0) ? smartColors.length : (availableColors?.length || 0)}
                           className='bg-white'
                           productType={productType}
+                          selectedFinish={selectedFinish}
                         />
                       </React.Suspense>
                     )}
