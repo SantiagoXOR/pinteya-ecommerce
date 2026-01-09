@@ -69,7 +69,10 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
           </p>
           {isDescriptionLong && (
             <button
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsDescriptionExpanded(!isDescriptionExpanded)
+              }}
               className='mt-2 text-sm font-medium text-blaze-orange-600 hover:text-blaze-orange-700 flex items-center gap-1 transition-colors'
             >
               {isDescriptionExpanded ? (
@@ -156,6 +159,7 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
             href={sheetUrl}
             target='_blank'
             rel='noopener noreferrer'
+            onClick={(e) => e.stopPropagation()}
             className='inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors'
           >
             <FileText className='w-4 h-4' />
