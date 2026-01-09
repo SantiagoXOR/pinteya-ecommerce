@@ -195,7 +195,11 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         if (found) {
           if (!list.find(l => l.id === found.id)) list.push(found)
         } else {
-          const hexFromMap = getColorHex(name) || '#E5E7EB'
+          // ✅ CORREGIDO: Priorizar color_hex de la variante (como ProductCard)
+          const variantWithColor = variantsToUse.find((v: any) => 
+            v.color_name?.toLowerCase() === name.toLowerCase() && v.color_hex
+          )
+          const hexFromMap = variantWithColor?.color_hex || getColorHex(name) || '#E5E7EB'
           list.push({
             id: slug,
             name: name.toLowerCase(),
@@ -233,11 +237,16 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           c.displayName.toLowerCase() === colorName.toLowerCase()
         )
         if (existingColor) return existingColor
+        // ✅ CORREGIDO: Priorizar color_hex de la variante (como ProductCard)
+        const variantWithColor = variantsToUse.find((v: any) => 
+          v.color_name?.toLowerCase() === colorName.toLowerCase() && v.color_hex
+        )
+        const hexFromVariant = variantWithColor?.color_hex || getColorHex(colorName) || '#E5E7EB'
         return {
           id: colorName.toLowerCase().replace(/\s+/g, '-'),
           name: colorName.toLowerCase(),
           displayName: colorName,
-          hex: '#E5E7EB',
+          hex: hexFromVariant,
           category: '',
           family: 'Personalizados',
           isPopular: false,
@@ -854,6 +863,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                   <ProductSpecifications
                     fullProductData={productData}
                     product={product}
+                    technicalSheetUrl={(productData as any)?.technical_sheet_url || (productData as any)?.technical_sheet?.url}
                   />
 
                   <Separator />
