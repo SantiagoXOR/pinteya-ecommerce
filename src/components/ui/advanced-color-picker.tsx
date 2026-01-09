@@ -359,13 +359,17 @@ interface ColorSwatchProps {
 
 const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick, selectedFinish }) => {
   // Determinar el tipo de textura (prioridad):
-  // 1. selectedFinish (finish actualmente seleccionado por el usuario) → TEXTURA DINÁMICA
-  // 2. textureType explícito del color
-  // 3. finish del color (ej: "Brillante", "Metálico")
-  // 4. Categoría "Madera" → 'wood'
+  // 1. Categoría "Madera" o textureType 'wood' → SIEMPRE vetas
+  // 2. selectedFinish (finish actualmente seleccionado) → TEXTURA DINÁMICA
+  // 3. textureType explícito del color
+  // 4. finish del color
   // 5. Inferir del nombre del color
   const textureType = useMemo(() => {
-    // ✅ NUEVO: Priorizar el finish seleccionado por el usuario
+    // ✅ Productos de madera SIEMPRE tienen vetas (prioridad máxima)
+    if (color.category === 'Madera') return 'wood'
+    if (color.textureType === 'wood') return 'wood'
+    
+    // Para otros productos, usar el finish seleccionado
     if (selectedFinish) {
       const selectedTexture = getTextureForFinish(selectedFinish)
       if (selectedTexture !== 'solid') return selectedTexture
@@ -375,10 +379,8 @@ const ColorSwatch: React.FC<ColorSwatchProps> = ({ color, isSelected, onClick, s
       const finishTexture = getTextureForFinish(color.finish)
       if (finishTexture !== 'solid') return finishTexture
     }
-    // Fallback: inferir por categoría o nombre
-    if (color.category === 'Madera') return 'wood'
     return inferTextureFromColorName(color.name)
-  }, [selectedFinish, color.textureType, color.finish, color.category, color.name])
+  }, [color.category, selectedFinish, color.textureType, color.finish, color.name])
 
   // Verificar si es transparente para efecto adicional
   const isTransparent = isTransparentColor(color.name) || color.family === 'Transparentes'

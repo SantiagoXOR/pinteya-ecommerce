@@ -26,13 +26,18 @@ export const ColorPill = React.memo(function ColorPill({
   selectedFinish
 }: ColorPillProps) {
   // Determinar el tipo de textura (prioridad):
-  // 1. selectedFinish (finish actualmente seleccionado por el usuario) → TEXTURA DINÁMICA
-  // 2. textureType explícito del colorData
-  // 3. finish del colorData (ej: "Brillante", "Metálico", "A La Tiza")
-  // 4. isImpregnante=true → 'wood'
-  // 5. Inferir del nombre del color
+  // 1. isImpregnante=true → 'wood' (SIEMPRE para productos de madera)
+  // 2. textureType explícito 'wood' → mantener vetas
+  // 3. selectedFinish (finish actualmente seleccionado) → TEXTURA DINÁMICA
+  // 4. textureType explícito del colorData
+  // 5. finish del colorData
+  // 6. Inferir del nombre del color
   const textureType = React.useMemo((): TextureType => {
-    // ✅ NUEVO: Priorizar el finish seleccionado por el usuario
+    // ✅ Productos de madera SIEMPRE tienen vetas (prioridad máxima)
+    if (isImpregnante) return 'wood'
+    if (colorData.textureType === 'wood') return 'wood'
+    
+    // Para otros productos, usar el finish seleccionado
     if (selectedFinish) {
       const selectedTexture = getTextureForFinish(selectedFinish)
       if (selectedTexture !== 'solid') return selectedTexture
@@ -42,9 +47,8 @@ export const ColorPill = React.memo(function ColorPill({
       const finishTexture = getTextureForFinish(colorData.finish)
       if (finishTexture !== 'solid') return finishTexture
     }
-    if (isImpregnante) return 'wood'
     return inferTextureFromColorName(colorData.name)
-  }, [selectedFinish, colorData.textureType, colorData.finish, colorData.name, isImpregnante])
+  }, [isImpregnante, selectedFinish, colorData.textureType, colorData.finish, colorData.name])
 
   // Verificar si es transparente para efectos adicionales
   const isTransparent = React.useMemo(() => isTransparentColor(colorData.name), [colorData.name])
