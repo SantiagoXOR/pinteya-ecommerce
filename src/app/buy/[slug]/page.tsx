@@ -15,7 +15,7 @@ import { BuyPageHeader } from '@/components/Checkout/BuyPageHeader'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { useProductBySlug } from '@/hooks/useProductBySlug'
-import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
+import { ProductGridSkeleton } from '@/components/ui/skeletons'
 // ⚡ PERFORMANCE: Importar directamente para evitar problemas de serialización con dynamic imports
 // WhatsApp components deshabilitados en /buy
 // import FloatingWhatsAppBuy from '@/components/Common/FloatingWhatsAppBuy'
@@ -347,9 +347,9 @@ export default function BuyProductPage() {
             {...(productData.categorySlug && { categorySlug: productData.categorySlug })}
           />
         ) : (
-          // ✅ SKELETON UNIFICADO: Usar ProductSkeletonGrid para consistencia con Home-v2
+          // ✅ SKELETON UNIFICADO: Usar ProductGridSkeleton para consistencia con Home-v2
           <div className='w-full'>
-            <ProductSkeletonGrid count={8} />
+            <ProductGridSkeleton count={8} />
             {/* Mensaje de estado adicional */}
             <div className='flex flex-col items-center justify-center py-8'>
               <div className='text-center space-y-1'>

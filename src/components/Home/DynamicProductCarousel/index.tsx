@@ -9,7 +9,7 @@ import { useFilteredProducts } from '@/hooks/useFilteredProducts'
 import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamicCounts'
-import { ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
+import { DynamicCarouselSkeleton } from '@/components/ui/skeletons'
 import { updateProductWithMostExpensiveVariant } from '@/lib/products/utils/variant-utils'
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/products/constants'
 
@@ -128,22 +128,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
 
   // Loading state
   if (isLoading) {
-    return (
-      <section className='py-4 bg-white category-transition overflow-hidden'>
-        <div className='max-w-7xl mx-auto px-4 overflow-hidden'>
-          <div className='animate-pulse mb-3'>
-            <div className='flex items-center gap-3'>
-              <div className='w-[68px] h-[68px] md:w-[84px] md:h-[84px] bg-gray-200 rounded-full'></div>
-              <div>
-                <div className='h-6 md:h-7 bg-gray-200 rounded w-48 mb-1'></div>
-                <div className='h-3 md:h-4 bg-gray-200 rounded w-32'></div>
-              </div>
-            </div>
-          </div>
-          <ProductSkeletonCarousel count={5} />
-        </div>
-      </section>
-    )
+    return <DynamicCarouselSkeleton />
   }
 
   // Error state

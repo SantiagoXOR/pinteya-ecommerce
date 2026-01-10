@@ -9,7 +9,7 @@ import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Sparkles } from '@/lib/optimized-imports'
-import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
+import { ProductGridSkeleton } from '@/components/ui/skeletons'
 
 const NewArrival: React.FC = () => {
   const { filters } = useProductFilters({ syncWithUrl: true })
@@ -43,7 +43,7 @@ const NewArrival: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <ProductSkeletonGrid count={8} />
+          <ProductGridSkeleton count={8} />
         ) : error ? (
           <Card variant='outlined' className='border-red-200 bg-red-50'>
             <CardContent className='p-8 text-center'>

@@ -8,60 +8,42 @@ import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useLCPDetection } from '@/hooks/useLCPDetection'
 import type { PromoBannersProps } from './PromoBanners'
-import { ProductSkeletonGrid, ProductSkeletonCarousel } from '@/components/ui/product-skeleton'
+import {
+  BestSellerSkeleton,
+  CategoryPillsSkeleton,
+  PromoBannerSkeleton,
+  TrendingSearchesSkeleton,
+  TestimonialsSkeleton,
+  DynamicCarouselSkeleton,
+  NewArrivalsSkeleton,
+  ProductGridSkeleton,
+} from '@/components/ui/skeletons'
 // ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism de forma diferida (no bloqueante)
 // El CSS se importa pero se carga después del FCP usando DeferredGlassmorphismCSS
 import { DeferredGlassmorphismCSS } from './DeferredGlassmorphismCSS'
 // ⚡ FASE 1B: BestSeller diferido con ssr: false para reducir main thread work
 const BestSeller = dynamic(() => import('./BestSeller/index'), {
   ssr: false, // ⚡ OPTIMIZACIÓN: No SSR para reducir main thread work
-  loading: () => (
-    <div className='px-4'>
-      <div className='h-8 w-48 bg-gray-200 rounded skeleton-pulse mb-4' />
-      <ProductSkeletonCarousel count={4} />
-    </div>
-  ),
+  loading: () => <BestSellerSkeleton />,
 })
 
 // ⚡ PERFORMANCE: HeroOptimized renderiza imagen estática inicial y carga carousel después del FCP
 import HeroOptimized from './HeroOptimized'
 
 const CategoryTogglePillsWithSearch = dynamic(() => import('./CategoryTogglePillsWithSearch'), {
-  loading: () => (
-    <div className='flex gap-2 px-4 overflow-x-auto'>
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
-      ))}
-    </div>
-  ),
+  loading: () => <CategoryPillsSkeleton />,
 })
 
 const PromoBanners = dynamic<PromoBannersProps>(() => import('./PromoBanners/index'), {
-  loading: () => (
-    <div className='w-full h-32 md:h-48 bg-gray-200 skeleton-loading rounded-lg mx-4' />
-  ),
+  loading: () => <PromoBannerSkeleton />,
 })
 
 const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel/index'), {
-  loading: () => (
-    <div className='px-4'>
-      <div className='h-8 w-48 bg-gray-200 rounded skeleton-pulse mb-4' />
-      <ProductSkeletonCarousel count={4} />
-    </div>
-  ),
+  loading: () => <DynamicCarouselSkeleton />,
 })
 
 const TrendingSearches = dynamic(() => import('./TrendingSearches/index'), {
-  loading: () => (
-    <div className='px-4'>
-      <div className='h-8 w-40 bg-gray-200 rounded skeleton-pulse mb-4' />
-      <div className='flex flex-wrap gap-2'>
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse' />
-        ))}
-      </div>
-    </div>
-  ),
+  loading: () => <TrendingSearchesSkeleton />,
 })
 
 // ⚡ OPTIMIZACIÓN: Usar CombosOptimized (igual que HeroOptimized) para mejor LCP
@@ -69,28 +51,13 @@ import CombosOptimized from './CombosOptimized'
 
 const Testimonials = dynamic(() => import('./Testimonials/index'), {
   ssr: false, // ⚡ OPTIMIZACIÓN: No SSR para componentes below-fold
-  loading: () => (
-    <div className='px-4'>
-      <div className='h-8 w-40 bg-gray-200 rounded skeleton-pulse mb-4' />
-      <div className='flex gap-4 overflow-x-auto'>
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className='w-80 h-48 bg-gray-200 rounded-lg skeleton-loading flex-shrink-0' />
-        ))}
-      </div>
-    </div>
-  ),
+  loading: () => <TestimonialsSkeleton />,
 })
 // ⚡ OPTIMIZACIÓN: Componentes below-fold con lazy loading más agresivo
 // Usar ssr: false para componentes que no necesitan SSR
 const NewArrivals = dynamic(() => import('./NewArrivals/index'), {
   ssr: false, // ⚡ OPTIMIZACIÓN: No SSR para componentes below-fold
-  loading: () => (
-    <section className='overflow-hidden pt-8 sm:pt-12 pb-6 sm:pb-10 bg-transparent'>
-      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
-        <ProductSkeletonGrid count={8} />
-      </div>
-    </section>
-  ),
+  loading: () => <NewArrivalsSkeleton />,
 })
 // Componentes flotantes con carga diferida
 // FloatingCart: cargar después de 2 segundos
@@ -265,7 +232,7 @@ const LazyBestSeller = React.memo(({ delay = 0 }: { delay?: number }) => {
   if (typeof window !== 'undefined' && isMounted && !shouldRender && delay > 0) {
     return (
       <div className='mt-4 sm:mt-6 product-section'>
-        <ProductSkeletonGrid count={4} />
+        <ProductGridSkeleton count={4} />
       </div>
     )
   }
@@ -325,11 +292,7 @@ const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
   if (!shouldRender) {
     return (
       <div className='mt-1 sm:mt-1.5' style={{ minHeight: '40px' }}>
-        <div className='flex gap-2 px-4 overflow-x-auto'>
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
-          ))}
-        </div>
+        <CategoryPillsSkeleton />
       </div>
     )
   }
@@ -551,15 +514,7 @@ const Home = () => {
       )}
 
       {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
-      <React.Suspense
-        fallback={
-          <div className='flex gap-2 px-4 overflow-x-auto'>
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className='h-8 w-24 bg-gray-200 rounded-full skeleton-pulse flex-shrink-0' />
-            ))}
-          </div>
-        }
-      >
+      <React.Suspense fallback={<CategoryPillsSkeleton />}>
         <DelayedCategoryToggle delay={categoryToggleDelay} />
       </React.Suspense>
 
