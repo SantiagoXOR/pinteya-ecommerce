@@ -34,7 +34,7 @@ const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
         // Mobile: altura igual a CommercialProductCard
         'h-[300px] sm:h-[360px]',
         // Tablet y desktop: altura igual a CommercialProductCard
-        'md:h-[450px] lg:h-[500px]',
+        'md:h-[400px] lg:h-[440px]',
         'md:rounded-2xl',
         'transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl',
         'transform-gpu will-change-transform',
@@ -73,26 +73,26 @@ const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
       </div>
 
       {/* Sección inferior - Contenido (similar a CommercialProductCard) */}
-      <div className='flex flex-col flex-1 p-3 sm:p-4 md:p-5 justify-between'>
+      <div className='flex flex-col flex-1 p-2 sm:p-3 md:p-5 justify-between'>
         {/* Texto principal */}
-        <div className='space-y-1.5 md:space-y-2 text-left'>
-          <h3 className='text-sm sm:text-base md:text-lg font-bold text-gray-900 leading-tight'>
+        <div className='space-y-1 sm:space-y-1.5 md:space-y-2 text-left'>
+          <h3 className='text-xs sm:text-sm md:text-lg font-bold text-gray-900 leading-tight'>
             ¿No encontraste lo que buscabas?
           </h3>
-          <p className='text-xs md:text-sm text-gray-600 leading-relaxed'>
+          <p className='text-[10px] sm:text-xs md:text-sm text-gray-600 leading-relaxed'>
             Nuestros asesores están disponibles para ayudarte
           </p>
         </div>
 
         {/* Botón de WhatsApp - Estilo similar al CTA de CommercialProductCard */}
-        <div className='mt-auto pt-4 md:pt-5'>
+        <div className='mt-auto pt-2 sm:pt-4 md:pt-5'>
           <Button
             onClick={handleWhatsAppClick}
-            className='w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 group h-10 md:h-11 px-4 md:px-6'
+            className='w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 group h-8 sm:h-10 md:h-11 px-2 sm:px-4 md:px-6'
             size='default'
           >
-            <MessageCircle className='w-5 h-5 md:w-6 md:h-6 mr-2 transition-transform duration-200 group-hover:scale-110' />
-            <span className='text-sm md:text-base font-semibold'>Necesito Ayuda</span>
+            <MessageCircle className='w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-1.5 sm:mr-2 transition-transform duration-200 group-hover:scale-110' />
+            <span className='text-[10px] sm:text-sm md:text-base font-semibold'>Necesito Ayuda</span>
           </Button>
         </div>
       </div>

@@ -59,10 +59,21 @@ export const ProductCardContent = React.memo(function ProductCardContent({
       {/* Precios */}
       {(displayPrice !== undefined || displayOriginalPrice !== undefined) && (
         <div className='flex flex-col items-start mb-0 pb-0'>
-          {/* Precio anterior tachado - arriba */}
+          {/* Precio anterior tachado + Badge en la misma línea */}
           {displayOriginalPrice && displayOriginalPrice > (displayPrice ?? 0) && (
-            <div className='text-gray-400 line-through text-[9px] md:text-[10px] mb-0 leading-none -mt-0.5'>
-              {formatCurrency(displayOriginalPrice, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            <div className='flex items-center gap-1.5 mb-0 leading-none -mt-0.5'>
+              <span className='text-gray-400 line-through text-[9px] md:text-[10px]'>
+                {formatCurrency(displayOriginalPrice, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </span>
+              {/* Badge de descuento - al lado del precio tachado */}
+              {discount && (
+                <span
+                  className='inline-flex items-center justify-center px-1 py-0.5 rounded-full text-[6px] sm:text-[7px] md:text-[8px] font-bold leading-none tracking-wide whitespace-nowrap'
+                  style={{ backgroundColor: '#EA5A17', color: '#ffffff' }}
+                >
+                  {discount} OFF
+                </span>
+              )}
             </div>
           )}
           
@@ -75,16 +86,6 @@ export const ProductCardContent = React.memo(function ProductCardContent({
               >
                 {formatCurrency(displayPrice ?? 0, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </div>
-
-              {/* Badge de descuento - horizontal y pequeño */}
-              {discount && (
-                <div
-                  className='inline-flex items-center justify-center px-1.5 py-0.5 sm:px-2 rounded-full text-[7px] sm:text-[8px] md:text-[9px] font-bold leading-none tracking-wide'
-                  style={{ backgroundColor: '#EA5A17', color: '#ffffff' }}
-                >
-                  {discount} OFF
-                </div>
-              )}
             </div>
           )}
         </div>

@@ -54,11 +54,11 @@ export const MeasurePill = React.memo(function MeasurePill({
       type='button'
       onClick={handleClick}
       className={cn(
-        'relative py-0.5 flex-shrink-0 rounded-full flex items-center gap-1 h-[18px]',
+        'relative py-0.5 flex-shrink-0 rounded-full flex items-center gap-0.5 h-[16px] sm:h-[18px]',
         'transform-gpu',
         isSelected 
-          ? 'pl-1.5 pr-2' 
-          : 'px-1.5',
+          ? 'pl-1 pr-2 sm:pl-1.5 sm:pr-2.5' 
+          : 'px-1 sm:px-1.5',
         // Solo transiciones compuestas
         'transition-transform duration-500 ease-in-out'
       )}
@@ -79,7 +79,7 @@ export const MeasurePill = React.memo(function MeasurePill({
         }}
       />
       <span className={cn(
-        'relative z-10 font-bold leading-none whitespace-nowrap text-[8px]',
+        'relative z-10 font-bold leading-none whitespace-nowrap text-[6px] sm:text-[8px]',
         textColor
       )}>
         {number}{displayUnit ? ` ${displayUnit}` : ''}
@@ -87,7 +87,7 @@ export const MeasurePill = React.memo(function MeasurePill({
       
       {/* Checkmark de selección - alineado al centro del texto */}
       {isSelected && (
-        <Check className={cn('relative z-10 w-2.5 h-2.5 flex-shrink-0', textColor)} strokeWidth={3} />
+        <Check className={cn('relative z-10 w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0', textColor)} strokeWidth={3} />
       )}
     </button>
   )

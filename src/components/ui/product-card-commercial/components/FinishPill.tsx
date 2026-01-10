@@ -55,13 +55,13 @@ export const FinishPill = React.memo(function FinishPill({
       onClick={handleClick}
       disabled={!isAvailable}
       className={cn(
-        'relative py-0.5 flex-shrink-0 rounded-full flex items-center gap-1 h-[18px]',
+        'relative py-0.5 flex-shrink-0 rounded-full flex items-center gap-0.5 h-[16px] sm:h-[18px]',
         'transform-gpu',
         isSelected && isAvailable
-          ? 'pl-1.5 pr-2' 
+          ? 'pl-1 pr-2 sm:pl-1.5 sm:pr-2.5' 
           : isAvailable
-          ? 'px-1.5'
-          : 'px-1.5 cursor-not-allowed',
+          ? 'px-1 sm:px-1.5'
+          : 'px-1 sm:px-1.5 cursor-not-allowed',
         // Solo transiciones compuestas
         isAvailable && 'transition-transform duration-500 ease-in-out active:scale-95'
       )}
@@ -74,7 +74,7 @@ export const FinishPill = React.memo(function FinishPill({
       title={!isAvailable ? `Este acabado no está disponible para el color seleccionado` : undefined}
     >
       <span className={cn(
-        'relative z-10 font-bold leading-none whitespace-nowrap text-[8px] uppercase',
+        'relative z-10 font-bold leading-none whitespace-nowrap text-[6px] sm:text-[8px] uppercase',
         isAvailable ? 'text-gray-900' : 'text-gray-400'
       )}>
         {finish}
@@ -82,7 +82,7 @@ export const FinishPill = React.memo(function FinishPill({
       
       {/* Checkmark de selección - alineado al centro del texto */}
       {isSelected && isAvailable && (
-        <Check className="relative z-10 w-2.5 h-2.5 flex-shrink-0 text-gray-900" strokeWidth={3} />
+        <Check className="relative z-10 w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0 text-gray-900" strokeWidth={3} />
       )}
     </button>
   )

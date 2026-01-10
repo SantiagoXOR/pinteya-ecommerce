@@ -369,7 +369,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         ref={ref}
         className={cn(
           'relative flex flex-col w-full cursor-pointer',
-          'min-h-[280px] sm:min-h-[320px] md:h-[450px] lg:h-[500px]',
+          'min-h-[280px] sm:min-h-[320px] md:h-[400px] lg:h-[440px]',
           'glass-card-3d glass-accelerated',
           'overflow-hidden',
           'rounded-xl md:rounded-[1.5rem]',
@@ -483,8 +483,8 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
             />
           </div>
 
-          {/* Selectores de color y medida - Full width sin padding horizontal, con espacio extra abajo para que no se corten */}
-          <div className='relative z-10 w-full pb-3 md:pb-2 overflow-hidden'>
+          {/* Selectores de color y medida - Full width sin padding horizontal */}
+          <div className='relative z-10 w-full pb-2 md:pb-1.5 overflow-hidden'>
             <div className='flex flex-col gap-0 overflow-hidden' style={{ marginBottom: '0' }}>
               {/* Selector de colores */}
               <ColorPillSelector
