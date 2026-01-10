@@ -188,11 +188,12 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
     refetchOnMount: 'always',  // ✅ AGREGADO: Siempre refetch al montar el componente
   })
 
-  // Query para categorías
+  // Query para categorías - solicitar todas las categorías sin límite
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
     queryKey: ['admin-categories'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/categories')
+      // Solicitar todas las categorías con un límite alto para obtener todas
+      const response = await fetch('/api/admin/categories?limit=1000')
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
@@ -428,30 +429,50 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   const normalizedCategories = useMemo(() => {
     // Si categoriesData es null/undefined, retornar array vacío
     if (!categoriesData) {
+      console.log('[useProductsEnterprise] categoriesData es null/undefined')
       return []
     }
 
+    console.log('[useProductsEnterprise] categoriesData:', JSON.stringify(categoriesData, null, 2))
+
     // Caso 1: categoriesData es directamente un array
     if (Array.isArray(categoriesData)) {
-      return categoriesData as Category[]
+      console.log('[useProductsEnterprise] Caso 1: categoriesData es array directo, cantidad:', categoriesData.length)
+      return categoriesData.map(cat => ({
+        id: typeof cat.id === 'string' ? parseInt(cat.id, 10) : cat.id,
+        name: cat.name,
+      })) as Category[]
     }
 
     // Caso 2: categoriesData.data es un array
     if (Array.isArray(categoriesData.data)) {
-      return categoriesData.data as Category[]
+      console.log('[useProductsEnterprise] Caso 2: categoriesData.data es array, cantidad:', categoriesData.data.length)
+      return categoriesData.data.map(cat => ({
+        id: typeof cat.id === 'string' ? parseInt(cat.id, 10) : cat.id,
+        name: cat.name,
+      })) as Category[]
     }
 
     // Caso 3: categoriesData.data.categories es un array (estructura de API admin)
     if (Array.isArray(categoriesData.data?.categories)) {
-      return categoriesData.data.categories as Category[]
+      console.log('[useProductsEnterprise] Caso 3: categoriesData.data.categories es array, cantidad:', categoriesData.data.categories.length)
+      return categoriesData.data.categories.map(cat => ({
+        id: typeof cat.id === 'string' ? parseInt(cat.id, 10) : (typeof cat.id === 'number' ? cat.id : parseInt(String(cat.id), 10)),
+        name: cat.name || cat.name || '',
+      })).filter(cat => cat.id && !isNaN(cat.id) && cat.name) as Category[]
     }
 
     // Caso 4: categoriesData.categories es un array (estructura alternativa)
     if (Array.isArray(categoriesData.categories)) {
-      return categoriesData.categories as Category[]
+      console.log('[useProductsEnterprise] Caso 4: categoriesData.categories es array, cantidad:', categoriesData.categories.length)
+      return categoriesData.categories.map(cat => ({
+        id: typeof cat.id === 'string' ? parseInt(cat.id, 10) : cat.id,
+        name: cat.name,
+      })) as Category[]
     }
 
     // Si no se encuentra ninguna estructura válida, retornar array vacío
+    console.warn('[useProductsEnterprise] No se pudo extraer categorías de la estructura:', Object.keys(categoriesData))
     return []
   }, [categoriesData])
 
