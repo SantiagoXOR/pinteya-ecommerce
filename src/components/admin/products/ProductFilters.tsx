@@ -68,14 +68,6 @@ export function ProductFilters({
 }: ProductFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const safeCategories = Array.isArray(categories) ? categories : []
-  
-  // Debug: Log categorías recibidas
-  console.log('[ProductFilters] Categorías recibidas:', {
-    cantidad: safeCategories.length,
-    categorias: safeCategories,
-    esArray: Array.isArray(categories),
-    tipo: typeof categories,
-  })
 
   // Función para contar filtros activos excluyendo valores por defecto
   const getActiveFiltersCount = () => {

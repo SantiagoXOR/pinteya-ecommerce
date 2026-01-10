@@ -188,18 +188,20 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
     refetchOnMount: 'always',  // ✅ AGREGADO: Siempre refetch al montar el componente
   })
 
-  // Query para categorías - solicitar todas las categorías sin límite
+  // Query para categorías - usar el mismo endpoint que CategorySelector para consistencia
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
-    queryKey: ['admin-categories'],
+    queryKey: ['categories'], // Mismo queryKey que CategorySelector para compartir cache
     queryFn: async () => {
-      // Solicitar todas las categorías con un límite alto para obtener todas
-      const response = await fetch('/api/admin/categories?limit=1000')
+      // Usar el mismo endpoint que CategorySelector que funciona correctamente
+      const response = await fetch('/api/categories')
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
-      return response.json()
+      const data = await response.json()
+      // Extraer categorías de la misma forma que CategorySelector
+      return data.data || []
     },
-    staleTime: 300000,         // 5 min - categorías casi nunca cambian
+    staleTime: 5 * 60 * 1000,  // 5 min - mismo que CategorySelector
     gcTime: 3600000,           // 1 hora
     refetchOnWindowFocus: false,
   })
@@ -427,75 +429,23 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   // =====================================================
 
   const normalizedCategories = useMemo(() => {
-    // Si categoriesData es null/undefined, retornar array vacío
-    if (!categoriesData) {
-      console.log('[useProductsEnterprise] categoriesData es null/undefined')
+    // categoriesData ya viene como array directamente desde el queryFn (igual que CategorySelector)
+    if (!Array.isArray(categoriesData)) {
+      console.warn('[useProductsEnterprise] categoriesData no es un array:', categoriesData)
       return []
     }
 
-    console.log('[useProductsEnterprise] categoriesData recibido:', {
-      tieneData: !!categoriesData.data,
-      tieneCategories: !!categoriesData.data?.categories,
-      esArray: Array.isArray(categoriesData),
-      keys: Object.keys(categoriesData),
-    })
-
-    // Función auxiliar para normalizar una categoría al formato esperado
-    const normalizeCategory = (cat: any): { id: number; name: string } | null => {
-      if (!cat || !cat.name) return null
-      
-      // Convertir ID a número
-      let id: number
-      if (typeof cat.id === 'number') {
-        id = cat.id
-      } else if (typeof cat.id === 'string') {
-        const parsed = parseInt(cat.id, 10)
-        if (isNaN(parsed)) {
-          console.warn('[useProductsEnterprise] ID de categoría inválido:', cat.id)
-          return null
-        }
-        id = parsed
-      } else {
-        console.warn('[useProductsEnterprise] Tipo de ID de categoría desconocido:', typeof cat.id, cat.id)
-        return null
-      }
-
-      return {
-        id,
-        name: String(cat.name || ''),
-      }
-    }
-
-    let categoriesArray: any[] = []
-
-    // Caso 1: categoriesData es directamente un array
-    if (Array.isArray(categoriesData)) {
-      console.log('[useProductsEnterprise] Caso 1: categoriesData es array directo')
-      categoriesArray = categoriesData
-    }
-    // Caso 2: categoriesData.data es un array
-    else if (Array.isArray(categoriesData.data)) {
-      console.log('[useProductsEnterprise] Caso 2: categoriesData.data es array')
-      categoriesArray = categoriesData.data
-    }
-    // Caso 3: categoriesData.data.categories es un array (estructura de API admin)
-    else if (Array.isArray(categoriesData.data?.categories)) {
-      console.log('[useProductsEnterprise] Caso 3: categoriesData.data.categories es array')
-      categoriesArray = categoriesData.data.categories
-    }
-    // Caso 4: categoriesData.categories es un array (estructura alternativa)
-    else if (Array.isArray(categoriesData.categories)) {
-      console.log('[useProductsEnterprise] Caso 4: categoriesData.categories es array')
-      categoriesArray = categoriesData.categories
-    }
-
-    // Normalizar y filtrar categorías válidas
-    const normalized = categoriesArray
-      .map(normalizeCategory)
-      .filter((cat): cat is { id: number; name: string } => cat !== null)
+    // Normalizar categorías al formato esperado por ProductFilters { id: number, name: string }
+    const normalized = categoriesData
+      .filter((cat): cat is any => cat != null && cat.id != null && cat.name != null)
+      .map(cat => ({
+        id: typeof cat.id === 'number' ? cat.id : parseInt(String(cat.id), 10),
+        name: String(cat.name),
+      }))
+      .filter(cat => !isNaN(cat.id) && cat.name.trim() !== '')
 
     console.log('[useProductsEnterprise] Categorías normalizadas:', {
-      originales: categoriesArray.length,
+      recibidas: categoriesData.length,
       normalizadas: normalized.length,
       primeras3: normalized.slice(0, 3),
     })
