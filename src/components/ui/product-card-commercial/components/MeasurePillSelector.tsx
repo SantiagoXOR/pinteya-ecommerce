@@ -2,12 +2,13 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
-import { ChevronRight } from '@/lib/optimized-imports'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+// DESACTIVADO TEMPORALMENTE: imports para el botón ">" y Sheet
+// import { ChevronRight } from '@/lib/optimized-imports'
+// import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { MeasurePill } from './MeasurePill'
-import { ColorPill } from './ColorPill'
-import { parseMeasure, darkenHex } from '../utils'
-import { getWoodTexture } from '../utils/texture-utils'
+// import { ColorPill } from './ColorPill'
+// import { parseMeasure, darkenHex } from '../utils'
+// import { getWoodTexture } from '../utils/texture-utils'
 import type { MeasurePillSelectorProps } from '../types'
 
 /**
@@ -26,20 +27,22 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
   stock = 0,
   isImpregnante = false
 }: MeasurePillSelectorProps) {
-  const [showColorsSheet, setShowColorsSheet] = React.useState(false)
-  const [showSuccessToast, setShowSuccessToast] = React.useState(false)
+  // DESACTIVADO TEMPORALMENTE: estados para el Sheet
+  // const [showColorsSheet, setShowColorsSheet] = React.useState(false)
+  // const [showSuccessToast, setShowSuccessToast] = React.useState(false)
 
   if (measures.length === 0) return null
 
-  const handleAddToCartClick = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (onAddToCart) {
-      await onAddToCart()
-      setShowSuccessToast(true)
-      setTimeout(() => setShowSuccessToast(false), 2000)
-      setTimeout(() => setShowColorsSheet(false), 800)
-    }
-  }
+  // DESACTIVADO TEMPORALMENTE: handler para agregar al carrito desde el Sheet
+  // const handleAddToCartClick = async (e: React.MouseEvent) => {
+  //   e.stopPropagation()
+  //   if (onAddToCart) {
+  //     await onAddToCart()
+  //     setShowSuccessToast(true)
+  //     setTimeout(() => setShowSuccessToast(false), 2000)
+  //     setTimeout(() => setShowColorsSheet(false), 800)
+  //   }
+  // }
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
@@ -123,16 +126,13 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
         />
       )}
 
-      {/* Botón ">" a la derecha (solo si hay selección) - Posicionado absolutamente con estilo amarillo y blur - Altura igual a los pills */}
+      {/* DESACTIVADO TEMPORALMENTE: Botón ">" y Sheet modal
       {selectedMeasure && (colors.length > 1 || measures.length > 1) && (
         <div className='absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 flex-shrink-0 z-20 h-[18px] w-[18px] md:h-[20px] md:w-[20px]'>
-          {/* Blur amarillo detrás del botón - mismo estilo que el botón de carrito */}
           <div 
             className='absolute inset-0 rounded-full pointer-events-none'
             style={{
               background: 'rgba(250, 204, 21, 0.9)',
-              // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
-              // El CSS global ya lo deshabilita
             }}
           />
           <Sheet open={showColorsSheet} onOpenChange={setShowColorsSheet}>
@@ -156,7 +156,6 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                 <SheetTitle>Seleccionar Opciones</SheetTitle>
               </SheetHeader>
               <div className='space-y-4 mt-4 overflow-y-auto max-h-[40vh] md:max-h-[50vh] p-2'>
-                {/* Sección de Colores */}
                 {colors.length > 0 && onColorSelect && (
                   <div>
                     <h3 className='text-xs sm:text-sm font-semibold text-gray-700 mb-2'>Color</h3>
@@ -193,7 +192,6 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                   </div>
                 )}
                 
-                {/* Sección de Medidas */}
                 <div>
                   <h3 className='text-xs sm:text-sm font-semibold text-gray-700 mb-2'>Medida</h3>
                   <div className='grid grid-cols-4 md:grid-cols-5 gap-2'>
@@ -223,7 +221,6 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                 </div>
               </div>
               
-              {/* Botón "Listo" centrado abajo */}
               {onAddToCart && (
                 <div className='flex justify-center pt-4 pb-2 border-t border-gray-200 mt-4'>
                   <button
@@ -238,7 +235,6 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                       isAddingToCart && 'animate-pulse'
                     )}
                     style={{
-                      // ⚡ FASE 8: Usar opacity en pseudo-elemento en lugar de background-color animado
                       ...(stock !== 0 && !isAddingToCart ? {
                         opacity: 1,
                       } : {})
@@ -256,7 +252,6 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                       }
                     }}
                   >
-                    {/* ⚡ FASE 8: Overlay para hover effect usando opacity (compositable) */}
                     {stock !== 0 && !isAddingToCart && (
                       <span 
                         className="absolute inset-0 rounded-full bg-[#f5c000] opacity-0 hover-overlay transition-opacity duration-300 pointer-events-none"
@@ -273,7 +268,6 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
                 </div>
               )}
               
-              {/* Toast de éxito */}
               {showSuccessToast && (
                 <div className='absolute top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-in slide-in-from-top-5 fade-in duration-300 z-50'>
                   <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -286,6 +280,7 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
           </Sheet>
         </div>
       )}
+      FIN DESACTIVADO TEMPORALMENTE */}
     </div>
   )
 })

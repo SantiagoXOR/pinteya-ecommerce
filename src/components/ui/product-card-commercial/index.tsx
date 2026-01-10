@@ -407,7 +407,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         )}
         {/* Icono de envío gratis */}
         {shouldShowFreeShipping && (
-          <div className='absolute right-2 md:right-3 top-2 md:top-2.5 z-30 pointer-events-none select-none flex items-center'>
+          <div className='absolute left-2 md:left-3 top-2 md:top-2.5 z-30 pointer-events-none select-none flex items-center'>
             <Image
               src='/images/icons/icon-envio.svg'
               alt='Envío gratis'
@@ -447,6 +447,14 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           />
         </div>
 
+        {/* Botón de carrito - Posición FIJA respecto al card completo */}
+        <ProductCardActions
+          onAddToCart={handleAddToCart}
+          isAddingToCart={state.isAddingToCart}
+          stock={effectiveStock}
+          cartAddCount={state.cartAddCount}
+        />
+
         {/* Contenedor de información - Con fondo degradado invertido para sombra detrás de pills */}
         <div className='relative z-10 w-full mt-auto overflow-hidden rounded-b-xl md:rounded-b-[1.5rem]'>
           {/* Fondo degradado invertido: más oscuro abajo para sombra detrás de pills */}
@@ -463,7 +471,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           />
           
           {/* Contenido: marca, título, precios */}
-          <div className='relative z-10 px-3 sm:px-4 md:px-5 pt-1 pb-0.5'>
+          <div className='relative z-10 px-3 sm:px-4 md:px-5 pt-0 pb-0.5'>
             <ProductCardContent
               brand={brand}
               title={title}
@@ -516,14 +524,6 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         </div>
 
         {children}
-
-        {/* Botón de carrito */}
-        <ProductCardActions
-          onAddToCart={handleAddToCart}
-          isAddingToCart={state.isAddingToCart}
-          stock={effectiveStock}
-          cartAddCount={state.cartAddCount}
-        />
 
         {/* Modal con Suspense - Renderizar cuando debe estar abierto
             El Dialog controla su visibilidad con la prop open */}

@@ -43,7 +43,7 @@ export const ProductCardContent = React.memo(function ProductCardContent({
   }, [title, isIncoloro])
   
   return (
-    <div className='relative z-20 text-left pt-1 sm:pt-1.5 md:pt-2.5 pb-0 flex-shrink-0'>
+    <div className='relative z-20 text-left pt-0 pb-0 flex-shrink-0'>
       {/* Marca del producto */}
       {brand && (
         <div className='text-[7px] md:text-[8px] uppercase text-gray-600 font-bold tracking-[0.1em] md:tracking-[0.12em] mb-0'>
@@ -52,7 +52,7 @@ export const ProductCardContent = React.memo(function ProductCardContent({
       )}
 
       {/* Título del producto */}
-      <h3 className='font-semibold text-gray-800 text-xs sm:text-sm md:text-base line-clamp-2 leading-[1.1] mb-1 -mt-0.5'>
+      <h3 className='font-semibold text-gray-800 text-xs sm:text-sm md:text-base line-clamp-2 leading-[1.1] mb-2 -mt-1.5'>
         {cleanedTitle}
       </h3>
 
@@ -70,7 +70,7 @@ export const ProductCardContent = React.memo(function ProductCardContent({
             <div className='flex items-center gap-1 md:gap-1.5 -mt-0.5'>
               {/* Precio actual */}
               <div
-                className='text-sm sm:text-base md:text-xl font-light drop-shadow-sm'
+                className='text-sm sm:text-base md:text-xl font-semibold tracking-wide drop-shadow-sm'
                 style={{ color: '#EA5A17' }}
               >
                 {formatCurrency(displayPrice ?? 0, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
@@ -79,7 +79,7 @@ export const ProductCardContent = React.memo(function ProductCardContent({
               {/* Badge de descuento - horizontal y pequeño */}
               {discount && (
                 <div
-                  className='inline-flex items-center justify-center px-0.5 py-0.5 sm:px-1 rounded-full text-[7px] sm:text-[8px] md:text-[9px] font-medium leading-tight'
+                  className='inline-flex items-center justify-center px-1.5 py-0.5 sm:px-2 rounded-full text-[7px] sm:text-[8px] md:text-[9px] font-bold leading-none tracking-wide'
                   style={{ backgroundColor: '#EA5A17', color: '#ffffff' }}
                 >
                   {discount} OFF

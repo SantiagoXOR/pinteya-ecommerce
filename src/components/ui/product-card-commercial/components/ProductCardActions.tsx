@@ -21,7 +21,7 @@ export const ProductCardActions = React.memo(function ProductCardActions({
   }, [onAddToCart])
 
   return (
-    <div className='absolute left-2 md:left-3 top-2 md:top-2.5 z-20 w-10 h-10 md:w-11 md:h-11'>
+    <div className='absolute right-3 md:right-4 top-[52%] sm:top-[54%] md:top-[56%] z-20 w-10 h-10 md:w-11 md:h-11'>
       {/* Blur amarillo detrás del botón */}
       <div 
         className='absolute inset-0 rounded-full pointer-events-none'
