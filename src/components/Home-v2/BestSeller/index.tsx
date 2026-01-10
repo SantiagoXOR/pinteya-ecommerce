@@ -11,70 +11,65 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from './HelpCard'
 import { PaintVisualizerCard } from '@/components/PaintVisualizer'
+import { 
+  limitByPerformance, 
+  shouldShowHelpCards 
+} from '@/lib/products/transformers'
+import { PRODUCT_LIMITS } from '@/lib/products/constants'
+
 // ⚡ OPTIMIZACIÓN: Componente memoizado para evitar re-renders innecesarios
 const BestSeller: React.FC = React.memo(() => {
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para reducir productos iniciales
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
-  const initialProductCount = isLowPerformance ? 4 : 12 // Reducir a 4 en dispositivos de bajo rendimiento
 
   const { selectedCategory } = useCategoryFilter()
 
   // Fetch productos según categoría seleccionada
   // Sin categoría: 10 productos específicos hardcodeados
-  // Con categoría: Todos los productos de la categoría (limit 50)
+  // Con categoría: Todos los productos de la categoría (limit 20)
   const { products, isLoading, error } = useBestSellerProducts({
     categorySlug: selectedCategory,
   })
 
-  // Memoizar ordenamiento y filtrado de productos
+  // Preparar productos según rendimiento del dispositivo usando transformadores
   const bestSellerProducts = useMemo(() => {
     const adaptedProducts = Array.isArray(products) ? products : []
+    const limit = isLowPerformance 
+      ? PRODUCT_LIMITS.LOW_PERFORMANCE 
+      : PRODUCT_LIMITS.STANDARD
     
-    // Ordenar por precio y separar en stock/sin stock
-    const sortedByPrice = [...adaptedProducts].sort((a, b) => b.price - a.price)
-    const inStock = sortedByPrice.filter(p => (p.stock ?? 0) > 0)
-    const outOfStock = sortedByPrice.filter(p => (p.stock ?? 0) <= 0)
-    
-    // ⚡ OPTIMIZACIÓN: Limitar productos iniciales en dispositivos de bajo rendimiento
-    const allProducts = [...inStock, ...outOfStock]
-    return isLowPerformance ? allProducts.slice(0, initialProductCount) : allProducts
-  }, [products, isLowPerformance, initialProductCount])
+    return limitByPerformance(adaptedProducts, isLowPerformance, limit)
+  }, [products, isLowPerformance])
 
-  // Calcular si hay espacios vacíos en la última fila
-  // Desktop: 4 cols, Tablet: 2 cols, Mobile: 2 cols
-  const shouldShowHelpCard = bestSellerProducts.length > 0 && 
-    (bestSellerProducts.length % 4 !== 0 || bestSellerProducts.length % 2 !== 0)
-
-  // ⚡ OPTIMIZACIÓN: Eliminados skeletons - TanStack Query maneja el cache automáticamente
-  // Los datos en cache se muestran inmediatamente mientras se actualizan en segundo plano
-  // Con refetchOnMount: false, no habrá recargas innecesarias si hay datos frescos en cache
+  // Calcular si hay espacios vacíos usando transformador
+  const shouldShowHelpCard = shouldShowHelpCards(bestSellerProducts.length)
   
   return (
     <section className='overflow-x-hidden py-1 sm:py-1.5 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-8'>
         {/* Grid de productos mejorado - 4 columnas en desktop */}
         <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-          {/* ⚡ FIX: Mostrar productos si existen (incluso si está cargando con placeholderData) */}
-          {/* Con placeholderData, siempre habrá datos si hubo una carga previa */}
+          {/* ✅ FIX CRÍTICO: Mostrar productos siempre que existan, incluso durante refetch */}
+          {/* Con placeholderData, los datos anteriores se mantienen durante actualizaciones en segundo plano */}
           {bestSellerProducts.length > 0 ? (
             <>
               {bestSellerProducts.map((item, index) => (
                 <ProductItem key={`${item.id}-${index}`} product={item} />
               ))}
-              {/* ⚡ FIX: Renderizar siempre pero ocultar condicionalmente para evitar problemas de hooks */}
-              <div style={{ display: shouldShowHelpCard ? 'block' : 'none' }}>
-                <HelpCard categoryName={selectedCategory} />
-              </div>
-              <div style={{ display: shouldShowHelpCard ? 'block' : 'none' }}>
-                <PaintVisualizerCard />
-              </div>
+              {/* Help cards solo se muestran si hay productos y se necesita rellenar fila */}
+              {shouldShowHelpCard && (
+                <>
+                  <HelpCard categoryName={selectedCategory} />
+                  <PaintVisualizerCard />
+                </>
+              )}
             </>
           ) : (
-            // ⚡ FIX: Solo mostrar mensaje vacío si realmente no hay datos Y no está cargando
-            // Con placeholderData y refetchOnMount: false, deberíamos tener datos incluso durante refetch
-            // Solo mostrar mensaje vacío si definitivamente no hay productos (no está cargando y no hay datos)
-            !isLoading && (
+            // ✅ FIX: Solo mostrar mensaje vacío si realmente no hay datos Y no está cargando inicialmente
+            // Con placeholderData, siempre deberíamos tener datos si hubo una carga previa
+            // Solo mostrar mensaje vacío si definitivamente no hay productos (no está cargando y no hay datos y no hay error)
+            !isLoading && bestSellerProducts.length === 0 && !error && (
               <div className='col-span-full'>
                 <Card variant='outlined' className='border-gray-200'>
                   <CardContent className='p-12 text-center'>
