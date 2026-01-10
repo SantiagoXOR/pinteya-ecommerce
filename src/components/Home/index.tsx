@@ -16,7 +16,6 @@ import {
   TestimonialsSkeleton,
   DynamicCarouselSkeleton,
   NewArrivalsSkeleton,
-  ProductGridSkeleton,
 } from '@/components/ui/skeletons'
 // ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism de forma diferida (no bloqueante)
 // El CSS se importa pero se carga después del FCP usando DeferredGlassmorphismCSS
@@ -232,7 +231,7 @@ const LazyBestSeller = React.memo(({ delay = 0 }: { delay?: number }) => {
   if (typeof window !== 'undefined' && isMounted && !shouldRender && delay > 0) {
     return (
       <div className='mt-4 sm:mt-6 product-section'>
-        <ProductGridSkeleton count={4} />
+        <BestSellerSkeleton />
       </div>
     )
   }
