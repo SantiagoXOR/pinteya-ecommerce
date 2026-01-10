@@ -406,11 +406,12 @@ const COLOR_HEX_MAP: Record<string, string> = {
   // Colores de madera
   'roble': '#C7955B',
   'caoba': '#8E3B1F',
-  'cerezo': '#DE3163',
+  'cerezo': '#8B0000',
   'nogal': '#5C3A1A',
   'pino': '#E5B57E',
   'cedro': '#C26A2B',
-  'teca': '#CD853F',
+  'teca': '#B67828',
+  'teka': '#B67828',
   'eucalipto': '#B8860B',
   'castaño': '#954535',
   'ebano': '#2C1810',
@@ -418,6 +419,16 @@ const COLOR_HEX_MAP: Record<string, string> = {
   'fresno': '#E6D3A3',
   'maple': '#D2B48C',
   'bambú': '#DAA520',
+  // Colores adicionales de madera (impregnantes)
+  'viraro': '#C35817',
+  'virar': '#C35817',
+  'viraró': '#C35817',
+  'habano': '#8B7355',
+  'algarrobo': '#A0522D',
+  'peteribi': '#D4A76A',
+  'peteribí': '#D4A76A',
+  'medio': '#A0522D',
+  'oscuro': '#4A2C2A',
   
   // Colores sintéticos
   'aluminio': '#C0C0C0',
