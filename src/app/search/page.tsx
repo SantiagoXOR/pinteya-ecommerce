@@ -9,7 +9,7 @@ import { ProductWithCategory } from '@/types/api'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
 import { Search, AlertCircle, Package, Filter, SortAsc } from '@/lib/optimized-imports'
-import { ProductSkeletonGrid } from '@/components/ui/product-skeleton'
+import { ProductGridSkeleton } from '@/components/ui/skeletons'
 import { Button } from '@/components/ui/button'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { toast } from '@/components/ui/use-toast'
@@ -182,7 +182,7 @@ export default function SearchPage() {
         {/* Contenido principal */}
         {isLoading ? (
           // Estado de loading con skeletons
-          <ProductSkeletonGrid
+          <ProductGridSkeleton
             count={12}
             variant='card'
             className='grid-cols-2 md:grid-cols-2 lg:grid-cols-3'
