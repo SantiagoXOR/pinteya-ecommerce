@@ -58,11 +58,11 @@ export const FinishPillSelector = React.memo(function FinishPillSelector({
   if (!finishes || finishes.length === 0) return null
 
   return (
-    <div className='relative w-full overflow-visible'>
+    <div className='relative w-full overflow-hidden'>
       {/* Gradiente izquierdo - indicador de scroll */}
       {canScrollLeft && (
         <div 
-          className='absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none'
+          className='absolute left-0 inset-y-0 w-8 z-10 pointer-events-none'
           style={{
             background: 'linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent)',
           }}
@@ -72,7 +72,7 @@ export const FinishPillSelector = React.memo(function FinishPillSelector({
       {/* Contenedor de scroll full width - Sin scrollbar visible */}
       <div 
         ref={scrollContainerRef}
-        className='flex items-center overflow-x-auto overflow-y-visible scroll-smooth w-full scrollbar-hide' 
+        className='flex items-center overflow-x-auto overflow-y-hidden scroll-smooth w-full scrollbar-hide' 
         style={{ 
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -101,7 +101,7 @@ export const FinishPillSelector = React.memo(function FinishPillSelector({
       {/* Gradiente derecho - indicador de scroll */}
       {canScrollRight && (
         <div 
-          className='absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none'
+          className='absolute right-0 inset-y-0 w-8 z-10 pointer-events-none'
           style={{
             background: 'linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent)',
           }}
