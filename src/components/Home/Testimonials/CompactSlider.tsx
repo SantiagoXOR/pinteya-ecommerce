@@ -15,5 +15,3 @@ const CompactSlider = () => {
 };
 
 export default CompactSlider;
-
-

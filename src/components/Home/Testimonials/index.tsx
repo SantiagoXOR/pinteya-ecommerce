@@ -1,16 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import TestimonialSlider from '@/components/ui/testimonial-slider'
-import testimonialsData from './testimonialsData'
-
-const mapTestimonials = () =>
-  testimonialsData.map(item => ({
-    img: item.authorImg || 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&h=200&fit=crop',
-    quote: item.review,
-    name: item.authorName,
-    role: item.authorRole,
-  }))
+import CompactSlider from './CompactSlider'
 
 const Testimonials = () => {
   const [isVisible, setIsVisible] = useState(false)
@@ -34,17 +25,17 @@ const Testimonials = () => {
   }, [])
 
   return (
-    <section ref={sectionRef} className='py-6 sm:py-10 bg-white'>
-      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
+    <section ref={sectionRef} className='py-4'>
+      <div className='max-w-4xl w-full mx-auto px-4'>
         <div
-          className={`mb-6 flex items-center justify-center text-orange-600 text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-500 ${
+          className={`mb-6 flex items-center justify-center text-white text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-500 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
           Testimonios verificados
         </div>
 
-        <TestimonialSlider testimonials={mapTestimonials()} autorotateTiming={6000} />
+        <CompactSlider />
       </div>
     </section>
   )

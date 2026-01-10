@@ -9,7 +9,7 @@ export interface HeroSlide {
 }
 
 export interface HeroCarouselProps {
-  slides: HeroSlide[]
+  slides?: HeroSlide[]
   autoPlayInterval?: number
   startIndex?: number
   onSlideChange?: (index: number) => void
@@ -32,4 +32,3 @@ export interface SlideProps {
   index: number
   isTransitioning: boolean
 }
-

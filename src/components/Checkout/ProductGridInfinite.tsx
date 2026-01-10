@@ -5,15 +5,15 @@ import ProductItem from '@/components/Common/ProductItem'
 import { useInfiniteProductsQuery } from '@/hooks/useInfiniteProductsQuery'
 import { Loader2 } from '@/lib/optimized-imports'
 import dynamic from 'next/dynamic'
-import HelpCard from '@/components/Home-v2/BestSeller/HelpCard'
+import HelpCard from '@/components/Home/BestSeller/HelpCard'
 import { PaintVisualizerCard } from '@/components/PaintVisualizer'
 
 // Lazy load de los carruseles para mejor performance
-const HeroCarousel = dynamic(() => import('@/components/Home-v2/HeroCarousel'), {
+const HeroCarousel = dynamic(() => import('@/components/Home/HeroCarousel'), {
   ssr: false,
 })
 
-const CombosSection = dynamic(() => import('@/components/Home-v2/CombosSection'), {
+const CombosSection = dynamic(() => import('@/components/Home/CombosSection'), {
   ssr: false,
 })
 

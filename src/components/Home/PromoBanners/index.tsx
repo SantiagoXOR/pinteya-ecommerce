@@ -250,4 +250,3 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
 }
 
 export default PromoBanners
-

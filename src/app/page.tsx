@@ -7,9 +7,9 @@ import { Category } from '@/types/database'
 import { QueryClient, dehydrate, Hydrate } from '@tanstack/react-query'
 import { productQueryKeys } from '@/hooks/queries/productQueryKeys'
 
-// ⚡ FASE 19: Lazy load de HomeV3 para reducir bundle inicial y bloqueo del main thread
-// Esto permite que la imagen hero se cargue primero sin esperar el JavaScript de HomeV3
-const HomeV3 = dynamic(() => import('@/components/Home-v3'), {
+// ⚡ FASE 19: Lazy load de Home para reducir bundle inicial y bloqueo del main thread
+// Esto permite que la imagen hero se cargue primero sin esperar el JavaScript de Home
+const Home = dynamic(() => import('@/components/Home'), {
   ssr: true, // Mantener SSR para SEO
   loading: () => null, // No mostrar loading, la imagen hero ya está visible
 })
@@ -106,8 +106,8 @@ export default async function HomePage() {
 
   return (
     <Hydrate state={dehydrate(queryClient)}>
-      {/* ⚡ FIX: Hero se renderiza dentro de HomeV3, no aquí para evitar duplicación */}
-      <HomeV3 />
+      {/* ⚡ FIX: Hero se renderiza dentro de Home, no aquí para evitar duplicación */}
+      <Home />
     </Hydrate>
   )
 }

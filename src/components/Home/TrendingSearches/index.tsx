@@ -228,4 +228,3 @@ const TrendingSearches = React.memo(TrendingSearchesBase, (prevProps, nextProps)
 TrendingSearches.displayName = 'TrendingSearches'
 
 export default TrendingSearches
-

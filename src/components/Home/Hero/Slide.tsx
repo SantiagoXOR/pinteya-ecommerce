@@ -42,4 +42,3 @@ const Slide: React.FC<SlideProps> = memo(({ slide, index, isTransitioning }) => 
 Slide.displayName = 'HeroSlide'
 
 export default Slide
-

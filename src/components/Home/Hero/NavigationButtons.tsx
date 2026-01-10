@@ -54,4 +54,3 @@ const NavigationButton: React.FC<NavigationButtonProps> = memo(
 NavigationButton.displayName = 'NavigationButton'
 
 export default NavigationButton
-

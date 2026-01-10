@@ -52,4 +52,3 @@ const Indicators: React.FC<IndicatorProps> = memo(
 Indicators.displayName = 'Indicators'
 
 export default Indicators
-

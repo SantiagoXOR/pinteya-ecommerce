@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 
-const CombosSection = dynamic(() => import('../Home-v2/CombosSection/index'), {
+const CombosSection = dynamic(() => import('./CombosSection/index'), {
   ssr: false,
 })
 
@@ -21,23 +21,6 @@ const CombosSection = dynamic(() => import('../Home-v2/CombosSection/index'), {
 export default function CombosOptimized() {
   const [showCarousel, setShowCarousel] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const renderCountRef = useRef(0)
-  const hasLoggedRef = useRef(false)
-
-  // ⚡ DEBUG: Log de renders
-  useEffect(() => {
-    renderCountRef.current += 1
-    if (process.env.NODE_ENV === 'development' && !hasLoggedRef.current) {
-      console.log('🔄 CombosOptimized render #' + renderCountRef.current, {
-        showCarousel,
-        isMounted,
-        timestamp: Date.now(),
-      })
-      if (renderCountRef.current >= 3) {
-        hasLoggedRef.current = true
-      }
-    }
-  })
 
   // ⚡ FIX: Marcar como montado después del primer render
   useEffect(() => {
@@ -140,11 +123,3 @@ export default function CombosOptimized() {
     </div>
   )
 }
-
-
-
-
-
-
-
-

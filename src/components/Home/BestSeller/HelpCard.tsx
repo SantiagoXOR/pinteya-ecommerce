@@ -101,4 +101,3 @@ const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
 }
 
 export default HelpCard
-

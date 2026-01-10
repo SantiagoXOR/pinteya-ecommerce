@@ -243,4 +243,3 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
 }
 
 export default DynamicProductCarousel
-

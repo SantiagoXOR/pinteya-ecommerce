@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useSwipeGestures } from '@/hooks/useSwipeGestures'
 import Slide from './Slide'
@@ -211,4 +211,3 @@ const HeroCarousel: React.FC<HeroCarouselProps> = memo(
 HeroCarousel.displayName = 'HeroCarousel'
 
 export default HeroCarousel
-
