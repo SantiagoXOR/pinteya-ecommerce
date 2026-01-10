@@ -119,13 +119,21 @@ const getHandler = async (request: ValidatedRequest) => {
     // Parse query parameters - let schema handle type conversion
     const statusParam = searchParams.get('status')
 
+    // Convertir status a is_active: 'active' -> true, 'inactive' -> false, 'all' o undefined -> undefined
+    let isActiveValue: boolean | undefined = undefined
+    if (statusParam === 'active') {
+      isActiveValue = true
+    } else if (statusParam === 'inactive') {
+      isActiveValue = false
+    }
+
     const rawParams = {
       page: searchParams.get('page') || '1',
       limit: searchParams.get('limit') || searchParams.get('pageSize') || '20',
       search: searchParams.get('search') || undefined,
       category_id: searchParams.get('category') || searchParams.get('category_id') || undefined,
       brand: searchParams.get('brand') || undefined, // ✅ NUEVO: Filtro de marca
-      is_active: statusParam ? statusParam === 'active' : undefined,
+      is_active: isActiveValue,
       price_min: searchParams.get('priceMin') || undefined,
       price_max: searchParams.get('priceMax') || undefined,
       sort_by: searchParams.get('sortBy') || searchParams.get('sort_by') || 'created_at',
@@ -210,8 +218,8 @@ const getHandler = async (request: ValidatedRequest) => {
     }
     
     // ✅ NUEVO: Filtro de marca
-    const brandFilter = searchParams.get('brand')
-    if (brandFilter && brandFilter.trim()) {
+    const brandFilter = filters.brand || searchParams.get('brand')
+    if (brandFilter && brandFilter.trim() !== '') {
       query = query.ilike('brand', `%${brandFilter.trim()}%`)
       console.log('🔍 [API] Filtro de marca aplicado:', brandFilter)
     }
@@ -870,8 +878,11 @@ export const GET = async (request: NextRequest) => {
     const sortOrder = searchParams.get('sort_order') || 'desc'
     const stockStatus = searchParams.get('stock_status')
     const search = searchParams.get('search')
+    const statusParam = searchParams.get('status')
+    const brandParam = searchParams.get('brand')
+    const categoryIdParam = searchParams.get('category_id') || searchParams.get('category')
 
-    logger.dev('[API] Parámetros:', { page, limit, sortBy, sortOrder, stockStatus, search })
+    logger.dev('[API] Parámetros:', { page, limit, sortBy, sortOrder, stockStatus, search, status: statusParam, brand: brandParam, category_id: categoryIdParam })
 
     // Validar supabaseAdmin
     if (!supabaseAdmin) {
@@ -916,6 +927,43 @@ export const GET = async (request: NextRequest) => {
     // Apply filters
     if (search) {
       query = query.ilike('name', `%${search}%`)
+    }
+    
+    // Status filter (active/inactive)
+    if (statusParam === 'active') {
+      query = query.eq('is_active', true)
+      logger.dev('[API] Filtro STATUS=active aplicado')
+    } else if (statusParam === 'inactive') {
+      query = query.eq('is_active', false)
+      logger.dev('[API] Filtro STATUS=inactive aplicado')
+    }
+    
+    // Brand filter
+    if (brandParam && brandParam.trim() !== '') {
+      query = query.ilike('brand', `%${brandParam.trim()}%`)
+      logger.dev('[API] Filtro BRAND aplicado:', brandParam)
+    }
+    
+    // Category filter
+    if (categoryIdParam) {
+      const categoryId = parseInt(categoryIdParam)
+      if (!isNaN(categoryId)) {
+        // Obtener productos de esta categoría a través de product_categories
+        const { data: productIdsData } = await supabaseAdmin
+          .from('product_categories')
+          .select('product_id')
+          .eq('category_id', categoryId)
+        
+        if (productIdsData && productIdsData.length > 0) {
+          const productIds = productIdsData.map(pc => pc.product_id)
+          query = query.in('id', productIds)
+          logger.dev('[API] Filtro CATEGORY aplicado:', categoryId, 'productos encontrados:', productIds.length)
+        } else {
+          // Si no hay productos con esta categoría, retornar vacío
+          query = query.eq('id', -1)
+          logger.dev('[API] Filtro CATEGORY: No hay productos con esta categoría')
+        }
+      }
     }
     
     // Stock status filter

@@ -426,14 +426,32 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
   // =====================================================
 
   const normalizedCategories = useMemo(() => {
-    if (Array.isArray(categoriesData?.data)) {
-      return categoriesData?.data as Category[]
+    // Si categoriesData es null/undefined, retornar array vacío
+    if (!categoriesData) {
+      return []
     }
 
-    if (Array.isArray(categoriesData?.data?.categories)) {
+    // Caso 1: categoriesData es directamente un array
+    if (Array.isArray(categoriesData)) {
+      return categoriesData as Category[]
+    }
+
+    // Caso 2: categoriesData.data es un array
+    if (Array.isArray(categoriesData.data)) {
+      return categoriesData.data as Category[]
+    }
+
+    // Caso 3: categoriesData.data.categories es un array (estructura de API admin)
+    if (Array.isArray(categoriesData.data?.categories)) {
       return categoriesData.data.categories as Category[]
     }
 
+    // Caso 4: categoriesData.categories es un array (estructura alternativa)
+    if (Array.isArray(categoriesData.categories)) {
+      return categoriesData.categories as Category[]
+    }
+
+    // Si no se encuentra ninguna estructura válida, retornar array vacío
     return []
   }, [categoriesData])
 

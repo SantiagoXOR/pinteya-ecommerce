@@ -69,10 +69,42 @@ export function ProductFilters({
   const [isExpanded, setIsExpanded] = useState(false)
   const safeCategories = Array.isArray(categories) ? categories : []
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== undefined && value !== '')
+  // Función para contar filtros activos excluyendo valores por defecto
+  const getActiveFiltersCount = () => {
+    const defaultValues = {
+      status: 'all',
+      stock_status: 'all',
+      sort_by: 'created_at',
+      sort_order: 'desc',
+    }
+    
+    let count = 0
+    
+    // Contar solo filtros que realmente afectan la búsqueda
+    if (filters.search && filters.search.trim() !== '') count++
+    if (filters.category_id && filters.category_id !== '') count++
+    if (filters.brand && filters.brand.trim() !== '') count++
+    if (filters.status && filters.status !== 'all') count++
+    if (filters.stock_status && filters.stock_status !== 'all') count++
+    if (filters.price_min !== undefined && filters.price_min !== null && filters.price_min !== '') count++
+    if (filters.price_max !== undefined && filters.price_max !== null && filters.price_max !== '') count++
+    if (filters.sort_by && filters.sort_by !== defaultValues.sort_by) count++
+    if (filters.sort_order && filters.sort_order !== defaultValues.sort_order) count++
+    
+    return count
+  }
+
+  const activeFiltersCount = getActiveFiltersCount()
+  const hasActiveFilters = activeFiltersCount > 0
 
   const handleInputChange = (key: keyof ProductFiltersType, value: string | number) => {
-    onFiltersChange({ [key]: value === '' ? undefined : value })
+    // Para campos de texto (como brand), limpiar espacios en blanco
+    if (typeof value === 'string') {
+      const trimmed = value.trim()
+      onFiltersChange({ [key]: trimmed === '' ? undefined : trimmed })
+    } else {
+      onFiltersChange({ [key]: value === '' ? undefined : value })
+    }
   }
 
   const handleSortChange = (sortBy: string, sortOrder: string) => {
@@ -102,7 +134,7 @@ export function ProductFilters({
               <span className='font-semibold'>Filtros</span>
               {hasActiveFilters && (
                 <Badge variant="warning" size="sm" pulse>
-                  {Object.values(filters).filter(v => v !== undefined && v !== '' && v !== 'all').length}
+                  {activeFiltersCount}
                 </Badge>
               )}
             </div>
