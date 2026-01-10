@@ -16,7 +16,7 @@ interface NewArrivalsSkeletonProps {
 export function NewArrivalsSkeleton({ count = 8 }: NewArrivalsSkeletonProps) {
   return (
     <section className='overflow-hidden pt-0 pb-6 sm:pb-10 bg-transparent'>
-      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 overflow-hidden'>
+      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 overflow-hidden'>
         {/* Header */}
         <div className='mb-4 sm:mb-6 flex items-center gap-3'>
           <SkeletonBase className='w-10 h-10 rounded-full' />
