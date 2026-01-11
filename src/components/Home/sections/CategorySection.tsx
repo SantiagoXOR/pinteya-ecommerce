@@ -1,4 +1,4 @@
-import { CategoryTogglePillsWithSearch } from '../CategoryTogglePillsWithSearch'
+import CategoryTogglePillsWithSearch from '../CategoryTogglePillsWithSearch'
 import type { Category } from '@/types/category'
 
 interface CategorySectionProps {
