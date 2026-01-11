@@ -490,10 +490,27 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   // ⚡ OPTIMIZACIÓN: Memoizar el cálculo de categorías seleccionadas
   const selectedCategoriesSet = useMemo(() => new Set(selectedCategories), [selectedCategories])
 
-  // ⚡ OPTIMIZACIÓN: Memoizar las categorías renderizadas
+  // ⚡ OPTIMIZACIÓN: Memoizar las categorías renderizadas con orden correcto
   const renderedCategories = useMemo(() => {
     if (!categories.length) return []
-    return categories.map(category => {
+    
+    // Ordenar categorías por display_order ascendente (1, 2, 3...) para mantener orden correcto
+    // Orden esperado: Paredes (1), Metales y Maderas (2), Techos (3), Complementos (4), 
+    // Antihumedad (5), Piscinas (6), Reparaciones (7), Pisos (8)
+    const sortedCategories = [...categories].sort((a, b) => {
+      // Manejar valores NULL o undefined
+      const orderA = a.display_order ?? (a.id ?? 999)
+      const orderB = b.display_order ?? (b.id ?? 999)
+      
+      // Ordenar por display_order ascendente
+      if (orderA !== orderB) {
+        return orderA - orderB
+      }
+      // Si tienen el mismo display_order, ordenar por nombre
+      return (a.name || '').localeCompare(b.name || '')
+    })
+    
+    return sortedCategories.map(category => {
       const isSelected = useDynamicCarousel 
         ? selectedCategory === category.slug 
         : selectedCategoriesSet.has(category.slug)
@@ -510,7 +527,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return (
       <section className='bg-transparent'>
         <div className='max-w-7xl mx-auto px-3 sm:px-4 lg:px-8'>
-          <div className='flex items-start gap-3 sm:gap-4 md:gap-3 overflow-x-auto pb-2'>
+          <div className='flex items-start gap-4 overflow-x-auto pb-2'>
             {[...Array(8)].map((_, index) => (
               <div key={index} className='flex-shrink-0 animate-pulse flex flex-col items-center gap-1.5'>
                 <div className='h-14 w-14 sm:h-16 sm:w-16 md:h-10 md:w-24 bg-gray-200 rounded-full'></div>
@@ -532,7 +549,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     return (
       <div
         ref={carouselRef}
-        className='flex items-start gap-3 sm:gap-4 md:gap-2 overflow-x-auto flex-nowrap py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full'
+        className='flex items-start gap-4 overflow-x-auto flex-nowrap py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full'
         style={{
           willChange: 'scroll-position',
           transform: 'translateZ(0)', // GPU acceleration
@@ -586,7 +603,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         {/* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll fluido a 60fps */}
         <div
           ref={carouselRef}
-          className='flex items-center gap-3 sm:gap-4 md:gap-2 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full md:justify-center'
+          className='flex items-center gap-4 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full md:justify-center'
           style={{
             willChange: 'scroll-position',
             transform: 'translateZ(0)', // GPU acceleration
