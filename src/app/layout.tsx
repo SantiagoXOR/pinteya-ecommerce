@@ -147,30 +147,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* ⚡ CRITICAL: Preload de imagen hero LCP - MÁXIMA PRIORIDAD */}
         {/* ⚡ DEBE estar PRIMERO para descubrimiento inmediato sin esperar CSS o JS */}
-        {/* ⚡ FIX LCP 13.6s: Preload con URL absoluta para producción */}
+        {/* ⚡ OPTIMIZACIÓN LCP: Preload con ruta relativa para funcionar en dev y prod */}
         <link
           rel="preload"
           as="image"
-          href="https://www.pinteya.com/images/hero/hero2/hero1.webp"
+          href="/images/hero/hero2/hero1.webp"
           fetchPriority="high"
           type="image/webp"
-          imageSizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-          imageSrcSet="https://www.pinteya.com/images/hero/hero2/hero1.webp 1200w"
-          crossOrigin="anonymous"
         />
         
-        {/* ⚡ FASE 1.3: Resource Hints para producción - Mejorar descubrimiento de recursos */}
+        {/* ⚡ OPTIMIZACIÓN LCP: Resource Hints para mejorar descubrimiento de recursos */}
         {/* Preconnect al dominio propio para reducir latencia de DNS y conexión */}
         <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.pinteya.com" />
         
-        {/* ⚡ FASE 2.1: Preconnect a dominio de imágenes para reducir latencia LCP */}
-        <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://www.pinteya.com" />
-        
-        {/* Preconnect a CDN de Vercel si se usa */}
-        <link rel="preconnect" href="https://vercel.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://vercel.com" />
+        {/* ⚡ OPTIMIZACIÓN LCP: Prefetch de recursos críticos después del LCP */}
+        {/* Prefetch de chunks críticos para mejorar TTI */}
+        <link rel="prefetch" href="/_next/static/chunks/framework.js" as="script" />
+        <link rel="prefetch" href="/_next/static/chunks/main.js" as="script" />
         
         {/* ⚡ FASE 1.1: Script de interceptación CSS optimizado - Reducido 60% para menor Script Evaluation */}
         <script

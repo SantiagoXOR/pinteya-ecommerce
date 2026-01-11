@@ -13,13 +13,37 @@ import { HeroSection } from './sections/HeroSection'
 import { CategorySection } from './sections/CategorySection'
 import { BestSellerSection } from './sections/BestSellerSection'
 
-// ⚡ OPTIMIZACIÓN: Imports estáticos de componentes below-fold (sin lazy loading)
-import PromoBanners from './PromoBanners'
-import CombosOptimized from './CombosOptimized'
-import DynamicProductCarousel from './DynamicProductCarousel'
-import NewArrivals from './NewArrivals'
-import TrendingSearches from './TrendingSearches'
-import Testimonials from './Testimonials'
+// ⚡ OPTIMIZACIÓN LCP: Lazy loading agresivo de componentes below-fold para reducir Script Evaluation
+// Estos componentes se cargan después del LCP para no bloquear la carga inicial
+const PromoBanners = dynamic(() => import('./PromoBanners'), {
+  ssr: false, // No SSR para componentes below-fold
+  loading: () => null, // No mostrar skeleton para mejor UX
+})
+
+const CombosOptimized = dynamic(() => import('./CombosOptimized'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const DynamicProductCarousel = dynamic(() => import('./DynamicProductCarousel'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const NewArrivals = dynamic(() => import('./NewArrivals'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const TrendingSearches = dynamic(() => import('./TrendingSearches'), {
+  ssr: false,
+  loading: () => null,
+})
+
+const Testimonials = dynamic(() => import('./Testimonials'), {
+  ssr: false,
+  loading: () => null,
+})
 
 // Componentes flotantes con carga diferida (mantener lazy loading para no bloquear)
 const FloatingCart = dynamic(() => import('@/components/Common/FloatingCart'), {
@@ -43,64 +67,75 @@ const Home = ({ categories, bestSellerProducts }: HomeProps) => {
   // ⚡ OPTIMIZACIÓN: Usar contextos compartidos para evitar múltiples llamadas a hooks
   const { isDesktop } = useBreakpoint()
 
-  // ⚡ OPTIMIZACIÓN: Scroll depth tracking con IntersectionObserver (más eficiente que scroll events)
+  // ⚡ OPTIMIZACIÓN TTI: Scroll depth tracking diferido después del LCP
+  // Diferir inicialización para no bloquear interactividad inicial
   useEffect(() => {
     // Guardar SSR/hidratación: evitar acceder a window/document en servidor
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return
     }
 
-    const trackingThresholds = [25, 50, 75, 100]
-    const trackedDepths = new Set<number>()
+    // ⚡ OPTIMIZACIÓN TTI: Diferir tracking hasta después del LCP usando requestIdleCallback
+    const initTracking = () => {
+      const trackingThresholds = [25, 50, 75, 100]
+      const trackedDepths = new Set<number>()
 
-    // Crear markers invisibles en el documento para cada threshold
-    const markers: HTMLDivElement[] = []
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const threshold = parseInt(entry.target.getAttribute('data-threshold') || '0', 10)
-            if (!trackedDepths.has(threshold)) {
-              trackedDepths.add(threshold)
-              trackScrollDepth(threshold, window.location.pathname)
+      // Crear markers invisibles en el documento para cada threshold
+      const markers: HTMLDivElement[] = []
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const threshold = parseInt(entry.target.getAttribute('data-threshold') || '0', 10)
+              if (!trackedDepths.has(threshold)) {
+                trackedDepths.add(threshold)
+                trackScrollDepth(threshold, window.location.pathname)
+              }
             }
+          })
+        },
+        {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.01,
+        }
+      )
+
+      // Calcular posiciones de los markers
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+      const scrollableHeight = Math.max(documentHeight - windowHeight, 1)
+
+      trackingThresholds.forEach((threshold) => {
+        const marker = document.createElement('div')
+        marker.setAttribute('data-threshold', threshold.toString())
+        marker.style.position = 'absolute'
+        marker.style.top = `${(threshold / 100) * scrollableHeight}px`
+        marker.style.height = '1px'
+        marker.style.width = '1px'
+        marker.style.pointerEvents = 'none'
+        marker.style.visibility = 'hidden'
+        document.body.appendChild(marker)
+        markers.push(marker)
+        observer.observe(marker)
+      })
+
+      // Cleanup
+      return () => {
+        observer.disconnect()
+        markers.forEach((marker) => {
+          if (marker.parentNode) {
+            marker.parentNode.removeChild(marker)
           }
         })
-      },
-      {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.01,
       }
-    )
+    }
 
-    // Calcular posiciones de los markers
-    const windowHeight = window.innerHeight
-    const documentHeight = document.documentElement.scrollHeight
-    const scrollableHeight = Math.max(documentHeight - windowHeight, 1)
-
-    trackingThresholds.forEach((threshold) => {
-      const marker = document.createElement('div')
-      marker.setAttribute('data-threshold', threshold.toString())
-      marker.style.position = 'absolute'
-      marker.style.top = `${(threshold / 100) * scrollableHeight}px`
-      marker.style.height = '1px'
-      marker.style.width = '1px'
-      marker.style.pointerEvents = 'none'
-      marker.style.visibility = 'hidden'
-      document.body.appendChild(marker)
-      markers.push(marker)
-      observer.observe(marker)
-    })
-
-    // Cleanup
-    return () => {
-      observer.disconnect()
-      markers.forEach((marker) => {
-        if (marker.parentNode) {
-          marker.parentNode.removeChild(marker)
-        }
-      })
+    // ⚡ OPTIMIZACIÓN TTI: Diferir con requestIdleCallback o setTimeout fallback
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(initTracking, { timeout: 2000 })
+    } else {
+      setTimeout(initTracking, 1000) // Fallback: diferir 1 segundo
     }
   }, [])
 

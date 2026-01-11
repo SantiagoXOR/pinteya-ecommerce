@@ -33,12 +33,15 @@ export const metadata: Metadata = {
       'Descubre la mejor selección de pinturas, herramientas y productos de ferretería en Pinteya. Marcas reconocidas y envío gratis en compras superiores a $50.000.',
     images: [
       {
-        url: '/images/hero/hero-bg.jpg',
+        url: '/images/hero/hero2/hero1.webp',
         width: 1200,
-        height: 630,
+        height: 433,
         alt: 'Pinteya - Tu Pinturería Online',
       },
     ],
+  },
+  other: {
+    'preload-hero-image': '/images/hero/hero2/hero1.webp',
   },
 }
 

@@ -175,16 +175,16 @@ const nextConfig = {
     // ⚡ REMOVIDO: La configuración de modules ya se maneja arriba
     
     // ⚡ OPTIMIZACIÓN: Code splitting mejorado para reducir código sin usar
-    // ⚡ FASE 9: Optimización agresiva para reducir 80 KiB JS sin usar
+    // ⚡ OPTIMIZACIÓN LCP: Balance entre chunks pequeños y carga eficiente
     if (!isServer && config.optimization) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          maxSize: 10000, // ⚡ FASE 1.3: REDUCIDO a 10 KB para chunks aún más pequeños y reducir Script Evaluation
-          minSize: 3000, // ⚡ FASE 1.3: Reducido a 3 KB mínimo para más granularidad
-          maxAsyncRequests: 150, // ⚡ FASE 1.3: AUMENTADO a 150 para permitir más chunks paralelos
-          maxInitialRequests: 60, // ⚡ FASE 1.3: AUMENTADO a 60 para permitir más chunks iniciales
+          maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: 150 KB máximo (balance entre tamaño y paralelización)
+          minSize: 20000, // ⚡ OPTIMIZACIÓN: 20 KB mínimo para evitar demasiados chunks pequeños
+          maxAsyncRequests: 30, // ⚡ OPTIMIZACIÓN: 30 requests async (balance)
+          maxInitialRequests: 25, // ⚡ OPTIMIZACIÓN: 25 requests iniciales (reducido para mejor LCP)
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
             // ⚡ Framework core (React, Next.js) - Prioridad alta
@@ -192,7 +192,16 @@ const nextConfig = {
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
               name: 'framework',
               priority: 40,
-              maxSize: 30000, // ⚡ FASE 1.3: REDUCIDO a 30 KB para reducir Script Evaluation de 6,812ms
+              maxSize: 200000, // ⚡ OPTIMIZACIÓN LCP: 200 KB máximo para framework (balance)
+              enforce: true,
+              reuseExistingChunk: true,
+            },
+            // ⚡ OPTIMIZACIÓN LCP: Separar chunk principal en chunks más pequeños
+            main: {
+              name: 'main',
+              minChunks: 2,
+              priority: 20,
+              maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: Limitar tamaño del chunk principal a 150 KB
               reuseExistingChunk: true,
             },
             // ⚡ React Query - Separado para mejor code splitting
@@ -247,31 +256,31 @@ const nextConfig = {
               maxSize: 100000, // 100 KB máximo
               reuseExistingChunk: true,
             },
-            // ⚡ Vendor libraries - Chunks más pequeños para mejor tree shaking
+            // ⚡ Vendor libraries - Chunks balanceados para mejor tree shaking
             vendor: {
               test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts|@tanstack|redux)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 10000, // ⚡ FASE 1.3: REDUCIDO a 10 KB para reducir Script Evaluation
-              minSize: 3000, // ⚡ FASE 1.3: Reducido a 3 KB mínimo para más granularidad
+              maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: 150 KB máximo (balance)
+              minSize: 20000, // ⚡ OPTIMIZACIÓN: 20 KB mínimo
               reuseExistingChunk: true,
             },
-            // ⚡ FASE 1B: Chunk separado para componentes de HomeV3 con tamaño reducido
+            // ⚡ Chunk separado para componentes de HomeV3
             homeV3: {
               test: /[\\/]src[\\/]components[\\/]Home-v3[\\/]/,
               name: 'home-v3',
               priority: 25,
-              maxSize: 10000, // ⚡ FASE 1.3: REDUCIDO a 10 KB para reducir Script Evaluation
-              minSize: 3000, // ⚡ FASE 1.3: Reducido a 3 KB
+              maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: 150 KB máximo
+              minSize: 20000, // ⚡ OPTIMIZACIÓN: 20 KB mínimo
               reuseExistingChunk: true,
             },
-            // ⚡ FASE 19: Chunk separado para componentes de página (Home, etc.)
+            // ⚡ Chunk separado para componentes de página (Home, etc.)
             pages: {
               test: /[\\/]src[\\/](app|components[\\/]Home)[\\/]/,
               name: 'pages',
               priority: 20,
-              maxSize: 10000, // ⚡ FASE 1.3: REDUCIDO a 10 KB para reducir Script Evaluation
-              minSize: 3000, // ⚡ FASE 1.3: Reducido a 3 KB mínimo para más granularidad
+              maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: 150 KB máximo
+              minSize: 20000, // ⚡ OPTIMIZACIÓN: 20 KB mínimo
               reuseExistingChunk: true,
             },
           },
