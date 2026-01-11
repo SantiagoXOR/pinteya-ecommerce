@@ -89,13 +89,27 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
     enabled: true,
   })
 
-  // Debug para trending searches
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔥 useSearchOptimized: Trending searches state:', {
-      trendingSearches: trendingSearches?.length || 0,
-      trendingSearchesData: trendingSearches?.map(t => ({ id: t.id, query: t.query })) || [],
-    })
-  }
+  // ⚡ FIX: Debug solo cuando cambia trendingSearches (no en cada render)
+  const prevTrendingSearchesRef = useRef(trendingSearches)
+  useEffect(() => {
+    // ⚡ OPTIMIZACIÓN: Solo loguear si cambió el contenido real
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_SEARCH === 'true') {
+      const prevLength = prevTrendingSearchesRef.current?.length || 0
+      const currentLength = trendingSearches?.length || 0
+      const prevIds = prevTrendingSearchesRef.current?.map(t => t.id).sort().join(',') || ''
+      const currentIds = trendingSearches?.map(t => t.id).sort().join(',') || ''
+      
+      // Solo loguear si cambió el contenido
+      if (prevLength !== currentLength || prevIds !== currentIds) {
+        console.log('🔥 useSearchOptimized: Trending searches state changed:', {
+          trendingSearches: currentLength,
+          trendingSearchesData: trendingSearches?.map(t => ({ id: t.id, query: t.query })) || [],
+        })
+      }
+      
+      prevTrendingSearchesRef.current = trendingSearches
+    }
+  }, [trendingSearches])
 
   const {
     recentSearches: recentSearchesList,
