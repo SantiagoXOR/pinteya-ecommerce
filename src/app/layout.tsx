@@ -319,6 +319,90 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⚡ FASE 1: ClientAnalytics incluye DeferredCSS para cargar CSS no crítico de forma diferida */}
         {/* ⚡ OPTIMIZACIÓN: Movido al final del body para no bloquear renderizado inicial */}
         <ClientAnalytics />
+
+        {/* ⚡ DIAGNÓSTICO: Script para detectar recargas automáticas */}
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              if (typeof window === 'undefined') return;
+              
+              // ⚡ DIAGNÓSTICO: Interceptar window.location.reload
+              const originalReload = window.location.reload;
+              window.location.reload = function() {
+                const stack = new Error().stack;
+                console.error('🚨 DIAGNÓSTICO: window.location.reload() llamado:', {
+                  timestamp: new Date().toISOString(),
+                  stack: stack,
+                  url: window.location.href,
+                });
+                // ⚡ FIX: Prevenir recarga automática - solo loguear
+                console.warn('⚠️ Recarga automática prevenida. Stack trace arriba.');
+                // No llamar originalReload para evitar recarga
+                return false;
+              };
+
+              // ⚡ DIAGNÓSTICO: Interceptar window.location.href = ...
+              let currentHref = window.location.href;
+              Object.defineProperty(window.location, 'href', {
+                get: function() {
+                  return currentHref;
+                },
+                set: function(value) {
+                  if (value !== currentHref && value !== window.location.href) {
+                    const stack = new Error().stack;
+                    console.error('🚨 DIAGNÓSTICO: window.location.href = ... llamado:', {
+                      timestamp: new Date().toISOString(),
+                      newUrl: value,
+                      currentUrl: currentHref,
+                      stack: stack,
+                    });
+                    // ⚡ FIX: Prevenir redirect automático si es a la misma página
+                    if (value === window.location.href || value === currentHref) {
+                      console.warn('⚠️ Redirect a la misma página prevenido.');
+                      return;
+                    }
+                  }
+                  currentHref = value;
+                },
+              });
+
+              // ⚡ DIAGNÓSTICO: Detectar errores de hidratación
+              const originalConsoleError = console.error;
+              console.error = function(...args) {
+                const message = args.join(' ');
+                if (message.includes('Hydration') || message.includes('hydration') || message.includes('mismatch')) {
+                  console.error('🚨 DIAGNÓSTICO: Error de hidratación detectado:', {
+                    timestamp: new Date().toISOString(),
+                    message: message,
+                    args: args,
+                  });
+                }
+                originalConsoleError.apply(console, args);
+              };
+
+              // ⚡ DIAGNÓSTICO: Detectar errores no manejados que puedan causar recargas
+              window.addEventListener('error', function(event) {
+                console.error('🚨 DIAGNÓSTICO: Error global detectado:', {
+                  timestamp: new Date().toISOString(),
+                  message: event.message,
+                  source: event.filename + ':' + event.lineno + ':' + event.colno,
+                  error: event.error,
+                });
+              }, true);
+
+              // ⚡ DIAGNÓSTICO: Detectar unhandled promise rejections
+              window.addEventListener('unhandledrejection', function(event) {
+                console.error('🚨 DIAGNÓSTICO: Promise rejection no manejado:', {
+                  timestamp: new Date().toISOString(),
+                  reason: event.reason,
+                });
+              }, true);
+            })();
+            `,
+          }}
+        />
         
         {/* ⚡ FASE 1.4: Script de debugging removido para reducir Script Evaluation */}
         {/* Script de agent log eliminado - ejecutándose solo en desarrollo local */}
