@@ -14,14 +14,20 @@ export const metadata: Metadata = {
 
 export default async function HomeFastPage() {
   // Preload pattern: Iniciar fetch temprano
-  preloadCategories()
-  preloadBestSellerProducts(null)
+  await preloadCategories()
+  await preloadBestSellerProducts(null)
 
   // Fetch datos en paralelo
   const [categories, bestSellerProducts] = await Promise.all([
     getCategories(),
     getBestSellerProducts(null),
   ])
+
+  // Log para debugging
+  console.log('📊 HomeFastPage data:', {
+    categoriesCount: categories.length,
+    productsCount: bestSellerProducts.length,
+  })
 
   return <HomeFast categories={categories} bestSellerProducts={bestSellerProducts} />
 }

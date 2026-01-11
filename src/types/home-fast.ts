@@ -25,8 +25,8 @@ export interface CategorySectionProps extends SectionProps {
 }
 
 export interface HeroSectionProps extends SectionProps {
-  imageUrl: string
-  alt: string
+  imageUrl?: string
+  alt?: string
   title?: string
   subtitle?: string
 }

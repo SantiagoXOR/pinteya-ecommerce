@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { HOME_FAST_CONFIG } from '@/lib/home-fast/config'
 import type { ProductCardProps } from '../types'
 
@@ -22,29 +23,34 @@ export function ProductCard({ product, priority = false, actions }: ProductCardP
   
   // Obtener precio
   const price = product.price || product.discountedPrice || 0
+  
+  // Obtener slug para el link
+  const productSlug = product.slug || `product-${product.id}`
 
   return (
     <article className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <div className="relative w-full aspect-square">
-        <Image
-          src={imageUrl}
-          alt={productName}
-          width={width}
-          height={height}
-          priority={priority}
-          className="object-cover w-full h-full"
-          sizes="(max-width: 768px) 50vw, 25vw"
-        />
-      </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-          {productName}
-        </h3>
-        <p className="text-lg font-bold text-blaze-orange-600 mb-3">
-          ${price.toLocaleString('es-AR')}
-        </p>
-        {actions && <div className="mt-2">{actions}</div>}
-      </div>
+      <Link href={`/products/${productSlug}`} className="block">
+        <div className="relative w-full aspect-square">
+          <Image
+            src={imageUrl}
+            alt={productName}
+            width={width}
+            height={height}
+            priority={priority}
+            className="object-cover w-full h-full"
+            sizes="(max-width: 768px) 50vw, 25vw"
+          />
+        </div>
+        <div className="p-4">
+          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+            {productName}
+          </h3>
+          <p className="text-lg font-bold text-blaze-orange-600 mb-3">
+            ${price.toLocaleString('es-AR')}
+          </p>
+        </div>
+      </Link>
+      {actions && <div className="px-4 pb-4">{actions}</div>}
     </article>
   )
 }

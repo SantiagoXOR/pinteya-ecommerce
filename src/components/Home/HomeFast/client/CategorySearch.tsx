@@ -7,21 +7,21 @@ import type { Category } from '@/types/category'
 
 interface CategorySearchProps {
   categories: Category[]
+  onSearchChange?: (query: string) => void
 }
 
 /**
  * CategorySearch - Client Component mínimo
  * Solo para búsqueda interactiva de categorías
  */
-export function CategorySearch({ categories }: CategorySearchProps) {
+export function CategorySearch({ categories, onSearchChange }: CategorySearchProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
-  const filteredCategories = searchQuery
-    ? categories.filter(cat =>
-        cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cat.slug.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : categories
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value
+    setSearchQuery(query)
+    onSearchChange?.(query)
+  }
 
   return (
     <div className="relative">
@@ -30,7 +30,7 @@ export function CategorySearch({ categories }: CategorySearchProps) {
         type="text"
         placeholder="Buscar categorías..."
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={handleSearchChange}
         className="pl-10 w-64"
       />
     </div>

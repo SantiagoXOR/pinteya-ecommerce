@@ -4,17 +4,31 @@ import 'server-only'
 import { cache } from 'react'
 import { createPublicClient } from '@/lib/integrations/supabase/server'
 import { BESTSELLER_PRODUCTS_SLUGS, PRODUCT_LIMITS } from '@/lib/products/constants'
+// Usaremos adaptación manual para evitar dependencias de client components
 import type { Product } from '@/types/product'
 
 /**
  * Adapta un producto de la base de datos al formato esperado por componentes
  */
 function adaptProduct(dbProduct: any): Product {
-  const images = dbProduct.images 
-    ? (Array.isArray(dbProduct.images) ? dbProduct.images : [dbProduct.images])
-    : dbProduct.image_url 
-      ? [dbProduct.image_url]
-      : []
+  // Obtener imágenes del producto
+  let images: string[] = []
+  let firstImage = '/images/products/placeholder.svg'
+  
+  if (dbProduct.images) {
+    if (Array.isArray(dbProduct.images)) {
+      images = dbProduct.images
+    } else if (typeof dbProduct.images === 'object') {
+      // Si es un objeto con estructura { previews: [], thumbnails: [] }
+      images = dbProduct.images.previews || dbProduct.images.thumbnails || []
+    }
+  }
+  
+  if (dbProduct.image_url) {
+    images = [dbProduct.image_url, ...images]
+  }
+  
+  firstImage = images[0] || dbProduct.image_url || '/images/products/placeholder.svg'
 
   return {
     id: dbProduct.id,
@@ -26,9 +40,9 @@ function adaptProduct(dbProduct: any): Product {
     slug: dbProduct.slug || `product-${dbProduct.id}`,
     description: dbProduct.description || '',
     stock: dbProduct.stock || 0,
-    image_url: dbProduct.image_url || images[0] || '/images/products/placeholder.svg',
+    image_url: firstImage,
     images: images,
-    image: images[0] || dbProduct.image_url || '/images/products/placeholder.svg',
+    image: firstImage,
     reviews: 0,
     imgs: {
       thumbnails: images,
@@ -64,23 +78,7 @@ export const getBestSellerProducts = cache(
 
         const { data: products, error: productsError } = await supabase
           .from('products')
-          .select(
-            `
-            id,
-            name,
-            description,
-            price,
-            stock,
-            slug,
-            image_url,
-            images,
-            brand,
-            category_id,
-            is_active,
-            created_at,
-            updated_at
-          `
-          )
+          .select('*')
           .eq('category_id', category.id)
           .eq('is_active', true)
           .order('created_at', { ascending: false })
@@ -97,23 +95,7 @@ export const getBestSellerProducts = cache(
         // Sin categoría: obtener productos específicos por slug
         const { data: products, error } = await supabase
           .from('products')
-          .select(
-            `
-            id,
-            name,
-            description,
-            price,
-            stock,
-            slug,
-            image_url,
-            images,
-            brand,
-            category_id,
-            is_active,
-            created_at,
-            updated_at
-          `
-          )
+          .select('*')
           .in('slug', BESTSELLER_PRODUCTS_SLUGS)
           .eq('is_active', true)
 
@@ -122,16 +104,22 @@ export const getBestSellerProducts = cache(
           return []
         }
 
+        console.log(`✅ getBestSellerProducts: Found ${products?.length || 0} products from database`)
+
         // Ordenar productos según la prioridad de BESTSELLER_PRODUCTS_SLUGS
         const orderedProducts = BESTSELLER_PRODUCTS_SLUGS.map(slug =>
           products?.find(p => p.slug === slug)
         ).filter(Boolean)
 
+        console.log(`✅ getBestSellerProducts: Ordered ${orderedProducts.length} products by priority`)
+
         // Adaptar productos al formato esperado por componentes
         const adaptedProducts = orderedProducts.map(adaptProduct) as Product[]
 
         // Limitar a 10 productos
-        return adaptedProducts.slice(0, PRODUCT_LIMITS.BESTSELLER)
+        const limitedProducts = adaptedProducts.slice(0, PRODUCT_LIMITS.BESTSELLER)
+        console.log(`✅ getBestSellerProducts: Returning ${limitedProducts.length} products`)
+        return limitedProducts
       }
     } catch (error) {
       console.error('Error in getBestSellerProducts:', error)
