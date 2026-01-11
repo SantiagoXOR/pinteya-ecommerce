@@ -130,12 +130,13 @@ const DeferredProviders = React.memo(({
   isAuthRoute: boolean
 }) => {
   // ⚡ FASE 4: Diferir hidratación de providers no críticos después del LCP
-  // ⚡ FIX: En desarrollo, hidratar inmediatamente para evitar recargas molestas
-  // En producción, mantener la hidratación diferida para mejor performance
+  // ⚡ FIX: Reducir delays para evitar recarga visual - hidratar casi inmediatamente
+  // Los delays mínimos (50-100ms) permiten que el navegador complete el render inicial
+  // sin causar la sensación de recarga completa de página
   const shouldHydrate = useDeferredHydration({
-    minDelay: process.env.NODE_ENV === 'development' ? 0 : 1000, // Inmediato en dev, 1s en prod
-    maxDelay: process.env.NODE_ENV === 'development' ? 0 : 2000, // Inmediato en dev, 2s en prod
-    useIdleCallback: process.env.NODE_ENV === 'production', // Solo usar idle callback en prod
+    minDelay: 50, // Delay mínimo para permitir render inicial sin causar recarga visual
+    maxDelay: 100, // Delay máximo reducido para evitar recarga perceptible
+    useIdleCallback: false, // Deshabilitar idle callback para hidratación más predecible
   })
 
   if (!shouldHydrate) {
@@ -195,11 +196,13 @@ const DeferredComponents = React.memo(({
   isCheckoutRoute: boolean
 }) => {
   // ⚡ FASE 4: Diferir hidratación de componentes UI no críticos después del LCP
-  // ⚡ FIX: En desarrollo, hidratar inmediatamente para evitar recargas molestas
+  // ⚡ FIX: Reducir delays para evitar recarga visual - hidratar casi inmediatamente
+  // Los delays mínimos (50-100ms) permiten que el navegador complete el render inicial
+  // sin causar la sensación de recarga completa de página
   const shouldHydrate = useDeferredHydration({
-    minDelay: process.env.NODE_ENV === 'development' ? 0 : 500, // Inmediato en dev, 500ms en prod
-    maxDelay: process.env.NODE_ENV === 'development' ? 0 : 1000, // Inmediato en dev, 1s en prod
-    useIdleCallback: process.env.NODE_ENV === 'production', // Solo usar idle callback en prod
+    minDelay: 50, // Delay mínimo para permitir render inicial sin causar recarga visual
+    maxDelay: 100, // Delay máximo reducido para evitar recarga perceptible
+    useIdleCallback: false, // Deshabilitar idle callback para hidratación más predecible
   })
 
   if (!shouldHydrate) {

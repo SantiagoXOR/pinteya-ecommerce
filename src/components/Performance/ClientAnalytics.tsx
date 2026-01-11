@@ -81,13 +81,15 @@ function VercelAnalyticsWrapper() {
   const [shouldLoad, setShouldLoad] = useState(false)
 
   // ⚡ FIX: Esperar a que la página esté completamente hidratada antes de cargar
+  // ⚡ FIX: Reducir delay para evitar recarga visual - cargar casi inmediatamente después de hidratación
   useEffect(() => {
     setIsHydrated(true)
     
-    // ⚡ FIX: Cargar después de un delay para asegurar que no cause recargas
+    // ⚡ FIX: Cargar después de un delay mínimo para asegurar que no cause recargas
+    // Delay reducido de 2000ms a 100ms para evitar recarga visual perceptible
     const timer = setTimeout(() => {
       setShouldLoad(true)
-    }, 2000) // Esperar 2 segundos después de hidratación
+    }, 100) // Delay mínimo para permitir hidratación completa sin causar recarga visual
 
     return () => clearTimeout(timer)
   }, [])
