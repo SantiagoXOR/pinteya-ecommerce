@@ -43,7 +43,8 @@ export const getCategories = cache(async (): Promise<Category[]> => {
 
 /**
  * Preload pattern: Inicia el fetch temprano sin esperar el resultado
+ * Debe ser async porque Next.js interpreta exports de 'use server' como Server Actions
  */
-export function preloadCategories() {
+export async function preloadCategories() {
   void getCategories()
 }

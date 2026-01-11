@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart } from '@/lib/optimized-imports'
 
 interface AddToCartButtonProps {
   productId: number | string

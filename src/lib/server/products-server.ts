@@ -142,7 +142,8 @@ export const getBestSellerProducts = cache(
 
 /**
  * Preload pattern: Inicia el fetch temprano sin esperar el resultado
+ * Debe ser async porque Next.js interpreta exports de 'use server' como Server Actions
  */
-export function preloadBestSellerProducts(categorySlug: string | null = null) {
+export async function preloadBestSellerProducts(categorySlug: string | null = null) {
   void getBestSellerProducts(categorySlug)
 }
