@@ -66,27 +66,36 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 };
 
                 // ⚡ DIAGNÓSTICO: Interceptar window.location.href = ...
+                // ⚡ FIX: No usar Object.defineProperty porque href no es redefinible
+                // En su lugar, interceptar mediante un Proxy o simplemente monitorear cambios
+                // Comentado temporalmente para evitar error "Cannot redefine property: href"
+                /*
                 let currentHref = window.location.href;
-                Object.defineProperty(window.location, 'href', {
-                  get: function() { return currentHref; },
-                  set: function(value) {
-                    if (value !== currentHref && value !== window.location.href) {
-                      const stack = new Error().stack;
-                      console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: window.location.href = ... llamado:', {
-                        timestamp: new Date().toISOString(),
-                        newUrl: value,
-                        currentUrl: currentHref,
-                        stack: stack,
-                        caller: stack?.split('\\n')[2]?.trim() || 'unknown',
-                      });
-                      if (value === window.location.href || value === currentHref) {
-                        console.warn('⚠️ Redirect a la misma página prevenido.');
-                        return;
+                try {
+                  Object.defineProperty(window.location, 'href', {
+                    get: function() { return currentHref; },
+                    set: function(value) {
+                      if (value !== currentHref && value !== window.location.href) {
+                        const stack = new Error().stack;
+                        console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: window.location.href = ... llamado:', {
+                          timestamp: new Date().toISOString(),
+                          newUrl: value,
+                          currentUrl: currentHref,
+                          stack: stack,
+                          caller: stack?.split('\\n')[2]?.trim() || 'unknown',
+                        });
+                        if (value === window.location.href || value === currentHref) {
+                          console.warn('⚠️ Redirect a la misma página prevenido.');
+                          return;
+                        }
                       }
-                    }
-                    currentHref = value;
-                  },
-                });
+                      currentHref = value;
+                    },
+                  });
+                } catch(e) {
+                  console.warn('⚠️ No se pudo interceptar window.location.href (esperado en algunos navegadores)');
+                }
+                */
 
                 // ⚡ DIAGNÓSTICO: Detectar errores de hidratación INMEDIATAMENTE
                 const originalConsoleError = console.error;
