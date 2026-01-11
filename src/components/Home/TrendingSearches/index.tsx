@@ -47,11 +47,20 @@ const getIconForTerm = (term: string): string => {
 
 const TrendingSearchesBase = () => {
   // ⚡ OPTIMIZACIÓN: Deshabilitar refetch automático para evitar re-renders
+  // ⚡ FIX: Manejo robusto de errores para evitar recargas
   const { trendingSearches: dynamicSearches, isLoading, error } = useTrendingSearches({
     limit: 8,
     enabled: true,
     refetchInterval: false, // ⚡ Deshabilitar refetch automático
   })
+
+  // ⚡ FIX: Manejar errores silenciosamente sin causar recargas
+  useEffect(() => {
+    if (error && process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ TrendingSearches: Error en hook (manejado silenciosamente):', error)
+      // No lanzar error ni causar recarga - el hook ya usa fallback
+    }
+  }, [error])
 
   // ⚡ OPTIMIZACIÓN: Estabilizar mappedSearches usando ref para evitar re-renders
   const prevDynamicSearchesRef = useRef<any[]>([])
@@ -86,9 +95,14 @@ const TrendingSearchesBase = () => {
   }, [dynamicSearches])
 
   // ⚡ OPTIMIZACIÓN: Estabilizar trendingSearches
+  // ⚡ FIX: Siempre usar fallback si hay error para evitar renderizar sin datos
   const trendingSearches = useMemo(() => {
+    // Si hay error, usar datos por defecto
+    if (error) {
+      return defaultTrendingSearches
+    }
     return mappedSearches || defaultTrendingSearches
-  }, [mappedSearches])
+  }, [mappedSearches, error])
 
   // ⚡ OPTIMIZACIÓN: Memoizar handleSearchClick
   const handleSearchClick = useCallback((term: string) => {

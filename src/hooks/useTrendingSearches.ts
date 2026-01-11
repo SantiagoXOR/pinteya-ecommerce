@@ -39,10 +39,36 @@ export interface UseTrendingSearchesReturn {
 }
 
 /**
+ * ⚡ FIX: Función fallback para usar cuando la API falla
+ * Evita que errores de trending causen recargas automáticas
+ */
+function getFallbackTrendingSearches(limit: number = 6): TrendingSearch[] {
+  const fallbackSearches = [
+    { query: 'Pintura', category: 'pinturas' },
+    { query: 'Esmalte', category: 'pinturas' },
+    { query: 'Látex', category: 'pinturas' },
+    { query: 'Barniz', category: 'pinturas' },
+    { query: 'Imprimación', category: 'pinturas' },
+    { query: 'Rodillos', category: 'herramientas' },
+  ]
+
+  return fallbackSearches.slice(0, limit).map((search, index) => ({
+    id: `fallback-${index + 1}`,
+    query: search.query,
+    count: Math.floor(Math.random() * 20) + 5, // Rango mínimo 5-25
+    category: search.category,
+    href: `/search?q=${encodeURIComponent(search.query.toLowerCase())}`,
+    type: 'trending' as const,
+  }))
+}
+
+/**
  * Hook para obtener búsquedas trending/populares
  *
  * Obtiene las búsquedas más populares basadas en datos reales del sistema
  * de analytics, con fallback a datos por defecto.
+ * 
+ * ⚡ FIX: Manejo robusto de errores para evitar recargas automáticas
  */
 export function useTrendingSearches(
   options: UseTrendingSearchesOptions = {}
@@ -88,21 +114,40 @@ export function useTrendingSearches(
         const response = await fetch(url)
 
         if (!response.ok) {
-          throw new Error(`Error fetching trending searches: ${response.status}`)
+          // ⚡ FIX: Retornar fallback en lugar de lanzar error para evitar recargas
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ useTrendingSearches: API error, using fallback', response.status)
+          }
+          return {
+            trending: getFallbackTrendingSearches(limit),
+            lastUpdated: new Date().toISOString(),
+          }
         }
 
         const result: ApiResponse<TrendingSearchesResponse> = await response.json()
 
         if (!result.success || !result.data) {
-          throw new Error(result.error || 'Error obteniendo búsquedas trending')
+          // ⚡ FIX: Retornar fallback en lugar de lanzar error para evitar recargas
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ useTrendingSearches: Invalid response, using fallback', result.error)
+          }
+          return {
+            trending: getFallbackTrendingSearches(limit),
+            lastUpdated: new Date().toISOString(),
+          }
         }
 
         return result.data
       } catch (fetchError) {
+        // ⚡ FIX: Retornar fallback en lugar de lanzar error para evitar recargas
         if (process.env.NODE_ENV === 'development') {
-          console.error('🔥 useTrendingSearches: Fetch error:', fetchError)
+          console.warn('🔥 useTrendingSearches: Fetch error, using fallback:', fetchError)
         }
-        throw fetchError
+        // Retornar fallback silenciosamente en lugar de lanzar error
+        return {
+          trending: getFallbackTrendingSearches(limit),
+          lastUpdated: new Date().toISOString(),
+        }
       }
     },
     enabled,
@@ -110,12 +155,20 @@ export function useTrendingSearches(
     refetchInterval: refetchInterval === false ? false : (refetchInterval || false),
     staleTime: 10 * 60 * 1000, // ⚡ Aumentado a 10 minutos para evitar re-renders
     gcTime: 30 * 60 * 1000, // ⚡ Aumentado a 30 minutos
-    retry: 2,
+    retry: 0, // ⚡ REDUCIDO: Sin retry para evitar reintentos que puedan causar problemas
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     // ⚡ OPTIMIZACIÓN: Solo notificar cambios en data y error, no en isLoading
     notifyOnChangeProps: ['data', 'error'],
     // ⚡ OPTIMIZACIÓN: Mantener datos anteriores mientras carga
     placeholderData: (previousData) => previousData,
+    // ⚡ FIX: Manejar errores silenciosamente sin causar recargas
+    onError: (error) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ useTrendingSearches: Query error (handled silently):', error)
+      }
+      // No hacer nada - usar fallback en su lugar
+      // Esto previene que errores de React Query causen recargas automáticas
+    },
   })
 
   // Función para registrar una búsqueda en analytics
