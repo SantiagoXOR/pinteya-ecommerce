@@ -5,9 +5,11 @@
  * 
  * En Next.js 15, no se puede usar `ssr: false` con `next/dynamic` en Server Components.
  * Este componente cliente maneja todos los imports dinámicos que requieren `ssr: false`.
+ * 
+ * ⚡ FIX: Manejo robusto de errores para scripts de Vercel que pueden estar bloqueados
  */
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 
 // ⚡ PERFORMANCE: Componentes no críticos (lazy load después de FCP)
@@ -43,15 +45,101 @@ const NonBlockingCSS = dynamic(() => import('@/components/Performance/NonBlockin
   loading: () => null,
 })
 
-// ⚡ PERFORMANCE: Vercel Analytics - Lazy load (solo en producción)
-const Analytics = dynamic(() => import('@vercel/analytics/react').then(m => ({ default: m.Analytics })), {
-  ssr: false,
-  loading: () => null,
-})
-const SpeedInsights = dynamic(() => import('@vercel/speed-insights/next').then(m => ({ default: m.SpeedInsights })), {
-  ssr: false,
-  loading: () => null,
-})
+// ⚡ FIX: Vercel Analytics con manejo robusto de errores para evitar recargas
+// ⚡ Cargar solo después de que la página esté completamente hidratada
+const Analytics = dynamic(
+  () => import('@vercel/analytics/react').then(m => ({ default: m.Analytics })).catch((error) => {
+    // ⚡ FIX: Capturar errores de carga (scripts bloqueados) y retornar componente vacío
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Vercel Analytics bloqueado o no disponible:', error)
+    }
+    return { default: () => null }
+  }),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+)
+
+const SpeedInsights = dynamic(
+  () => import('@vercel/speed-insights/next').then(m => ({ default: m.SpeedInsights })).catch((error) => {
+    // ⚡ FIX: Capturar errores de carga (scripts bloqueados) y retornar componente vacío
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Vercel Speed Insights bloqueado o no disponible:', error)
+    }
+    return { default: () => null }
+  }),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+)
+
+// ⚡ FIX: Componente wrapper con error boundary para Vercel Analytics
+function VercelAnalyticsWrapper() {
+  const [isHydrated, setIsHydrated] = useState(false)
+  const [shouldLoad, setShouldLoad] = useState(false)
+
+  // ⚡ FIX: Esperar a que la página esté completamente hidratada antes de cargar
+  useEffect(() => {
+    setIsHydrated(true)
+    
+    // ⚡ FIX: Cargar después de un delay para asegurar que no cause recargas
+    const timer = setTimeout(() => {
+      setShouldLoad(true)
+    }, 2000) // Esperar 2 segundos después de hidratación
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  // ⚡ FIX: Solo cargar en producción y después de hidratación
+  if (process.env.NODE_ENV !== 'production' || !isHydrated || !shouldLoad) {
+    return null
+  }
+
+  return (
+    <>
+      {/* ⚡ FIX: Wrapper con try-catch silencioso para evitar errores no manejados */}
+      <ErrorBoundaryVercel>
+        <Analytics />
+        <SpeedInsights />
+      </ErrorBoundaryVercel>
+    </>
+  )
+}
+
+// ⚡ FIX: Error boundary simple para capturar errores de Vercel Analytics
+class ErrorBoundaryVercel extends React.Component<
+  React.PropsWithChildren<{}>,
+  { hasError: boolean }
+> {
+  constructor(props: React.PropsWithChildren<{}>) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    // ⚡ FIX: Capturar errores silenciosamente sin causar recargas
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // ⚡ FIX: Log silencioso solo en desarrollo
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Vercel Analytics error (manejado silenciosamente):', error, errorInfo)
+    }
+    // No hacer nada más - evitar recargas
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // ⚡ FIX: Retornar null en lugar de fallback UI que podría causar problemas
+      return null
+    }
+
+    return this.props.children
+  }
+}
 
 export default function ClientAnalytics() {
   return (
@@ -63,12 +151,8 @@ export default function ClientAnalytics() {
       <PerformanceTracker />
       <NonBlockingCSS />
       <DeferredCSS />
-      {process.env.NODE_ENV === 'production' && (
-        <>
-          <Analytics />
-          <SpeedInsights />
-        </>
-      )}
+      {/* ⚡ FIX: Usar wrapper con manejo robusto de errores */}
+      <VercelAnalyticsWrapper />
     </>
   )
 }
