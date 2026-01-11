@@ -34,6 +34,8 @@ export interface UseUnifiedLazyLoadingOptions {
   delayKey?: string
   /** Si el componente está deshabilitado */
   disabled?: boolean
+  /** Performance level opcional - Si se pasa, evita llamar useDevicePerformance */
+  performanceLevel?: PerformanceLevel
 }
 
 export interface UseUnifiedLazyLoadingReturn<T extends HTMLElement = HTMLDivElement> {
@@ -60,11 +62,15 @@ export function useUnifiedLazyLoading<T extends HTMLElement = HTMLDivElement>({
   respectPerformance = false,
   delayKey,
   disabled = false,
+  performanceLevel: performanceLevelParam,
 }: UseUnifiedLazyLoadingOptions): UseUnifiedLazyLoadingReturn<T> {
   const [isVisible, setIsVisible] = useState(strategy === 'immediate')
   const [hasLoaded, setHasLoaded] = useState(strategy === 'immediate')
   const ref = useRef<T>(null)
-  const performanceLevel = useDevicePerformance()
+  // ⚡ OPTIMIZACIÓN: Solo llamar useDevicePerformance si no se pasa como parámetro
+  // Esto evita múltiples llamadas cuando el valor ya está disponible desde un contexto
+  const hookPerformanceLevel = useDevicePerformance()
+  const performanceLevel = performanceLevelParam ?? hookPerformanceLevel
   
   // Estrategia: immediate - Cargar inmediatamente
   if (strategy === 'immediate' || disabled) {

@@ -7,6 +7,9 @@ import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useDeferredHydration } from '@/hooks/useDeferredHydration'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
+// ⚡ OPTIMIZACIÓN: Contextos compartidos para performance y breakpoints
+import { PerformanceProvider } from '@/contexts/PerformanceContext'
+import { BreakpointProvider } from '@/contexts/BreakpointContext'
 
 // ⚡ FIX CRÍTICO: Redux y React Query deben cargarse inmediatamente
 // Componentes críticos los usan en render inicial (cart, buy, categories, bestseller, etc.)
@@ -271,6 +274,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           {/* ⚡ FIX: Redux y React Query críticos - cargar inmediatamente */}
           <QueryClientProvider>
             <ReduxProvider>
+            {/* ⚡ OPTIMIZACIÓN: Contextos compartidos para performance y breakpoints */}
+            <PerformanceProvider>
+              <BreakpointProvider>
             {/* 3. Cart persistence - Crítico para carrito */}
             <CartPersistenceProvider>
               {/* 4. Modal provider - Crítico para UI */}
@@ -307,6 +313,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 </CartModalProvider>
               </ModalProvider>
             </CartPersistenceProvider>
+              </BreakpointProvider>
+            </PerformanceProvider>
           </ReduxProvider>
         </QueryClientProvider>
         </AdvancedErrorBoundary>

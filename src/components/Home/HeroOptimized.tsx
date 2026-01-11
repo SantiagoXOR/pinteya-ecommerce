@@ -2,6 +2,7 @@
 
 import { useState, useEffect, memo } from 'react'
 import dynamic from 'next/dynamic'
+import { useBreakpoint } from '@/contexts/BreakpointContext'
 
 // ⚡ OPTIMIZACIÓN: Cargar carousel dinámicamente después del LCP
 const HeroCarousel = dynamic(() => import('./Hero/Carousel'), {
@@ -21,73 +22,35 @@ const HeroCarousel = dynamic(() => import('./Hero/Carousel'), {
 interface HeroOptimizedProps {
   staticImageId?: string
   carouselId?: string
-  isDesktop?: boolean // ⚡ FIX: Prop para indicar si es desktop, evita verificación de visibilidad compleja
+  /** Si debe renderizar para desktop (true) o móvil (false) */
+  desktop?: boolean
 }
 
-const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'hero-optimized', isDesktop = false }: HeroOptimizedProps) => {
+const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'hero-optimized', desktop = false }: HeroOptimizedProps) => {
   const [isMounted, setIsMounted] = useState(false)
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
-  // ⚡ FIX: Inicializar matchesBreakpoint basándose en el prop isDesktop y el ancho de la ventana
-  // ⚡ CRITICAL: Usar un breakpoint más tolerante (1000px en lugar de 1024px) para evitar problemas
-  // cuando la ventana es ligeramente menor que el breakpoint de Tailwind
-  const [matchesBreakpoint, setMatchesBreakpoint] = useState(() => {
-    if (typeof window !== 'undefined') {
-      // Usar 1000px como breakpoint más tolerante (vs 1024px de Tailwind)
-      // Esto permite que el carousel se renderice incluso si la ventana es ligeramente menor
-      const isDesktopBreakpoint = window.innerWidth >= 1000
-      return isDesktop ? isDesktopBreakpoint : !isDesktopBreakpoint
-    }
-    return false
-  })
+  
+  // ⚡ OPTIMIZACIÓN: Usar BreakpointContext en lugar de recibir isDesktop como prop
+  // Esto evita re-renders cuando el valor cambia después de hidratación
+  const { isDesktop } = useBreakpoint()
+  
+  // Determinar si debe renderizar basándose en el contexto y el prop desktop
+  // Si desktop=true, debe renderizar solo cuando isDesktop es true
+  // Si desktop=false, debe renderizar solo cuando isMobile es true (no desktop)
+  const shouldRender = desktop ? isDesktop : !isDesktop
 
-  // ⚡ FIX: Marcar como montado y verificar breakpoint usando media query
+  // ⚡ OPTIMIZACIÓN: Marcar como montado
   useEffect(() => {
     setIsMounted(true)
-    
-    // ⚡ FIX: Usar media query para detectar breakpoint lg (1024px+) de forma confiable
-    if (typeof window !== 'undefined') {
-      // ⚡ CRITICAL: Usar un breakpoint más tolerante (1000px en lugar de 1024px) para evitar problemas
-      // cuando la ventana es ligeramente menor que el breakpoint de Tailwind
-      // También verificar directamente window.innerWidth como fallback
-      const mediaQuery = window.matchMedia('(min-width: 1000px)')
-      
-      const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
-        // Verificar tanto la media query como window.innerWidth directamente
-        const isDesktopBreakpoint = e.matches || window.innerWidth >= 1000
-        // Si el prop isDesktop es true, debe coincidir con el breakpoint
-        // Si el prop isDesktop es false, debe NO coincidir con el breakpoint
-        const shouldRender = isDesktop ? isDesktopBreakpoint : !isDesktopBreakpoint
-        setMatchesBreakpoint(shouldRender)
-      }
-      
-      // Verificar inmediatamente
-      handleMediaChange(mediaQuery)
-      
-      // Escuchar cambios
-      if (mediaQuery.addEventListener) {
-        mediaQuery.addEventListener('change', handleMediaChange)
-      } else {
-        // Fallback para navegadores antiguos
-        mediaQuery.addListener(handleMediaChange)
-      }
-      
-      return () => {
-        if (mediaQuery.removeEventListener) {
-          mediaQuery.removeEventListener('change', handleMediaChange)
-        } else {
-          mediaQuery.removeListener(handleMediaChange)
-        }
-      }
-    }
-  }, [isDesktop, carouselId])
+  }, [])
 
   // ⚡ OPTIMIZACIÓN: Cargar carousel después de 3 segundos (mejor UX sin afectar LCP)
   // Lighthouse evalúa LCP típicamente en ~2.5s, así que 3s es seguro
   // La imagen estática sigue visible durante la evaluación de Lighthouse
-  // ⚡ FIX: Solo cargar el carousel si el breakpoint coincide
+  // ⚡ OPTIMIZACIÓN: Solo cargar el carousel si el breakpoint coincide
   useEffect(() => {
     if (!isMounted) return
-    if (!matchesBreakpoint) return
+    if (!shouldRender) return
 
     const carouselTimeout = setTimeout(() => {
       setShouldLoadCarousel(true)
@@ -96,7 +59,7 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
     return () => {
       clearTimeout(carouselTimeout)
     }
-  }, [isMounted, matchesBreakpoint, carouselId, isDesktop])
+  }, [isMounted, shouldRender, carouselId])
 
   // ⚡ OPTIMIZACIÓN: Ocultar imagen estática cuando el carousel se carga (ocultar inmediatamente para evitar superposición visual)
   // El delay de 3s ya es suficiente para Lighthouse, así que ocultamos inmediatamente cuando el carousel comienza a cargar
@@ -143,15 +106,15 @@ const HeroOptimized = memo(({ staticImageId = 'hero-lcp-image', carouselId = 'he
   // El carousel se renderiza en el MISMO contenedor que la imagen estática para que coincidan exactamente
   // Solo renderizamos el carousel aquí, que se carga después del LCP
   
-  const shouldRender = isMounted && matchesBreakpoint && shouldLoadCarousel
+  const shouldRenderCarousel = isMounted && shouldRender && shouldLoadCarousel
   
   return (
     <>
       {/* ⚡ FASE 23: Carousel carga dinámicamente después del LCP */}
       {/* La imagen estática está en el contenedor hero-lcp-container para descubrimiento temprano */}
       {/* El carousel se renderiza en el MISMO contenedor (.hero-lcp-container) para que coincida exactamente */}
-      {/* ⚡ FIX: Solo renderizar si el breakpoint coincide y el carousel debe cargarse */}
-      {shouldRender && (
+      {/* ⚡ OPTIMIZACIÓN: Solo renderizar si el breakpoint coincide y el carousel debe cargarse */}
+      {shouldRenderCarousel && (
         <div
           className="absolute inset-0 z-20 transition-opacity duration-500"
           data-hero-optimized={carouselId}

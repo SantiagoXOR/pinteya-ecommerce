@@ -4,7 +4,8 @@ import React, { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
-import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { usePerformance } from '@/contexts/PerformanceContext'
+import { useBreakpoint } from '@/contexts/BreakpointContext'
 import { useLCPDetection } from '@/hooks/useLCPDetection'
 import type { PromoBannersProps } from './PromoBanners'
 import {
@@ -74,10 +75,9 @@ const WhatsAppPopup = dynamic(() => import('@/components/Common/WhatsAppPopup'),
 })
 
 const Home = () => {
-  // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo para aplicar optimizaciones adaptativas
-  const performanceLevel = useDevicePerformance()
-  const isLowPerformance = performanceLevel === 'low'
-  const isMediumPerformance = performanceLevel === 'medium'
+  // ⚡ OPTIMIZACIÓN: Usar contextos compartidos para evitar múltiples llamadas a hooks
+  const { isLowPerformance, isMediumPerformance } = usePerformance()
+  const { isMobile, isDesktop } = useBreakpoint()
   
   // ⚡ FASE 1B: Detectar LCP para diferir componentes no críticos después del LCP
   const { shouldLoad: shouldLoadAfterLCP } = useLCPDetection({
@@ -86,35 +86,19 @@ const Home = () => {
     useIdleCallback: true,
   })
   
-  // ⚡ OPTIMIZACIÓN CRÍTICA: Detectar si es móvil para deshabilitar efectos costosos
-  const [isMobile, setIsMobile] = React.useState(false)
-  // ⚡ FIX: Detectar si es desktop con un breakpoint más tolerante (1000px en lugar de 1024px)
-  const [isDesktop, setIsDesktop] = React.useState(false)
-  
-  React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-  
-  React.useEffect(() => {
-    // ⚡ FIX: Usar breakpoint más tolerante (1000px) para evitar problemas cuando la ventana es ligeramente menor que 1024px
-    const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= 1000)
-    }
-    checkDesktop()
-    window.addEventListener('resize', checkDesktop)
-    return () => window.removeEventListener('resize', checkDesktop)
-  }, [])
-  
-  // ⚡ FASE 1B: Aplicar delays basados en LCP y rendimiento del dispositivo
-  // Si LCP no se ha detectado, usar delays adaptativos basados en rendimiento
-  const shouldDelay = isLowPerformance || isMediumPerformance || isMobile
-  const categoryToggleDelay = shouldLoadAfterLCP ? 0 : (shouldDelay ? 2000 : 0)
-  const bestSellerDelay = shouldLoadAfterLCP ? 0 : (shouldDelay ? 3000 : 0)
+  // ⚡ OPTIMIZACIÓN: Memoizar delays para evitar recálculos y re-renders
+  // Estos valores solo cambian cuando cambian las dependencias (shouldLoadAfterLCP, isLowPerformance, etc.)
+  const categoryToggleDelay = React.useMemo(() => {
+    if (shouldLoadAfterLCP) return 0
+    const shouldDelay = isLowPerformance || isMediumPerformance || isMobile
+    return shouldDelay ? 2000 : 0
+  }, [shouldLoadAfterLCP, isLowPerformance, isMediumPerformance, isMobile])
+
+  const bestSellerDelay = React.useMemo(() => {
+    if (shouldLoadAfterLCP) return 0
+    const shouldDelay = isLowPerformance || isMediumPerformance || isMobile
+    return shouldDelay ? 3000 : 0
+  }, [shouldLoadAfterLCP, isLowPerformance, isMediumPerformance, isMobile])
 
   // ⚡ OPTIMIZACIÓN: Scroll depth tracking con IntersectionObserver (más eficiente que scroll events)
   useEffect(() => {
@@ -226,7 +210,7 @@ const Home = () => {
             key="hero-optimized-component-mobile" 
             staticImageId="hero-lcp-image-mobile"
             carouselId="hero-optimized-mobile"
-            isDesktop={false}
+            desktop={false}
           />
         </div>
       </div>
@@ -272,7 +256,7 @@ const Home = () => {
                   key="hero-optimized-component" 
                   staticImageId="hero-lcp-image"
                   carouselId="hero-optimized-desktop"
-                  isDesktop={true}
+                  desktop={true}
                 />
               </div>
             </div>
@@ -293,21 +277,16 @@ const Home = () => {
       </React.Suspense>
 
       {/* 2. Ofertas Especiales (BestSeller) - Delay adaptativo para dispositivos de bajo rendimiento */}
-      {bestSellerDelay === 0 ? (
-        <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}>
-          <BestSeller />
-        </div>
-      ) : (
-        <LazyDeferred 
-          configKey="bestSeller"
-          delayKey="bestSeller"
-          delayOverride={bestSellerDelay}
-          skeleton={<BestSellerSkeleton />}
-          className="mt-4 sm:mt-6 product-section"
-        >
-          <BestSeller />
-        </LazyDeferred>
-      )}
+      {/* ⚡ OPTIMIZACIÓN: Siempre usar LazyDeferred para evitar montaje/desmontaje cuando delay cambia */}
+      <LazyDeferred 
+        configKey="bestSeller"
+        delayKey="bestSeller"
+        delayOverride={bestSellerDelay}
+        skeleton={<BestSellerSkeleton />}
+        className="mt-4 sm:mt-6 product-section"
+      >
+        <BestSeller />
+      </LazyDeferred>
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
       {/* ⚡ FASE 1B: Diferir después del LCP para reducir main thread work */}

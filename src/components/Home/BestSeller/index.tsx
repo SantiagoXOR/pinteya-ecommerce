@@ -5,7 +5,7 @@ import ProductItem from '@/components/Common/ProductItem'
 import Link from 'next/link'
 import { useBestSellerProducts } from '@/hooks/useBestSellerProducts'
 import { useCategoryFilter } from '@/contexts/CategoryFilterContext'
-import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { usePerformance } from '@/contexts/PerformanceContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from '@/lib/optimized-imports'
@@ -19,9 +19,8 @@ import { PRODUCT_LIMITS } from '@/lib/products/constants'
 
 // ⚡ OPTIMIZACIÓN: Componente memoizado para evitar re-renders innecesarios
 const BestSeller: React.FC = React.memo(() => {
-  // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para reducir productos iniciales
-  const performanceLevel = useDevicePerformance()
-  const isLowPerformance = performanceLevel === 'low'
+  // ⚡ OPTIMIZACIÓN: Usar PerformanceContext para compartir el valor de performanceLevel
+  const { isLowPerformance } = usePerformance()
 
   const { selectedCategory } = useCategoryFilter()
 

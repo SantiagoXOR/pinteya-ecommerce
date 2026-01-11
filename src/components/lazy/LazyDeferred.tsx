@@ -10,7 +10,7 @@
 import React, { memo, useMemo } from 'react'
 import { useUnifiedLazyLoading } from '@/hooks/useUnifiedLazyLoading'
 import { getLazySectionConfig, getLazyDelay } from '@/config/lazy-loading.config'
-import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { usePerformance } from '@/contexts/PerformanceContext'
 
 export interface LazyDeferredProps {
   /** Clave de configuración de la sección */
@@ -53,7 +53,9 @@ export const LazyDeferred = memo<LazyDeferredProps>(({
   delayKey,
   delayOverride,
 }) => {
-  const performanceLevel = useDevicePerformance()
+  // ⚡ OPTIMIZACIÓN: Usar PerformanceContext en lugar de useDevicePerformance directo
+  // Esto evita múltiples llamadas al hook y comparte el valor entre componentes
+  const { performanceLevel } = usePerformance()
   
   // Obtener configuración de la sección
   const config = getLazySectionConfig(configKey)
@@ -64,12 +66,12 @@ export const LazyDeferred = memo<LazyDeferredProps>(({
     return <div className={className} style={style}>{children}</div>
   }
   
-  // Calcular delay
-  const delay = delayOverride !== undefined
-    ? delayOverride
-    : delayKey
-      ? getLazyDelay(delayKey, performanceLevel)
-      : config.delay || 0
+  // ⚡ OPTIMIZACIÓN: Memoizar cálculo de delay para evitar recálculos
+  const delay = useMemo(() => {
+    if (delayOverride !== undefined) return delayOverride
+    if (delayKey) return getLazyDelay(delayKey, performanceLevel)
+    return config.delay || 0
+  }, [delayOverride, delayKey, performanceLevel, config.delay])
   
   // Usar hook unificado de lazy loading
   const { ref, isVisible } = useUnifiedLazyLoading<HTMLDivElement>({
