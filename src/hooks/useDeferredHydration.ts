@@ -54,6 +54,12 @@ export const useDeferredHydration = (
   }, [onHydrate])
 
   useEffect(() => {
+    // ⚡ OPTIMIZACIÓN: Si no hay delays, hidratar inmediatamente
+    if (minDelay === 0 && maxDelay === 0 && !useIdleCallback) {
+      hydrate()
+      return
+    }
+
     // ⚡ OPTIMIZACIÓN: Esperar tiempo mínimo antes de hidratar
     const minDelayTimeout = setTimeout(() => {
       if (useIdleCallback && 'requestIdleCallback' in window) {

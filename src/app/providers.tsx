@@ -130,13 +130,12 @@ const DeferredProviders = React.memo(({
   isAuthRoute: boolean
 }) => {
   // ⚡ FASE 4: Diferir hidratación de providers no críticos después del LCP
-  // ⚡ FIX: Reducir delays para evitar recarga visual - hidratar casi inmediatamente
-  // Los delays mínimos (50-100ms) permiten que el navegador complete el render inicial
-  // sin causar la sensación de recarga completa de página
+  // ⚡ FIX: Eliminar delays completamente para evitar recarga visual
+  // Hidratar inmediatamente sin delays para eliminar la sensación de recarga de página
   const shouldHydrate = useDeferredHydration({
-    minDelay: 50, // Delay mínimo para permitir render inicial sin causar recarga visual
-    maxDelay: 100, // Delay máximo reducido para evitar recarga perceptible
-    useIdleCallback: false, // Deshabilitar idle callback para hidratación más predecible
+    minDelay: 0, // Sin delay - hidratación inmediata
+    maxDelay: 0, // Sin delay - hidratación inmediata
+    useIdleCallback: false, // Deshabilitar idle callback para hidratación inmediata
   })
 
   if (!shouldHydrate) {
@@ -196,13 +195,12 @@ const DeferredComponents = React.memo(({
   isCheckoutRoute: boolean
 }) => {
   // ⚡ FASE 4: Diferir hidratación de componentes UI no críticos después del LCP
-  // ⚡ FIX: Reducir delays para evitar recarga visual - hidratar casi inmediatamente
-  // Los delays mínimos (50-100ms) permiten que el navegador complete el render inicial
-  // sin causar la sensación de recarga completa de página
+  // ⚡ FIX: Eliminar delays completamente para evitar recarga visual
+  // Hidratar inmediatamente sin delays para eliminar la sensación de recarga de página
   const shouldHydrate = useDeferredHydration({
-    minDelay: 50, // Delay mínimo para permitir render inicial sin causar recarga visual
-    maxDelay: 100, // Delay máximo reducido para evitar recarga perceptible
-    useIdleCallback: false, // Deshabilitar idle callback para hidratación más predecible
+    minDelay: 0, // Sin delay - hidratación inmediata
+    maxDelay: 0, // Sin delay - hidratación inmediata
+    useIdleCallback: false, // Deshabilitar idle callback para hidratación inmediata
   })
 
   if (!shouldHydrate) {
