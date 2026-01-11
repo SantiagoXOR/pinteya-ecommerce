@@ -1,47 +1,36 @@
+/**
+ * @deprecated Este hook está deprecado. Usa useProgressiveLoading o useUnifiedLazyLoading en su lugar.
+ * 
+ * Este hook se mantiene solo para compatibilidad. Internamente usa useProgressiveLoading.
+ * 
+ * Para nuevo código, usa:
+ * - useProgressiveLoading para lazy loading basado en viewport
+ * - useUnifiedLazyLoading para estrategias unificadas (viewport, delay, lcp, adaptive)
+ */
+
 'use client'
 
-import { useEffect, useRef, useState, RefObject } from 'react'
+import { RefObject } from 'react'
+import { useProgressiveLoading } from './useProgressiveLoading'
 
 /**
- * ⚡ OPTIMIZACIÓN: Hook para detectar cuando un elemento es visible usando IntersectionObserver
+ * Hook para detectar cuando un elemento es visible usando IntersectionObserver
  * 
- * Útil para lazy loading agresivo y optimizaciones basadas en visibilidad.
+ * @deprecated Usa useProgressiveLoading o useUnifiedLazyLoading en su lugar
  * 
  * @param options - Opciones de IntersectionObserver
  * @returns [ref, isIntersecting] - ref para el elemento e isIntersecting indica si es visible
- * 
- * Impacto esperado: Reducción de 30-40% en trabajo de renderizado
  */
 export function useIntersectionObserver(
   options: IntersectionObserverInit = {}
 ): [RefObject<HTMLElement>, boolean] {
-  const [isIntersecting, setIsIntersecting] = useState(false)
-  const ref = useRef<HTMLElement>(null)
+  const { ref, isVisible } = useProgressiveLoading<HTMLElement>({
+    rootMargin: options.rootMargin || '50px',
+    threshold: options.threshold || 0.01,
+    triggerOnce: false, // Mantener comportamiento original (actualiza cuando entra/sale del viewport)
+    disabled: false,
+  })
 
-  useEffect(() => {
-    const element = ref.current
-    if (!element) {
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsIntersecting(entry.isIntersecting)
-      },
-      {
-        rootMargin: '50px', // Pre-cargar 50px antes de que sea visible
-        threshold: 0.01, // Disparar cuando 1% es visible
-        ...options,
-      }
-    )
-
-    observer.observe(element)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [options.root, options.rootMargin, options.threshold])
-
-  return [ref, isIntersecting]
+  return [ref, isVisible]
 }
 

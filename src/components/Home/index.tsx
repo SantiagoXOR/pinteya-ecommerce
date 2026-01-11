@@ -4,7 +4,6 @@ import React, { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
-import { useProgressiveLoading } from '@/hooks/useProgressiveLoading'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useLCPDetection } from '@/hooks/useLCPDetection'
 import type { PromoBannersProps } from './PromoBanners'
@@ -17,9 +16,9 @@ import {
   DynamicCarouselSkeleton,
   NewArrivalsSkeleton,
 } from '@/components/ui/skeletons'
-// ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism de forma diferida (no bloqueante)
-// El CSS se importa pero se carga después del FCP usando DeferredGlassmorphismCSS
-import { DeferredGlassmorphismCSS } from './DeferredGlassmorphismCSS'
+// ⚡ REFACTOR: Sistema unificado de lazy loading
+import { LazySection, LazyDeferred, LazyPromoBanner } from '@/components/lazy'
+import { getLazyDelay } from '@/config/lazy-loading.config'
 // ⚡ FASE 1B: BestSeller diferido con ssr: false para reducir main thread work
 const BestSeller = dynamic(() => import('./BestSeller/index'), {
   ssr: false, // ⚡ OPTIMIZACIÓN: No SSR para reducir main thread work
@@ -73,236 +72,6 @@ const FloatingWhatsApp = dynamic(() => import('@/components/Common/FloatingWhats
 const WhatsAppPopup = dynamic(() => import('@/components/Common/WhatsAppPopup'), {
   ssr: false,
 })
-
-// Wrapper para componentes flotantes con carga diferida - Memoizados
-const DelayedFloatingCart = React.memo(() => {
-  const [shouldLoad, setShouldLoad] = React.useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldLoad(true)
-    }, 2000) // 2 segundos
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  // Memoizar para evitar re-renders innecesarios
-  return React.useMemo(() => {
-    return shouldLoad ? <FloatingCart /> : null
-  }, [shouldLoad])
-})
-DelayedFloatingCart.displayName = 'DelayedFloatingCart'
-
-const DelayedFloatingWhatsApp = React.memo(() => {
-  const [shouldLoad, setShouldLoad] = React.useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldLoad(true)
-    }, 5000) // 5 segundos
-
-    return () => clearTimeout(timer)
-  }, [])
-
-  // Memoizar para evitar re-renders innecesarios
-  return React.useMemo(() => {
-    return shouldLoad ? <FloatingWhatsApp /> : null
-  }, [shouldLoad])
-})
-DelayedFloatingWhatsApp.displayName = 'DelayedFloatingWhatsApp'
-
-
-// Wrapper para componentes below-fold con lazy loading - Memoizados para evitar re-renders
-const LazyPromoBanner = React.memo(({ bannerId }: { bannerId: number }) => {
-  // Banner más importante (bannerId 2) tiene más rootMargin para cargar antes
-  const rootMargin = bannerId === 2 ? '300px' : '200px'
-  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin,
-    threshold: 0.01,
-  })
-
-  // Usar useMemo para evitar re-crear el componente en cada render
-  const content = React.useMemo(() => {
-    return isVisible ? <PromoBanners bannerId={bannerId} /> : null
-  }, [isVisible, bannerId])
-
-  // ⚡ FIX CLS: minHeight realista basado en altura esperada del banner (48px para banners compactos)
-  // Esto previene layout shift cuando el componente se vuelve visible
-  const minHeight = isVisible ? 'auto' : '48px';
-  return (
-    <div ref={ref} style={{ minHeight: minHeight }}>
-      {content}
-    </div>
-  )
-})
-LazyPromoBanner.displayName = 'LazyPromoBanner'
-
-const LazyNewArrivals = React.memo(() => {
-  // ⚡ OPTIMIZACIÓN: Reducir rootMargin de 400px a 300px para cargar más tarde
-  // Esto reduce el JavaScript inicial y mejora TBT
-  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '300px',
-    threshold: 0.01,
-  })
-
-  const content = React.useMemo(() => {
-    return isVisible ? <NewArrivals /> : null
-  }, [isVisible])
-
-  // ⚡ FIX CLS: minHeight realista basado en altura esperada (500px según Home-v2)
-  const minHeight = isVisible ? 'auto' : '500px';
-  return (
-    <div ref={ref} style={{ minHeight: minHeight }}>
-      {content}
-    </div>
-  )
-})
-LazyNewArrivals.displayName = 'LazyNewArrivals'
-
-const LazyTrendingSearches = React.memo(() => {
-  // ⚡ OPTIMIZACIÓN: Reducir rootMargin de 200px a 150px para cargar más tarde
-  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '150px',
-    threshold: 0.01,
-  })
-
-  const content = React.useMemo(() => {
-    return isVisible ? <TrendingSearches /> : null
-  }, [isVisible])
-
-  // ⚡ FIX CLS: minHeight realista basado en altura esperada (~100px para trending searches)
-  const minHeight = isVisible ? 'auto' : '100px';
-  return (
-    <div ref={ref} style={{ minHeight: minHeight }}>
-      {content}
-    </div>
-  )
-})
-LazyTrendingSearches.displayName = 'LazyTrendingSearches'
-
-const LazyTestimonials = React.memo(() => {
-  // ⚡ OPTIMIZACIÓN: Reducir rootMargin de 200px a 150px para cargar más tarde
-  const { ref, isVisible } = useProgressiveLoading<HTMLDivElement>({
-    rootMargin: '150px',
-    threshold: 0.01,
-  })
-
-  const content = React.useMemo(() => {
-    return isVisible ? <Testimonials /> : null
-  }, [isVisible])
-
-  // ⚡ FIX CLS: minHeight realista basado en altura esperada (~200px para testimonials)
-  const minHeight = isVisible ? 'auto' : '200px';
-  return (
-    <div ref={ref} style={{ minHeight: minHeight }}>
-      {content}
-    </div>
-  )
-})
-LazyTestimonials.displayName = 'LazyTestimonials'
-
-const LazyBestSeller = React.memo(({ delay = 0 }: { delay?: number }) => {
-  // ⚡ FIX HIDRATACIÓN: Inicializar shouldRender basándose en si estamos en el cliente
-  // Durante SSR, siempre renderizar el componente (no skeleton)
-  // Durante hidratación inicial, mantener el mismo estado que SSR
-  const [shouldRender, setShouldRender] = React.useState(() => {
-    // En SSR, siempre renderizar (delay se aplica solo después de hidratación)
-    if (typeof window === 'undefined') return true
-    // En cliente, si delay es 0, renderizar inmediatamente
-    return delay === 0
-  })
-  const [isMounted, setIsMounted] = React.useState(false)
-
-  // ⚡ FIX: Marcar como montado después de la hidratación
-  React.useEffect(() => {
-    setIsMounted(true)
-    // Si hay un delay y aún no se ha renderizado, aplicar el delay
-    if (delay > 0 && !shouldRender) {
-      const timer = setTimeout(() => {
-        setShouldRender(true)
-      }, delay)
-      return () => clearTimeout(timer)
-    }
-  }, [delay, shouldRender])
-
-  // ⚡ FIX: Durante la hidratación inicial, siempre renderizar el componente
-  // para evitar mismatch entre servidor y cliente
-  // Solo mostrar skeleton si estamos en cliente, montado, y hay delay activo
-  if (typeof window !== 'undefined' && isMounted && !shouldRender && delay > 0) {
-    return (
-      <div className='mt-4 sm:mt-6 product-section'>
-        <BestSellerSkeleton />
-      </div>
-    )
-  }
-
-  // ✅ FIX CRÍTICO: BestSeller debe cargarse SIEMPRE, sin progressive loading
-  // Renderizar inmediatamente sin esperar a ser visible
-  // ⚡ FASE 3: min-height para prevenir CLS
-  return (
-    <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}>
-      <BestSeller />
-    </div>
-  )
-})
-LazyBestSeller.displayName = 'LazyBestSeller'
-
-// ⚡ OPTIMIZACIÓN: Componente para CategoryToggle con delay adaptativo
-const DelayedCategoryToggle = React.memo(({ delay }: { delay: number }) => {
-  // ⚡ FIX: Inicializar como true para SSR (asumiendo delay === 0 durante SSR)
-  // Esto asegura que el servidor y cliente rendericen lo mismo inicialmente
-  const [shouldRender, setShouldRender] = React.useState(true)
-  const [isHydrated, setIsHydrated] = React.useState(false)
-  const [hasRendered, setHasRendered] = React.useState(false)
-
-  // ⚡ FIX: Marcar como hidratado después del primer render del cliente
-  React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
-  // ⚡ FIX: Marcar como renderizado cuando el contenido se muestra por primera vez
-  React.useEffect(() => {
-    if (shouldRender && !hasRendered) {
-      setHasRendered(true)
-    }
-  }, [shouldRender, hasRendered])
-
-  React.useEffect(() => {
-    // Solo procesar cambios de delay después de la hidratación para evitar mismatch
-    if (!isHydrated) return
-
-    // ⚡ FIX: Si el contenido ya se renderizó, NO cambiarlo a false aunque el delay cambie
-    // Esto previene que el contenido desaparezca después de la hidratación
-    if (hasRendered && shouldRender) return
-
-    if (delay > 0) {
-      // Si delay es > 0 y el contenido aún no se ha renderizado, mostrar skeleton primero
-      setShouldRender(false)
-      const timer = setTimeout(() => {
-        setShouldRender(true)
-      }, delay)
-      return () => clearTimeout(timer)
-    } else {
-      // Si delay es 0, renderizar inmediatamente
-      setShouldRender(true)
-    }
-  }, [delay, isHydrated, hasRendered, shouldRender])
-
-  if (!shouldRender) {
-    return (
-      <div className='mt-1 sm:mt-1.5' style={{ minHeight: '40px' }}>
-        <CategoryPillsSkeleton />
-      </div>
-    )
-  }
-
-  return (
-    <div className='mt-1 sm:mt-1.5' style={{ minHeight: '40px' }}>
-      <CategoryTogglePillsWithSearch />
-    </div>
-  )
-})
-DelayedCategoryToggle.displayName = 'DelayedCategoryToggle'
 
 const Home = () => {
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo para aplicar optimizaciones adaptativas
@@ -410,8 +179,6 @@ const Home = () => {
 
   return (
     <CategoryFilterProvider>
-      {/* ⚡ OPTIMIZACIÓN: Cargar CSS glassmorphism solo en desktop (no en móviles para evitar lag) */}
-      {!isMobile && <DeferredGlassmorphismCSS />}
       <main className='min-h-screen'>
         {/* BenefitsBar eliminado - ahora está integrado en el Header como ScrollingBanner */}
 
@@ -514,11 +281,33 @@ const Home = () => {
 
       {/* 1. Navegación rápida por categorías - Delay adaptativo para dispositivos de bajo rendimiento */}
       <React.Suspense fallback={<CategoryPillsSkeleton />}>
-        <DelayedCategoryToggle delay={categoryToggleDelay} />
+        <LazyDeferred 
+          configKey="categoryToggle"
+          delayKey="categoryToggle"
+          delayOverride={categoryToggleDelay}
+          skeleton={<CategoryPillsSkeleton />}
+          className="mt-1 sm:mt-1.5"
+        >
+          <CategoryTogglePillsWithSearch />
+        </LazyDeferred>
       </React.Suspense>
 
       {/* 2. Ofertas Especiales (BestSeller) - Delay adaptativo para dispositivos de bajo rendimiento */}
-      <LazyBestSeller delay={bestSellerDelay} />
+      {bestSellerDelay === 0 ? (
+        <div className='mt-4 sm:mt-6 product-section' style={{ minHeight: '400px' }}>
+          <BestSeller />
+        </div>
+      ) : (
+        <LazyDeferred 
+          configKey="bestSeller"
+          delayKey="bestSeller"
+          delayOverride={bestSellerDelay}
+          skeleton={<BestSellerSkeleton />}
+          className="mt-4 sm:mt-6 product-section"
+        >
+          <BestSeller />
+        </LazyDeferred>
+      )}
 
       {/* 3. Banner PINTURA FLASH DAYS - Con botón "Ver Todos los Productos" */}
       {/* ⚡ FASE 1B: Diferir después del LCP para reducir main thread work */}
@@ -545,41 +334,41 @@ const Home = () => {
       <DynamicProductCarousel freeShippingOnly={true} />
 
       {/* 6. Banner ASESORAMIENTO GRATIS - Lazy loaded - Subido más arriba y más separado de Nuevos Productos */}
-      <div 
-        className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content' 
-        style={{ 
-          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px) - Igual que Pintura Flash Days
-          height: 'auto' // Permite que el contenido defina la altura
-        }}
-      >
+      <div className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content'>
         <LazyPromoBanner bannerId={2} />
       </div>
 
       {/* 7. Nuevos productos - Lazy loaded */}
-      <div className='mt-0 product-section' style={{ minHeight: '500px' }}> {/* ⚡ CLS FIX: minHeight para reservar espacio sin forzar aspect-ratio en mobile */}
-        <LazyNewArrivals />
-      </div>
+      <LazySection 
+        configKey="newArrivals"
+        skeleton={<NewArrivalsSkeleton />}
+        className="mt-0 product-section"
+      >
+        <NewArrivals />
+      </LazySection>
 
       {/* 8. Banner CALCULADORA DE PINTURA - Lazy loaded - Mismo espaciado que Asesoramiento Gratis */}
-      <div 
-        className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content' 
-        style={{ 
-          minHeight: '48px', // ⚡ CLS FIX: Altura mínima exacta (h-12 = 48px)
-          height: 'auto' // Permite que el contenido defina la altura
-        }}
-      >
+      <div className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content'>
         <LazyPromoBanner bannerId={3} />
       </div>
 
       {/* 9. Búsquedas Populares - Lazy loaded */}
-      <div className='mt-6 sm:mt-8 below-fold-content'>
-        <LazyTrendingSearches />
-      </div>
+      <LazySection 
+        configKey="trendingSearches"
+        skeleton={<TrendingSearchesSkeleton />}
+        className="mt-6 sm:mt-8 below-fold-content"
+      >
+        <TrendingSearches />
+      </LazySection>
 
       {/* 10. Trust signals y testimonios - Lazy loaded */}
-      <div className='mt-6 sm:mt-8 testimonials-section'>
-        <LazyTestimonials />
-      </div>
+      <LazySection 
+        configKey="testimonials"
+        skeleton={<TestimonialsSkeleton />}
+        className="mt-6 sm:mt-8 testimonials-section"
+      >
+        <Testimonials />
+      </LazySection>
 
       {/* Elementos flotantes de engagement - DESACTIVADOS: Reemplazados por bottom navigation */}
       {/* <DelayedFloatingCart /> */}
