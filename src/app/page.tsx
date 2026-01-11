@@ -1,18 +1,12 @@
 import { Metadata } from 'next'
-import dynamic from 'next/dynamic'
 import Image from 'next/image'
 // ⚡ FASE 1: CSS glassmorphism movido a carga diferida via DeferredCSS (solo en desktop)
-import { createPublicClient } from '@/lib/integrations/supabase/server'
-import { Category } from '@/types/database'
 import { QueryClient, dehydrate, Hydrate } from '@tanstack/react-query'
 import { productQueryKeys } from '@/hooks/queries/productQueryKeys'
-
-// ⚡ FASE 19: Lazy load de Home para reducir bundle inicial y bloqueo del main thread
-// Esto permite que la imagen hero se cargue primero sin esperar el JavaScript de Home
-const Home = dynamic(() => import('@/components/Home'), {
-  ssr: true, // Mantener SSR para SEO
-  loading: () => null, // No mostrar loading, la imagen hero ya está visible
-})
+import { getCategoriesServer, getBestSellerProductsServer } from '@/lib/server/data-server'
+import Home from '@/components/Home'
+import type { Category } from '@/types/category'
+import type { Product } from '@/types/product'
 
 export const metadata: Metadata = {
   title: 'Pinteya - Tu Pinturería Online | Envío Gratis +$50.000',
@@ -52,32 +46,8 @@ export const metadata: Metadata = {
 // ✅ Home-v3 configurado como ruta principal
 export const revalidate = 60
 
-// ⚡ OPTIMIZACIÓN CRÍTICA: Pre-cargar categorías en el servidor para evitar re-renders
-// Usa createPublicClient (sin cookies) para permitir renderizado estático (ISR)
-async function getCategoriesServerSide(): Promise<Category[]> {
-  try {
-    const supabase = createPublicClient()
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('display_order', { ascending: true })
-      .order('name', { ascending: true })
-      .limit(50) // Limitar para performance
-
-    if (error) {
-      console.error('Error obteniendo categorías en servidor:', error)
-      return []
-    }
-
-    return data || []
-  } catch (error) {
-    console.error('Error en getCategoriesServerSide:', error)
-    return []
-  }
-}
-
 export default async function HomePage() {
-  // ⚡ OPTIMIZACIÓN CRÍTICA: Pre-cargar categorías en el servidor
+  // ⚡ OPTIMIZACIÓN CRÍTICA: Pre-cargar categorías y productos en el servidor
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -89,8 +59,11 @@ export default async function HomePage() {
     },
   })
 
-  // Pre-fetch categorías en el servidor
-  const categories = await getCategoriesServerSide()
+  // Pre-fetch categorías y productos bestseller en paralelo
+  const [categories, bestSellerProducts] = await Promise.all([
+    getCategoriesServer(),
+    getBestSellerProductsServer(null),
+  ])
   
   // Pre-popular el cache de React Query con las categorías
   queryClient.setQueryData(
@@ -98,16 +71,9 @@ export default async function HomePage() {
     categories
   )
 
-  // ⚡ OPTIMIZACIÓN: Prefetching removido del servidor
-  // Los hooks optimizados (useFilteredProducts, useBestSellerProducts) ya manejan el cache
-  // y no harán peticiones duplicadas gracias a refetchOnMount: false y staleTime aumentado
-  // El prefetching en el servidor requiere URLs absolutas y no es necesario ya que React Query
-  // manejará el cache automáticamente en el cliente
-
   return (
     <Hydrate state={dehydrate(queryClient)}>
-      {/* ⚡ FIX: Hero se renderiza dentro de Home, no aquí para evitar duplicación */}
-      <Home />
+      <Home categories={categories} bestSellerProducts={bestSellerProducts} />
     </Hydrate>
   )
 }
