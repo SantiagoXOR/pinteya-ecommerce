@@ -87,6 +87,46 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
         console.log('✅ [API slug] Imagen obtenida desde product_images:', primaryImageUrl)
       } else {
         console.log('⚠️ [API slug] No se encontraron imágenes en product_images para producto:', product.id)
+        // ✅ NUEVO: Fallback a campo images JSONB si no hay imagen en product_images
+        if (product.images) {
+          const extractImageFromJsonb = (images: any): string | null => {
+            if (!images) return null
+            if (typeof images === 'string') {
+              const trimmed = images.trim()
+              if (!trimmed) return null
+              if (trimmed.startsWith('{') || trimmed.startsWith('[') || trimmed.startsWith('"')) {
+                try {
+                  const parsed = JSON.parse(trimmed)
+                  return extractImageFromJsonb(parsed)
+                } catch {
+                  try {
+                    const unescaped = JSON.parse(`"${trimmed}"`)
+                    return extractImageFromJsonb(unescaped)
+                  } catch {
+                    return trimmed || null
+                  }
+                }
+              }
+              return trimmed || null
+            }
+            if (Array.isArray(images)) {
+              return images[0]?.trim() || null
+            }
+            if (typeof images === 'object') {
+              return (images as any).url ||
+                     images.previews?.[0] || 
+                     images.thumbnails?.[0] ||
+                     images.gallery?.[0] ||
+                     images.main ||
+                     null
+            }
+            return null
+          }
+          primaryImageUrl = extractImageFromJsonb(product.images)
+          if (primaryImageUrl) {
+            console.log('✅ [API slug] Imagen obtenida desde campo images JSONB:', primaryImageUrl)
+          }
+        }
       }
     } catch (imageError) {
       console.warn('❌ [API slug] Error obteniendo imagen desde product_images:', imageError)
