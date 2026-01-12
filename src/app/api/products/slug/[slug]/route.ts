@@ -219,6 +219,20 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       }
     }
 
+    // ✅ NUEVO: Si no se enriqueció el producto, agregar image_url y normalización directamente
+    if (!enrichedProduct && product) {
+      enrichedProduct = {
+        ...product,
+        // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+        name: normalizeProductTitle(product.name),
+        // ✅ NUEVO: Agregar image_url desde product_images si está disponible
+        image_url: primaryImageUrl || null,
+      }
+    } else if (enrichedProduct && !enrichedProduct.image_url) {
+      // ✅ NUEVO: Asegurar que image_url esté presente incluso si no se agregó antes
+      enrichedProduct.image_url = primaryImageUrl || null
+    }
+    
     // ✅ NUEVO: Asegurar normalización si enrichedProduct no fue modificado
     if (enrichedProduct && !enrichedProduct.name) {
       enrichedProduct.name = normalizeProductTitle(product.name)
