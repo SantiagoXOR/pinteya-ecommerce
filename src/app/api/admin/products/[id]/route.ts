@@ -104,6 +104,20 @@ async function getProductById(
     return null  // Return null instead of throwing
   }
 
+  // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
+  let primaryImageUrl: string | null = null
+  if (product) {
+    const { data: productImages } = await supabase
+      .from('product_images')
+      .select('url, is_primary')
+      .eq('product_id', numericId)
+      .order('is_primary', { ascending: false })
+      .order('display_order', { ascending: true })
+      .limit(1)
+    
+    primaryImageUrl = productImages?.[0]?.url || null
+  }
+
   // Transform response with enhanced data
   // ✅ CORREGIDO: Parsear medida si viene como string de array
   let parsedMedida: string[] = []
@@ -127,6 +141,27 @@ async function getProductById(
     }
   }
 
+  // Helper para extraer imagen del JSONB como fallback
+  const extractImageFromJsonb = (images: any): string | null => {
+    if (!images) return null
+    if (typeof images === 'string') {
+      try {
+        const parsed = JSON.parse(images)
+        return extractImageFromJsonb(parsed)
+      } catch {
+        return images.trim() || null
+      }
+    }
+    if (typeof images === 'object') {
+      return (images as any).url ||
+             images.previews?.[0] || 
+             images.thumbnails?.[0] ||
+             images.main ||
+             null
+    }
+    return null
+  }
+
   const transformedProduct = {
     ...product,
     // ✅ NUEVO: Normalizar título del producto a formato capitalizado
@@ -135,14 +170,8 @@ async function getProductById(
     categories: undefined,
     // ✅ CORREGIDO: Parsear medida correctamente
     medida: parsedMedida,
-    // Transform images JSONB to image_url
-    // ✅ CORREGIDO: Soporte para formato {url, is_primary}
-    image_url: 
-      (typeof product.images === 'object' && product.images && (product.images as any).url) ||
-      product.images?.previews?.[0] || 
-      product.images?.thumbnails?.[0] ||
-      product.images?.main ||
-      null,
+    // ✅ CORREGIDO: Prioridad: product_images > images JSONB
+    image_url: primaryImageUrl || extractImageFromJsonb(product.images),
       // Derive status from is_active (status column doesn't exist in DB)
       status: product.is_active ? 'active' : 'inactive',
     // ✅ NUEVO: Terminaciones del producto (array de texto) - asegurar que siempre sea array

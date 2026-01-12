@@ -616,6 +616,8 @@ const postHandler = async (request: ValidatedRequest) => {
     // Transform response
     const transformedProduct = {
       ...product,
+      // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+      name: normalizeProductTitle(product.name),
       category_name: product.category?.name || null,
       category: undefined,
     }
@@ -839,11 +841,17 @@ const postHandlerSimple = async (request: NextRequest) => {
 
     console.log('✅ Product created successfully:', product)
 
+    // ✅ NUEVO: Normalizar título del producto antes de devolverlo
+    const normalizedProduct = product ? {
+      ...product,
+      name: normalizeProductTitle(product.name),
+    } : product
+
     return NextResponse.json(
       {
         success: true,
         message: 'Producto creado exitosamente',
-        data: product,
+        data: normalizedProduct,
       },
       { status: 201 }
     )
