@@ -23,34 +23,41 @@ BEGIN
   END IF;
 
   -- Crear el perfil del usuario automáticamente
-  INSERT INTO public.user_profiles (
-    supabase_user_id,
-    email,
-    first_name,
-    last_name,
-    role_id,
-    is_active,
-    is_verified,
-    created_at,
-    updated_at
-  ) VALUES (
-    NEW.id,
-    NEW.email,
-    SPLIT_PART(NEW.name, ' ', 1),  -- Primer nombre
-    SUBSTRING(NEW.name FROM POSITION(' ' IN NEW.name) + 1), -- Resto del nombre como apellido
-    customer_role_id,
-    true,
-    CASE WHEN NEW.emailVerified IS NOT NULL THEN true ELSE false END,
-    NOW(),
-    NOW()
-  )
-  ON CONFLICT (email) 
-  DO UPDATE SET
-    supabase_user_id = EXCLUDED.supabase_user_id,
-    first_name = COALESCE(EXCLUDED.first_name, user_profiles.first_name),
-    last_name = COALESCE(EXCLUDED.last_name, user_profiles.last_name),
-    is_verified = CASE WHEN EXCLUDED.is_verified THEN true ELSE user_profiles.is_verified END,
-    updated_at = NOW();
+  -- Usar lógica de verificación primero para evitar problemas con ON CONFLICT
+  IF EXISTS (SELECT 1 FROM public.user_profiles WHERE email = NEW.email) THEN
+    -- Si existe, actualizar
+    UPDATE public.user_profiles
+    SET
+      supabase_user_id = NEW.id,
+      first_name = COALESCE(SPLIT_PART(NEW.name, ' ', 1), user_profiles.first_name),
+      last_name = COALESCE(SUBSTRING(NEW.name FROM POSITION(' ' IN NEW.name) + 1), user_profiles.last_name),
+      is_verified = CASE WHEN NEW.emailVerified IS NOT NULL THEN true ELSE user_profiles.is_verified END,
+      updated_at = NOW()
+    WHERE email = NEW.email;
+  ELSE
+    -- Si no existe, insertar
+    INSERT INTO public.user_profiles (
+      supabase_user_id,
+      email,
+      first_name,
+      last_name,
+      role_id,
+      is_active,
+      is_verified,
+      created_at,
+      updated_at
+    ) VALUES (
+      NEW.id,
+      NEW.email,
+      SPLIT_PART(NEW.name, ' ', 1),  -- Primer nombre
+      SUBSTRING(NEW.name FROM POSITION(' ' IN NEW.name) + 1), -- Resto del nombre como apellido
+      customer_role_id,
+      true,
+      CASE WHEN NEW.emailVerified IS NOT NULL THEN true ELSE false END,
+      NOW(),
+      NOW()
+    );
+  END IF;
 
   RAISE LOG 'User profile auto-created for user: %', NEW.email;
 
@@ -97,6 +104,7 @@ BEGIN
   LIMIT 1;
 
   -- Insertar perfiles para usuarios sin perfil
+  -- Usar LEFT JOIN para evitar duplicados por email también
   INSERT INTO public.user_profiles (
     supabase_user_id,
     email,
@@ -120,8 +128,8 @@ BEGIN
     NOW()
   FROM public.users u
   LEFT JOIN public.user_profiles up ON u.id = up.supabase_user_id
-  WHERE up.id IS NULL
-  ON CONFLICT (email) DO NOTHING;
+  LEFT JOIN public.user_profiles up_email ON u.email = up_email.email
+  WHERE up.id IS NULL AND up_email.id IS NULL;
 
   GET DIAGNOSTICS users_synced = ROW_COUNT;
   

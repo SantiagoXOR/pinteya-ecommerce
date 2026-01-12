@@ -35,31 +35,38 @@ BEGIN
   FOREACH email_to_process IN ARRAY admin_emails
   LOOP
     -- Insertar o actualizar el perfil con rol admin
-    INSERT INTO public.user_profiles (
-      email,
-      role_id,
-      is_active,
-      is_verified,
-      first_name,
-      last_name,
-      created_at,
-      updated_at
-    ) VALUES (
-      email_to_process,
-      admin_role_id,
-      true,
-      true, -- Los admins se consideran verificados
-      'Admin', -- Nombre por defecto, se actualizará en el primer login
-      'User',
-      NOW(),
-      NOW()
-    )
-    ON CONFLICT (email)
-    DO UPDATE SET
-      role_id = admin_role_id,
-      is_active = true,
-      is_verified = true,
-      updated_at = NOW();
+    -- Usar lógica de verificación primero para evitar problemas con ON CONFLICT
+    IF EXISTS (SELECT 1 FROM public.user_profiles WHERE email = email_to_process) THEN
+      -- Si existe, actualizar
+      UPDATE public.user_profiles
+      SET
+        role_id = admin_role_id,
+        is_active = true,
+        is_verified = true,
+        updated_at = NOW()
+      WHERE email = email_to_process;
+    ELSE
+      -- Si no existe, insertar
+      INSERT INTO public.user_profiles (
+        email,
+        role_id,
+        is_active,
+        is_verified,
+        first_name,
+        last_name,
+        created_at,
+        updated_at
+      ) VALUES (
+        email_to_process,
+        admin_role_id,
+        true,
+        true, -- Los admins se consideran verificados
+        'Admin', -- Nombre por defecto, se actualizará en el primer login
+        'User',
+        NOW(),
+        NOW()
+      );
+    END IF;
 
     profiles_updated := profiles_updated + 1;
     RAISE NOTICE '✅ Admin registrado/actualizado: %', email_to_process;
@@ -150,31 +157,38 @@ BEGIN
   END IF;
 
   -- Insertar o actualizar el perfil
-  INSERT INTO public.user_profiles (
-    email,
-    role_id,
-    is_active,
-    is_verified,
-    first_name,
-    last_name,
-    created_at,
-    updated_at
-  ) VALUES (
-    user_email,
-    admin_role_id,
-    true,
-    true,
-    'Admin',
-    'User',
-    NOW(),
-    NOW()
-  )
-  ON CONFLICT (email)
-  DO UPDATE SET
-    role_id = admin_role_id,
-    is_active = true,
-    is_verified = true,
-    updated_at = NOW();
+  -- Usar lógica de verificación primero para evitar problemas con ON CONFLICT
+  IF EXISTS (SELECT 1 FROM public.user_profiles WHERE email = user_email) THEN
+    -- Si existe, actualizar
+    UPDATE public.user_profiles
+    SET
+      role_id = admin_role_id,
+      is_active = true,
+      is_verified = true,
+      updated_at = NOW()
+    WHERE email = user_email;
+  ELSE
+    -- Si no existe, insertar
+    INSERT INTO public.user_profiles (
+      email,
+      role_id,
+      is_active,
+      is_verified,
+      first_name,
+      last_name,
+      created_at,
+      updated_at
+    ) VALUES (
+      user_email,
+      admin_role_id,
+      true,
+      true,
+      'Admin',
+      'User',
+      NOW(),
+      NOW()
+    );
+  END IF;
 
   RAISE NOTICE '✅ Usuario admin agregado/actualizado: %', user_email;
 END;
