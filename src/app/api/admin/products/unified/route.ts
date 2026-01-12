@@ -14,6 +14,7 @@ import { checkCRUDPermissions } from '@/lib/auth/admin-auth'
 import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils'
 import { executeWithRLS } from '@/lib/auth/enterprise-rls-utils'
 import { checkPermission } from '@/lib/auth/supabase-auth-utils'
+import { normalizeProductTitle } from '@/lib/core/utils'
 
 // Configuración de Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -200,8 +201,14 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ ${auth_mode} mode: ${products?.length} products retrieved`)
 
+    // ✅ NUEVO: Normalizar títulos de productos
+    const normalizedProducts = products?.map(product => ({
+      ...product,
+      name: normalizeProductTitle(product.name),
+    })) || []
+
     return NextResponse.json({
-      data: products,
+      data: normalizedProducts,
       pagination: {
         page,
         limit,
