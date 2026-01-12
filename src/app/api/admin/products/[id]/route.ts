@@ -764,14 +764,52 @@ export async function GET(
       default_variant: defaultVariant,
       // Transform images JSONB to image_url (priorizar product_images, luego variante default, luego images JSONB)
       // ✅ CORREGIDO: Prioridad: product_images > variante > images JSONB
-      image_url: 
-        primaryImageFromTable ||
-        defaultVariant?.image_url ||
-        (typeof data.images === 'object' && data.images && (data.images as any).url) ||
-        data.images?.previews?.[0] || 
-        data.images?.thumbnails?.[0] ||
-        data.images?.main ||
-        null,
+      // ✅ MEJORADO: Usar función helper extractImageUrl para consistencia con lista de productos
+      image_url: (() => {
+        // Prioridad 1: Imagen desde product_images
+        if (primaryImageFromTable) {
+          return primaryImageFromTable
+        }
+        // Prioridad 2: Imagen de variante por defecto (solo si hay variantes)
+        if (defaultVariant?.image_url) {
+          return defaultVariant.image_url
+        }
+        // Prioridad 3: Extraer desde images JSONB usando la misma lógica que la lista
+        const extractImageFromJsonb = (images: any): string | null => {
+          if (!images) return null
+          if (typeof images === 'string') {
+            const trimmed = images.trim()
+            if (!trimmed) return null
+            if (trimmed.startsWith('{') || trimmed.startsWith('[') || trimmed.startsWith('"')) {
+              try {
+                const parsed = JSON.parse(trimmed)
+                return extractImageFromJsonb(parsed)
+              } catch {
+                try {
+                  const unescaped = JSON.parse(`"${trimmed}"`)
+                  return extractImageFromJsonb(unescaped)
+                } catch {
+                  return trimmed || null
+                }
+              }
+            }
+            return trimmed || null
+          }
+          if (Array.isArray(images)) {
+            return images[0]?.trim() || null
+          }
+          if (typeof images === 'object') {
+            return (images as any).url ||
+                   images.previews?.[0] || 
+                   images.thumbnails?.[0] ||
+                   images.gallery?.[0] ||
+                   images.main ||
+                   null
+          }
+          return null
+        }
+        return extractImageFromJsonb(data.images)
+      })(),
       // Derive status from is_active (status column doesn't exist in DB)
       status: data.is_active ? 'active' : 'inactive',
       // Usar precio de variante default si existe, pero preservar stock del producto principal
