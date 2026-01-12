@@ -114,8 +114,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   originalConsoleError.apply(console, args);
                 };
 
-                // ⚡ DIAGNÓSTICO: Detectar errores globales
+                // ⚡ DIAGNÓSTICO: Detectar errores globales (ignorar scripts de terceros diferidos)
                 window.addEventListener('error', function(event) {
+                  // ⚡ FIX: Ignorar errores de scripts de Vercel que se cargan más tarde
+                  const source = event.filename || event.source || '';
+                  const message = event.message || '';
+                  
+                  // Ignorar errores de scripts de Vercel Analytics/Speed Insights
+                  if (source.includes('_vercel/') || 
+                      source.includes('speed-insights') || 
+                      source.includes('analytics') ||
+                      message.includes('speed-insights') ||
+                      message.includes('analytics') ||
+                      message.includes('Failed to load resource')) {
+                    // Solo loguear en desarrollo, no como error crítico
+                    if (process.env.NODE_ENV === 'development') {
+                      console.warn('⚠️ Script de terceros bloqueado o no disponible (esperado):', source);
+                    }
+                    return; // No procesar como error crítico
+                  }
+                  
+                  // Solo reportar errores críticos que no sean de scripts diferidos
                   console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: Error global detectado:', {
                     timestamp: new Date().toISOString(),
                     message: event.message,
@@ -125,8 +144,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   });
                 }, true);
 
-                // ⚡ DIAGNÓSTICO: Detectar promise rejections
+                // ⚡ DIAGNÓSTICO: Detectar promise rejections (ignorar scripts de terceros)
                 window.addEventListener('unhandledrejection', function(event) {
+                  const reason = event.reason || '';
+                  const reasonStr = typeof reason === 'string' ? reason : JSON.stringify(reason);
+                  
+                  // Ignorar rejections de scripts de Vercel que se cargan más tarde
+                  if (reasonStr.includes('_vercel/') || 
+                      reasonStr.includes('speed-insights') || 
+                      reasonStr.includes('analytics') ||
+                      reasonStr.includes('Failed to fetch') ||
+                      reasonStr.includes('net::ERR_BLOCKED_BY_CLIENT')) {
+                    // Solo loguear en desarrollo
+                    if (process.env.NODE_ENV === 'development') {
+                      console.warn('⚠️ Promise rejection de script de terceros (esperado):', reasonStr);
+                    }
+                    event.preventDefault(); // Prevenir que se muestre como error no manejado
+                    return;
+                  }
+                  
+                  // Solo reportar rejections críticos
                   console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: Promise rejection no manejado:', {
                     timestamp: new Date().toISOString(),
                     reason: event.reason,

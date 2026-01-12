@@ -64,9 +64,8 @@ const Analytics = dynamic(
 const SpeedInsights = dynamic(
   () => import('@vercel/speed-insights/next').then(m => ({ default: m.SpeedInsights })).catch((error) => {
     // ⚡ FIX: Capturar errores de carga (scripts bloqueados) y retornar componente vacío
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('⚠️ Vercel Speed Insights bloqueado o no disponible:', error)
-    }
+    // No loguear como error para evitar que el script de diagnóstico lo capture
+    // Los errores de scripts bloqueados son esperados y no críticos
     return { default: () => null }
   }),
   {
@@ -120,11 +119,10 @@ class ErrorBoundaryVercel extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // ⚡ FIX: Log silencioso solo en desarrollo
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('⚠️ Vercel Analytics error (manejado silenciosamente):', error, errorInfo)
-    }
-    // No hacer nada más - evitar recargas
+    // ⚡ FIX: Capturar errores silenciosamente sin loguear
+    // Los errores de Vercel Analytics/Speed Insights cuando están bloqueados son esperados
+    // No loguear para evitar que el script de diagnóstico los capture como errores críticos
+    // No hacer nada más - evitar recargas y errores en consola
   }
 
   render() {

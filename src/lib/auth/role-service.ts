@@ -238,11 +238,16 @@ export async function upsertUserProfile(userData: {
     const supabase = getSupabaseAdmin()
 
     // Primero, verificar si ya existe un perfil con este email
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile, error: findError } = await supabase
       .from('user_profiles')
-      .select('id, role_id')
+      .select('id, role_id, supabase_user_id, first_name, last_name')
       .eq('email', userData.email)
-      .single()
+      .maybeSingle()
+
+    // Si hay un error al buscar (que no sea "no encontrado"), loguearlo
+    if (findError && findError.code !== 'PGRST116') {
+      console.error('[Role Service] Error finding existing profile:', findError)
+    }
 
     // Si existe, preservar su rol actual (no sobreescribir admin/driver con customer)
     const roleToUse = existingProfile?.role_id
@@ -258,43 +263,126 @@ export async function upsertUserProfile(userData: {
       defaultRoleId = customerRole?.id || null
     }
 
-    // Intentar hacer upsert del perfil
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .upsert(
-        {
-          supabase_user_id: userData.supabase_user_id, // Siempre actualizar el user_id
+    let data: any
+    let error: any
+
+    // Si el perfil ya existe, hacer UPDATE
+    if (existingProfile) {
+      const updateData: any = {
+        supabase_user_id: userData.supabase_user_id, // Siempre actualizar el user_id
+        first_name: userData.first_name || existingProfile.first_name || 'Usuario',
+        last_name: userData.last_name || existingProfile.last_name || '',
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      }
+
+      // Solo actualizar role_id si no tenía uno (preservar roles existentes)
+      if (!existingProfile.role_id && defaultRoleId) {
+        updateData.role_id = defaultRoleId
+      }
+
+      const result = await supabase
+        .from('user_profiles')
+        .update(updateData)
+        .eq('email', userData.email)
+        .select(
+          `
+          id,
+          supabase_user_id,
+          email,
+          first_name,
+          last_name,
+          role_id,
+          is_active,
+          user_roles:role_id (
+            role_name,
+            permissions
+          )
+        `
+        )
+        .single()
+
+      data = result.data
+      error = result.error
+    } else {
+      // Si no existe, hacer INSERT
+      const result = await supabase
+        .from('user_profiles')
+        .insert({
+          supabase_user_id: userData.supabase_user_id,
           email: userData.email,
           first_name: userData.first_name || 'Usuario',
           last_name: userData.last_name || '',
-          role_id: defaultRoleId, // Preservar rol existente o usar customer
+          role_id: defaultRoleId,
           is_active: true,
           updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: 'email',
-          ignoreDuplicates: false,
-        }
-      )
-      .select(
+        })
+        .select(
+          `
+          id,
+          supabase_user_id,
+          email,
+          first_name,
+          last_name,
+          role_id,
+          is_active,
+          user_roles:role_id (
+            role_name,
+            permissions
+          )
         `
-        id,
-        supabase_user_id,
-        email,
-        first_name,
-        last_name,
-        role_id,
-        is_active,
-        user_roles:role_id (
-          role_name,
-          permissions
         )
-      `
-      )
-      .single()
+        .single()
+
+      data = result.data
+      error = result.error
+    }
 
     if (error) {
       console.error('[Role Service] Error upserting user profile:', error)
+      // Si es un error de conflicto único, intentar hacer UPDATE en su lugar
+      if (error.code === '23505' || error.message?.includes('unique') || error.message?.includes('duplicate')) {
+        console.log('[Role Service] Unique constraint violation, retrying with UPDATE...')
+        const retryResult = await supabase
+          .from('user_profiles')
+          .update({
+            supabase_user_id: userData.supabase_user_id,
+            first_name: userData.first_name || 'Usuario',
+            last_name: userData.last_name || '',
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('email', userData.email)
+          .select(
+            `
+            id,
+            supabase_user_id,
+            email,
+            first_name,
+            last_name,
+            role_id,
+            is_active,
+            user_roles:role_id (
+              role_name,
+              permissions
+            )
+          `
+          )
+          .single()
+
+        if (retryResult.error) {
+          console.error('[Role Service] Error on retry UPDATE:', retryResult.error)
+          return null
+        }
+
+        data = retryResult.data
+      } else {
+        return null
+      }
+    }
+
+    if (!data) {
+      console.error('[Role Service] No data returned from upsert operation')
       return null
     }
 
