@@ -93,7 +93,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
     }
 
     // Obtener variantes del producto
-    let enrichedProduct = product
+    // ✅ CRÍTICO: Inicializar enrichedProduct con image_url desde el inicio
+    let enrichedProduct: any = {
+      ...product,
+      // ✅ CRÍTICO: Agregar image_url inmediatamente desde product_images
+      image_url: primaryImageUrl || null,
+    }
 
     if (product) {
       try {
@@ -189,8 +194,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
           price: defaultVariant?.price_list || product.price,
           discounted_price: defaultVariant?.price_sale || product.discounted_price,
           stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
-          // ✅ NUEVO: Agregar image_url desde product_images si está disponible
-          image_url: primaryImageUrl || defaultVariant?.image_url || null,
+          // ✅ CRÍTICO: Prioridad: product_images > variante > null (asegurar siempre)
+          image_url: primaryImageUrl || defaultVariant?.image_url || enrichedProduct.image_url || null,
         }
         // ✅ DEBUG: Log para verificar image_url
         console.log('🔥🔥🔥 [API slug] Producto enriquecido con image_url:', {
@@ -204,11 +209,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
         // Si hay error obteniendo variantes, continuar con producto original
         console.warn('Error obteniendo variantes para producto:', product.id, variantError)
         // ✅ NUEVO: Aplicar normalización incluso si no hay variantes
+        // ✅ CRÍTICO: Asegurar que image_url esté presente (ya se agregó al inicio)
         enrichedProduct = {
           ...product,
           name: normalizeProductTitle(product.name),
-          // ✅ NUEVO: Agregar image_url desde product_images si está disponible
-          image_url: primaryImageUrl || null,
+          // ✅ CRÍTICO: Agregar image_url desde product_images (ya inicializado arriba, pero asegurar)
+          image_url: primaryImageUrl || enrichedProduct.image_url || null,
         }
         // ✅ DEBUG: Log para productos sin variantes
         console.log('🔥🔥🔥 [API slug] Producto sin variantes con image_url:', {
@@ -219,18 +225,13 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       }
     }
 
-    // ✅ NUEVO: Si no se enriqueció el producto, agregar image_url y normalización directamente
-    if (!enrichedProduct && product) {
-      enrichedProduct = {
-        ...product,
-        // ✅ NUEVO: Normalizar título del producto a formato capitalizado
-        name: normalizeProductTitle(product.name),
-        // ✅ NUEVO: Agregar image_url desde product_images si está disponible
-        image_url: primaryImageUrl || null,
-      }
-    } else if (enrichedProduct && !enrichedProduct.image_url) {
-      // ✅ NUEVO: Asegurar que image_url esté presente incluso si no se agregó antes
+    // ✅ CRÍTICO: Asegurar que image_url esté SIEMPRE presente (ya se inicializó arriba)
+    if (enrichedProduct && !enrichedProduct.image_url) {
       enrichedProduct.image_url = primaryImageUrl || null
+    }
+    // ✅ CRÍTICO: Asegurar que image_url no se haya perdido en algún punto
+    if (enrichedProduct && primaryImageUrl && !enrichedProduct.image_url) {
+      enrichedProduct.image_url = primaryImageUrl
     }
     
     // ✅ NUEVO: Asegurar normalización si enrichedProduct no fue modificado
