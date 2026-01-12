@@ -71,6 +71,24 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       return NextResponse.json(notFoundResponse, { status: 404 })
     }
 
+    // ✅ NUEVO: Obtener imagen principal desde product_images
+    let primaryImageUrl: string | null = null
+    try {
+      const { data: productImages } = await supabase
+        .from('product_images')
+        .select('url, is_primary, display_order')
+        .eq('product_id', product.id)
+        .order('is_primary', { ascending: false })
+        .order('display_order', { ascending: true })
+        .limit(1)
+      
+      if (productImages && productImages.length > 0) {
+        primaryImageUrl = productImages[0].url
+      }
+    } catch (imageError) {
+      console.warn('Error obteniendo imagen desde product_images:', imageError)
+    }
+
     // Obtener variantes del producto
     let enrichedProduct = product
 
@@ -168,6 +186,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
           price: defaultVariant?.price_list || product.price,
           discounted_price: defaultVariant?.price_sale || product.discounted_price,
           stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
+          // ✅ NUEVO: Agregar image_url desde product_images si está disponible
+          image_url: primaryImageUrl || defaultVariant?.image_url || null,
         }
       } catch (variantError) {
         // Si hay error obteniendo variantes, continuar con producto original
@@ -176,6 +196,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
         enrichedProduct = {
           ...product,
           name: normalizeProductTitle(product.name),
+          // ✅ NUEVO: Agregar image_url desde product_images si está disponible
+          image_url: primaryImageUrl || null,
         }
       }
     }
