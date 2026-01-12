@@ -43,7 +43,14 @@ function mapToModalProduct(apiProduct: any) {
   const stockNum = typeof stockCandidate === 'number' ? stockCandidate : Number(String(stockCandidate))
 
   // Imagen principal centralizada via adapter
+  // ✅ DEBUG: Log para diagnosticar problema de imagen
   const mainImage = getMainImage(apiProduct) || '/images/placeholder-product.jpg'
+  console.debug('[mapToModalProduct] Imagen obtenida:', {
+    mainImage,
+    image_url: (apiProduct as any)?.image_url,
+    default_variant_image_url: (apiProduct as any)?.default_variant?.image_url,
+    has_images: !!(apiProduct as any)?.images
+  })
 
   return {
     id,
@@ -52,6 +59,8 @@ function mapToModalProduct(apiProduct: any) {
     originalPrice: discountedNum ? originalNum : undefined,
     discounted_price: discountedNum,
     image: mainImage,
+    // ✅ NUEVO: Incluir image_url explícitamente para que getMainImage lo use
+    image_url: (apiProduct as any)?.image_url || null,
     brand: (apiProduct as any)?.brand || 'Producto',
     stock: Number.isFinite(stockNum) ? stockNum : 0,
     description: (apiProduct as any)?.description || '',
@@ -62,6 +71,8 @@ function mapToModalProduct(apiProduct: any) {
     default_variant: (apiProduct as any)?.default_variant || null,
     // Incluir category para que el modal pueda usar categoryId en productos sugeridos
     category: (apiProduct as any)?.category || null,
+    // ✅ NUEVO: Incluir images para compatibilidad con getMainImage
+    images: (apiProduct as any)?.images || null,
   }
 }
 
@@ -109,6 +120,13 @@ export default function ProductDetailPage() {
             ? (apiProduct as any).data
             : apiProduct
         console.debug('[products/[slug]] Producto API (desempaquetado):', apiData)
+        // ✅ DEBUG: Verificar image_url
+        console.debug('[products/[slug]] image_url desde API:', {
+          image_url: apiData?.image_url,
+          default_variant_image_url: apiData?.default_variant?.image_url,
+          has_variants: apiData?.has_variants,
+          variant_count: apiData?.variant_count
+        })
         
         // ≡ƒöä REDIRECCI├ôN 301: Si se accedi├│ por ID y el producto tiene slug, redirigir a la ruta con slug
         if (isNumericId && apiData?.slug) {
@@ -121,6 +139,11 @@ export default function ProductDetailPage() {
         }
         
         const mapped = mapToModalProduct(apiData)
+        // ✅ DEBUG: Verificar imagen mapeada
+        console.debug('[products/[slug]] Imagen mapeada:', {
+          image: mapped?.image,
+          image_url_original: apiData?.image_url
+        })
         if (!mapped) {
           console.warn('[products/[slug]] Producto vac├¡o o sin datos. Verifica respuesta del API.')
         }

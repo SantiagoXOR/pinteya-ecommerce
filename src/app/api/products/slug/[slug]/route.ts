@@ -84,9 +84,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       
       if (productImages && productImages.length > 0) {
         primaryImageUrl = productImages[0].url
+        console.log('✅ [API slug] Imagen obtenida desde product_images:', primaryImageUrl)
+      } else {
+        console.log('⚠️ [API slug] No se encontraron imágenes en product_images para producto:', product.id)
       }
     } catch (imageError) {
-      console.warn('Error obteniendo imagen desde product_images:', imageError)
+      console.warn('❌ [API slug] Error obteniendo imagen desde product_images:', imageError)
     }
 
     // Obtener variantes del producto
@@ -189,6 +192,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
           // ✅ NUEVO: Agregar image_url desde product_images si está disponible
           image_url: primaryImageUrl || defaultVariant?.image_url || null,
         }
+        // ✅ DEBUG: Log para verificar image_url
+        console.log('🔥🔥🔥 [API slug] Producto enriquecido con image_url:', {
+          product_id: product.id,
+          image_url: primaryImageUrl || defaultVariant?.image_url || null,
+          primaryImageUrl,
+          defaultVariant_image_url: defaultVariant?.image_url,
+          has_variants: (variants?.length || 0) > 0
+        })
       } catch (variantError) {
         // Si hay error obteniendo variantes, continuar con producto original
         console.warn('Error obteniendo variantes para producto:', product.id, variantError)
@@ -199,6 +210,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
           // ✅ NUEVO: Agregar image_url desde product_images si está disponible
           image_url: primaryImageUrl || null,
         }
+        // ✅ DEBUG: Log para productos sin variantes
+        console.log('🔥🔥🔥 [API slug] Producto sin variantes con image_url:', {
+          product_id: product.id,
+          image_url: primaryImageUrl || null,
+          primaryImageUrl
+        })
       }
     }
 
