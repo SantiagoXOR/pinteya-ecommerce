@@ -284,11 +284,16 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
     // ✅ CRÍTICO: Log final para verificar que image_url esté presente antes de enviar respuesta
     console.log('🎯🎯🎯 [API slug] RESPUESTA FINAL - Verificando image_url:', {
       product_id: enrichedProduct?.id,
+      product_slug: slug,
       image_url: enrichedProduct?.image_url,
       has_image_url: !!(enrichedProduct as any)?.image_url,
       image_url_type: typeof (enrichedProduct as any)?.image_url,
+      image_url_value: (enrichedProduct as any)?.image_url,
       primaryImageUrl,
-      enrichedProduct_keys: enrichedProduct ? Object.keys(enrichedProduct) : []
+      product_has_images_field: !!(product as any)?.images,
+      product_images_type: typeof (product as any)?.images,
+      enrichedProduct_keys: enrichedProduct ? Object.keys(enrichedProduct).filter(k => k.includes('image') || k.includes('Image')) : [],
+      all_enrichedProduct_keys: enrichedProduct ? Object.keys(enrichedProduct) : []
     })
 
     const response: ApiResponse<ProductWithCategory> = {
