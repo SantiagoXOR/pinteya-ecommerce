@@ -741,6 +741,8 @@ export async function GET(
     // Transform ALL fields para compatibilidad con frontend
     const transformedData = {
       ...data,
+      // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+      name: normalizeProductTitle(data.name),
       category_name: data.categories?.name || null,
       categories: undefined,
       // ✅ PRESERVAR product_categories para duplicación - asegurar que sea array
