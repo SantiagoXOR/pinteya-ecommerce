@@ -84,9 +84,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       
       if (productImages && productImages.length > 0) {
         primaryImageUrl = productImages[0].url
-        console.log('✅ [API slug] Imagen obtenida desde product_images:', primaryImageUrl)
       } else {
-        console.log('⚠️ [API slug] No se encontraron imágenes en product_images para producto:', product.id)
         // ✅ NUEVO: Fallback a campo images JSONB si no hay imagen en product_images
         if (product.images) {
           const extractImageFromJsonb = (images: any): string | null => {
@@ -123,13 +121,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
             return null
           }
           primaryImageUrl = extractImageFromJsonb(product.images)
-          if (primaryImageUrl) {
-            console.log('✅ [API slug] Imagen obtenida desde campo images JSONB:', primaryImageUrl)
-          }
         }
       }
     } catch (imageError) {
-      console.warn('❌ [API slug] Error obteniendo imagen desde product_images:', imageError)
+      // Error silencioso al obtener imagen
     }
 
     // Obtener variantes del producto
@@ -237,14 +232,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
           // ✅ CRÍTICO: Prioridad: product_images > variante > null (asegurar siempre)
           image_url: primaryImageUrl || defaultVariant?.image_url || enrichedProduct.image_url || null,
         }
-        // ✅ DEBUG: Log para verificar image_url
-        console.log('🔥🔥🔥 [API slug] Producto enriquecido con image_url:', {
-          product_id: product.id,
-          image_url: primaryImageUrl || defaultVariant?.image_url || null,
-          primaryImageUrl,
-          defaultVariant_image_url: defaultVariant?.image_url,
-          has_variants: (variants?.length || 0) > 0
-        })
       } catch (variantError) {
         // Si hay error obteniendo variantes, continuar con producto original
         console.warn('Error obteniendo variantes para producto:', product.id, variantError)
@@ -256,12 +243,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
           // ✅ CRÍTICO: Agregar image_url desde product_images (ya inicializado arriba, pero asegurar)
           image_url: primaryImageUrl || enrichedProduct.image_url || null,
         }
-        // ✅ DEBUG: Log para productos sin variantes
-        console.log('🔥🔥🔥 [API slug] Producto sin variantes con image_url:', {
-          product_id: product.id,
-          image_url: primaryImageUrl || null,
-          primaryImageUrl
-        })
       }
     }
 
@@ -280,21 +261,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
     } else if (enrichedProduct && enrichedProduct.name === product.name) {
       enrichedProduct.name = normalizeProductTitle(product.name)
     }
-
-    // ✅ CRÍTICO: Log final para verificar que image_url esté presente antes de enviar respuesta
-    console.log('🎯🎯🎯 [API slug] RESPUESTA FINAL - Verificando image_url:', {
-      product_id: enrichedProduct?.id,
-      product_slug: slug,
-      image_url: enrichedProduct?.image_url,
-      has_image_url: !!(enrichedProduct as any)?.image_url,
-      image_url_type: typeof (enrichedProduct as any)?.image_url,
-      image_url_value: (enrichedProduct as any)?.image_url,
-      primaryImageUrl,
-      product_has_images_field: !!(product as any)?.images,
-      product_images_type: typeof (product as any)?.images,
-      enrichedProduct_keys: enrichedProduct ? Object.keys(enrichedProduct).filter(k => k.includes('image') || k.includes('Image')) : [],
-      all_enrichedProduct_keys: enrichedProduct ? Object.keys(enrichedProduct) : []
-    })
 
     const response: ApiResponse<ProductWithCategory> = {
       data: enrichedProduct,

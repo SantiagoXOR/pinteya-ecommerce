@@ -59,7 +59,6 @@ function mapToModalProduct(apiProduct: any) {
     const validated = getValidImageUrl(sanitized)
     if (validated && !validated.includes('placeholder') && validated !== '/images/products/placeholder.svg') {
       mainImage = validated
-      console.debug('[mapToModalProduct] ✅ Usando image_url desde API:', mainImage)
     }
   }
   
@@ -69,7 +68,6 @@ function mapToModalProduct(apiProduct: any) {
     const validated = getValidImageUrl(variantImage)
     if (validated && !validated.includes('placeholder') && validated !== '/images/products/placeholder.svg') {
       mainImage = validated
-      console.debug('[mapToModalProduct] ✅ Usando image_url de variante:', mainImage)
     }
   }
   
@@ -84,21 +82,10 @@ function mapToModalProduct(apiProduct: any) {
       const validated = getValidImageUrl(candidate)
       if (validated && !validated.includes('placeholder') && validated !== '/images/products/placeholder.svg') {
         mainImage = validated
-        console.debug('[mapToModalProduct] ✅ Usando imagen desde images JSONB:', mainImage)
         break
       }
     }
   }
-  
-  console.debug('[mapToModalProduct] 🔍 Diagnóstico completo de imagen:', {
-    mainImage,
-    image_url: (apiProduct as any)?.image_url,
-    image_url_type: typeof (apiProduct as any)?.image_url,
-    image_url_trimmed: (apiProduct as any)?.image_url?.trim?.(),
-    default_variant_image_url: (apiProduct as any)?.default_variant?.image_url,
-    has_images: !!(apiProduct as any)?.images,
-    images_value: (apiProduct as any)?.images
-  })
 
   // ✅ CRÍTICO: Asegurar que image_url esté presente y sea válido
   const finalImageUrl = (apiProduct as any)?.image_url || null
@@ -107,13 +94,6 @@ function mapToModalProduct(apiProduct: any) {
     : (finalImageUrl && getValidImageUrl(finalImageUrl) !== '/images/products/placeholder.svg')
       ? getValidImageUrl(finalImageUrl)
       : mainImage
-  
-  console.debug('[mapToModalProduct] 🎯 Imagen final seleccionada:', {
-    finalImage,
-    finalImageUrl,
-    mainImage,
-    apiProduct_image_url: (apiProduct as any)?.image_url
-  })
 
   return {
     id,
@@ -177,23 +157,10 @@ export default function ProductDetailPage() {
         // Verificar si el componente a├║n est├í montado
         if (abortController.signal.aborted) return
         
-        console.debug('[products/[slug]] Producto API (raw):', apiProduct)
         const apiData =
           apiProduct && typeof apiProduct === 'object' && 'data' in (apiProduct as any)
             ? (apiProduct as any).data
             : apiProduct
-        console.debug('[products/[slug]] Producto API (desempaquetado):', apiData)
-        // ✅ DEBUG: Verificar image_url - LOG DETALLADO
-        console.log('🔍🔍🔍 [products/[slug]] DIAGNÓSTICO image_url desde API:', {
-          image_url: apiData?.image_url,
-          image_url_type: typeof apiData?.image_url,
-          image_url_length: apiData?.image_url?.length,
-          default_variant_image_url: apiData?.default_variant?.image_url,
-          has_variants: apiData?.has_variants,
-          variant_count: apiData?.variant_count,
-          all_keys: apiData ? Object.keys(apiData).filter(k => k.includes('image') || k.includes('Image')) : [],
-          full_apiData: apiData // ✅ Incluir objeto completo para inspección
-        })
         
         // ≡ƒöä REDIRECCI├ôN 301: Si se accedi├│ por ID y el producto tiene slug, redirigir a la ruta con slug
         if (isNumericId && apiData?.slug) {
