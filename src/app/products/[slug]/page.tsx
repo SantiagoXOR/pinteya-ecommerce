@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import ShopDetailModal from '@/components/ShopDetails/ShopDetailModal'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getProductBySlug, getProductById } from '@/lib/api/products'
-import { getMainImage } from '@/lib/adapters/product-adapter'
+import { getProductImage, getValidImageUrl } from '@/lib/utils/image-helpers'
 import { SimplePageLoading } from '@/components/ui/simple-page-loading'
 import { trackProductView } from '@/lib/google-analytics'
 import { trackViewContent } from '@/lib/meta-pixel'
@@ -42,10 +42,51 @@ function mapToModalProduct(apiProduct: any) {
   const stockCandidate = (apiProduct as any)?.default_variant?.stock ?? (apiProduct as any)?.stock ?? 0
   const stockNum = typeof stockCandidate === 'number' ? stockCandidate : Number(String(stockCandidate))
 
-  // Imagen principal centralizada via adapter
-  // ✅ DEBUG: Log para diagnosticar problema de imagen
-  const mainImage = getMainImage(apiProduct) || '/images/placeholder-product.jpg'
-  console.debug('[mapToModalProduct] Imagen obtenida:', {
+  // ✅ NUEVO: Usar la misma lógica que ShopDetailModal para obtener imagen
+  const sanitize = (u?: string) => (typeof u === 'string' ? u.replace(/[`"]/g, '').trim() : '')
+  const urlFrom = (c: any) => {
+    if (!c) return ''
+    if (typeof c === 'string') return sanitize(c)
+    return sanitize(c?.url || c?.image_url)
+  }
+  
+  let mainImage = '/images/products/placeholder.svg'
+  
+  // Prioridad 1: image_url desde product_images (API)
+  if ((apiProduct as any)?.image_url) {
+    const apiImage = sanitize((apiProduct as any).image_url)
+    const validated = getValidImageUrl(apiImage)
+    if (validated && !validated.includes('placeholder')) {
+      mainImage = validated
+    }
+  }
+  
+  // Prioridad 2: Imagen de variante por defecto
+  if (mainImage === '/images/products/placeholder.svg' && (apiProduct as any)?.default_variant?.image_url) {
+    const variantImage = sanitize((apiProduct as any).default_variant.image_url)
+    const validated = getValidImageUrl(variantImage)
+    if (validated && !validated.includes('placeholder')) {
+      mainImage = validated
+    }
+  }
+  
+  // Prioridad 3: Parsear desde images JSONB
+  if (mainImage === '/images/products/placeholder.svg') {
+    const candidates: any[] = [
+      getProductImage((apiProduct as any)?.images),
+      (apiProduct as any)?.image,
+    ]
+    for (const c of candidates) {
+      const candidate = urlFrom(c)
+      const validated = getValidImageUrl(candidate)
+      if (validated && !validated.includes('placeholder')) {
+        mainImage = validated
+        break
+      }
+    }
+  }
+  
+  console.debug('[mapToModalProduct] Imagen obtenida (método ShopDetailModal):', {
     mainImage,
     image_url: (apiProduct as any)?.image_url,
     default_variant_image_url: (apiProduct as any)?.default_variant?.image_url,
