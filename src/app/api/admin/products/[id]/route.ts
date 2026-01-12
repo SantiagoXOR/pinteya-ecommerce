@@ -716,6 +716,15 @@ export async function GET(
     
     const primaryImageFromTable = productImages?.[0]?.url || null
     
+    console.log('🔥🔥🔥 Imágenes obtenidas:', {
+      productId,
+      productImagesCount: productImages?.length || 0,
+      primaryImageFromTable,
+      hasDefaultVariant: !!defaultVariant,
+      defaultVariantImage: defaultVariant?.image_url,
+      hasImagesJsonb: !!data.images,
+    })
+    
     // ✅ CORREGIDO: Parsear medida si viene como string de array
     let parsedMedida: string[] = []
     if (data.medida) {

@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect } from 'react'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminCard } from '@/components/admin/ui/AdminCard'
 import Image from 'next/image'
@@ -104,27 +103,13 @@ export default function ProductDetailPage() {
     data: product,
     isLoading,
     error,
-    refetch,
   } = useQuery({
     queryKey: ['admin-product', productId],
     queryFn: () => fetchProduct(productId),
     enabled: !!productId,
     staleTime: 0, // Siempre considerar los datos como obsoletos
     refetchOnMount: 'always', // Siempre refetch al montar
-    gcTime: 0, // No guardar en caché
   })
-
-  // Debug: Log cuando cambia el producto
-  useEffect(() => {
-    if (product) {
-      console.log('📦 [ProductDetailPage] Producto cargado:', {
-        id: product.id,
-        name: product.name,
-        image_url: product.image_url,
-        hasImage: !!product.image_url,
-      })
-    }
-  }, [product])
 
   const handleEdit = () => {
     router.push(`/admin/products/${productId}/edit`)
@@ -441,22 +426,15 @@ export default function ProductDetailPage() {
                     className='w-full h-full object-cover'
                     unoptimized
                     onError={(e) => {
-                      console.error('❌ Error cargando imagen:', product.image_url, e)
+                      console.error('Error cargando imagen:', product.image_url, e)
                     }}
                   />
                 ) : (
                   <div className='w-full h-full flex items-center justify-center'>
                     <Package className='w-16 h-16 text-gray-400' />
-                    <p className='text-xs text-gray-500 mt-2'>Sin imagen</p>
                   </div>
                 )}
               </div>
-              {/* Debug info */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className='mt-2 text-xs text-gray-500'>
-                  image_url: {product.image_url || 'null'}
-                </div>
-              )}
             </AdminCard>
 
             {/* SEO Information */}
