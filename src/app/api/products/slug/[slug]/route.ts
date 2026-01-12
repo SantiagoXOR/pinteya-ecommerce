@@ -241,6 +241,16 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       enrichedProduct.name = normalizeProductTitle(product.name)
     }
 
+    // ✅ CRÍTICO: Log final para verificar que image_url esté presente antes de enviar respuesta
+    console.log('🎯🎯🎯 [API slug] RESPUESTA FINAL - Verificando image_url:', {
+      product_id: enrichedProduct?.id,
+      image_url: enrichedProduct?.image_url,
+      has_image_url: !!(enrichedProduct as any)?.image_url,
+      image_url_type: typeof (enrichedProduct as any)?.image_url,
+      primaryImageUrl,
+      enrichedProduct_keys: enrichedProduct ? Object.keys(enrichedProduct) : []
+    })
+
     const response: ApiResponse<ProductWithCategory> = {
       data: enrichedProduct,
       success: true,

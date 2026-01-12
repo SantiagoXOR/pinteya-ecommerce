@@ -183,12 +183,16 @@ export default function ProductDetailPage() {
             ? (apiProduct as any).data
             : apiProduct
         console.debug('[products/[slug]] Producto API (desempaquetado):', apiData)
-        // ✅ DEBUG: Verificar image_url
-        console.debug('[products/[slug]] image_url desde API:', {
+        // ✅ DEBUG: Verificar image_url - LOG DETALLADO
+        console.log('🔍🔍🔍 [products/[slug]] DIAGNÓSTICO image_url desde API:', {
           image_url: apiData?.image_url,
+          image_url_type: typeof apiData?.image_url,
+          image_url_length: apiData?.image_url?.length,
           default_variant_image_url: apiData?.default_variant?.image_url,
           has_variants: apiData?.has_variants,
-          variant_count: apiData?.variant_count
+          variant_count: apiData?.variant_count,
+          all_keys: apiData ? Object.keys(apiData).filter(k => k.includes('image') || k.includes('Image')) : [],
+          full_apiData: apiData // ✅ Incluir objeto completo para inspección
         })
         
         // ≡ƒöä REDIRECCI├ôN 301: Si se accedi├│ por ID y el producto tiene slug, redirigir a la ruta con slug
