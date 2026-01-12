@@ -39,21 +39,40 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
           const productData = data.data
 
           // Transformar el producto para que sea compatible con el componente ShopDetails
+          // ✅ CORREGIDO: Priorizar image_url desde product_images sobre images JSONB
+          const getImageUrl = () => {
+            // Prioridad 1: image_url desde product_images (API)
+            if (productData.image_url && typeof productData.image_url === 'string') {
+              const url = productData.image_url.trim()
+              if (url && !url.includes('placeholder')) {
+                return url
+              }
+            }
+            // Prioridad 2: images JSONB (fallback)
+            if (productData.images?.previews?.[0]) {
+              return productData.images.previews[0]
+            }
+            if (productData.images?.thumbnails?.[0]) {
+              return productData.images.thumbnails[0]
+            }
+            if (productData.images?.main) {
+              return productData.images.main
+            }
+            // Fallback final
+            return '/images/products/placeholder.svg'
+          }
+          
+          const mainImageUrl = getImageUrl()
+          
           const transformedProduct: Product = {
             id: productData.id,
-            title: productData.name,
+            title: productData.name, // ✅ Ya viene normalizado desde la API
             price: productData.price,
             discountedPrice: productData.discounted_price || productData.price,
             reviews: productData.reviews || 0,
             imgs: {
-              thumbnails: productData.images?.thumbnails ||
-                productData.images?.previews || [
-                  productData.image_url || '/images/products/placeholder.svg',
-                ],
-              previews:
-                productData.images?.previews || productData.images?.main
-                  ? [productData.images.main]
-                  : [productData.image_url || '/images/products/placeholder.svg'],
+              thumbnails: [mainImageUrl],
+              previews: [mainImageUrl],
             },
           }
 

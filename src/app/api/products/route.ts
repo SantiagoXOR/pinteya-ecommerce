@@ -485,7 +485,52 @@ export async function GET(request: NextRequest) {
               discounted_price: product.discounted_price,
               stock: product.stock,
               // ✅ NUEVO: Agregar image_url desde product_images si está disponible
-              image_url: productImagesByProduct[product.id] || defaultVariant?.image_url || null,
+              // ✅ MEJORADO: Fallback a images JSONB si no hay imagen en product_images
+              image_url: (() => {
+                // Prioridad 1: Imagen desde product_images
+                if (productImagesByProduct[product.id]) {
+                  return productImagesByProduct[product.id]
+                }
+                // Prioridad 2: Imagen de variante por defecto (solo si hay variantes)
+                if (defaultVariant?.image_url) {
+                  return defaultVariant.image_url
+                }
+                // Prioridad 3: Extraer desde images JSONB usando función helper
+                const extractImageFromJsonb = (images: any): string | null => {
+                  if (!images) return null
+                  if (typeof images === 'string') {
+                    const trimmed = images.trim()
+                    if (!trimmed) return null
+                    if (trimmed.startsWith('{') || trimmed.startsWith('[') || trimmed.startsWith('"')) {
+                      try {
+                        const parsed = JSON.parse(trimmed)
+                        return extractImageFromJsonb(parsed)
+                      } catch {
+                        try {
+                          const unescaped = JSON.parse(`"${trimmed}"`)
+                          return extractImageFromJsonb(unescaped)
+                        } catch {
+                          return trimmed || null
+                        }
+                      }
+                    }
+                    return trimmed || null
+                  }
+                  if (Array.isArray(images)) {
+                    return images[0]?.trim() || null
+                  }
+                  if (typeof images === 'object') {
+                    return (images as any).url ||
+                           images.previews?.[0] || 
+                           images.thumbnails?.[0] ||
+                           images.gallery?.[0] ||
+                           images.main ||
+                           null
+                  }
+                  return null
+                }
+                return extractImageFromJsonb(product.images)
+              })(),
             }
           })
 
