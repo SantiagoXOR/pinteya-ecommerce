@@ -159,13 +159,19 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
 
     // Hooks personalizados
     const colors = useProductColors({ variants, title, color })
-    const measures = useProductMeasures({ variants, title, medida }) // ✅ NUEVO: Pasar medida como fallback
-    const finishes = useProductFinishes({ 
+    const finishes = useProductFinishes({
       variants, 
       selectedColor: colors.selectedColor,
       productId,
       productName: title
     })
+    const measures = useProductMeasures({ 
+      variants, 
+      title, 
+      medida,
+      selectedColor: colors.selectedColor,
+      selectedFinish: finishes.selectedFinish
+    }) // ✅ NUEVO: Pasar medida como fallback y filtros de stock
     const variantsData = useProductVariants({
       variants,
       selectedColor: colors.selectedColor,
