@@ -143,7 +143,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       // ✅ CORREGIDO: No crear variante temporal automáticamente
       // Si un producto no tiene variantes, simplemente devolver array vacío
       // Esto permite que productos como rodillos existan sin variantes
-      const processedVariants: ProductVariant[] = variants || []
+      let processedVariants: ProductVariant[] = variants || []
 
       // Log de éxito - usando console.log para eventos informativos
       // Enriquecer variantes específicas para el producto 42 (cemento/gris y medidas 10L, 4L, 1L)
