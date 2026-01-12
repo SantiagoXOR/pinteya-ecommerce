@@ -20,6 +20,18 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
     const { openCartModal } = useCartModalContext()
     const cartItemCount = cartItems.length
     const [isCartPressed, setIsCartPressed] = React.useState(false)
+    const [isAnimating, setIsAnimating] = React.useState(false)
+    const prevCartCountRef = React.useRef(cartItemCount)
+
+    // Detectar cuando se agrega un producto al carrito para activar la microinteracción
+    React.useEffect(() => {
+      if (cartItemCount > prevCartCountRef.current) {
+        // Se agregó un producto, activar animación
+        setIsAnimating(true)
+        setTimeout(() => setIsAnimating(false), 600)
+      }
+      prevCartCountRef.current = cartItemCount
+    }, [cartItemCount])
 
     // Determinar si una ruta está activa
     const isActive = (href: string) => {
@@ -173,14 +185,55 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                     )}
                     aria-label={item.label}
                   >
-                    <div className='relative'>
-                      <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
-                      {showBadge && (
-                        <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center'>
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
+                    {/* Botón de carrito con estilo similar al ProductCard */}
+                    {item.id === 'cart' ? (
+                      <div className='relative mb-1 flex items-center justify-center'>
+                        <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
+                          {/* Fondo amarillo circular como ProductCard */}
+                          <div 
+                            className={cn(
+                              'absolute inset-0 rounded-full transition-all duration-300 shadow-md',
+                              isAnimating && 'animate-pulse scale-110'
+                            )}
+                            style={{
+                              background: 'rgba(250, 204, 21, 0.9)',
+                            }}
+                          />
+                          {/* Icono del carrito */}
+                          <div
+                            className={cn(
+                              'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
+                              'hover:scale-110 active:scale-95 transform-gpu will-change-transform',
+                              isAnimating && 'scale-110'
+                            )}
+                          >
+                            <Icon 
+                              className={cn(
+                                'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200',
+                                'text-[#EA5A17]'
+                              )} 
+                            />
+                          </div>
+                          {/* Badge del carrito */}
+                          {showBadge && (
+                            <span
+                              className={cn(
+                                'absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
+                                'flex items-center justify-center shadow-lg ring-2 ring-white z-10',
+                                'bg-[#EA5A17] text-white text-[10px] sm:text-xs font-bold px-1',
+                                isAnimating && 'animate-bounce'
+                              )}
+                            >
+                              {item.badge && item.badge > 99 ? '99+' : item.badge}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className='relative'>
+                        <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
+                      </div>
+                    )}
                     <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium', isItemActive && 'text-blaze-orange-600')}>
                       {item.label}
                     </span>
@@ -248,62 +301,50 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                     )}
                     aria-label={item.label}
                   >
-                    {/* Contenedor del icono con fondo circular mejorado para el carrito */}
+                    {/* Contenedor del icono con fondo circular estilo ProductCard */}
                     {item.id === 'cart' && (
                       <div className='relative mb-1 h-6 sm:h-7 flex items-center justify-center'>
-                        <div
-                          className={cn(
-                            'w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-200',
-                            isCartPressed
-                              ? 'bg-blaze-orange-600 border-2 border-blaze-orange-700 shadow-md'
-                              : hasBadge
-                              ? 'bg-blaze-orange-50 border-2 border-blaze-orange-200 shadow-sm'
-                              : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                          )}
-                          style={{
-                            marginTop: '0px',
-                            paddingTop: '0px',
-                            paddingBottom: '0px',
-                            ...(hasBadge && !isCartPressed && { borderColor: 'rgba(235, 99, 19, 1)' }),
-                            borderImage: 'none',
-                          }}
-                        >
-                          <Icon
+                        <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
+                          {/* Fondo amarillo circular como ProductCard */}
+                          <div 
                             className={cn(
-                              'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
-                              isCartPressed
-                                ? 'text-white fill-white'
-                                : hasBadge
-                                ? 'text-blaze-orange-600 fill-blaze-orange-600'
-                                : 'text-gray-600'
-                            )}
-                            strokeWidth={isCartPressed || hasBadge ? 2 : 1.5}
-                            fill={isCartPressed || hasBadge ? 'currentColor' : 'none'}
-                          />
-                        </div>
-
-                        {/* Badge del carrito encima del círculo con color naranja Pinteya - Posicionado más arriba para alinear títulos */}
-                        {showBadge && (
-                          <span
-                            className={cn(
-                              'absolute rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
-                              'flex items-center justify-center shadow-lg ring-2 ring-blaze-orange-100 z-10'
+                              'absolute inset-0 rounded-full transition-all duration-300 shadow-md',
+                              isAnimating && 'animate-pulse scale-110',
+                              isCartPressed && 'scale-95'
                             )}
                             style={{
-                              borderWidth: '0px',
-                              backgroundColor: 'rgba(235, 99, 19, 1)',
-                              color: 'rgba(250, 204, 21, 1)',
-                              fontSize: '12px',
-                              fontWeight: 500,
-                              paddingLeft: '0px',
-                              paddingRight: '0px',
-                              left: '22px',
-                              top: '-10px',
+                              background: 'rgba(250, 204, 21, 0.9)',
                             }}
+                          />
+                          {/* Icono del carrito */}
+                          <div
+                            className={cn(
+                              'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
+                              'hover:scale-110 active:scale-95 transform-gpu will-change-transform',
+                              isAnimating && 'scale-110'
+                            )}
                           >
-                            {item.badge && item.badge > 99 ? '99+' : item.badge}
-                          </span>
-                        )}
+                            <Icon
+                              className={cn(
+                                'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200',
+                                'text-[#EA5A17]'
+                              )}
+                            />
+                          </div>
+                          {/* Badge del carrito */}
+                          {showBadge && (
+                            <span
+                              className={cn(
+                                'absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
+                                'flex items-center justify-center shadow-lg ring-2 ring-white z-10',
+                                'bg-[#EA5A17] text-white text-[10px] sm:text-xs font-bold px-1',
+                                isAnimating && 'animate-bounce'
+                              )}
+                            >
+                              {item.badge && item.badge > 99 ? '99+' : item.badge}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
 
@@ -456,14 +497,55 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                           )}
                           aria-label={item.label}
                         >
-                          <div className='relative'>
-                            <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
-                            {showBadge && (
-                              <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center'>
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
+                          {/* Botón de carrito con estilo similar al ProductCard */}
+                          {item.id === 'cart' ? (
+                            <div className='relative mb-1 flex items-center justify-center'>
+                              <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
+                                {/* Fondo amarillo circular como ProductCard */}
+                                <div 
+                                  className={cn(
+                                    'absolute inset-0 rounded-full transition-all duration-300 shadow-md',
+                                    isAnimating && 'animate-pulse scale-110'
+                                  )}
+                                  style={{
+                                    background: 'rgba(250, 204, 21, 0.9)',
+                                  }}
+                                />
+                                {/* Icono del carrito */}
+                                <div
+                                  className={cn(
+                                    'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
+                                    'hover:scale-110 active:scale-95 transform-gpu will-change-transform',
+                                    isAnimating && 'scale-110'
+                                  )}
+                                >
+                                  <Icon 
+                                    className={cn(
+                                      'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200',
+                                      'text-[#EA5A17]'
+                                    )} 
+                                  />
+                                </div>
+                                {/* Badge del carrito */}
+                                {showBadge && (
+                                  <span
+                                    className={cn(
+                                      'absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
+                                      'flex items-center justify-center shadow-lg ring-2 ring-white z-10',
+                                      'bg-[#EA5A17] text-white text-[10px] sm:text-xs font-bold px-1',
+                                      isAnimating && 'animate-bounce'
+                                    )}
+                                  >
+                                    {item.badge && item.badge > 99 ? '99+' : item.badge}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className='relative'>
+                              <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
+                            </div>
+                          )}
                           <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium', isItemActive && 'text-blaze-orange-600')}>
                             {item.label}
                           </span>
