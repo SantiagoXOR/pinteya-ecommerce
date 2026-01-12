@@ -72,12 +72,14 @@ export const AddToCartSection = React.memo<AddToCartSectionProps>(({
 
         {/* Mostrar selecciones actuales */}
         <div className='mt-3 space-y-1'>
-          {productType.hasColorSelector && selectedColor && (
+          {/* ✅ CORREGIDO: Solo mostrar color si realmente hay un color seleccionado Y el producto tiene variantes con colores */}
+          {productType.hasColorSelector && selectedColor && selectedVariant?.color_name && (
             <p className='text-xs text-gray-500'>
               Color:{' '}
               <span className='font-medium capitalize'>
                 {PAINT_COLORS.find(color => color.id === selectedColor)?.displayName ||
                   PAINT_COLORS.find(color => color.id === selectedColor)?.name ||
+                  selectedVariant.color_name ||
                   selectedColor}
               </span>
             </p>

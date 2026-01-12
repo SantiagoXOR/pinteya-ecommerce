@@ -310,7 +310,8 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
     
     // PRIORIDAD 1: Si hay variantes con medidas, usar SOLO esas
     if (safeVariants.length > 0) {
-      return extractAvailableCapacities(safeVariants)
+      const capacities = extractAvailableCapacities(safeVariants)
+      if (capacities.length > 0) return capacities
     }
 
     // PRIORIDAD 2: Productos relacionados (legacy, sin variantes)
@@ -327,21 +328,25 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       }
     }
 
-    // PRIORIDAD 3: Producto padre (fallback)
+    // PRIORIDAD 3: Producto padre (solo si tiene medida válida)
     const medidaFromDb = ((productData as any)?.medida || (productData as any)?.measure || '')
       .toString()
       .trim()
-    if (medidaFromDb) {
+    if (medidaFromDb && medidaFromDb !== 'Sin especificar') {
       const parts = medidaFromDb
         .split(/[,\/;\|]+/)
         .map(s => s.trim())
         .filter(Boolean)
-      return parts.map(c => c.toUpperCase()).sort((a, b) => parseInt(a) - parseInt(b))
+        .filter(p => p !== 'Sin especificar')
+      if (parts.length > 0) {
+        return parts.map(c => c.toUpperCase()).sort((a, b) => parseInt(a) - parseInt(b))
+      }
     }
 
-    // Fallback final: capacidades por defecto del tipo de producto
-    return productType.defaultCapacities
-  }, [variants, productData, productType.defaultCapacities, capacityUnit, relatedProducts?.products])
+    // ✅ CORREGIDO: NO devolver defaultCapacities como fallback - retornar array vacío
+    // Esto evita mostrar selectores cuando el producto no tiene realmente capacidades
+    return []
+  }, [variants, productData, capacityUnit, relatedProducts?.products])
 
   // Obtener TODOS los finishes únicos del producto (para mostrar todas las opciones)
   const allFinishes = useMemo(() => {
@@ -577,13 +582,18 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   // Establecer valores por defecto
   useEffect(() => {
     if (hasInitialized.current) return
-    if (!selectedColor && productType.hasColorSelector) {
-      const defaultColorName = getDefaultColor(productType)
-      const defaultColor = PAINT_COLORS.find(color =>
-        color.name.toLowerCase().includes(defaultColorName.toLowerCase())
-      )
-      if (defaultColor) {
-        setSelectedColor(defaultColor.id)
+    // ✅ CORREGIDO: Solo establecer color por defecto si hay variantes con colores disponibles
+    if (!selectedColor && productType.hasColorSelector && Array.isArray(variants) && variants.length > 0) {
+      // Verificar que realmente haya variantes con colores
+      const hasColorsInVariants = variants.some(v => v.color_name || v.color_hex)
+      if (hasColorsInVariants) {
+        const defaultColorName = getDefaultColor(productType)
+        const defaultColor = PAINT_COLORS.find(color =>
+          color.name.toLowerCase().includes(defaultColorName.toLowerCase())
+        )
+        if (defaultColor) {
+          setSelectedColor(defaultColor.id)
+        }
       }
     }
     if (!selectedGrain && productType.hasGrainSelector && productType.grainOptions.length > 0) {
@@ -931,12 +941,16 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                     )}
 
                     {/* Selector de capacidad */}
+                    {/* ✅ CORREGIDO: Solo mostrar si hay capacidades reales (no fallbacks) */}
                     {availableCapacities.length > 0 &&
                       !(availableCapacities.length === 1 && availableCapacities[0] === 'Sin especificar') &&
                       !productType.hasWidthSelector &&
                       !productType.hasGrainSelector &&
                       !productType.hasSizeSelector &&
-                      !(availableCapacities.length === 1 && availableCapacities[0] === '1') && (
+                      !(availableCapacities.length === 1 && availableCapacities[0] === '1') &&
+                      // ✅ NUEVO: Verificar que las capacidades no sean solo valores por defecto del tipo
+                      !(availableCapacities.length === productType.defaultCapacities.length && 
+                        availableCapacities.every((cap, idx) => cap === productType.defaultCapacities[idx])) && (
                         <div className='space-y-4'>
                           <div className='flex items-center gap-2'>
                             <Ruler className='w-5 h-5 text-blaze-orange-600' />
