@@ -14,7 +14,7 @@ import { ExpandableVariantsRow } from './ExpandableVariantsRow'
 import { Skeleton, TableSkeleton } from '../ui/Skeleton'
 import { EmptyState } from '../ui/EmptyState'
 import { Badge } from '../ui/Badge'
-import { cn } from '@/lib/core/utils'
+import { cn, normalizeProductTitle } from '@/lib/core/utils'
 import { useResizableColumns } from '@/hooks/admin/useResizableColumns'
 import { Package, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, TrendingDown, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Check } from '@/lib/optimized-imports'
 
@@ -379,7 +379,7 @@ export function ProductList({
             onChange={() => handleSelectProduct(product)}
             onClick={(e) => e.stopPropagation()}
             className='w-4 h-4 text-blaze-orange-600 border-gray-300 rounded focus:ring-blaze-orange-500 cursor-pointer'
-            aria-label={`Seleccionar ${product.name}`}
+            aria-label={`Seleccionar ${normalizeProductTitle(product.name)}`}
           />
         </div>
       ),
@@ -411,7 +411,7 @@ export function ProductList({
             {imageUrl ? (
               <Image
                 src={imageUrl}
-                alt={product.name}
+                alt={normalizeProductTitle(product.name)}
                 width={64}
                 height={64}
                 className='object-cover w-full h-full'
@@ -429,19 +429,28 @@ export function ProductList({
       title: 'Producto',
       sortable: true,
       defaultWidth: 280, // Aumentado para evitar superposición
-      render: (name: string, product: Product) => (
-        <div className='w-full min-w-0'>
-          <div className='font-semibold text-gray-900 text-sm mb-0.5 truncate' title={name}>
-            {name}
+      render: (name: string, product: Product) => {
+        // ✅ NUEVO: Normalizar título del producto
+        const normalizedName = normalizeProductTitle(name)
+        // ✅ NUEVO: Normalizar descripción también
+        const normalizedDescription = product.description 
+          ? normalizeProductTitle(product.description)
+          : 'Sin descripción'
+        
+        return (
+          <div className='w-full min-w-0'>
+            <div className='font-semibold text-gray-900 text-sm mb-0.5 truncate' title={normalizedName}>
+              {normalizedName}
+            </div>
+            <div
+              className='text-xs text-gray-600 truncate'
+              title={normalizedDescription}
+            >
+              {normalizedDescription}
+            </div>
           </div>
-          <div
-            className='text-xs text-gray-600 truncate'
-            title={product.description || 'Sin descripción'}
-          >
-            {product.description || 'Sin descripción'}
-          </div>
-        </div>
-      ),
+        )
+      },
     },
     {
       key: 'id',
