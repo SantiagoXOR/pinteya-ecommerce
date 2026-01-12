@@ -98,13 +98,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 */
 
                 // ⚡ DIAGNÓSTICO: Detectar errores de hidratación INMEDIATAMENTE
+                // ⚡ FIX: Solo reportar errores de hidratación reales, no los causados por archivos faltantes
                 const originalConsoleError = console.error;
                 console.error = function(...args) {
                   const message = args.join(' ');
-                  if (message.includes('Hydration') || message.includes('hydration') || 
+                  
+                  // Solo reportar errores de hidratación si NO son causados por archivos faltantes
+                  if ((message.includes('Hydration') || message.includes('hydration') || 
                       message.includes('mismatch') || message.includes('Expected server HTML') ||
                       message.includes('Text content does not match') ||
-                      message.includes('Minified React error')) {
+                      message.includes('Minified React error')) &&
+                      !message.includes('404') &&
+                      !message.includes('Failed to load') &&
+                      !message.includes('framework.js') &&
+                      !message.includes('main.js')) {
                     console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: Error de hidratación detectado:', {
                       timestamp: new Date().toISOString(),
                       message: message,
@@ -114,27 +121,47 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   originalConsoleError.apply(console, args);
                 };
 
-                // ⚡ DIAGNÓSTICO: Detectar errores globales (ignorar scripts de terceros diferidos)
+                // ⚡ DIAGNÓSTICO: Detectar errores globales (ignorar errores esperados)
                 window.addEventListener('error', function(event) {
-                  // ⚡ FIX: Ignorar errores de scripts de Vercel que se cargan más tarde
+                  // ⚡ FIX: Ignorar errores esperados y no críticos
                   const source = event.filename || event.source || '';
                   const message = event.message || '';
+                  const target = event.target;
                   
-                  // Ignorar errores de scripts de Vercel Analytics/Speed Insights
+                  // Ignorar errores de scripts de Vercel Analytics/Speed Insights (bloqueados por ad blockers)
                   if (source.includes('_vercel/') || 
                       source.includes('speed-insights') || 
                       source.includes('analytics') ||
                       message.includes('speed-insights') ||
-                      message.includes('analytics') ||
-                      message.includes('Failed to load resource')) {
-                    // Solo loguear en desarrollo, no como error crítico
-                    if (process.env.NODE_ENV === 'development') {
-                      console.warn('⚠️ Script de terceros bloqueado o no disponible (esperado):', source);
-                    }
+                      message.includes('analytics')) {
                     return; // No procesar como error crítico
                   }
                   
-                  // Solo reportar errores críticos que no sean de scripts diferidos
+                  // Ignorar errores 404 de archivos Next.js con hashes dinámicos
+                  // Next.js genera estos archivos con nombres como framework-abc123.js
+                  // Los prefetch hardcodeados pueden causar 404 esperados
+                  if (source.includes('/_next/static/chunks/') && 
+                      (source.includes('framework') || source.includes('main')) &&
+                      (message.includes('404') || message.includes('Failed to load'))) {
+                    return; // No procesar como error crítico
+                  }
+                  
+                  // Ignorar errores de recursos bloqueados por el cliente (ad blockers)
+                  if (message.includes('ERR_BLOCKED_BY_CLIENT') ||
+                      message.includes('Failed to load resource') ||
+                      (target && target.tagName === 'SCRIPT' && target.src && 
+                       (target.src.includes('_vercel/') || target.src.includes('analytics')))) {
+                    return; // No procesar como error crítico
+                  }
+                  
+                  // Ignorar errores de fetch bloqueados (analytics, tracking)
+                  if (source.includes('/api/analytics/') || 
+                      source.includes('/api/tracking/') ||
+                      message.includes('Failed to fetch') && source.includes('analytics')) {
+                    return; // No procesar como error crítico
+                  }
+                  
+                  // Solo reportar errores críticos reales de la aplicación
                   console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: Error global detectado:', {
                     timestamp: new Date().toISOString(),
                     message: event.message,
@@ -144,26 +171,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   });
                 }, true);
 
-                // ⚡ DIAGNÓSTICO: Detectar promise rejections (ignorar scripts de terceros)
+                // ⚡ DIAGNÓSTICO: Detectar promise rejections (ignorar errores esperados)
                 window.addEventListener('unhandledrejection', function(event) {
                   const reason = event.reason || '';
                   const reasonStr = typeof reason === 'string' ? reason : JSON.stringify(reason);
                   
-                  // Ignorar rejections de scripts de Vercel que se cargan más tarde
+                  // Ignorar rejections de scripts de Vercel (bloqueados por ad blockers)
                   if (reasonStr.includes('_vercel/') || 
                       reasonStr.includes('speed-insights') || 
                       reasonStr.includes('analytics') ||
                       reasonStr.includes('Failed to fetch') ||
                       reasonStr.includes('net::ERR_BLOCKED_BY_CLIENT')) {
-                    // Solo loguear en desarrollo
-                    if (process.env.NODE_ENV === 'development') {
-                      console.warn('⚠️ Promise rejection de script de terceros (esperado):', reasonStr);
-                    }
                     event.preventDefault(); // Prevenir que se muestre como error no manejado
                     return;
                   }
                   
-                  // Solo reportar rejections críticos
+                  // Ignorar rejections de fetch bloqueados (analytics, tracking)
+                  if (reasonStr.includes('/api/analytics/') || 
+                      reasonStr.includes('/api/tracking/') ||
+                      (reasonStr.includes('Failed to fetch') && reasonStr.includes('analytics'))) {
+                    event.preventDefault();
+                    return;
+                  }
+                  
+                  // Solo reportar rejections críticos reales
                   console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: Promise rejection no manejado:', {
                     timestamp: new Date().toISOString(),
                     reason: event.reason,
@@ -198,10 +229,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.pinteya.com" />
         
-        {/* ⚡ OPTIMIZACIÓN LCP: Prefetch de recursos críticos después del LCP */}
-        {/* Prefetch de chunks críticos para mejorar TTI */}
-        <link rel="prefetch" href="/_next/static/chunks/framework.js" as="script" />
-        <link rel="prefetch" href="/_next/static/chunks/main.js" as="script" />
+        {/* ⚡ FIX: Eliminados prefetch de framework.js y main.js */}
+        {/* Next.js genera estos archivos con hashes dinámicos (ej: framework-abc123.js) */}
+        {/* Los prefetch hardcodeados causan 404 y errores en consola */}
+        {/* Next.js maneja automáticamente la carga optimizada de estos chunks */}
         
         {/* ⚡ FASE 1.1: Script de interceptación CSS optimizado - Reducido 60% para menor Script Evaluation */}
         <script
