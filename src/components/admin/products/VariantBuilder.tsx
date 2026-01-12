@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Plus, Trash2, Edit, X } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
-import { MeasureSelector } from './MeasureSelector'
+import { MeasureSelectorSingle } from './MeasureSelectorSingle'
 import { ColorPickerField } from './ColorPickerField'
 
 export interface VariantFormData {
@@ -53,7 +53,7 @@ export function VariantBuilder({
   })
 
   const handleAdd = () => {
-    if (!formData.aikon_id || !formData.measure || formData.price_list <= 0) {
+    if (!formData.aikon_id || formData.price_list <= 0) {
       return
     }
 
@@ -68,7 +68,7 @@ export function VariantBuilder({
   }
 
   const handleUpdate = () => {
-    if (editingIndex === null || !formData.aikon_id || !formData.measure || formData.price_list <= 0) {
+    if (editingIndex === null || !formData.aikon_id || formData.price_list <= 0) {
       return
     }
 
@@ -107,7 +107,7 @@ export function VariantBuilder({
     setEditingIndex(null)
   }
 
-  const isFormValid = formData.aikon_id && formData.measure && formData.price_list > 0
+  const isFormValid = formData.aikon_id && formData.price_list > 0
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -200,7 +200,7 @@ export function VariantBuilder({
             colorName={formData.color_name}
             colorHex={formData.color_hex}
             onColorChange={(name, hex) => setFormData({ ...formData, color_name: name, color_hex: hex })}
-            label='Color'
+            label='Color (Opcional)'
             className='text-xs'
           />
 
@@ -221,20 +221,13 @@ export function VariantBuilder({
           {/* Medida */}
           <div>
             <label className='block text-xs font-medium text-gray-700 mb-1'>
-              Medida *
+              Medida (Opcional)
             </label>
-            <select
+            <MeasureSelectorSingle
               value={formData.measure}
-              onChange={(e) => setFormData({ ...formData, measure: e.target.value })}
-              className='w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500 text-gray-900'
-            >
-              <option value=''>Selecciona...</option>
-              {measures.map((measure) => (
-                <option key={measure} value={measure}>
-                  {measure}
-                </option>
-              ))}
-            </select>
+              onChange={(measure) => setFormData({ ...formData, measure })}
+              placeholder='Selecciona o agrega medida'
+            />
           </div>
 
           {/* Terminación */}

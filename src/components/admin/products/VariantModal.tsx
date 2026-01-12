@@ -6,6 +6,7 @@ import { X, Save, Palette, Package, DollarSign, Hash } from '@/lib/optimized-imp
 import { Input } from '../ui/Input'
 import { ImageUpload } from '../ui/ImageUpload'
 import { Badge } from '../ui/Badge'
+import { MeasureSelectorSingle } from './MeasureSelectorSingle'
 import { cn } from '@/lib/core/utils'
 
 export interface ProductVariant {
@@ -61,12 +62,7 @@ export function VariantModal({
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {}
     
-    if (!formData.color_name?.trim()) {
-      newErrors.color_name = 'El nombre del color es requerido'
-    }
-    if (!formData.measure?.trim()) {
-      newErrors.measure = 'La medida es requerida'
-    }
+    // Color y medida son opcionales ahora
     if (formData.price_list <= 0) {
       newErrors.price_list = 'El precio debe ser mayor a 0'
     }
@@ -185,13 +181,12 @@ export function VariantModal({
                   <div className='md:col-span-2'>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                       <Input
-                        label='Nombre del Color'
+                        label='Nombre del Color (Opcional)'
                         value={formData.color_name}
                         onChange={(e) => updateField('color_name', e.target.value)}
                         error={errors.color_name}
                         placeholder='Ej: BLANCO, TERRACOTA'
                         icon={Palette}
-                        required
                       />
                       
                       <div className='space-y-2'>
@@ -217,15 +212,17 @@ export function VariantModal({
                   </div>
 
                   {/* Medida */}
-                  <Input
-                    label='Capacidad/Medida'
-                    value={formData.measure}
-                    onChange={(e) => updateField('measure', e.target.value)}
-                    error={errors.measure}
-                    placeholder='Ej: 4L, 10L, 20L'
-                    icon={Package}
-                    required
-                  />
+                  <div className='space-y-2'>
+                    <label className='block text-sm font-medium text-gray-700'>
+                      Medida (Opcional)
+                    </label>
+                    <MeasureSelectorSingle
+                      value={formData.measure}
+                      onChange={(measure) => updateField('measure', measure)}
+                      placeholder='Selecciona o agrega medida'
+                      error={errors.measure}
+                    />
+                  </div>
 
                   {/* Terminación */}
                   <div className='space-y-2'>

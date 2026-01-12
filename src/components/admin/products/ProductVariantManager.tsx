@@ -32,7 +32,7 @@ export function ProductVariantManager({
     { name: 'Color', icon: Palette, options: ['Blanco', 'Negro', 'Rojo', 'Azul', 'Verde'] },
     { name: 'Tamaño', icon: Package, options: ['XS', 'S', 'M', 'L', 'XL'] },
     { name: 'Material', icon: Package, options: ['Algodón', 'Poliéster', 'Lana', 'Seda'] },
-    { name: 'Capacidad', icon: Package, options: ['1L', '4L', '10L', '20L'] },
+    { name: 'Medida', icon: Package, options: ['1L', '4L', '10L', '20L'] },
   ]
 
   // Add new variant

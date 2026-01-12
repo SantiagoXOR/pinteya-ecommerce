@@ -9,6 +9,7 @@ import { AdminCard } from '../ui/AdminCard'
 import { CategorySelector } from './CategorySelector'
 import { BrandSelector } from './BrandSelector'
 import { MeasureSelector } from './MeasureSelector'
+import { MeasureSelectorSingle } from './MeasureSelectorSingle'
 import { TerminacionSelector } from './TerminacionSelector'
 import { FinishSelectorSingle } from './FinishSelectorSingle'
 import { ColorPickerField } from './ColorPickerField'
@@ -1023,7 +1024,7 @@ export function ProductFormMinimal({
                           Color
                         </th>
                         <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                          Capacidad
+                          Medida
                         </th>
                         <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
                           Terminación
@@ -1144,7 +1145,7 @@ export function ProductFormMinimal({
                             Color
                           </th>
                           <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
-                            Capacidad
+                            Medida
                           </th>
                           <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase'>
                             Terminación
@@ -1449,13 +1450,7 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
     
-    if (!formData.color_name || formData.color_name.trim() === '') {
-      newErrors.color_name = 'El color es requerido'
-    }
-    
-    if (!formData.measure || formData.measure.trim() === '') {
-      newErrors.measure = 'La capacidad es requerida'
-    }
+    // Color y medida son opcionales ahora
     
     if (!formData.aikon_id || formData.aikon_id.trim() === '') {
       newErrors.aikon_id = 'El código Aikon es requerido'
@@ -1680,14 +1675,14 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
                   setFormData({ ...formData, color_name: name, color_hex: hex })
                   if (errors.color_name) setErrors({ ...errors, color_name: '' })
                 }}
-                label='Color *'
+                label='Color (Opcional)'
                 error={errors.color_name}
               />
 
               <div>
                 <div className='flex items-center justify-between mb-2'>
                   <label className='block text-sm font-medium text-gray-700'>
-                    Capacidad *
+                    Medida (Opcional)
                   </label>
                   {productData?.medida && productData.medida.length > 0 && !variant.id && (
                     <div className='flex gap-1 flex-wrap'>
@@ -1707,23 +1702,15 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
                     </div>
                   )}
                 </div>
-                <input
+                <MeasureSelectorSingle
                   value={formData.measure || ''}
-                  onChange={(e) => {
-                    setFormData({ ...formData, measure: e.target.value })
+                  onChange={(measure) => {
+                    setFormData({ ...formData, measure })
                     if (errors.measure) setErrors({ ...errors, measure: '' })
                   }}
-                  className={cn(
-                    'w-full px-3 py-2 border rounded-lg focus:ring-2',
-                    errors.measure
-                      ? 'border-red-300 focus:ring-red-500'
-                      : 'border-gray-300 focus:ring-blaze-orange-500'
-                  )}
-                  placeholder='Ej: 1L, 4L, 20L'
+                  placeholder='Selecciona o agrega medida'
+                  error={errors.measure}
                 />
-                {errors.measure && (
-                  <p className='text-red-600 text-sm mt-1'>{errors.measure}</p>
-                )}
               </div>
 
               <div>
