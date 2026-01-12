@@ -100,15 +100,30 @@ function mapToModalProduct(apiProduct: any) {
     images_value: (apiProduct as any)?.images
   })
 
+  // ✅ CRÍTICO: Asegurar que image_url esté presente y sea válido
+  const finalImageUrl = (apiProduct as any)?.image_url || null
+  const finalImage = mainImage !== '/images/products/placeholder.svg' 
+    ? mainImage 
+    : (finalImageUrl && getValidImageUrl(finalImageUrl) !== '/images/products/placeholder.svg')
+      ? getValidImageUrl(finalImageUrl)
+      : mainImage
+  
+  console.debug('[mapToModalProduct] 🎯 Imagen final seleccionada:', {
+    finalImage,
+    finalImageUrl,
+    mainImage,
+    apiProduct_image_url: (apiProduct as any)?.image_url
+  })
+
   return {
     id,
     name: (apiProduct as any)?.name || 'Producto',
     price: Number.isFinite(originalNum) ? originalNum : 0,
     originalPrice: discountedNum ? originalNum : undefined,
     discounted_price: discountedNum,
-    image: mainImage,
-    // ✅ NUEVO: Incluir image_url explícitamente para que getMainImage lo use
-    image_url: (apiProduct as any)?.image_url || null,
+    image: finalImage, // ✅ Usar imagen final calculada
+    // ✅ CRÍTICO: Incluir image_url explícitamente - el modal lo necesita
+    image_url: finalImageUrl,
     brand: (apiProduct as any)?.brand || 'Producto',
     stock: Number.isFinite(stockNum) ? stockNum : 0,
     description: (apiProduct as any)?.description || '',
