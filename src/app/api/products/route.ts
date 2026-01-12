@@ -24,6 +24,7 @@ import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limi
 import { API_TIMEOUTS, withDatabaseTimeout, getEndpointTimeouts } from '@/lib/config/api-timeouts'
 import { createSecurityLogger } from '@/lib/logging/security-logger'
 import { expandQueryIntents, stripDiacritics } from '@/lib/search/intents'
+import { normalizeProductTitle } from '@/lib/core/utils'
 
 // ===================================
 // GET /api/products - Obtener productos con filtros
@@ -455,6 +456,8 @@ export async function GET(request: NextRequest) {
             
             return {
               ...product,
+              // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+              name: normalizeProductTitle(product.name),
               // Mantener compatibilidad con campos legacy
               aikon_id: product.aikon_id || defaultVariant?.aikon_id,
               color: product.color || defaultVariant?.color_name,

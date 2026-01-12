@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase'
 import { ApiResponse, ProductWithCategory } from '@/types/api'
+import { normalizeProductTitle } from '@/lib/core/utils'
 
 // ===================================
 // GET /api/products/slug/[slug] - Obtener producto por slug
@@ -152,6 +153,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
 
         enrichedProduct = {
           ...product,
+          // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+          name: normalizeProductTitle(product.name),
           // Mantener compatibilidad con campos legacy
           aikon_id: product.aikon_id || defaultVariant?.aikon_id,
           color: product.color || defaultVariant?.color_name,
@@ -169,7 +172,19 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       } catch (variantError) {
         // Si hay error obteniendo variantes, continuar con producto original
         console.warn('Error obteniendo variantes para producto:', product.id, variantError)
+        // ✅ NUEVO: Aplicar normalización incluso si no hay variantes
+        enrichedProduct = {
+          ...product,
+          name: normalizeProductTitle(product.name),
+        }
       }
+    }
+
+    // ✅ NUEVO: Asegurar normalización si enrichedProduct no fue modificado
+    if (enrichedProduct && !enrichedProduct.name) {
+      enrichedProduct.name = normalizeProductTitle(product.name)
+    } else if (enrichedProduct && enrichedProduct.name === product.name) {
+      enrichedProduct.name = normalizeProductTitle(product.name)
     }
 
     const response: ApiResponse<ProductWithCategory> = {

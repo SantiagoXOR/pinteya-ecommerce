@@ -149,9 +149,9 @@ export function MeasureSelector({
 
         {/* Dropdown */}
         {isOpen && (
-          <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden min-w-full w-full'>
+          <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 flex flex-col min-w-full w-full'>
             {/* Search */}
-            <div className='p-3 border-b border-gray-200'>
+            <div className='p-3 border-b border-gray-200 flex-shrink-0'>
               <input
                 type='text'
                 placeholder='Buscar medidas...'
@@ -162,9 +162,9 @@ export function MeasureSelector({
               />
             </div>
 
-            {/* Available Measures */}
+            {/* Available Measures - Scrollable */}
             {filteredMeasures.length > 0 && (
-              <div className='max-h-48 overflow-y-auto p-2'>
+              <div className='flex-1 overflow-y-auto min-h-0 p-2'>
                 <div className='text-xs text-gray-500 mb-2 px-2'>
                   Medidas disponibles:
                   {isLoadingMeasures && <span className='ml-2'>(cargando...)</span>}
@@ -184,8 +184,8 @@ export function MeasureSelector({
               </div>
             )}
 
-            {/* Custom Measure Input */}
-            <div className='border-t border-gray-200 p-3 space-y-2'>
+            {/* Custom Measure Input - Always visible at bottom */}
+            <div className='border-t border-gray-200 p-3 space-y-2 flex-shrink-0'>
               <div className='text-xs text-gray-500 mb-2'>O agregar medida personalizada:</div>
               <div className='flex items-center gap-2 w-full'>
                 <input

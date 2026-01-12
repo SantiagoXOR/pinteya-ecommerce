@@ -54,6 +54,7 @@ const ProductParamsSchema = z.object({
 
 // Enterprise imports for error handling
 import { ApiError, NotFoundError, ValidationError } from '@/lib/api/error-handler'
+import { normalizeProductTitle } from '@/lib/core/utils'
 
 // Helper function to get product by ID - Returns null if not found
 async function getProductById(
@@ -128,6 +129,8 @@ async function getProductById(
 
   const transformedProduct = {
     ...product,
+    // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+    name: normalizeProductTitle(product.name),
     category_name: product.categories?.name || null,
     categories: undefined,
     // ✅ CORREGIDO: Parsear medida correctamente
@@ -501,6 +504,8 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   // Transform response
   const transformedProduct = {
     ...updatedProduct,
+    // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+    name: normalizeProductTitle(updatedProduct.name),
     category_name: updatedProduct.categories?.name || null,
     categories: undefined,
     // ✅ NUEVO: Terminaciones del producto (array de texto)

@@ -115,3 +115,47 @@ export function slugify(str: string): string {
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
 }
+
+/**
+ * Normalize product title to Title Case format
+ * Capitalizes the first letter of each word while preserving numbers and special characters
+ * Converts all-caps words to proper case (e.g., "ATERMIK" -> "Atermik")
+ * Example: "rodillo lanar dorado N22" -> "Rodillo Lanar Dorado N22"
+ * Example: "ATERMIK MEMBRANA PLAVICON" -> "Atermik Membrana Plavicon"
+ * @param title - Product title to normalize
+ * @returns Normalized title in Title Case
+ */
+export function normalizeProductTitle(title: string | null | undefined): string {
+  if (!title || typeof title !== 'string') {
+    return ''
+  }
+
+  // Trim and split by spaces
+  const words = title.trim().split(/\s+/)
+  
+  // Capitalize first letter of each word
+  const normalizedWords = words.map(word => {
+    // If word is empty, return as is
+    if (!word) return word
+    
+    // Find the first letter (skip numbers and special characters at the start)
+    const firstLetterIndex = word.search(/[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/)
+    
+    if (firstLetterIndex === -1) {
+      // No letters found, return as is (e.g., "123", "N22")
+      return word
+    }
+    
+    // Convert the entire word to lowercase first, then capitalize only the first letter
+    // This handles cases where the word is all caps (e.g., "ATERMIK" -> "Atermik")
+    const prefix = word.slice(0, firstLetterIndex)
+    const wordPart = word.slice(firstLetterIndex)
+    const lowercasedWord = wordPart.toLowerCase()
+    const firstLetter = lowercasedWord[0].toUpperCase()
+    const rest = lowercasedWord.slice(1)
+    
+    return prefix + firstLetter + rest
+  })
+  
+  return normalizedWords.join(' ')
+}

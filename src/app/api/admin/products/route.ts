@@ -15,6 +15,7 @@ import {
 import { ProductFiltersSchema } from '@/lib/validation/admin-schemas'
 import type { ValidatedRequest } from '@/lib/validation/enterprise-validation-middleware'
 import { logger } from '@/lib/utils/logger'
+import { normalizeProductTitle } from '@/lib/core/utils'
 
 // =====================================================
 // HELPERS
@@ -383,6 +384,8 @@ const getHandler = async (request: ValidatedRequest) => {
 
         return {
           ...product,
+          // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+          name: normalizeProductTitle(product.name),
           // ✅ NUEVO: Stock efectivo (suma de variantes si no hay stock asignado)
           stock: effectiveStock,
           category_name: product.category?.name || categories[0]?.name || null,

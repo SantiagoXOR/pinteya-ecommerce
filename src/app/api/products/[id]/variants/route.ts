@@ -140,39 +140,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         handleSupabaseError(variantsError, `GET /api/products/${productId}/variants - variants search`)
       }
 
-      // Si no hay variantes en la nueva tabla, buscar en la tabla products (compatibilidad)
-      let processedVariants: ProductVariant[] = variants || []
-
-      if (processedVariants.length === 0) {
-        // Fallback: crear variante temporal desde la tabla products
-        const { data: productData, error: productDataError } = await supabase
-          .from('products')
-          .select('id, name, price, discounted_price, stock, aikon_id, color, medida')
-          .eq('id', productId)
-          .single()
-
-        if (!productDataError && productData) {
-          processedVariants = [{
-            id: 0, // ID temporal
-            product_id: productData.id,
-            aikon_id: productData.aikon_id || `TEMP-${productData.id}`,
-            variant_slug: `${productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-default`,
-            color_name: productData.color || null,
-            color_hex: null,
-            measure: productData.medida || null,
-            finish: null,
-            price_list: parseFloat(productData.price) || 0,
-            price_sale: productData.discounted_price ? parseFloat(productData.discounted_price) : null,
-            stock: productData.stock || 0,
-            is_active: true,
-            is_default: true,
-            image_url: null,
-            metadata: {},
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }]
-        }
-      }
+      // ✅ CORREGIDO: No crear variante temporal automáticamente
+      // Si un producto no tiene variantes, simplemente devolver array vacío
+      // Esto permite que productos como rodillos existan sin variantes
+      const processedVariants: ProductVariant[] = variants || []
 
       // Log de éxito - usando console.log para eventos informativos
       // Enriquecer variantes específicas para el producto 42 (cemento/gris y medidas 10L, 4L, 1L)

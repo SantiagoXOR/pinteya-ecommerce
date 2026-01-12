@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase'
 import { validateData, ProductSchema } from '@/lib/validations'
 import { ApiResponse, ProductWithCategory } from '@/types/api'
+import { normalizeProductTitle } from '@/lib/core/utils'
 
 // ===================================
 // GET /api/products/[id] - Obtener producto por ID
@@ -167,6 +168,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
         enrichedProduct = {
           ...product,
+          // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+          name: normalizeProductTitle(product.name),
           // Mantener compatibilidad con campos legacy
           aikon_id: product.aikon_id || defaultVariant?.aikon_id,
           color: product.color || defaultVariant?.color_name,
@@ -220,6 +223,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       
       enrichedProduct = {
         ...product,
+        // ✅ NUEVO: Normalizar título del producto a formato capitalizado
+        name: normalizeProductTitle(product.name),
         medida: parsedMedida,
         image_url: primaryImageUrl || null,
         // ✅ NUEVO: Agregar ficha técnica
