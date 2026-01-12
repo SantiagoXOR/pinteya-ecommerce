@@ -501,10 +501,17 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       return sanitize(c?.url || c?.image_url)
     }
     
-    // ✅ CORREGIDO: Prioridad 1 - image_url desde product_images (API)
+    // ✅ CORREGIDO: Prioridad 1 - image_url desde product_images (API) - productData primero
     if ((productData as any)?.image_url) {
       const apiImage = sanitize((productData as any).image_url)
       const validated = getValidImageUrl(apiImage)
+      if (validated && !validated.includes('placeholder')) return validated
+    }
+    
+    // ✅ NUEVO: Prioridad 1.5 - image_url del product inicial (mientras carga productData)
+    if ((product as any)?.image_url) {
+      const productImage = sanitize((product as any).image_url)
+      const validated = getValidImageUrl(productImage)
       if (validated && !validated.includes('placeholder')) return validated
     }
     
