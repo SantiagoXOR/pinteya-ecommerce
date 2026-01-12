@@ -52,12 +52,14 @@ function mapToModalProduct(apiProduct: any) {
   
   let mainImage = '/images/products/placeholder.svg'
   
-  // Prioridad 1: image_url desde product_images (API)
-  if ((apiProduct as any)?.image_url) {
-    const apiImage = sanitize((apiProduct as any).image_url)
-    const validated = getValidImageUrl(apiImage)
-    if (validated && !validated.includes('placeholder')) {
+  // ✅ CORREGIDO: Prioridad 1 - image_url desde product_images (API) - VERIFICAR EXPLÍCITAMENTE
+  const apiImageUrl = (apiProduct as any)?.image_url
+  if (apiImageUrl && typeof apiImageUrl === 'string' && apiImageUrl.trim() !== '') {
+    const sanitized = sanitize(apiImageUrl)
+    const validated = getValidImageUrl(sanitized)
+    if (validated && !validated.includes('placeholder') && validated !== '/images/products/placeholder.svg') {
       mainImage = validated
+      console.debug('[mapToModalProduct] ✅ Usando image_url desde API:', mainImage)
     }
   }
   
@@ -65,8 +67,9 @@ function mapToModalProduct(apiProduct: any) {
   if (mainImage === '/images/products/placeholder.svg' && (apiProduct as any)?.default_variant?.image_url) {
     const variantImage = sanitize((apiProduct as any).default_variant.image_url)
     const validated = getValidImageUrl(variantImage)
-    if (validated && !validated.includes('placeholder')) {
+    if (validated && !validated.includes('placeholder') && validated !== '/images/products/placeholder.svg') {
       mainImage = validated
+      console.debug('[mapToModalProduct] ✅ Usando image_url de variante:', mainImage)
     }
   }
   
@@ -79,18 +82,22 @@ function mapToModalProduct(apiProduct: any) {
     for (const c of candidates) {
       const candidate = urlFrom(c)
       const validated = getValidImageUrl(candidate)
-      if (validated && !validated.includes('placeholder')) {
+      if (validated && !validated.includes('placeholder') && validated !== '/images/products/placeholder.svg') {
         mainImage = validated
+        console.debug('[mapToModalProduct] ✅ Usando imagen desde images JSONB:', mainImage)
         break
       }
     }
   }
   
-  console.debug('[mapToModalProduct] Imagen obtenida (método ShopDetailModal):', {
+  console.debug('[mapToModalProduct] 🔍 Diagnóstico completo de imagen:', {
     mainImage,
     image_url: (apiProduct as any)?.image_url,
+    image_url_type: typeof (apiProduct as any)?.image_url,
+    image_url_trimmed: (apiProduct as any)?.image_url?.trim?.(),
     default_variant_image_url: (apiProduct as any)?.default_variant?.image_url,
-    has_images: !!(apiProduct as any)?.images
+    has_images: !!(apiProduct as any)?.images,
+    images_value: (apiProduct as any)?.images
   })
 
   return {
