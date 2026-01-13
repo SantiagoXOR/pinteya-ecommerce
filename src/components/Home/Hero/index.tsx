@@ -151,15 +151,17 @@ const heroSlides: HeroSlideType[] = [
 
 const Hero = () => {
   return (
-    <section className='relative overflow-hidden w-full'>
+    <section className='relative overflow-hidden w-full' style={{ minHeight: '400px' }}>
       {/* Hero Modular y Responsive - Layout único que se adapta */}
-      <HeroSlideCarousel
-        slides={heroSlides}
-        autoplayDelay={5000}
-        showNavigation={true}
-        showPagination={true}
-        className='w-full'
-      />
+      <div className='w-full h-full' style={{ minHeight: '400px' }}>
+        <HeroSlideCarousel
+          slides={heroSlides}
+          autoplayDelay={5000}
+          showNavigation={true}
+          showPagination={true}
+          className='w-full h-full'
+        />
+      </div>
     </section>
   )
 }

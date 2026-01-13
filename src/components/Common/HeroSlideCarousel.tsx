@@ -59,13 +59,23 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
     }
   }
 
-  // Asegurar que el autoplay se inicie correctamente
+  // Asegurar que el autoplay se inicie correctamente después de que Swiper esté completamente inicializado
   useEffect(() => {
-    if (swiperRef.current?.autoplay && !isAutoplayPaused) {
-      // Forzar inicio del autoplay después de que el componente se monte
-      swiperRef.current.autoplay.start()
-    }
-  }, [isAutoplayPaused])
+    // Usar un pequeño delay para asegurar que Swiper esté completamente montado
+    const timer = setTimeout(() => {
+      if (swiperRef.current?.autoplay && !isAutoplayPaused) {
+        // Verificar que el swiper esté inicializado y tenga slides
+        if (swiperRef.current.slides && swiperRef.current.slides.length > 0) {
+          // Forzar inicio del autoplay
+          swiperRef.current.autoplay.start()
+          // También actualizar el swiper para asegurar que esté sincronizado
+          swiperRef.current.update()
+        }
+      }
+    }, 100) // Pequeño delay para asegurar que todo esté montado
+
+    return () => clearTimeout(timer)
+  }, [isAutoplayPaused, slides.length])
 
   return (
     <div
@@ -145,10 +155,14 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
         onSlideChange={handleSlideChange}
         onSwiper={(swiper: any) => {
           swiperRef.current = swiper
-          // Asegurar que el autoplay se inicie después de que Swiper se monte
-          if (swiper.autoplay && !isAutoplayPaused) {
-            swiper.autoplay.start()
-          }
+          // Iniciar autoplay después de que Swiper esté completamente inicializado
+          // Usar setTimeout para asegurar que el DOM esté listo
+          setTimeout(() => {
+            if (swiper.autoplay && !isAutoplayPaused && swiper.slides && swiper.slides.length > 0) {
+              swiper.autoplay.start()
+              swiper.update() // Actualizar para sincronizar
+            }
+          }, 50)
         }}
         aria-label='Galería de banners promocionales'
         className='w-full h-full'

@@ -118,7 +118,7 @@ export const SearchAutocompleteIntegrated = React.memo(
       const [isOpen, setIsOpen] = useState(false)
       const [inputValue, setInputValue] = useState('')
       const [selectedIndex, setSelectedIndex] = useState(-1)
-      const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null)
+      const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number; maxHeight?: number } | null>(null)
       const [mounted, setMounted] = useState(false)
 
       // Hook para placeholder animado
@@ -297,17 +297,32 @@ export const SearchAutocompleteIntegrated = React.memo(
 
       // Calcular posición del dropdown - Optimizado con requestAnimationFrame
       // ⚡ FIX: Usar getBoundingClientRect() directamente para position: fixed (relativo al viewport)
+      // ⚡ FIX: Prevenir actualizaciones innecesarias que causan re-renders y ampliación
       const updateDropdownPosition = useCallback(() => {
         if (inputRef.current) {
           // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para evitar forced reflow
           requestAnimationFrame(() => {
             if (inputRef.current) {
               const rect = inputRef.current.getBoundingClientRect()
+              const viewportHeight = window.innerHeight
+              const spaceBelow = viewportHeight - rect.bottom
+              const maxDropdownHeight = Math.min(384, spaceBelow - 20) // max-h-96 = 384px, 20px de margen
+              
               // Para position: fixed, usamos coordenadas del viewport directamente (sin scroll)
-              setDropdownPosition({
-                top: rect.bottom + 4, // 4px de espacio debajo del input
-                left: rect.left,
-                width: rect.width,
+              setDropdownPosition(prev => {
+                // Solo actualizar si realmente cambió (evitar re-renders innecesarios)
+                if (prev && 
+                    Math.abs(prev.top - (rect.bottom + 4)) < 1 &&
+                    Math.abs(prev.left - rect.left) < 1 &&
+                    Math.abs(prev.width - rect.width) < 1) {
+                  return prev
+                }
+                return {
+                  top: rect.bottom + 4, // 4px de espacio debajo del input
+                  left: rect.left,
+                  width: rect.width,
+                  maxHeight: maxDropdownHeight, // Altura máxima basada en espacio disponible
+                }
               })
             }
           })
@@ -437,30 +452,44 @@ export const SearchAutocompleteIntegrated = React.memo(
       }, [autoFocus, updateDropdownPosition])
 
       // Actualizar posición del dropdown cuando se abre o cambia el tamaño de la ventana
-      // ⚡ FIX: Actualizar posición en cada scroll para mantener el dropdown anclado
+      // ⚡ FIX: Optimizar actualización de posición para evitar ampliación y scroll extra
       useEffect(() => {
         if (isOpen && mounted) {
+          // Actualizar posición inicial
           updateDropdownPosition()
           
-          // Throttle para scroll para mejor rendimiento
+          // Throttle más agresivo para scroll (100ms) para evitar re-renders excesivos
           let scrollTimeout: NodeJS.Timeout | null = null
-          const handleResize = () => updateDropdownPosition()
+          let resizeTimeout: NodeJS.Timeout | null = null
+          
+          const handleResize = () => {
+            // Debounce resize para evitar múltiples actualizaciones
+            if (resizeTimeout) clearTimeout(resizeTimeout)
+            resizeTimeout = setTimeout(() => {
+              updateDropdownPosition()
+              resizeTimeout = null
+            }, 150)
+          }
+          
           const handleScroll = () => {
-            // Throttle: actualizar máximo cada 16ms (~60fps)
+            // Throttle más agresivo: actualizar máximo cada 100ms (no cada frame)
+            // Esto previene la ampliación y el scroll extra
             if (scrollTimeout) return
             scrollTimeout = setTimeout(() => {
               updateDropdownPosition()
               scrollTimeout = null
-            }, 16)
+            }, 100)
           }
           
           window.addEventListener('resize', handleResize, { passive: true })
-          window.addEventListener('scroll', handleScroll, { passive: true, capture: true })
+          // ⚡ FIX: Usar capture: false para evitar interferir con el scroll de la página
+          window.addEventListener('scroll', handleScroll, { passive: true, capture: false })
           
           return () => {
             window.removeEventListener('resize', handleResize)
-            window.removeEventListener('scroll', handleScroll, { capture: true })
+            window.removeEventListener('scroll', handleScroll, { capture: false })
             if (scrollTimeout) clearTimeout(scrollTimeout)
+            if (resizeTimeout) clearTimeout(resizeTimeout)
           }
         }
       }, [isOpen, mounted, updateDropdownPosition])
@@ -617,15 +646,32 @@ export const SearchAutocompleteIntegrated = React.memo(
                   ref={dropdownRef}
                   className={cn(
                     'fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
-                    'rounded-lg shadow-lg dark:shadow-xl z-dropdown max-h-96 overflow-y-auto'
+                    'rounded-lg shadow-lg dark:shadow-xl z-dropdown overflow-y-auto',
+                    'overscroll-contain' // ⚡ FIX: Prevenir que el scroll del dropdown afecte la página
                   )}
                   style={{
                     top: `${dropdownPosition.top}px`,
                     left: `${dropdownPosition.left}px`,
                     width: `${dropdownPosition.width}px`,
+                    maxHeight: dropdownPosition.maxHeight ? `${dropdownPosition.maxHeight}px` : '384px', // max-h-96 como fallback
+                    // ⚡ FIX: Prevenir que el dropdown cause scroll en el body
+                    position: 'fixed',
+                    willChange: 'transform', // Optimización de renderizado
                   }}
                   role='listbox'
                   id='autocomplete-listbox'
+                  onWheel={(e) => {
+                    // ⚡ FIX: Prevenir que el scroll del dropdown se propague al body
+                    const element = e.currentTarget
+                    const { scrollTop, scrollHeight, clientHeight } = element
+                    const isAtTop = scrollTop === 0
+                    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
+                    
+                    // Si está en los límites y el scroll va en esa dirección, prevenir propagación
+                    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+                      e.stopPropagation()
+                    }
+                  }}
                 >
               {/* Estado inicial sin texto: encabezado y esqueleto/ayuda */}
               {!inputValue.trim() && (
