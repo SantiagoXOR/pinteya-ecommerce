@@ -583,7 +583,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
           {/* Flecha izquierda - Centrada verticalmente con los iconos de categorías */}
           <button
             onClick={() => scroll('left')}
-            className='absolute left-0 z-20 w-6 h-10 md:w-8 md:h-12 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-r-full border border-l-0 border-gray-200 pointer-events-auto top-[33px] md:top-1/2 md:-translate-y-1/2'
+            className='absolute left-0 z-20 w-6 h-10 md:w-8 md:h-12 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-r-full border border-l-0 border-gray-200 pointer-events-auto top-1/2 -translate-y-1/2'
             aria-label='Anterior'
           >
             <ChevronLeft className='w-3 h-3 md:w-4 md:h-4 text-gray-600' />
@@ -592,7 +592,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
           {/* Flecha derecha - Centrada verticalmente con los iconos de categorías */}
           <button
             onClick={() => scroll('right')}
-            className='absolute right-0 z-20 w-6 h-10 md:w-8 md:h-12 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-l-full border border-r-0 border-gray-200 pointer-events-auto top-[33px] md:top-1/2 md:-translate-y-1/2'
+            className='absolute right-0 z-20 w-6 h-10 md:w-8 md:h-12 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-l-full border border-r-0 border-gray-200 pointer-events-auto top-1/2 -translate-y-1/2'
             aria-label='Siguiente'
           >
             <ChevronRight className='w-3 h-3 md:w-4 md:h-4 text-gray-600' />
