@@ -458,6 +458,23 @@ export const SearchAutocompleteIntegrated = React.memo(
           // Actualizar posición inicial
           updateDropdownPosition()
           
+          // ⚡ FIX: Ocultar scrollbar del dropdown para evitar línea blanca
+          if (dropdownRef.current) {
+            const style = document.createElement('style')
+            style.id = 'hide-dropdown-scrollbar-style'
+            style.textContent = `
+              #autocomplete-listbox::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+                background: transparent !important;
+              }
+            `
+            if (!document.head.querySelector('#hide-dropdown-scrollbar-style')) {
+              document.head.appendChild(style)
+            }
+          }
+          
           // Throttle más agresivo para scroll (100ms) para evitar re-renders excesivos
           let scrollTimeout: NodeJS.Timeout | null = null
           let resizeTimeout: NodeJS.Timeout | null = null
@@ -490,6 +507,11 @@ export const SearchAutocompleteIntegrated = React.memo(
             window.removeEventListener('scroll', handleScroll, { capture: false })
             if (scrollTimeout) clearTimeout(scrollTimeout)
             if (resizeTimeout) clearTimeout(resizeTimeout)
+            // Limpiar estilo cuando el dropdown se cierra
+            const styleElement = document.head.querySelector('#hide-dropdown-scrollbar-style')
+            if (styleElement) {
+              styleElement.remove()
+            }
           }
         }
       }, [isOpen, mounted, updateDropdownPosition])
@@ -647,7 +669,9 @@ export const SearchAutocompleteIntegrated = React.memo(
                   className={cn(
                     'fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
                     'rounded-lg shadow-lg dark:shadow-xl z-dropdown overflow-y-auto',
-                    'overscroll-contain' // ⚡ FIX: Prevenir que el scroll del dropdown afecte la página
+                    'overscroll-contain', // ⚡ FIX: Prevenir que el scroll del dropdown afecte la página
+                    // ⚡ FIX: Ocultar scrollbar completamente para evitar línea blanca
+                    'scrollbar-hide'
                   )}
                   style={{
                     top: `${dropdownPosition.top}px`,
@@ -657,7 +681,11 @@ export const SearchAutocompleteIntegrated = React.memo(
                     // ⚡ FIX: Prevenir que el dropdown cause scroll en el body
                     position: 'fixed',
                     willChange: 'transform', // Optimización de renderizado
-                  }}
+                    // ⚡ FIX: Ocultar scrollbar en todos los navegadores
+                    scrollbarWidth: 'none', // Firefox
+                    msOverflowStyle: 'none', // IE/Edge
+                  } as React.CSSProperties}
+                >
                   role='listbox'
                   id='autocomplete-listbox'
                   onWheel={(e) => {
