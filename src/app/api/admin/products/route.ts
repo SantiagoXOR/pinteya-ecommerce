@@ -269,6 +269,7 @@ const getHandler = async (request: ValidatedRequest) => {
     const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
     const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
     const variantTotalStocks: Record<number, number> = {} // ✅ NUEVO: Stock total de variantes por producto
+    let variantData: any[] = [] // ✅ NUEVO: Guardar variantData para debug
     
     if (productIds.length > 0) {
       // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
@@ -286,16 +287,19 @@ const getHandler = async (request: ValidatedRequest) => {
         }
       })
       
-      const { data: variantData, error: variantError } = await supabaseAdmin
+      const { data: variantDataResult, error: variantError } = await supabaseAdmin
         .from('product_variants')
         .select('product_id,is_default,measure,color_name,aikon_id,stock')
         .in('product_id', productIds)
         .eq('is_active', true)
       
+      // ✅ NUEVO: Guardar variantData para uso en debug
+      variantData = variantDataResult || []
+      
       // ✅ NUEVO: Calcular stock total de variantes por producto
       // ✅ NUEVO: También verificar si hay variantes activas con stock
       const hasActiveVariantsWithStock: Record<number, boolean> = {}
-      variantData?.forEach(variant => {
+      variantData.forEach(variant => {
         // Sumar stock de cada variante activa
         if (!variantTotalStocks[variant.product_id]) {
           variantTotalStocks[variant.product_id] = 0
@@ -308,7 +312,7 @@ const getHandler = async (request: ValidatedRequest) => {
         }
       })
       
-      variantData?.forEach(variant => {
+      variantData.forEach(variant => {
         // Obtener TODAS las medidas únicas de las variantes
         if (variant.measure && variant.measure.trim() !== '') {
           if (!variantMeasures[variant.product_id]) {
@@ -388,19 +392,25 @@ const getHandler = async (request: ValidatedRequest) => {
         const hasVariantsWithStock = hasActiveVariantsWithStock[product.id] || false
         
         // ✅ CORREGIDO: Si hay variantes con stock, SIEMPRE usar la suma (sin importar product.stock)
-        const effectiveStock = hasVariantsWithStock && variantStock > 0
+        // Si variantStock > 0, significa que hay variantes y se sumaron correctamente
+        const effectiveStock = variantStock > 0
           ? variantStock  // Suma de todas las variantes
           : (product.stock !== null && product.stock !== undefined ? product.stock : 0)
         
         // Debug log para productos con variantes
-        if (hasVariantsWithStock && product.id === 20) {
-          console.log('🔍 [STOCK DEBUG] Producto #20:', {
+        if (product.id === 20) {
+          const productVariants = variantData?.filter((v: any) => v.product_id === 20) || []
+          console.log('🔍 [STOCK DEBUG LISTA] Producto #20:', {
             productStock: product.stock,
             variantStock,
             hasVariantsWithStock,
             effectiveStock,
             variantMeasuresList: variantMeasuresList.length,
-            variantColorsList: variantColorsList.length
+            variantColorsList: variantColorsList.length,
+            variantTotalStocksValue: variantTotalStocks[product.id],
+            variantCount: productVariants.length,
+            variants: productVariants.map((v: any) => ({ measure: v.measure, stock: v.stock })),
+            calculatedSum: productVariants.reduce((sum: number, v: any) => sum + (v.stock || 0), 0)
           })
         }
 
@@ -1087,7 +1097,7 @@ export const GET = async (request: NextRequest) => {
         .in('product_id', productIds)
         .eq('is_active', true)
       
-      variantData?.forEach(variant => {
+      variantData.forEach(variant => {
         const normalizedImage = extractImageUrl(variant.image_url)
         variantCounts[variant.product_id] = (variantCounts[variant.product_id] || 0) + 1
 
