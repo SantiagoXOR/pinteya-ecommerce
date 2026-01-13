@@ -300,14 +300,19 @@ const getHandler = async (request: ValidatedRequest) => {
       // ✅ NUEVO: También verificar si hay variantes activas con stock
       const hasActiveVariantsWithStock: Record<number, boolean> = {}
       variantData.forEach(variant => {
+        // ✅ CORREGIDO: Asegurar que stock sea número
+        const variantStockValue = typeof variant.stock === 'string' 
+          ? parseInt(variant.stock, 10) || 0 
+          : (variant.stock || 0)
+        
         // Sumar stock de cada variante activa
         if (!variantTotalStocks[variant.product_id]) {
           variantTotalStocks[variant.product_id] = 0
         }
-        variantTotalStocks[variant.product_id] += variant.stock || 0
+        variantTotalStocks[variant.product_id] += variantStockValue
         
         // ✅ NUEVO: Marcar si el producto tiene variantes activas con stock
-        if (variant.stock > 0) {
+        if (variantStockValue > 0) {
           hasActiveVariantsWithStock[variant.product_id] = true
         }
       })
@@ -393,24 +398,40 @@ const getHandler = async (request: ValidatedRequest) => {
         
         // ✅ CORREGIDO: Si hay variantes con stock, SIEMPRE usar la suma (sin importar product.stock)
         // Si variantStock > 0, significa que hay variantes y se sumaron correctamente
-        const effectiveStock = variantStock > 0
-          ? variantStock  // Suma de todas las variantes
-          : (product.stock !== null && product.stock !== undefined ? product.stock : 0)
+        // ✅ MEJORADO: Asegurar que variantStock sea número
+        const numericVariantStock = typeof variantStock === 'string' 
+          ? parseInt(variantStock, 10) || 0 
+          : Number(variantStock) || 0
+        
+        // ✅ CRÍTICO: Si hay variantes con stock, SIEMPRE usar la suma, incluso si product.stock > 0
+        const effectiveStock = numericVariantStock > 0
+          ? numericVariantStock  // Suma de todas las variantes
+          : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
         
         // Debug log para productos con variantes
         if (product.id === 20) {
           const productVariants = variantData?.filter((v: any) => v.product_id === 20) || []
+          const manualSum = productVariants.reduce((sum: number, v: any) => {
+            const vStock = typeof v.stock === 'string' ? parseInt(v.stock, 10) || 0 : (v.stock || 0)
+            return sum + vStock
+          }, 0)
           console.log('🔍 [STOCK DEBUG LISTA] Producto #20:', {
             productStock: product.stock,
             variantStock,
+            numericVariantStock,
             hasVariantsWithStock,
             effectiveStock,
             variantMeasuresList: variantMeasuresList.length,
             variantColorsList: variantColorsList.length,
             variantTotalStocksValue: variantTotalStocks[product.id],
             variantCount: productVariants.length,
-            variants: productVariants.map((v: any) => ({ measure: v.measure, stock: v.stock })),
-            calculatedSum: productVariants.reduce((sum: number, v: any) => sum + (v.stock || 0), 0)
+            variants: productVariants.map((v: any) => ({ 
+              measure: v.measure, 
+              stock: v.stock,
+              stockType: typeof v.stock
+            })),
+            manualSum,
+            'variantTotalStocks object': JSON.stringify(variantTotalStocks)
           })
         }
 
