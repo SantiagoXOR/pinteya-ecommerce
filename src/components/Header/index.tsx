@@ -243,7 +243,6 @@ const Header = () => {
 
   // Handler para sincronizar isSearchExpanded con focus del input
   const handleSearchFocusChange = useCallback((isFocused: boolean) => {
-    console.log('🔍 Header - handleSearchFocusChange:', isFocused)
     setIsSearchExpanded(isFocused)
   }, [])
 

@@ -305,12 +305,11 @@ export const SearchAutocompleteIntegrated = React.memo(
       )
 
       const handleInputFocus = useCallback(() => {
-        console.log('🔍 SearchAutocomplete - handleInputFocus, onFocusChange existe:', !!onFocusChange)
         setIsOpen(true)
         updatePosition()
         resetAnimation() // Detener animación al enfocar
         onFocus?.()
-        onFocusChange?.(true) // NUEVO: Notificar que está enfocado
+        onFocusChange?.(true) // Notificar que está enfocado
       }, [onFocus, updatePosition, resetAnimation, onFocusChange])
 
       const handleInputBlur = useCallback(
@@ -320,16 +319,10 @@ export const SearchAutocompleteIntegrated = React.memo(
             const activeEl = document.activeElement
             const isInsideDropdown = dropdownRef.current?.contains(activeEl) ?? false
             const isInsideContainer = containerRef.current?.contains(activeEl) ?? false
-            console.log('🔍 SearchAutocomplete - handleInputBlur:', {
-              isInsideDropdown,
-              isInsideContainer,
-              activeEl: activeEl?.tagName,
-              onFocusChangeExists: !!onFocusChange
-            })
             if (!isInsideDropdown && !isInsideContainer) {
               setIsOpen(false)
               setSelectedIndex(-1)
-              onFocusChange?.(false) // NUEVO: Notificar que perdió el focus
+              onFocusChange?.(false) // Notificar que perdió el focus
             }
           }, 150)
           onBlur?.()
