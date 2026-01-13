@@ -392,13 +392,13 @@ const Header = () => {
             <ScrollingBanner />
             <div className='px-3 sm:px-4 py-1.5 sm:py-2'>
               <div className='flex items-center justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px]'>
-                {/* 1. Logo - Ocultar cuando search está expandido (desktop también) */}
+                {/* 1. Logo - Ocultar cuando search está expandido (solo en mobile) */}
             <Link 
               href='/' 
               className={cn(
                 'flex-shrink-0 transition-all duration-300 ease-in-out',
-                // Ocultar el logo cuando search está expandido (tanto móvil como desktop)
-                isSearchExpanded ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto',
+                // Ocultar el logo cuando search está expandido SOLO en mobile (lg: siempre visible)
+                isSearchExpanded ? 'opacity-0 w-0 overflow-hidden lg:opacity-100 lg:w-auto' : 'opacity-100 w-auto',
                 'p-0 m-0 inline-flex items-center justify-center',
                 'relative z-10'
               )}

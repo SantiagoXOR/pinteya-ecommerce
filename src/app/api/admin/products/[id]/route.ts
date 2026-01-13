@@ -118,6 +118,31 @@ async function getProductById(
     primaryImageUrl = productImages?.[0]?.url || null
   }
 
+  // ✅ NUEVO: Obtener variantes para calcular stock efectivo
+  const { data: variants } = await supabase
+    .from('product_variants')
+    .select('id, stock, is_active, is_default')
+    .eq('product_id', numericId)
+    .eq('is_active', true)
+
+  // ✅ NUEVO: Calcular stock efectivo (suma de variantes si hay, sino stock del producto)
+  const calculateEffectiveStock = (): number => {
+    // Sumar stock de todas las variantes activas
+    const variantTotalStock = (variants || [])
+      .filter((v: any) => v.is_active !== false)
+      .reduce((sum: number, v: any) => sum + (v.stock || 0), 0)
+    
+    // ✅ CORREGIDO: Si hay variantes con stock, usar suma de variantes; si no, usar stock del producto
+    if (variants && variants.length > 0 && variantTotalStock > 0) {
+      return variantTotalStock  // Suma de todas las variantes
+    }
+    
+    // Si no hay variantes o no tienen stock, usar stock del producto
+    return product.stock ?? 0
+  }
+
+  const effectiveStock = calculateEffectiveStock()
+
   // Transform response with enhanced data
   // ✅ CORREGIDO: Parsear medida si viene como string de array
   let parsedMedida: string[] = []
@@ -178,6 +203,8 @@ async function getProductById(
     terminaciones: (product as any).terminaciones && Array.isArray((product as any).terminaciones) 
       ? (product as any).terminaciones.filter((t: string) => t && t.trim() !== '')
       : [],
+    // ✅ NUEVO: Stock efectivo calculado desde variantes
+    stock: effectiveStock,
     // Defaults para campos opcionales
     cost_price: product.cost_price ?? null,
     compare_price: product.compare_price ?? product.discounted_price ?? null,

@@ -617,7 +617,7 @@ export const SearchAutocompleteIntegrated = React.memo(
                   ref={dropdownRef}
                   className={cn(
                     'fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
-                    'rounded-lg shadow-lg dark:shadow-xl z-[200] max-h-96 overflow-y-auto'
+                    'rounded-lg shadow-lg dark:shadow-xl z-dropdown max-h-96 overflow-y-auto'
                   )}
                   style={{
                     top: `${dropdownPosition.top}px`,

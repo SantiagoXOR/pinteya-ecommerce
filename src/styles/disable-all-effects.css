@@ -118,13 +118,12 @@
 }
 
 /* ⚡ FIX: Permitir transform hover básico en componentes interactivos */
-/* Hero Carousel y Combos Section - permitir scale básico */
+/* Hero Carousel - permitir scale básico en botones */
+/* CombosSection - SIN zoom en imágenes (eliminado por solicitud del usuario) */
 .hero-carousel button:hover,
 [class*="hero"] button:hover,
 .combo-image:hover,
 .combo-image-link:hover img,
-.CombosSection img:hover,
-[class*="CombosSection"] img:hover,
 button[aria-label*="slide"]:hover,
 button[aria-label*="Slide"]:hover {
   transform: scale(1.05) !important;
@@ -140,10 +139,9 @@ button[aria-label*="Siguiente slide"]:hover {
   transition: transform 0.8s ease-in-out, box-shadow 0.8s ease-in-out !important;
 }
 
-/* ⚡ FIX: Permitir shadow hover en imágenes de combos */
-.combo-image:hover,
-.CombosSection img:hover {
+/* ⚡ FIX: Permitir shadow hover en imágenes de combos (sin zoom) */
+.combo-image:hover {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
-  transition: transform 0.8s ease-in-out, box-shadow 0.8s ease-in-out !important;
+  transition: box-shadow 0.8s ease-in-out !important;
 }
 

@@ -293,12 +293,19 @@ const getHandler = async (request: ValidatedRequest) => {
         .eq('is_active', true)
       
       // ✅ NUEVO: Calcular stock total de variantes por producto
+      // ✅ NUEVO: También verificar si hay variantes activas con stock
+      const hasActiveVariantsWithStock: Record<number, boolean> = {}
       variantData?.forEach(variant => {
         // Sumar stock de cada variante activa
         if (!variantTotalStocks[variant.product_id]) {
           variantTotalStocks[variant.product_id] = 0
         }
         variantTotalStocks[variant.product_id] += variant.stock || 0
+        
+        // ✅ NUEVO: Marcar si el producto tiene variantes activas con stock
+        if (variant.stock > 0) {
+          hasActiveVariantsWithStock[variant.product_id] = true
+        }
       })
       
       variantData?.forEach(variant => {
@@ -374,13 +381,16 @@ const getHandler = async (request: ValidatedRequest) => {
         // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
         const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
         
-        // ✅ NUEVO: Calcular stock efectivo (producto o suma de variantes)
-        // Si el producto tiene stock > 0, usar ese. Si no, usar la suma de stocks de variantes
+        // ✅ NUEVO: Calcular stock efectivo (suma de variantes si hay, sino stock del producto)
+        // ✅ CORREGIDO: Si hay variantes, SIEMPRE usar la suma de stock de variantes
         const variantStock = variantTotalStocks[product.id] || 0
-        const hasVariants = variantMeasuresList.length > 0 || variantColorsList.length > 0
-        const effectiveStock = (product.stock !== null && product.stock > 0) 
-          ? product.stock 
-          : (hasVariants ? variantStock : (product.stock || 0))
+        // ✅ CORREGIDO: Verificar si hay variantes activas con stock, no solo medidas/colores
+        const hasVariantsWithStock = hasActiveVariantsWithStock[product.id] || false
+        const hasVariants = variantMeasuresList.length > 0 || variantColorsList.length > 0 || hasVariantsWithStock
+        // ✅ CORREGIDO: Si hay variantes, usar suma de variantes; si no, usar stock del producto
+        const effectiveStock = hasVariants && variantStock > 0
+          ? variantStock  // Suma de todas las variantes
+          : (product.stock !== null && product.stock !== undefined ? product.stock : 0)
 
         return {
           ...product,
@@ -416,7 +426,8 @@ const getHandler = async (request: ValidatedRequest) => {
     // ✅ NUEVO: Aplicar filtro de stock DESPUÉS de calcular el stock efectivo
     let filteredProducts = transformedProducts
     if (stockStatus === 'out_of_stock') {
-      filteredProducts = transformedProducts.filter(p => p.stock === 0)
+      // ✅ CORREGIDO: Filtrar productos con stock efectivo <= 0 (incluye null/undefined)
+      filteredProducts = transformedProducts.filter(p => (p.stock || 0) <= 0)
       console.log('🔍 [API] Filtro OUT_OF_STOCK aplicado post-transformación:', filteredProducts.length, 'productos')
     } else if (stockStatus === 'low_stock') {
       filteredProducts = transformedProducts.filter(p => p.stock > 0 && p.stock <= 10)

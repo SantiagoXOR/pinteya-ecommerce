@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Autoplay, Pagination, Navigation, Keyboard, A11y } from 'swiper/modules'
 import HeroSlide from '@/components/Home/Hero/HeroSlide'
@@ -59,6 +59,14 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
     }
   }
 
+  // Asegurar que el autoplay se inicie correctamente
+  useEffect(() => {
+    if (swiperRef.current?.autoplay && !isAutoplayPaused) {
+      // Forzar inicio del autoplay después de que el componente se monte
+      swiperRef.current.autoplay.start()
+    }
+  }, [isAutoplayPaused])
+
   return (
     <div
       role='region'
@@ -73,7 +81,7 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
         autoplay={{
           delay: autoplayDelay,
           disableOnInteraction: false,
-          pauseOnMouseEnter: true,
+          pauseOnMouseEnter: false, // Deshabilitar pauseOnMouseEnter para que funcione con nuestros handlers
         }}
         pagination={
           showPagination
@@ -137,6 +145,10 @@ const HeroSlideCarousel: React.FC<HeroSlideCarouselProps> = ({
         onSlideChange={handleSlideChange}
         onSwiper={(swiper: any) => {
           swiperRef.current = swiper
+          // Asegurar que el autoplay se inicie después de que Swiper se monte
+          if (swiper.autoplay && !isAutoplayPaused) {
+            swiper.autoplay.start()
+          }
         }}
         aria-label='Galería de banners promocionales'
         className='w-full h-full'
