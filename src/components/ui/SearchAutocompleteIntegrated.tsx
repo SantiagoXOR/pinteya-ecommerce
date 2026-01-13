@@ -685,7 +685,6 @@ export const SearchAutocompleteIntegrated = React.memo(
                     scrollbarWidth: 'none', // Firefox
                     msOverflowStyle: 'none', // IE/Edge
                   } as React.CSSProperties}
-                >
                   role='listbox'
                   id='autocomplete-listbox'
                   onWheel={(e) => {
