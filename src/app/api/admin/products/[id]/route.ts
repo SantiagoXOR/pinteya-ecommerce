@@ -842,15 +842,20 @@ export async function GET(
       // Usar precio de variante default si existe, pero preservar stock del producto principal
       price: defaultVariant?.price_list || data.price,
       discounted_price: defaultVariant?.price_sale || data.discounted_price,
-      // ✅ NUEVO: Stock efectivo (suma de variantes si producto.stock = 0 o null)
+      // ✅ NUEVO: Stock efectivo (suma de variantes si hay, sino stock del producto)
       stock: (() => {
-        const productStock = data.stock ?? 0
-        if (productStock > 0) return productStock
         // Sumar stock de todas las variantes activas
         const variantTotalStock = (variants || [])
           .filter((v: any) => v.is_active !== false)
           .reduce((sum: number, v: any) => sum + (v.stock || 0), 0)
-        return variantTotalStock > 0 ? variantTotalStock : productStock
+        
+        // ✅ CORREGIDO: Si hay variantes con stock, usar suma de variantes; si no, usar stock del producto
+        if (variants && variants.length > 0 && variantTotalStock > 0) {
+          return variantTotalStock  // Suma de todas las variantes
+        }
+        
+        // Si no hay variantes o no tienen stock, usar stock del producto
+        return data.stock ?? 0
       })(),
       // ✅ CORREGIDO: Terminaciones - asegurar que siempre sea array
       terminaciones: (data as any).terminaciones && Array.isArray((data as any).terminaciones) 

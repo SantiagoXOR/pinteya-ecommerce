@@ -382,15 +382,27 @@ const getHandler = async (request: ValidatedRequest) => {
         const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
         
         // ✅ NUEVO: Calcular stock efectivo (suma de variantes si hay, sino stock del producto)
-        // ✅ CORREGIDO: Si hay variantes, SIEMPRE usar la suma de stock de variantes
+        // ✅ CORREGIDO: Si hay variantes con stock, SIEMPRE usar la suma de stock de variantes
         const variantStock = variantTotalStocks[product.id] || 0
-        // ✅ CORREGIDO: Verificar si hay variantes activas con stock, no solo medidas/colores
+        // ✅ CORREGIDO: Verificar si hay variantes activas con stock
         const hasVariantsWithStock = hasActiveVariantsWithStock[product.id] || false
-        const hasVariants = variantMeasuresList.length > 0 || variantColorsList.length > 0 || hasVariantsWithStock
-        // ✅ CORREGIDO: Si hay variantes, usar suma de variantes; si no, usar stock del producto
-        const effectiveStock = hasVariants && variantStock > 0
+        
+        // ✅ CORREGIDO: Si hay variantes con stock, SIEMPRE usar la suma (sin importar product.stock)
+        const effectiveStock = hasVariantsWithStock && variantStock > 0
           ? variantStock  // Suma de todas las variantes
           : (product.stock !== null && product.stock !== undefined ? product.stock : 0)
+        
+        // Debug log para productos con variantes
+        if (hasVariantsWithStock && product.id === 20) {
+          console.log('🔍 [STOCK DEBUG] Producto #20:', {
+            productStock: product.stock,
+            variantStock,
+            hasVariantsWithStock,
+            effectiveStock,
+            variantMeasuresList: variantMeasuresList.length,
+            variantColorsList: variantColorsList.length
+          })
+        }
 
         return {
           ...product,
