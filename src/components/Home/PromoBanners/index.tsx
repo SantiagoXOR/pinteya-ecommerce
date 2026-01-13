@@ -117,7 +117,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                   <div className={`absolute inset-0 bg-gradient-to-r ${banner.bgGradient} z-20`}></div>
                   
                   {/* Content - Súper compacto */}
-                  <div className='relative h-full flex items-center justify-between px-2 md:px-3 z-30' style={{ opacity: banner.id === 2 ? 0.85 : 1 }}>
+                  <div className='relative h-full flex items-center justify-between px-2 md:px-3 z-30' style={{ opacity: banner.id === 2 ? 0.85 : 1, borderRadius: banner.id === 2 ? '0px' : undefined }}>
                     {/* Left Content */}
                     <div className='flex items-center gap-1.5 md:gap-2'>
                       {/* Badge destacado - Solo para banner Flash Days */}
@@ -132,7 +132,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                       )}
                       
                       {/* Text Content - Solo título */}
-                      <h2 className='text-sm md:text-lg font-medium text-white leading-none' style={{ letterSpacing: (banner.id === 1 || banner.id === 2) ? '3px' : 'normal' }}>
+                      <h2 className='text-sm md:text-lg font-medium text-white leading-none' style={{ letterSpacing: banner.id === 1 ? '0px' : (banner.id === 2 ? '3px' : 'normal') }}>
                         {banner.title}
                       </h2>
                     </div>
