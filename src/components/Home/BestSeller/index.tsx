@@ -10,7 +10,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from './HelpCard'
-import { PaintVisualizerCard } from '@/components/PaintVisualizer'
+import DiscountCard from './DiscountCard'
+import CalculatorCard from './CalculatorCard'
+// import { PaintVisualizerCard } from '@/components/PaintVisualizer' // Ocultado temporalmente
 import { 
   limitByPerformance, 
   shouldShowHelpCards 
@@ -60,7 +62,8 @@ const BestSeller: React.FC = React.memo(() => {
               {shouldShowHelpCard && (
                 <>
                   <HelpCard categoryName={selectedCategory} />
-                  <PaintVisualizerCard />
+                  <DiscountCard />
+                  <CalculatorCard />
                 </>
               )}
             </>
