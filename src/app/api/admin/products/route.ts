@@ -303,7 +303,7 @@ const getHandler = async (request: ValidatedRequest) => {
         // ✅ CORREGIDO: Asegurar que stock sea número
         const variantStockValue = typeof variant.stock === 'string' 
           ? parseInt(variant.stock, 10) || 0 
-          : (variant.stock || 0)
+          : Number(variant.stock) || 0
         
         // Sumar stock de cada variante activa
         if (!variantTotalStocks[variant.product_id]) {
@@ -404,42 +404,17 @@ const getHandler = async (request: ValidatedRequest) => {
           : Number(variantStock) || 0
         
         // ✅ CRÍTICO: Si hay variantes con stock, SIEMPRE usar la suma, incluso si product.stock > 0
+        // Si hay variantes, usar la suma; si no hay variantes, usar el stock del producto
         const effectiveStock = numericVariantStock > 0
           ? numericVariantStock  // Suma de todas las variantes
           : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
-        
-        // Debug log para productos con variantes
-        if (product.id === 20) {
-          const productVariants = variantData?.filter((v: any) => v.product_id === 20) || []
-          const manualSum = productVariants.reduce((sum: number, v: any) => {
-            const vStock = typeof v.stock === 'string' ? parseInt(v.stock, 10) || 0 : (v.stock || 0)
-            return sum + vStock
-          }, 0)
-          console.log('🔍 [STOCK DEBUG LISTA] Producto #20:', {
-            productStock: product.stock,
-            variantStock,
-            numericVariantStock,
-            hasVariantsWithStock,
-            effectiveStock,
-            variantMeasuresList: variantMeasuresList.length,
-            variantColorsList: variantColorsList.length,
-            variantTotalStocksValue: variantTotalStocks[product.id],
-            variantCount: productVariants.length,
-            variants: productVariants.map((v: any) => ({ 
-              measure: v.measure, 
-              stock: v.stock,
-              stockType: typeof v.stock
-            })),
-            manualSum,
-            'variantTotalStocks object': JSON.stringify(variantTotalStocks)
-          })
-        }
 
         return {
           ...product,
           // ✅ NUEVO: Normalizar título del producto a formato capitalizado
           name: normalizeProductTitle(product.name),
-          // ✅ NUEVO: Stock efectivo (suma de variantes si no hay stock asignado)
+          // ✅ CRÍTICO: Stock efectivo (suma de variantes si hay, sino stock del producto)
+          // IMPORTANTE: Debe ir después del spread para sobrescribir product.stock
           stock: effectiveStock,
           category_name: product.category?.name || categories[0]?.name || null,
           category: undefined, // Remove nested object
