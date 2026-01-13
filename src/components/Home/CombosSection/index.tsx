@@ -95,13 +95,80 @@ const slides: Slide[] = [
      }
    }, [currentIndex, isTransitioning, extendedSlides.length])
 
-   // Configurar gestos táctiles para mobile
-   const swipeRef = useSwipeGestures({
-     onSwipeLeft: goToNext, // Deslizar izquierda = siguiente slide
-     onSwipeRight: goToPrevious, // Deslizar derecha = slide anterior
-     threshold: 50, // Distancia mínima de 50px para detectar swipe
-     preventDefaultTouchmove: false, // No interferir con scroll vertical
-   })
+  // Configurar gestos táctiles para mobile
+  const swipeRef = useSwipeGestures({
+    onSwipeLeft: goToNext, // Deslizar izquierda = siguiente slide
+    onSwipeRight: goToPrevious, // Deslizar derecha = slide anterior
+    threshold: 50, // Distancia mínima de 50px para detectar swipe
+    preventDefaultTouchmove: false, // No interferir con scroll vertical
+  })
+
+  // ⚡ FIX: Forzar eliminación de cualquier zoom/scale aplicado dinámicamente
+  useEffect(() => {
+    const forceNoZoom = () => {
+      const combosSection = document.querySelector('.CombosSection')
+      if (!combosSection) return
+
+      // Aplicar estilos a todos los elementos dentro de CombosSection
+      const allElements = combosSection.querySelectorAll('*')
+      allElements.forEach((el) => {
+        const htmlEl = el as HTMLElement
+        if (htmlEl.style) {
+          // Solo aplicar si no es el contenedor de slides (necesita translateX)
+          if (!htmlEl.classList.contains('flex') || !htmlEl.classList.contains('h-full')) {
+            htmlEl.style.setProperty('transform', 'none', 'important')
+            htmlEl.style.setProperty('-webkit-transform', 'none', 'important')
+            htmlEl.style.setProperty('scale', '1', 'important')
+            htmlEl.style.setProperty('zoom', '1', 'important')
+          }
+        }
+      })
+
+      // Aplicar específicamente a las imágenes
+      const images = combosSection.querySelectorAll('img')
+      images.forEach((img) => {
+        const htmlImg = img as HTMLElement
+        htmlImg.style.setProperty('transform', 'none', 'important')
+        htmlImg.style.setProperty('-webkit-transform', 'none', 'important')
+        htmlImg.style.setProperty('scale', '1', 'important')
+        htmlImg.style.setProperty('zoom', '1', 'important')
+        htmlImg.style.setProperty('transition', 'none', 'important')
+      })
+
+      // Aplicar a los contenedores de slides (excepto el que tiene translateX)
+      const slideContainers = combosSection.querySelectorAll('div[class*="min-w-full"]')
+      slideContainers.forEach((container) => {
+        const htmlContainer = container as HTMLElement
+        htmlContainer.style.setProperty('transform', 'none', 'important')
+        htmlContainer.style.setProperty('-webkit-transform', 'none', 'important')
+        htmlContainer.style.setProperty('scale', '1', 'important')
+        htmlContainer.style.setProperty('zoom', '1', 'important')
+      })
+    }
+
+    // Ejecutar inmediatamente y después de un pequeño delay
+    forceNoZoom()
+    const timer = setTimeout(forceNoZoom, 100)
+    const timer2 = setTimeout(forceNoZoom, 500)
+
+    // Observar cambios en el DOM
+    const observer = new MutationObserver(forceNoZoom)
+    const combosSection = document.querySelector('.CombosSection')
+    if (combosSection) {
+      observer.observe(combosSection, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class'],
+      })
+    }
+
+    return () => {
+      clearTimeout(timer)
+      clearTimeout(timer2)
+      observer.disconnect()
+    }
+  }, [])
 
    // Handler para abrir el modal del producto al hacer click en el slide
    const handleSlideClick = useCallback((productSlug: string, e: React.MouseEvent) => {
@@ -113,7 +180,17 @@ const slides: Slide[] = [
    }, [router])
 
   return (
-    <div className="relative w-full h-full CombosSection" style={{ width: '100%', maxWidth: '100%', height: '100%' }}>
+    <div 
+      className="relative w-full h-full CombosSection" 
+      style={{ 
+        width: '100%', 
+        maxWidth: '100%', 
+        height: '100%',
+        transform: 'none',
+        scale: '1',
+        zoom: '1',
+      }}
+    >
       {/* Contenedor del carrusel con aspect ratio preservado - Igual que HeroCarousel */}
       {/* ⚡ FIX: Full width sin padding (el padding está en CombosOptimized) */}
       <div 
@@ -123,6 +200,9 @@ const slides: Slide[] = [
           width: '100%',
           maxWidth: '100%',
           height: '100%',
+          transform: 'none',
+          scale: '1',
+          zoom: '1',
         }}
       >
           {/* ⚡ FIX: Skeleton placeholder mientras carga - se oculta completamente cuando las imágenes cargan */}
@@ -156,6 +236,14 @@ const slides: Slide[] = [
                       willChange: isTransitioning ? 'transform' : 'auto',
                       backfaceVisibility: 'hidden',
                       WebkitBackfaceVisibility: 'hidden',
+                      transform: 'none',
+                      scale: '1',
+                      zoom: '1',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'none'
+                      e.currentTarget.style.scale = '1'
+                      e.currentTarget.style.zoom = '1'
                     }}
                   >
                     <Image
@@ -165,10 +253,22 @@ const slides: Slide[] = [
                       priority={index === 1}
                       fetchPriority={index === 1 ? 'high' : 'auto'}
                       className="object-cover"
+                      style={{
+                        transform: 'none !important',
+                        transition: 'none !important',
+                        scale: '1 !important',
+                        zoom: '1 !important',
+                      }}
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
                       quality={80}
                       onLoad={() => {
                         setLoadedImagesCount(prev => prev + 1)
+                      }}
+                      onMouseEnter={(e) => {
+                        const target = e.currentTarget
+                        target.style.transform = 'none'
+                        target.style.scale = '1'
+                        target.style.zoom = '1'
                       }}
                     />
                   </div>

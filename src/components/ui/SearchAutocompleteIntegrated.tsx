@@ -3,8 +3,7 @@
 // ===================================
 
 import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
-import { createPortal } from 'react-dom'
-import { Search, X, Clock, TrendingUp, Package, Tag } from '@/lib/optimized-imports'
+import { Search, X } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { useSearchOptimized } from '@/hooks/useSearchOptimized'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'
@@ -13,6 +12,8 @@ import { useAnimatedPlaceholder } from '@/hooks/useAnimatedPlaceholder'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useScrollActive } from '@/hooks/useScrollActive'
+import { useDropdownPosition } from '@/hooks/useDropdownPosition'
+import { SearchDropdown } from './search/SearchDropdown'
 
 // ===================================
 // TIPOS E INTERFACES
@@ -61,6 +62,7 @@ export interface SearchAutocompleteIntegratedProps {
   onSuggestionSelected?: (suggestion: SearchSuggestion) => void
   onFocus?: () => void
   onBlur?: () => void
+  onFocusChange?: (isFocused: boolean) => void // NUEVO: Notificar cambios de focus
 }
 
 // ===================================
@@ -104,6 +106,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         onSuggestionSelected,
         onFocus,
         onBlur,
+        onFocusChange,
         categoryId,
         formId,
         size,
@@ -118,7 +121,6 @@ export const SearchAutocompleteIntegrated = React.memo(
       const [isOpen, setIsOpen] = useState(false)
       const [inputValue, setInputValue] = useState('')
       const [selectedIndex, setSelectedIndex] = useState(-1)
-      const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number; width: number; maxHeight?: number } | null>(null)
       const [mounted, setMounted] = useState(false)
 
       // Hook para placeholder animado
@@ -138,6 +140,13 @@ export const SearchAutocompleteIntegrated = React.memo(
       const dropdownRef = useRef<HTMLDivElement>(null)
       const containerRef = useRef<HTMLDivElement>(null)
       const suggestionRefs = useRef<(HTMLDivElement | null)[]>([])
+
+      // Hook para posicionamiento del dropdown
+      const { position, updatePosition } = useDropdownPosition({
+        inputRef,
+        isOpen,
+        offset: 4,
+      })
 
       // Montar el componente en el cliente
       useEffect(() => {
@@ -295,46 +304,14 @@ export const SearchAutocompleteIntegrated = React.memo(
         [searchWithDebounce, onSearch, resetAnimation]
       )
 
-      // Calcular posición del dropdown - Optimizado con requestAnimationFrame
-      // ⚡ FIX: Usar getBoundingClientRect() directamente para position: fixed (relativo al viewport)
-      // ⚡ FIX: Prevenir actualizaciones innecesarias que causan re-renders y ampliación
-      const updateDropdownPosition = useCallback(() => {
-        if (inputRef.current) {
-          // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para evitar forced reflow
-          requestAnimationFrame(() => {
-            if (inputRef.current) {
-              const rect = inputRef.current.getBoundingClientRect()
-              const viewportHeight = window.innerHeight
-              const spaceBelow = viewportHeight - rect.bottom
-              const maxDropdownHeight = Math.min(384, spaceBelow - 20) // max-h-96 = 384px, 20px de margen
-              
-              // Para position: fixed, usamos coordenadas del viewport directamente (sin scroll)
-              setDropdownPosition(prev => {
-                // Solo actualizar si realmente cambió (evitar re-renders innecesarios)
-                if (prev && 
-                    Math.abs(prev.top - (rect.bottom + 4)) < 1 &&
-                    Math.abs(prev.left - rect.left) < 1 &&
-                    Math.abs(prev.width - rect.width) < 1) {
-                  return prev
-                }
-                return {
-                  top: rect.bottom + 4, // 4px de espacio debajo del input
-                  left: rect.left,
-                  width: rect.width,
-                  maxHeight: maxDropdownHeight, // Altura máxima basada en espacio disponible
-                }
-              })
-            }
-          })
-        }
-      }, [])
-
       const handleInputFocus = useCallback(() => {
+        console.log('🔍 SearchAutocomplete - handleInputFocus, onFocusChange existe:', !!onFocusChange)
         setIsOpen(true)
-        updateDropdownPosition()
+        updatePosition()
         resetAnimation() // Detener animación al enfocar
         onFocus?.()
-      }, [onFocus, updateDropdownPosition, resetAnimation])
+        onFocusChange?.(true) // NUEVO: Notificar que está enfocado
+      }, [onFocus, updatePosition, resetAnimation, onFocusChange])
 
       const handleInputBlur = useCallback(
         (e: React.FocusEvent) => {
@@ -343,14 +320,21 @@ export const SearchAutocompleteIntegrated = React.memo(
             const activeEl = document.activeElement
             const isInsideDropdown = dropdownRef.current?.contains(activeEl) ?? false
             const isInsideContainer = containerRef.current?.contains(activeEl) ?? false
+            console.log('🔍 SearchAutocomplete - handleInputBlur:', {
+              isInsideDropdown,
+              isInsideContainer,
+              activeEl: activeEl?.tagName,
+              onFocusChangeExists: !!onFocusChange
+            })
             if (!isInsideDropdown && !isInsideContainer) {
               setIsOpen(false)
               setSelectedIndex(-1)
+              onFocusChange?.(false) // NUEVO: Notificar que perdió el focus
             }
           }, 150)
           onBlur?.()
         },
-        [onBlur]
+        [onBlur, onFocusChange]
       )
 
       const handleSuggestionSelect = useCallback(
@@ -445,137 +429,25 @@ export const SearchAutocompleteIntegrated = React.memo(
           const timer = setTimeout(() => {
             inputRef.current?.focus()
             setIsOpen(true) // Abrir dropdown automáticamente
-            updateDropdownPosition()
+            updatePosition()
+            onFocusChange?.(true) // Notificar focus automático
           }, 50)
           return () => clearTimeout(timer)
         }
-      }, [autoFocus, updateDropdownPosition])
-
-      // Actualizar posición del dropdown cuando se abre o cambia el tamaño de la ventana
-      // ⚡ FIX: Optimizar actualización de posición para evitar ampliación y scroll extra
-      useEffect(() => {
-        if (isOpen && mounted) {
-          // Actualizar posición inicial
-          updateDropdownPosition()
-          
-          // ⚡ FIX: Ocultar scrollbar del dropdown para evitar línea blanca
-          if (dropdownRef.current) {
-            const style = document.createElement('style')
-            style.id = 'hide-dropdown-scrollbar-style'
-            style.textContent = `
-              #autocomplete-listbox::-webkit-scrollbar {
-                display: none !important;
-                width: 0 !important;
-                height: 0 !important;
-                background: transparent !important;
-              }
-            `
-            if (!document.head.querySelector('#hide-dropdown-scrollbar-style')) {
-              document.head.appendChild(style)
-            }
-          }
-          
-          // Throttle más agresivo para scroll (100ms) para evitar re-renders excesivos
-          let scrollTimeout: NodeJS.Timeout | null = null
-          let resizeTimeout: NodeJS.Timeout | null = null
-          
-          const handleResize = () => {
-            // Debounce resize para evitar múltiples actualizaciones
-            if (resizeTimeout) clearTimeout(resizeTimeout)
-            resizeTimeout = setTimeout(() => {
-              updateDropdownPosition()
-              resizeTimeout = null
-            }, 150)
-          }
-          
-          const handleScroll = () => {
-            // Throttle más agresivo: actualizar máximo cada 100ms (no cada frame)
-            // Esto previene la ampliación y el scroll extra
-            if (scrollTimeout) return
-            scrollTimeout = setTimeout(() => {
-              updateDropdownPosition()
-              scrollTimeout = null
-            }, 100)
-          }
-          
-          window.addEventListener('resize', handleResize, { passive: true })
-          // ⚡ FIX: Usar capture: false para evitar interferir con el scroll de la página
-          window.addEventListener('scroll', handleScroll, { passive: true, capture: false })
-          
-          return () => {
-            window.removeEventListener('resize', handleResize)
-            window.removeEventListener('scroll', handleScroll, { capture: false })
-            if (scrollTimeout) clearTimeout(scrollTimeout)
-            if (resizeTimeout) clearTimeout(resizeTimeout)
-            // Limpiar estilo cuando el dropdown se cierra
-            const styleElement = document.head.querySelector('#hide-dropdown-scrollbar-style')
-            if (styleElement) {
-              styleElement.remove()
-            }
-          }
-        }
-      }, [isOpen, mounted, updateDropdownPosition])
+      }, [autoFocus, updatePosition, onFocusChange])
 
       // ===================================
-      // FUNCIONES DE RENDERIZADO
+      // HANDLER PARA HOVER DE SUGERENCIAS
       // ===================================
 
-      const getSuggestionIcon = (type: SearchSuggestion['type']) => {
-        switch (type) {
-          case 'product':
-            return <Package className='w-4 h-4 text-gray-500 dark:text-gray-400' />
-          case 'category':
-            return <Tag className='w-4 h-4 text-gray-500 dark:text-gray-400' />
-          case 'recent':
-            return <Clock className='w-4 h-4 text-gray-400 dark:text-gray-500' />
-          case 'trending':
-            return <TrendingUp className='w-4 h-4 text-orange-500 dark:text-blaze-orange-400' />
-          default:
-            return <Search className='w-4 h-4 text-gray-500 dark:text-gray-400' />
-        }
-      }
-
-      const renderSuggestion = (suggestion: SearchSuggestion, index: number) => (
-        <div
-          key={suggestion.id}
-          ref={el => (suggestionRefs.current[index] = el)}
-          className={cn(
-            'flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors',
-            'hover:bg-gray-50 dark:hover:bg-gray-800 focus:bg-gray-50 dark:focus:bg-gray-800',
-            selectedIndex === index && 'bg-gray-50 dark:bg-gray-800'
-          )}
-          onClick={() => handleSuggestionSelect(suggestion)}
-          onMouseEnter={() => {
-            setSelectedIndex(index)
-            if (suggestion.type === 'product') {
-              // Prefetch de la página del producto para mejorar TTI
-              prefetchProductPage(suggestion.id)
-            }
-          }}
-          role='option'
-          id={`option-${suggestion.id}`}
-          aria-selected={selectedIndex === index}
-        >
-          {/* Thumbnail o icono */}
-          {suggestion.image ? (
-            <img
-              src={suggestion.image}
-              alt={suggestion.title}
-              className='w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0'
-            />
-          ) : (
-            getSuggestionIcon(suggestion.type)
-          )}
-
-          {/* Texto */}
-          <div className='flex-1 min-w-0'>
-            <div className='font-medium text-gray-900 dark:text-gray-200 truncate'>{suggestion.title}</div>
-            {suggestion.subtitle && (
-              <div className='text-sm text-gray-500 dark:text-gray-400 truncate'>{suggestion.subtitle}</div>
-            )}
-          </div>
-
-        </div>
+      const handleSuggestionHover = useCallback(
+        (suggestion: SearchSuggestion) => {
+          if (suggestion.type === 'product') {
+            // Prefetch de la página del producto para mejorar TTI
+            prefetchProductPage(suggestion.id)
+          }
+        },
+        [prefetchProductPage]
       )
 
       // ===================================
@@ -661,163 +533,36 @@ export const SearchAutocompleteIntegrated = React.memo(
             </div>
           </form>
 
-          {/* Dropdown de sugerencias - Renderizado con Portal fuera del header */}
-          {isOpen && mounted && dropdownPosition
-            ? createPortal(
-                <div
-                  ref={dropdownRef}
-                  className={cn(
-                    'fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700',
-                    'rounded-lg shadow-lg dark:shadow-xl z-dropdown overflow-y-auto',
-                    'overscroll-contain', // ⚡ FIX: Prevenir que el scroll del dropdown afecte la página
-                    // ⚡ FIX: Ocultar scrollbar completamente para evitar línea blanca
-                    'scrollbar-hide'
-                  )}
-                  style={{
-                    top: `${dropdownPosition.top}px`,
-                    left: `${dropdownPosition.left}px`,
-                    width: `${dropdownPosition.width}px`,
-                    maxHeight: dropdownPosition.maxHeight ? `${dropdownPosition.maxHeight}px` : '384px', // max-h-96 como fallback
-                    // ⚡ FIX: Prevenir que el dropdown cause scroll en el body
-                    position: 'fixed',
-                    willChange: 'transform', // Optimización de renderizado
-                    // ⚡ FIX: Ocultar scrollbar en todos los navegadores
-                    scrollbarWidth: 'none', // Firefox
-                    msOverflowStyle: 'none', // IE/Edge
-                  } as React.CSSProperties}
-                  role='listbox'
-                  id='autocomplete-listbox'
-                  onWheel={(e) => {
-                    // ⚡ FIX: Prevenir que el scroll del dropdown se propague al body
-                    const element = e.currentTarget
-                    const { scrollTop, scrollHeight, clientHeight } = element
-                    const isAtTop = scrollTop === 0
-                    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1
-                    
-                    // Si está en los límites y el scroll va en esa dirección, prevenir propagación
-                    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
-                      e.stopPropagation()
-                    }
-                  }}
-                >
-              {/* Estado inicial sin texto: encabezado y esqueleto/ayuda */}
-              {!inputValue.trim() && (
-                <div className='py-2'>
-                  <div className='px-4 py-2 text-sm text-gray-600 dark:text-gray-400'>
-                    Sugerencias populares
-                  </div>
-                  {/* Lista curada de sugerencias siempre visible en estado vacío */}
-                  <div className='py-1'>
-                    {[
-                      'Látex',
-                      'Paredes',
-                      'Metales y Maderas',
-                      'Techos',
-                      'Antihumedad',
-                      'Complementos',
-                      'Piscinas',
-                      'Pisos',
-                      'Reparaciones',
-                    ].map((title, idx) =>
-                      renderSuggestion(
-                        {
-                          id: `curated-${title}-${idx}`,
-                          type: 'trending',
-                          title,
-                          href:
-                            `/search?search=${encodeURIComponent(title)}` +
-                            (categoryId && categoryId !== 'all'
-                              ? `&category=${encodeURIComponent(categoryId)}`
-                              : ''),
-                        },
-                        idx
-                      )
-                    )}
-                  </div>
-                  {isTrendingLoading && (
-                    <div className='py-2' aria-live='polite'>
-                      {[...Array(3)].map((_, i) => (
-                        <div key={`trend-sk-${i}`} className='flex items-center gap-3 px-4 py-3'>
-                          <div className='w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse' />
-                          <div className='flex-1 min-w-0'>
-                            <div className='w-40 h-3 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mb-2' />
-                            <div className='w-24 h-3 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse' />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {false && !isTrendingLoading && (trendingSearches?.length || 0) > 0 && (
-                    <div className='py-1'></div>
-                  )}
-                  {!isTrendingLoading && (trendingSearches?.length || 0) === 0 && (
-                    <div className='py-1'>
-                      {[
-                        { query: 'Pintura látex', count: 32 },
-                        { query: 'Sherwin Williams', count: 28 },
-                        { query: 'Rodillos premium', count: 21 },
-                        { query: 'Esmalte sintético', count: 19 },
-                      ].map((fallback, idx) =>
-                        renderSuggestion(
-                          {
-                            id: `trending-fallback-${idx}`,
-                            type: 'trending',
-                            title: fallback.query,
-                            subtitle: `${fallback.count} búsquedas`,
-                            href:
-                              `/search?search=${encodeURIComponent(fallback.query)}` +
-                              (categoryId && categoryId !== 'all'
-                                ? `&category=${encodeURIComponent(categoryId)}`
-                                : ''),
-                          },
-                          idx
-                        )
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {isLoading && inputValue.trim() && (
-                <div className='py-2' aria-live='polite'>
-                  {/* Skeletons de carga para mejor percepción de velocidad */}
-                  {[...Array(3)].map((_, i) => (
-                    <div key={`sk-${i}`} className='flex items-center gap-3 px-4 py-3'>
-                      <div className='w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse' />
-                          <div className='flex-1 min-w-0'>
-                        <div className='w-40 h-3 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse mb-2' />
-                        <div className='w-24 h-3 bg-gray-100 dark:bg-gray-800 rounded-md animate-pulse' />
-                      </div>
-                    </div>
-                  ))}
-                  <div className='flex items-center justify-center py-2'>
-                    <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500' />
-                    <span className='ml-2 text-white'>Buscando productos...</span>
-                  </div>
-                </div>
-              )}
-
-              {error && (
-                <div className='px-4 py-3 text-red-600 text-sm' aria-live='polite'>
-                  Error en la búsqueda. Intenta nuevamente.
-                </div>
-              )}
-
-              {!isLoading && !error && allSuggestions.length === 0 && inputValue.trim() && (
-                <div className='px-4 py-8 text-center text-gray-500 dark:text-gray-400' aria-live='polite'>
-                  No se encontraron resultados para "{inputValue}"
-                </div>
-              )}
-
-              {!isLoading && !error && allSuggestions.length > 0 && inputValue.trim() && (
-                <div className='py-2'>
-                  {allSuggestions.map((suggestion, index) => renderSuggestion(suggestion, index))}
-                </div>
-              )}
-                </div>,
-                document.body
-              )
-            : null}
+          {/* Dropdown de sugerencias - Renderizado con componente modular */}
+          {/* Solo renderizar si hay posición válida y el input está visible */}
+          {position && 
+           position.width > 10 && // Mínimo 10px de ancho para considerar válido
+           position.top > 0 && 
+           inputRef.current && 
+           inputRef.current.offsetParent !== null && (
+            <SearchDropdown
+              isOpen={isOpen && mounted}
+              position={position}
+            suggestions={allSuggestions}
+            selectedIndex={selectedIndex}
+            isLoading={isLoading}
+            error={error}
+            inputValue={inputValue}
+            onSelect={handleSuggestionSelect}
+            onMouseEnter={setSelectedIndex}
+            categoryId={categoryId}
+            showTrendingSearches={showTrendingSearches}
+            trendingSearches={trendingSearches?.map(t => ({
+              query: t.query,
+              count: t.count,
+              category: t.category,
+            }))}
+            isTrendingLoading={isTrendingLoading}
+            suggestionRefs={suggestionRefs}
+            onSuggestionHover={handleSuggestionHover}
+            dropdownRef={dropdownRef}
+            />
+          )}
         </div>
       )
     }

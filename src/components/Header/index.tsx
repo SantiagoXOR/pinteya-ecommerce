@@ -219,7 +219,7 @@ const Header = () => {
   // Ref para el input del search expandido
   const expandedSearchRef = useRef<HTMLInputElement>(null)
 
-  // Handlers para expansión del searchbar (móvil y desktop)
+  // Handlers para expansión del searchbar en mobile
   const handleSearchClick = useCallback(() => {
     setIsSearchExpanded(true)
     // Enfocar el input después de la animación de expansión
@@ -234,16 +234,17 @@ const Header = () => {
     setIsSearchExpanded(false)
   }, [])
 
-  const handleSearchFocus = useCallback(() => {
-    // Expandir el searchbar cuando se hace focus (tanto móvil como desktop)
-    setIsSearchExpanded(true)
-  }, [])
-
   const handleSearchBlur = useCallback(() => {
     // Delay para permitir clicks en sugerencias
     setTimeout(() => {
       setIsSearchExpanded(false)
     }, 200)
+  }, [])
+
+  // Handler para sincronizar isSearchExpanded con focus del input
+  const handleSearchFocusChange = useCallback((isFocused: boolean) => {
+    console.log('🔍 Header - handleSearchFocusChange:', isFocused)
+    setIsSearchExpanded(isFocused)
   }, [])
 
   // Handlers para botones de acción mobile
@@ -281,15 +282,19 @@ const Header = () => {
         </div>
         <div className='max-w-md mx-auto px-3 sm:px-4 py-1.5 sm:py-2'>
           <div className='flex items-center justify-between gap-1 sm:gap-2 min-h-[48px] sm:min-h-[52px]'>
-                {/* Mobile header content - Ocultar logo cuando search está expandido */}
+            {/* Mobile header content - mismo que desktop pero sin md: clases */}
             <Link 
               href='/' 
               className={cn(
-                'flex-shrink-0 transition-all duration-300 ease-in-out',
-                isSearchExpanded ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto',
+                'flex-shrink-0 transition-all duration-300',
+                isSearchExpanded ? 'hidden' : 'flex',
                 'p-0 m-0 inline-flex items-center justify-center',
                 'relative z-10'
               )}
+              style={{
+                // Forzar ocultamiento cuando isSearchExpanded es true
+                display: isSearchExpanded ? 'none' : 'flex'
+              }}
             >
               <HeaderLogo
                 isMobile={false}
@@ -297,7 +302,8 @@ const Header = () => {
                   'h-16 sm:h-20 w-auto transition-all duration-300 ease-out',
                   'hover:scale-110 cursor-pointer',
                   isSticky ? 'logo-sticky-scale scale-95' : 'scale-100',
-                  'object-contain block'
+                  'object-contain block',
+                  'opacity-100 visible'
                 )}
                 style={{
                   minHeight: '64px',
@@ -307,7 +313,7 @@ const Header = () => {
             </Link>
             
             {isSearchExpanded && (
-              <div className='flex-1 w-full animate-in fade-in zoom-in-95 duration-200'>
+              <div className='flex-1 animate-in fade-in zoom-in-95 duration-200'>
                 <div className='relative w-full'>
                   <div className='flex items-center transition-all duration-300 hover:shadow-md search-focus-ring glass-search-bar rounded-full'>
                     <MemoizedSearchAutocomplete
@@ -322,8 +328,7 @@ const Header = () => {
                       showRecentSearches={true}
                       showTrendingSearches={true}
                       autoFocus={true}
-                      onFocus={handleSearchFocus}
-                      onBlur={handleSearchBlur}
+                      onFocusChange={handleSearchFocusChange}
                     />
                     <button
                       onClick={handleSearchCollapse}
@@ -354,8 +359,7 @@ const Header = () => {
                       maxSuggestions={6}
                       showRecentSearches={true}
                       showTrendingSearches={true}
-                      onFocus={handleSearchFocus}
-                      onBlur={handleSearchBlur}
+                      onFocusChange={handleSearchFocusChange}
                     />
                   </div>
                 </div>
@@ -392,32 +396,45 @@ const Header = () => {
             <ScrollingBanner />
             <div className='px-3 sm:px-4 py-1.5 sm:py-2'>
               <div className='flex items-center justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px]'>
-                {/* 1. Logo - Ocultar cuando search está expandido (solo en mobile) */}
+                {/* 1. Logo - Ocultar cuando search está expandido */}
+            {/* ⚡ FIX: Remover contenedor innecesario que causa el div rectangular */}
             <Link 
               href='/' 
               className={cn(
-                'flex-shrink-0 transition-all duration-300 ease-in-out',
-                // Ocultar el logo cuando search está expandido SOLO en mobile (lg: siempre visible)
-                isSearchExpanded ? 'opacity-0 w-0 overflow-hidden lg:opacity-100 lg:w-auto' : 'opacity-100 w-auto',
+                'flex-shrink-0 transition-all duration-300',
+                // Ocultar logo cuando search está expandido (mobile y desktop)
+                isSearchExpanded ? 'hidden' : 'flex',
+                // ⚡ FIX: En desktop, sin margen izquierdo extra ya que usamos justify-start
+                'ml-0 sm:ml-0 md:ml-0',
+                // ⚡ FIX: Asegurar que el link no tenga padding/margin que cause el div rectangular
                 'p-0 m-0 inline-flex items-center justify-center',
+                // ⚡ FIX: Asegurar visibilidad del logo
                 'relative z-10'
               )}
               style={{ 
+                // ⚡ FIX: Asegurar que el contenedor se ajuste al contenido del logo
                 width: 'auto',
                 height: 'auto',
                 minWidth: 'auto',
-                minHeight: 'auto'
+                minHeight: 'auto',
+                // Forzar ocultamiento cuando isSearchExpanded es true
+                display: isSearchExpanded ? 'none' : 'flex'
               }}
             >
               <HeaderLogo
                 isMobile={false}
                 className={cn(
+                  // ⚡ FIX: Aumentar tamaño del logo para mejor visibilidad
                   'h-16 sm:h-20 md:h-24 lg:h-28 w-auto transition-all duration-300 ease-out',
                   'hover:scale-110 cursor-pointer',
                   isSticky ? 'logo-sticky-scale scale-95' : 'scale-100',
-                  'object-contain block'
+                  // ⚡ FIX: Asegurar que el logo sea visible y se ajuste correctamente
+                  'object-contain block',
+                  // ⚡ FIX: Asegurar visibilidad explícita
+                  'opacity-100 visible'
                 )}
                 style={{
+                  // ⚡ FIX: Aumentar dimensiones mínimas del logo
                   minHeight: '64px',
                   minWidth: '160px',
                 }}
@@ -443,8 +460,7 @@ const Header = () => {
                       showRecentSearches={true}
                       showTrendingSearches={true}
                       autoFocus={true}
-                      onFocus={handleSearchFocus}
-                      onBlur={handleSearchBlur}
+                      onFocusChange={handleSearchFocusChange}
                     />
                     
                     {/* Botón X para cerrar */}
@@ -480,8 +496,7 @@ const Header = () => {
                       maxSuggestions={6}
                       showRecentSearches={true}
                       showTrendingSearches={true}
-                      onFocus={handleSearchFocus}
-                      onBlur={handleSearchBlur}
+                      onFocusChange={handleSearchFocusChange}
                     />
                   </div>
                 </div>

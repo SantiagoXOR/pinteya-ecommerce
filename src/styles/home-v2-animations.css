@@ -299,6 +299,17 @@
   transform: scale(1.05);
 }
 
+/* ⚡ FIX: Eliminar zoom en CombosSection - sobrescribir cualquier regla global */
+.CombosSection .product-carousel-item,
+.CombosSection .product-carousel-item:hover,
+.CombosSection > div > div > div,
+.CombosSection > div > div > div:hover {
+  transform: none !important;
+  -webkit-transform: none !important;
+  scale: 1 !important;
+  zoom: 1 !important;
+}
+
 /* ===================================
    ANIMACIONES PARA CARRUSEL DINÁMICO
    =================================== */

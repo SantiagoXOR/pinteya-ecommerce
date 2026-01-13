@@ -145,3 +145,101 @@ button[aria-label*="Siguiente slide"]:hover {
   transition: box-shadow 0.8s ease-in-out !important;
 }
 
+/* ⚡ FIX: Eliminar TODOS los efectos de zoom/scale en CombosSection - REGLAS ULTRA AGRESIVAS */
+/* Aplicar a TODOS los elementos dentro de CombosSection sin excepción */
+.CombosSection,
+.CombosSection *,
+.CombosSection *::before,
+.CombosSection *::after,
+.CombosSection *:hover,
+.CombosSection *:active,
+.CombosSection *:focus,
+.CombosSection *:visited,
+.CombosSection img,
+.CombosSection img:hover,
+.CombosSection img:active,
+.CombosSection img:focus,
+.CombosSection picture,
+.CombosSection picture:hover,
+.CombosSection > div,
+.CombosSection > div:hover,
+.CombosSection > div > div,
+.CombosSection > div > div:hover,
+.CombosSection > div > div > div,
+.CombosSection > div > div > div:hover,
+.CombosSection > div > div > div > *,
+.CombosSection > div > div > div > *:hover,
+[class*="CombosSection"],
+[class*="CombosSection"] *,
+[class*="CombosSection"] *:hover,
+[class*="CombosSection"] img,
+[class*="CombosSection"] img:hover,
+div[class*="CombosSection"] *,
+div[class*="CombosSection"] *:hover {
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  -ms-transform: none !important;
+  -o-transform: none !important;
+  scale: 1 !important;
+  zoom: 1 !important;
+  transition: none !important;
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -ms-transition: none !important;
+  -o-transition: none !important;
+}
+
+/* ⚡ FIX: Permitir SOLO translateX para el contenedor de slides (necesario para el carrusel) */
+.CombosSection > div > div {
+  transform: translateX(var(--translate-x, 0)) !important;
+  -webkit-transform: translateX(var(--translate-x, 0)) !important;
+  scale: 1 !important;
+  zoom: 1 !important;
+}
+
+/* ⚡ FIX: Eliminar cualquier scale/zoom en los slides individuales */
+.CombosSection > div > div > div {
+  transform: none !important;
+  -webkit-transform: none !important;
+  scale: 1 !important;
+  zoom: 1 !important;
+}
+
+.CombosSection > div > div > div:hover {
+  transform: none !important;
+  -webkit-transform: none !important;
+  scale: 1 !important;
+  zoom: 1 !important;
+}
+
+/* ⚡ FIX: Sobrescribir cualquier regla de product-carousel-item que pueda afectar */
+.CombosSection .product-carousel-item,
+.CombosSection .product-carousel-item:hover,
+.CombosSection > div > div > div.product-carousel-item,
+.CombosSection > div > div > div.product-carousel-item:hover {
+  transform: none !important;
+  -webkit-transform: none !important;
+  scale: 1 !important;
+  zoom: 1 !important;
+}
+
+/* ⚡ FIX: Eliminar cualquier animación o transición que pueda causar zoom */
+.CombosSection *,
+.CombosSection *:hover,
+.CombosSection *:active,
+.CombosSection *:focus {
+  animation: none !important;
+  -webkit-animation: none !important;
+}
+
+/* ⚡ FIX: Asegurar que no haya efectos de hover en el contenedor padre CombosOptimized */
+[class*="CombosOptimized"] *,
+[class*="CombosOptimized"] *:hover,
+[class*="CombosOptimized"] img,
+[class*="CombosOptimized"] img:hover {
+  transform: none !important;
+  -webkit-transform: none !important;
+  scale: 1 !important;
+  zoom: 1 !important;
+}

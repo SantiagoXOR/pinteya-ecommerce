@@ -2,8 +2,8 @@
 
 import React from 'react'
 import { HeroSlide as HeroSlideType } from '@/types/hero'
-// ⚡ PERFORMANCE: Lazy load de HeroSlideCarousel (-1s FCP)
-import HeroSlideCarousel from '@/components/Common/HeroSlideCarousel.lazy'
+// ⚡ FIX: Importar directamente sin lazy loading para evitar skeleton
+import HeroSlideCarousel from '@/components/Common/HeroSlideCarousel'
 
 // ⚡ HERO MODULAR Y RESPONSIVE: Diseño estilo Mercado Libre
 // Contenido separado de imágenes para máxima flexibilidad responsive
