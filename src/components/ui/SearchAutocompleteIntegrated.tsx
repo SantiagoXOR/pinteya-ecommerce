@@ -296,15 +296,17 @@ export const SearchAutocompleteIntegrated = React.memo(
       )
 
       // Calcular posición del dropdown - Optimizado con requestAnimationFrame
+      // ⚡ FIX: Usar getBoundingClientRect() directamente para position: fixed (relativo al viewport)
       const updateDropdownPosition = useCallback(() => {
         if (inputRef.current) {
           // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para evitar forced reflow
           requestAnimationFrame(() => {
             if (inputRef.current) {
               const rect = inputRef.current.getBoundingClientRect()
+              // Para position: fixed, usamos coordenadas del viewport directamente (sin scroll)
               setDropdownPosition({
-                top: rect.bottom + window.scrollY + 4,
-                left: rect.left + window.scrollX,
+                top: rect.bottom + 4, // 4px de espacio debajo del input
+                left: rect.left,
                 width: rect.width,
               })
             }
@@ -435,16 +437,30 @@ export const SearchAutocompleteIntegrated = React.memo(
       }, [autoFocus, updateDropdownPosition])
 
       // Actualizar posición del dropdown cuando se abre o cambia el tamaño de la ventana
+      // ⚡ FIX: Actualizar posición en cada scroll para mantener el dropdown anclado
       useEffect(() => {
         if (isOpen && mounted) {
           updateDropdownPosition()
+          
+          // Throttle para scroll para mejor rendimiento
+          let scrollTimeout: NodeJS.Timeout | null = null
           const handleResize = () => updateDropdownPosition()
-          const handleScroll = () => updateDropdownPosition()
-          window.addEventListener('resize', handleResize)
-          window.addEventListener('scroll', handleScroll, true)
+          const handleScroll = () => {
+            // Throttle: actualizar máximo cada 16ms (~60fps)
+            if (scrollTimeout) return
+            scrollTimeout = setTimeout(() => {
+              updateDropdownPosition()
+              scrollTimeout = null
+            }, 16)
+          }
+          
+          window.addEventListener('resize', handleResize, { passive: true })
+          window.addEventListener('scroll', handleScroll, { passive: true, capture: true })
+          
           return () => {
             window.removeEventListener('resize', handleResize)
-            window.removeEventListener('scroll', handleScroll, true)
+            window.removeEventListener('scroll', handleScroll, { capture: true })
+            if (scrollTimeout) clearTimeout(scrollTimeout)
           }
         }
       }, [isOpen, mounted, updateDropdownPosition])
