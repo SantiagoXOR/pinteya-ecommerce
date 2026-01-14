@@ -150,10 +150,10 @@ async function getCategoriesWithStats(filters: z.infer<typeof CategoryFiltersSch
 
 async function createCategory(categoryData: z.infer<typeof CreateCategorySchema>, userId: string) {
   // Use new CategoryService to create category
+  // Nota: description no existe en la tabla categories, no se incluye
   const payload: CreateCategoryPayload = {
     name: categoryData.name,
     slug: categoryData.slug,
-    description: categoryData.description,
     image_url: categoryData.image_url || null,
     parent_id: categoryData.parent_id ? parseInt(categoryData.parent_id, 10) : null,
     display_order: categoryData.order_index || null,
