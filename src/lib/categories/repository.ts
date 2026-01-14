@@ -140,10 +140,12 @@ export class CategoryRepository {
 
     // Ensure timestamps are set
     const now = new Date().toISOString()
-    // Filtrar description ya que no existe en la tabla categories
-    const { description, ...dataWithoutDescription } = categoryData
-    const insertData: CategoryInsert = {
-      ...dataWithoutDescription,
+    // Filtrar description e id ya que:
+    // - description no existe en la tabla categories
+    // - id debe ser generado automáticamente por la base de datos
+    const { description, id, ...dataWithoutDescriptionAndId } = categoryData
+    const insertData: Omit<CategoryInsert, 'id' | 'description'> = {
+      ...dataWithoutDescriptionAndId,
       created_at: categoryData.created_at || now,
       updated_at: categoryData.updated_at || now,
     }
