@@ -49,7 +49,7 @@ const PromoCard: React.FC<PromoCardProps> = ({ className }) => {
 
         {/* 2. La Caja Amarilla (Badge) */}
         {/* Usamos mx-auto para centrarla y medidas fijas para evitar que se estire como en tu captura */}
-        <div className="mx-auto bg-[#FFC805] w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] md:w-[220px] md:h-[220px] rounded-[45px] shadow-sm flex flex-col items-center justify-center shrink-0 transform rotate-[-2deg]">
+        <div className="mx-auto bg-[#FFC805] w-[152px] h-[159px] sm:w-[200px] sm:h-[200px] md:w-[220px] md:h-[220px] rounded-[45px] shadow-sm flex flex-col items-center justify-center shrink-0 transform rotate-[-2deg] opacity-95">
           <span className="text-[#FF6B00] text-[4rem] sm:text-[5rem] md:text-[5.5rem] leading-[0.8] font-black tracking-tighter">
             30%
           </span>
@@ -61,7 +61,7 @@ const PromoCard: React.FC<PromoCardProps> = ({ className }) => {
         {/* 3. Contenedor Inferior: Texto + Botón */}
         {/* mt-auto empuja esto al fondo de la tarjeta */}
         <div className="mt-auto flex items-end justify-between w-full">
-          <div className="text-white font-extrabold leading-[1.1] text-xl sm:text-2xl drop-shadow-md text-left">
+          <div className="text-white font-extrabold leading-[1.1] text-lg sm:text-2xl drop-shadow-md text-left">
             <p>En todos nuestros</p>
             <p>productos</p>
           </div>
@@ -69,7 +69,7 @@ const PromoCard: React.FC<PromoCardProps> = ({ className }) => {
           {/* Botón Circular */}
           <div
             className={cn(
-              "w-[65px] h-[65px] rounded-full bg-[#FFC805] text-[#FF6B00]",
+              "w-[65px] h-[42px] rounded-full bg-[#FFC805] text-[#FF6B00]",
               "flex items-center justify-center shadow-lg",
               "transform transition-all duration-300",
               isHovered ? "bg-white scale-110" : "",

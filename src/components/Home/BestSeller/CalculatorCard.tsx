@@ -43,7 +43,7 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({ className }) => {
       </div>
 
       {/* Badge blanco superpuesto - Por encima del cuadro de color (z-20) - 2 líneas - Tamaño fijo */}
-      <div className="absolute top-[calc(60%-18px)] left-5 right-5 z-20 bg-white text-[#006400] px-5 py-3 rounded-[20px] font-bold text-sm text-left shadow-[0_4px_6px_rgba(0,0,0,0.1)] leading-tight">
+      <div className="absolute top-[88px] left-5 right-5 z-20 bg-white text-[#006400] px-5 py-3 rounded-[20px] font-bold text-sm text-left shadow-[0_4px_6px_rgba(0,0,0,0.1)] leading-tight">
         Obtené un presupuesto
         <br />
         detallado al instante.
@@ -51,14 +51,14 @@ const CalculatorCard: React.FC<CalculatorCardProps> = ({ className }) => {
 
       {/* Content Layer - Sección inferior (40%) (z-10) */}
       <div className="relative h-[40%] bg-[#FFC805] flex flex-col pt-16 px-5 pb-6">
-        <div className="text-left pr-20 flex-1">
-          <div className="text-[#FF6B00] text-2xl leading-none font-black mb-1">Calculá</div>
-          <div className="text-[#FF6B00] text-lg leading-tight font-extrabold">tu pintura</div>
+        <div className="absolute top-[37px] left-5 text-left pr-20">
+          <div className="text-[#FF6B00] text-xl leading-none font-black mb-1">Calculá</div>
+          <div className="text-[#FF6B00] text-base leading-tight font-extrabold">tu pintura</div>
         </div>
 
         {/* Ícono calculadora en círculo naranja - Tamaño fijo */}
-        <div className="absolute bottom-6 right-6 w-16 h-16 rounded-full bg-[#FF6B00] text-white flex items-center justify-center z-10 shadow-lg">
-          <Calculator className="w-8 h-8" strokeWidth={2.5} />
+        <div className="absolute bottom-6 right-6 w-[43px] h-[43px] rounded-full bg-[#FF6B00] text-white flex items-center justify-center z-10 shadow-lg">
+          <Calculator className="w-[30px] h-[27px]" strokeWidth={2.5} />
         </div>
       </div>
     </Link>

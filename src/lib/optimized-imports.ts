@@ -45,6 +45,7 @@ import {
   IconAlertCircle,
   IconCircleCheck,
   IconCircle,
+  IconBackspace,
 
   // E-commerce específicos
   IconShoppingBag,
@@ -204,6 +205,8 @@ export {
   IconAlertCircle as AlertCircle,
   IconCircleCheck as CheckCircle,
   IconCircle as Circle,
+  IconBackspace as Backspace,
+  IconArrowRight as Enter,
 
   // E-commerce específicos
   IconShoppingBag as ShoppingBag,

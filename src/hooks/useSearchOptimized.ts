@@ -16,6 +16,7 @@ import { useRecentSearches } from './useRecentSearches'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
 import { hasDiscount } from '@/lib/adapters/product-adapter'
 import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import { getColorHexFromName } from '@/components/ui/product-card-commercial/utils/color-utils'
 import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 
 // ===================================
@@ -31,6 +32,11 @@ export interface SearchSuggestion {
   badge?: string
   badges?: string[]
   href: string
+  // Información de variantes para productos
+  variants?: any[]
+  colors?: Array<{ hex: string; name: string; textureType?: string }>
+  measures?: string[]
+  finishes?: string[]
 }
 
 export interface UseSearchOptimizedOptions {
@@ -246,6 +252,46 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
             imgs: (product as any)?.imgs || null
           })
 
+          // Extraer información de variantes
+          const variants = (product.variants || []) as ProductVariant[]
+          
+          // Extraer colores únicos
+          const colorsMap = new Map<string, { hex: string; name: string }>()
+          variants.forEach(v => {
+            if (v.color_name || v.color_hex) {
+              const colorName = (v.color_name || '').toString().trim()
+              const colorHex = v.color_hex || getColorHexFromName(colorName)
+              if (colorName && !colorsMap.has(colorName.toLowerCase())) {
+                colorsMap.set(colorName.toLowerCase(), {
+                  hex: colorHex,
+                  name: colorName
+                })
+              }
+            }
+          })
+          const colors = Array.from(colorsMap.values())
+
+          // Extraer medidas únicas
+          const measuresSet = new Set<string>()
+          variants.forEach(v => {
+            if (v.measure && v.measure.toString().trim()) {
+              measuresSet.add(v.measure.toString().trim())
+            }
+          })
+          const measures = Array.from(measuresSet)
+
+          // Extraer finishes únicos
+          const finishesSet = new Set<string>()
+          variants.forEach(v => {
+            if (v.finish && v.finish.toString().trim()) {
+              const finish = v.finish.toString().trim()
+              // Capitalizar primera letra
+              const capitalizedFinish = finish.charAt(0).toUpperCase() + finish.slice(1).toLowerCase()
+              finishesSet.add(capitalizedFinish)
+            }
+          })
+          const finishes = Array.from(finishesSet)
+
           return {
             id: product.id.toString(),
             type: 'product' as const,
@@ -253,6 +299,10 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
             subtitle: product.category?.name,
             image: imageUrl,
             href: `/products/${product.id}`,
+            variants: variants.length > 0 ? variants : undefined,
+            colors: colors.length > 0 ? colors : undefined,
+            measures: measures.length > 0 ? measures : undefined,
+            finishes: finishes.length > 0 ? finishes : undefined,
           }
         })
         allSuggestions.push(...productSuggestions)

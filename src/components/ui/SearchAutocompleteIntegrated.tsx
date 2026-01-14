@@ -3,7 +3,7 @@
 // ===================================
 
 import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
-import { Search, X } from '@/lib/optimized-imports'
+import { Search, X, Backspace, Enter } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { useSearchOptimized } from '@/hooks/useSearchOptimized'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'
@@ -28,6 +28,11 @@ export interface SearchSuggestion {
   badge?: string
   badges?: string[]
   href: string
+  // Información de variantes para productos
+  variants?: any[]
+  colors?: Array<{ hex: string; name: string; textureType?: string }>
+  measures?: string[]
+  finishes?: string[]
 }
 
 export interface SearchAutocompleteIntegratedProps {
@@ -63,6 +68,7 @@ export interface SearchAutocompleteIntegratedProps {
   onFocus?: () => void
   onBlur?: () => void
   onFocusChange?: (isFocused: boolean) => void // NUEVO: Notificar cambios de focus
+  onClose?: () => void // NUEVO: Notificar cierre del searchbar
 }
 
 // ===================================
@@ -107,6 +113,7 @@ export const SearchAutocompleteIntegrated = React.memo(
         onFocus,
         onBlur,
         onFocusChange,
+        onClose,
         categoryId,
         formId,
         size,
@@ -323,6 +330,7 @@ export const SearchAutocompleteIntegrated = React.memo(
               setIsOpen(false)
               setSelectedIndex(-1)
               onFocusChange?.(false) // Notificar que perdió el focus
+              onClose?.() // Notificar cierre del searchbar
             }
           }, 150)
           onBlur?.()
@@ -491,36 +499,61 @@ export const SearchAutocompleteIntegrated = React.memo(
                 }
               />
               
-              {/* Botón de búsqueda circular estilo product card */}
-              <button
-                type='submit'
-                className='absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-6 h-6 md:w-7 md:h-7'
-                aria-label='Buscar'
-              >
-                {/* Blur amarillo detrás del botón */}
-                <div 
-                  className='absolute inset-0 rounded-full pointer-events-none'
-                  style={{
-                    background: 'rgba(250, 204, 21, 0.9)',
-                    // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
-                    // El CSS global ya lo deshabilita
-                  }}
-                />
-                
-                {/* Botón circular */}
-                <div className='relative w-full h-full rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform bg-transparent'>
-                  <Search className='w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-[#EA5A17]' />
-                </div>
-              </button>
+              {/* Botón de búsqueda/enviar circular estilo product card */}
+              {inputValue && (
+                <button
+                  type='submit'
+                  className='absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-6 h-6 md:w-7 md:h-7'
+                  aria-label='Enviar búsqueda'
+                >
+                  {/* Blur amarillo detrás del botón */}
+                  <div 
+                    className='absolute inset-0 rounded-full pointer-events-none'
+                    style={{
+                      background: 'rgba(250, 204, 21, 0.9)',
+                      // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
+                      // El CSS global ya lo deshabilita
+                    }}
+                  />
+                  
+                  {/* Botón circular con icono Enter */}
+                  <div className='relative w-full h-full rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform bg-transparent'>
+                    <Enter className='w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-[#EA5A17]' />
+                  </div>
+                </button>
+              )}
 
+              {/* Botón de búsqueda cuando no hay texto */}
+              {!inputValue && (
+                <button
+                  type='button'
+                  className='absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-6 h-6 md:w-7 md:h-7'
+                  aria-label='Buscar'
+                >
+                  {/* Blur amarillo detrás del botón */}
+                  <div 
+                    className='absolute inset-0 rounded-full pointer-events-none'
+                    style={{
+                      background: 'rgba(250, 204, 21, 0.9)',
+                    }}
+                  />
+                  
+                  {/* Botón circular con icono Search */}
+                  <div className='relative w-full h-full rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform bg-transparent'>
+                    <Search className='w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-[#EA5A17]' />
+                  </div>
+                </button>
+              )}
+
+              {/* Botón de borrar con icono Backspace */}
               {showClearButton && inputValue && (
                 <button
                   type='button'
                   onClick={handleClear}
                   className='absolute right-10 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors z-20'
-                  aria-label='Clear search'
+                  aria-label='Borrar búsqueda'
                 >
-                  <X className='w-3 h-3 md:w-4 md:h-4 text-gray-400 dark:text-gray-500' />
+                  <Backspace className='w-3 h-3 md:w-4 md:h-4 text-gray-400 dark:text-gray-500' />
                 </button>
               )}
             </div>

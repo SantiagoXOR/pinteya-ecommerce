@@ -246,6 +246,11 @@ const Header = () => {
     setIsSearchExpanded(isFocused)
   }, [])
 
+  // Handler para cerrar searchbar
+  const handleSearchClose = useCallback(() => {
+    setIsSearchExpanded(false)
+  }, [])
+
   // Handlers para botones de acción mobile
   const handleWhatsAppClick = useCallback(() => {
     const whatsappNumber = '+5493513411796'
@@ -328,6 +333,7 @@ const Header = () => {
                       showTrendingSearches={true}
                       autoFocus={true}
                       onFocusChange={handleSearchFocusChange}
+                      onClose={handleSearchClose}
                     />
                     <button
                       onClick={handleSearchCollapse}
@@ -359,6 +365,7 @@ const Header = () => {
                       showRecentSearches={true}
                       showTrendingSearches={true}
                       onFocusChange={handleSearchFocusChange}
+                      onClose={handleSearchClose}
                     />
                   </div>
                 </div>
@@ -460,6 +467,7 @@ const Header = () => {
                       showTrendingSearches={true}
                       autoFocus={true}
                       onFocusChange={handleSearchFocusChange}
+                      onClose={handleSearchClose}
                     />
                     
                     {/* Botón X para cerrar */}
@@ -496,6 +504,7 @@ const Header = () => {
                       showRecentSearches={true}
                       showTrendingSearches={true}
                       onFocusChange={handleSearchFocusChange}
+                      onClose={handleSearchClose}
                     />
                   </div>
                 </div>
