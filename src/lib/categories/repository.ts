@@ -144,10 +144,30 @@ export class CategoryRepository {
     // - description no existe en la tabla categories
     // - id debe ser generado automáticamente por la base de datos
     const { description, id, ...dataWithoutDescriptionAndId } = categoryData
-    const insertData: Omit<CategoryInsert, 'id' | 'description'> = {
-      ...dataWithoutDescriptionAndId,
-      created_at: categoryData.created_at || now,
-      updated_at: categoryData.updated_at || now,
+    
+    // Log para debugging en producción
+    if (id !== undefined) {
+      console.warn('[CategoryRepository.create] Se recibió un id en categoryData, será filtrado:', id)
+    }
+    if (description !== undefined && description !== null) {
+      console.warn('[CategoryRepository.create] Se recibió description en categoryData, será filtrado:', description)
+    }
+    
+    // Construir objeto de inserción explícitamente sin id ni description
+    const insertData = {
+      name: dataWithoutDescriptionAndId.name,
+      slug: dataWithoutDescriptionAndId.slug,
+      image_url: dataWithoutDescriptionAndId.image_url ?? null,
+      parent_id: dataWithoutDescriptionAndId.parent_id ?? null,
+      display_order: dataWithoutDescriptionAndId.display_order ?? null,
+      created_at: dataWithoutDescriptionAndId.created_at || now,
+      updated_at: dataWithoutDescriptionAndId.updated_at || now,
+    }
+
+    // Log final para verificar que no hay id
+    if ('id' in insertData) {
+      console.error('[CategoryRepository.create] ERROR: insertData contiene id!', insertData)
+      throw new Error('No se debe incluir id al crear una categoría')
     }
 
     const { data, error } = await this.supabase
@@ -157,6 +177,11 @@ export class CategoryRepository {
       .single()
 
     if (error) {
+      console.error('[CategoryRepository.create] Error al insertar:', {
+        error: error.message,
+        insertData,
+        categoryDataKeys: Object.keys(categoryData),
+      })
       throw new Error(`Failed to create category: ${error.message}`)
     }
 
