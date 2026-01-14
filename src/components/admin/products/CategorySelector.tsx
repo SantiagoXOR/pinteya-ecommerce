@@ -299,9 +299,9 @@ export function CategorySelector({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden'>
+        <div className='absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-[500px] overflow-hidden flex flex-col'>
           {/* Search */}
-          <div className='p-3 border-b border-gray-200'>
+          <div className='p-3 border-b border-gray-200 flex-shrink-0'>
             <div className='relative'>
               <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
               <input
@@ -315,7 +315,7 @@ export function CategorySelector({
           </div>
 
           {/* Categories List */}
-          <div className='max-h-60 overflow-y-auto'>
+          <div className='flex-1 overflow-y-auto min-h-0'>
             {safeCategories.length === 0 ? (
               <div className='p-4 text-center text-gray-500 text-sm'>
                 No hay categorías disponibles
@@ -329,10 +329,10 @@ export function CategorySelector({
 
           {/* Create New Category */}
           {allowCreate && (
-            <div className='border-t border-gray-200 p-3'>
+            <div className='border-t border-gray-200 p-3 bg-gray-50 flex-shrink-0'>
               <button
                 type='button'
-                className='flex items-center space-x-2 text-sm text-blaze-orange-600 hover:text-blaze-orange-700'
+                className='flex items-center space-x-2 text-sm font-medium text-blaze-orange-600 hover:text-blaze-orange-700 hover:bg-blaze-orange-50 w-full px-3 py-2 rounded-lg transition-colors'
                 onClick={(e) => {
                   e.stopPropagation()
                   setIsCreateModalOpen(true)
