@@ -40,7 +40,6 @@ const createCategorySchema = z.object({
     .max(100, 'El slug es muy largo')
     .regex(/^[a-z0-9-]+$/, 'El slug solo puede contener letras minúsculas, números y guiones')
     .optional(),
-  description: z.string().max(500, 'La descripción es muy larga').optional(),
   image_url: z.string().url('URL de imagen inválida').min(1, 'La imagen es requerida'),
 })
 
@@ -73,7 +72,6 @@ export function CreateCategoryModal({
     defaultValues: {
       name: '',
       slug: '',
-      description: '',
       image_url: '',
     },
   })
@@ -121,7 +119,6 @@ export function CreateCategoryModal({
         const newCategory = await createCategory({
           name: data.name,
           slug,
-          description: data.description,
           image_url: imageUrl,
           parent_id: null, // No crear categorías hijas
         })
@@ -204,26 +201,6 @@ export function CreateCategoryModal({
             <p className="mt-1 text-xs text-gray-500">
               El slug se genera automáticamente. Puedes editarlo si lo deseas.
             </p>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-              Descripción (Opcional)
-            </label>
-            <textarea
-              id="description"
-              {...register('description')}
-              rows={3}
-              placeholder="Descripción de la categoría..."
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:border-transparent ${
-                errors.description ? 'border-red-300' : 'border-gray-300'
-              }`}
-              disabled={isSubmitting}
-            />
-            {errors.description && (
-              <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
-            )}
           </div>
 
           {/* Image Upload */}

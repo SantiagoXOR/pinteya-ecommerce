@@ -7,10 +7,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdminAuth } from '@/lib/auth/enterprise-auth-utils'
+import { composeMiddlewares } from '@/lib/api/middleware-composer'
+import { withErrorHandler, ApiError, ValidationError } from '@/lib/api/error-handler'
+import { withApiLogging } from '@/lib/api/api-logger'
+import { withAdminAuth } from '@/lib/auth/api-auth-middleware'
 import { createClient } from '@supabase/supabase-js'
 import sharp from 'sharp'
-import { Readable } from 'stream'
 
 // Configurar runtime para Node.js (necesario para formData y sharp)
 export const runtime = 'nodejs'
@@ -33,14 +35,12 @@ function validateImageFile(file: File) {
   const maxSize = 5 * 1024 * 1024 // 5MB
 
   if (!allowedTypes.includes(file.type)) {
-    return { error: 'Tipo de archivo no permitido. Use JPG, PNG o WebP' }
+    throw ValidationError('Tipo de archivo no permitido. Use JPG, PNG o WebP')
   }
 
   if (file.size > maxSize) {
-    return { error: 'El archivo es demasiado grande. Máximo 5MB' }
+    throw ValidationError('El archivo es demasiado grande. Máximo 5MB')
   }
-
-  return { valid: true }
 }
 
 // Helper function to generate unique filename for category image
@@ -124,77 +124,94 @@ async function uploadImageToStorage(
  * POST /api/admin/upload/category-image
  * Upload and optimize category image
  */
-export async function POST(request: NextRequest) {
+const postHandler = async (request: NextRequest) => {
+  // ✅ CRÍTICO: Verificar Content-Type ANTES de leer el body para diagnóstico en producción
+  const contentType = request.headers.get('content-type') || ''
+  console.log('[POST /category-image] Content-Type recibido:', contentType)
+
+  // ✅ CRÍTICO: Leer el body PRIMERO, antes de hacer cualquier otra cosa
+  // Esto evita que cualquier acceso al request cause que Next.js intente leer el body
+  let formData: FormData
   try {
-    // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_create'])
-
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          error: authResult.error,
-          code: authResult.code,
-          enterprise: true,
-          timestamp: new Date().toISOString(),
-        },
-        { status: authResult.status || 401 }
+    formData = await request.formData()
+  } catch (error: any) {
+    // Si el error es sobre Content-Type, es porque Next.js está validando antes de tiempo
+    if (error.message?.includes('Content-Type')) {
+      console.error('[POST /category-image] Error de Content-Type:', {
+        contentType,
+        error: error.message,
+        stack: error.stack,
+      })
+      throw new ApiError(
+        `Error al procesar imagen: Content-Type no válido. Recibido: "${contentType}". Se requiere multipart/form-data`,
+        400,
+        'INVALID_CONTENT_TYPE',
+        { contentType, originalError: error.message }
       )
+    } else if (error.message?.includes('already been read') || error.message?.includes('unusable')) {
+      console.warn('[POST /category-image] Body ya fue leído, intentando clonar request')
+      try {
+        const clonedRequest = request.clone()
+        formData = await clonedRequest.formData()
+      } catch (cloneError: any) {
+        throw error
+      }
+    } else {
+      throw error
     }
-
-    // Parse form data
-    const formData = await request.formData()
-    const file = formData.get('file') as File
-
-    if (!file) {
-      return NextResponse.json(
-        {
-          error: 'No se proporcionó archivo',
-          code: 'NO_FILE',
-        },
-        { status: 400 }
-      )
-    }
-
-    // Validate file
-    const validation = validateImageFile(file)
-    if (!validation.valid) {
-      return NextResponse.json(
-        {
-          error: validation.error,
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      )
-    }
-
-    // Optimize image to WebP
-    const optimizedBuffer = await optimizeImageToWebP(file)
-
-    // Generate filename
-    const filename = generateCategoryImageFilename(file.name)
-
-    // Upload to Supabase Storage
-    const uploadResult = await uploadImageToStorage(optimizedBuffer, filename)
-
-    return NextResponse.json(
-      {
-        data: {
-          url: uploadResult.url,
-          path: uploadResult.path,
-        },
-        success: true,
-        message: 'Imagen de categoría subida y optimizada exitosamente',
-      },
-      { status: 201 }
-    )
-  } catch (error) {
-    console.error('Error uploading category image:', error)
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Error al subir imagen de categoría',
-        code: 'UPLOAD_ERROR',
-      },
-      { status: 500 }
-    )
   }
+
+  // ✅ FIX: Si BYPASS_AUTH está activo, no intentar leer auth() porque puede causar que se lea el body
+  // El middleware withAdminAuth ya verificó la autenticación
+  let user = null
+  if (process.env.BYPASS_AUTH !== 'true') {
+    try {
+      const { auth } = await import('@/lib/auth/config')
+      const session = await auth()
+      user = session?.user || null
+    } catch (authError: any) {
+      console.warn('[POST /category-image] No se pudo obtener usuario, continuando sin autenticación')
+      user = null
+    }
+  }
+
+  // ✅ CRÍTICO: El body ya fue leído arriba, ahora extraer los datos
+  const file = formData.get('file') as File
+
+  if (!file) {
+    throw ValidationError('No se proporcionó archivo')
+  }
+
+  // Validate file
+  validateImageFile(file)
+
+  // Optimize image to WebP
+  const optimizedBuffer = await optimizeImageToWebP(file)
+
+  // Generate filename
+  const filename = generateCategoryImageFilename(file.name)
+
+  // Upload to Supabase Storage
+  const uploadResult = await uploadImageToStorage(optimizedBuffer, filename)
+
+  return NextResponse.json(
+    {
+      data: {
+        url: uploadResult.url,
+        path: uploadResult.path,
+      },
+      success: true,
+      message: 'Imagen de categoría subida y optimizada exitosamente',
+    },
+    { status: 201 }
+  )
 }
+
+// ✅ CRÍTICO: Orden de middlewares optimizado para requests multipart
+// withAdminAuth debe ejecutarse PRIMERO para retornar inmediatamente cuando BYPASS_AUTH está activo
+// Esto evita que otros middlewares accedan al request antes de que el handler lea el body
+export const POST = composeMiddlewares(
+  withAdminAuth(['categories_create']), // Ejecutar PRIMERO para bypass inmediato
+  withErrorHandler,
+  withApiLogging
+)(postHandler)
