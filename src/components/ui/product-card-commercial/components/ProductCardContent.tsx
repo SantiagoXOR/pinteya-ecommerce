@@ -92,6 +92,20 @@ export const ProductCardContent = React.memo(function ProductCardContent({
       )}
     </div>
   )
+}, (prevProps, nextProps) => {
+  // Comparación personalizada incluyendo variants
+  const prevVariantsLength = prevProps.variants?.length || 0
+  const nextVariantsLength = nextProps.variants?.length || 0
+  
+  return (
+    prevProps.brand === nextProps.brand &&
+    prevProps.title === nextProps.title &&
+    prevProps.displayPrice === nextProps.displayPrice &&
+    prevProps.displayOriginalPrice === nextProps.displayOriginalPrice &&
+    prevProps.discount === nextProps.discount &&
+    prevProps.selectedColorName === nextProps.selectedColorName &&
+    prevVariantsLength === nextVariantsLength
+  )
 })
 
 ProductCardContent.displayName = 'ProductCardContent'

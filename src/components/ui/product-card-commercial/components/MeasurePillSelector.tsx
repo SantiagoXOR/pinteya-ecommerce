@@ -2,13 +2,8 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
-// DESACTIVADO TEMPORALMENTE: imports para el botón ">" y Sheet
-// import { ChevronRight } from '@/lib/optimized-imports'
-// import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { MeasurePill } from './MeasurePill'
-// import { ColorPill } from './ColorPill'
-// import { parseMeasure, darkenHex } from '../utils'
-// import { getWoodTexture } from '../utils/texture-utils'
+import { useHorizontalScroll } from '../hooks/useHorizontalScroll'
 import type { MeasurePillSelectorProps } from '../types'
 
 /**
@@ -27,57 +22,14 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
   stock = 0,
   isImpregnante = false
 }: MeasurePillSelectorProps) {
-  // DESACTIVADO TEMPORALMENTE: estados para el Sheet
-  // const [showColorsSheet, setShowColorsSheet] = React.useState(false)
-  // const [showSuccessToast, setShowSuccessToast] = React.useState(false)
+  if (measures.length === 0) {
+    return null
+  }
 
-  if (measures.length === 0) return null
-
-  // DESACTIVADO TEMPORALMENTE: handler para agregar al carrito desde el Sheet
-  // const handleAddToCartClick = async (e: React.MouseEvent) => {
-  //   e.stopPropagation()
-  //   if (onAddToCart) {
-  //     await onAddToCart()
-  //     setShowSuccessToast(true)
-  //     setTimeout(() => setShowSuccessToast(false), 2000)
-  //     setTimeout(() => setShowColorsSheet(false), 800)
-  //   }
-  // }
-
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
-  const [canScrollRight, setCanScrollRight] = React.useState(false)
-
-  React.useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    // ⚡ FASE 5: Optimizado - agrupar lecturas de geometría en requestAnimationFrame
-    const checkScroll = () => {
-      requestAnimationFrame(() => {
-        if (!container) return
-        // Agrupar todas las lecturas de geometría
-        const scrollLeft = container.scrollLeft
-        const scrollWidth = container.scrollWidth
-        const clientWidth = container.clientWidth
-        
-        // Actualizar estado en el siguiente frame
-        requestAnimationFrame(() => {
-          setCanScrollLeft(scrollLeft > 0)
-          setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
-        })
-      })
-    }
-
-    checkScroll()
-    container.addEventListener('scroll', checkScroll, { passive: true })
-    window.addEventListener('resize', checkScroll, { passive: true })
-
-    return () => {
-      container.removeEventListener('scroll', checkScroll)
-      window.removeEventListener('resize', checkScroll)
-    }
-  }, [measures])
+  // Usar hook compartido de scroll horizontal
+  const { scrollContainerRef, canScrollLeft, canScrollRight } = useHorizontalScroll({
+    deps: [measures]
+  })
 
   return (
     <div className='relative w-full overflow-hidden'>
@@ -282,6 +234,40 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
       )}
       FIN DESACTIVADO TEMPORALMENTE */}
     </div>
+  )
+}, (prevProps, nextProps) => {
+  // Comparación de arrays de measures
+  const prevMeasuresLength = prevProps.measures?.length || 0
+  const nextMeasuresLength = nextProps.measures?.length || 0
+  const prevColorsLength = prevProps.colors?.length || 0
+  const nextColorsLength = nextProps.colors?.length || 0
+  
+  if (prevMeasuresLength !== nextMeasuresLength || prevColorsLength !== nextColorsLength) {
+    return false
+  }
+  
+  // Comparar strings de measures
+  const measuresEqual = prevProps.measures.every((measure, idx) => 
+    measure === nextProps.measures?.[idx]
+  )
+  
+  // Comparar colores
+  const colorsEqual = prevColorsLength === 0 || prevProps.colors.every((color, idx) => 
+    color.hex === nextProps.colors?.[idx]?.hex
+  )
+  
+  return (
+    measuresEqual &&
+    colorsEqual &&
+    prevProps.selectedMeasure === nextProps.selectedMeasure &&
+    prevProps.selectedColor === nextProps.selectedColor &&
+    prevProps.commonUnit === nextProps.commonUnit &&
+    prevProps.isAddingToCart === nextProps.isAddingToCart &&
+    prevProps.stock === nextProps.stock &&
+    prevProps.isImpregnante === nextProps.isImpregnante &&
+    prevProps.onMeasureSelect === nextProps.onMeasureSelect &&
+    prevProps.onColorSelect === nextProps.onColorSelect &&
+    prevProps.onAddToCart === nextProps.onAddToCart
   )
 })
 

@@ -1,55 +1,41 @@
 // ===================================
 // PINTEYA E-COMMERCE - HELPERS DE IMÁGENES
 // ===================================
+// ⚠️ DEPRECADO: Este archivo se mantiene solo para compatibilidad hacia atrás
+// Todas las funciones ahora usan image-resolver.ts centralizado
+// Este archivo será eliminado en una versión futura
+// 
+// NOTA: Este archivo NO debe ser importado directamente.
+// Usa getValidImageUrl desde @/lib/adapters/product-adapter o 
+// resolveProductImage desde @/components/ui/product-card-commercial/utils/image-resolver
+//
+// FIX HMR: Este archivo mantiene exportaciones explícitas para compatibilidad con Turbopack HMR
+
+'use client'
+
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 
 /**
+ * @deprecated Usa resolveProductImage desde image-resolver.ts
  * Extrae la primera imagen válida de un producto, manejando múltiples formatos
  * @param images - Campo images del producto (puede ser array u objeto)
  * @param product - Producto completo (opcional, para buscar en variantes)
  * @returns URL de la primera imagen o placeholder
  */
 export function getProductImage(images: any, product?: any): string {
-  // PRIORIDAD 1: Imagen de variante por defecto (productos con sistema de variantes)
-  if (product) {
-    const defaultVariant = product.default_variant || product.variants?.[0]
-    if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim()) {
-      return defaultVariant.image_url.trim()
-    }
+  // Usar image-resolver.ts para mantener consistencia
+  const imageSource = {
+    image_url: null,
+    default_variant: product?.default_variant || product?.variants?.[0] || null,
+    variants: (product?.variants || []) as ProductVariant[],
+    images: images || null,
+    imgs: null
   }
   
-  // PRIORIDAD 2: Campo images del producto
-  if (!images) return '/images/products/placeholder.svg'
-  
-  // Caso 1: Array simple de strings ["url1", "url2"]
-  if (Array.isArray(images)) {
-    const firstImage = images[0]
-    if (typeof firstImage === 'string' && firstImage.trim()) {
-      return firstImage.trim()
-    }
-    // Array de objetos con url o image_url
-    if (firstImage && typeof firstImage === 'object') {
-      return firstImage.url || firstImage.image_url || '/images/products/placeholder.svg'
-    }
-    return '/images/products/placeholder.svg'
-  }
-  
-  // Caso 2: Objeto con estructura {previews, thumbnails, main, gallery}
-  if (typeof images === 'object') {
-    const candidates = [
-      images.previews?.[0],
-      images.thumbnails?.[0],
-      images.main,
-      images.gallery?.[0]
-    ]
-    
-    for (const candidate of candidates) {
-      if (typeof candidate === 'string' && candidate.trim()) {
-        return candidate.trim()
-      }
-    }
-  }
-  
-  return '/images/products/placeholder.svg'
+  return resolveProductImage(imageSource, {
+    logContext: 'image-helpers.getProductImage (deprecated)'
+  })
 }
 
 /**
@@ -92,5 +78,12 @@ export function getValidImageUrl(imageUrl: string | undefined | null): string {
   } catch {
     return '/images/products/placeholder.svg'
   }
+}
+
+// FIX HMR: Exportaciones explícitas para compatibilidad con Turbopack
+// Esto asegura que el módulo tenga un factory válido para HMR
+export default {
+  getProductImage,
+  getValidImageUrl
 }
 

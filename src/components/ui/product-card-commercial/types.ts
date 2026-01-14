@@ -17,7 +17,36 @@ export interface ProductVariant {
   stock?: number
   is_active?: boolean
   is_default?: boolean
+  image_url?: string | null
+}
+
+// Tipos para estructuras de imágenes del producto
+export type ProductImageUrl = string
+
+export type ProductImageArray = ProductImageUrl[] | Array<{
+  url?: string
   image_url?: string
+}>
+
+export type ProductImageObject = {
+  main?: string
+  previews?: string[]
+  thumbnails?: string[]
+  gallery?: string[]
+}
+
+export type ProductImages = ProductImageArray | ProductImageObject | null | undefined
+
+// Tipo para productos con imágenes (usado en image-resolver)
+export interface ProductWithImages {
+  image_url?: string | null
+  default_variant?: ProductVariant | null
+  variants?: ProductVariant[] | null
+  images?: ProductImages
+  imgs?: {
+    previews?: string[]
+    thumbnails?: string[]
+  } | null
 }
 
 // Configuración de badges inteligentes

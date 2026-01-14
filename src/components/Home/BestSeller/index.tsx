@@ -10,9 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from './HelpCard'
-import DiscountCard from './DiscountCard'
+import PromoCard from './PromoCard'
 import CalculatorCard from './CalculatorCard'
-// import { PaintVisualizerCard } from '@/components/PaintVisualizer' // Ocultado temporalmente
 import { 
   limitByPerformance, 
   shouldShowHelpCards 
@@ -61,9 +60,9 @@ const BestSeller: React.FC = React.memo(() => {
               {/* Help cards solo se muestran si hay productos y se necesita rellenar fila */}
               {shouldShowHelpCard && (
                 <>
-                  <HelpCard categoryName={selectedCategory} />
-                  <DiscountCard />
+                  <PromoCard />
                   <CalculatorCard />
+                  <HelpCard categoryName={selectedCategory} />
                 </>
               )}
             </>

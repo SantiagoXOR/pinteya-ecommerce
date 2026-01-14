@@ -36,7 +36,7 @@ export const useProductMeasures = ({
   const [selectedMeasure, setSelectedMeasure] = React.useState<string | undefined>(undefined)
 
   // Extraer medidas únicas del array de variantes o usar medida del producto como fallback
-  // FILTRAR medidas que no tienen stock disponible
+  // SIEMPRE filtrar medidas sin stock disponible, independientemente de selección de color/finish
   const uniqueMeasures = React.useMemo(() => {
     // Si hay variantes, extraer medidas de ellas
     if (variants && variants.length > 0) {
@@ -50,55 +50,15 @@ export const useProductMeasures = ({
       const allMeasures = extractUniqueMeasures(variants)
       
       // Filtrar medidas que tienen al menos una variante con stock > 0
-      // Considerar color y finish seleccionados si están disponibles
+      // Siempre mostrar todas las medidas con stock disponible, sin importar color/finish seleccionado
       const measuresWithStock = allMeasures.filter(measure => {
         // Buscar variantes que coincidan con esta medida
         const matchingVariants = variants.filter(v => v.measure === measure)
         
         if (matchingVariants.length === 0) return false
         
-        // Si hay color seleccionado, filtrar por color
-        if (selectedColor) {
-          const colorVariants = matchingVariants.filter(v => 
-            v.color_hex === selectedColor || 
-            getColorHexFromName(v.color_name || '') === selectedColor
-          )
-          
-          if (colorVariants.length === 0) return false
-          
-          // Si hay finish seleccionado, filtrar también por finish
-          if (selectedFinish) {
-            const finishVariants = colorVariants.filter(v => {
-              const variantFinish = (v.finish || '').toString().trim().toLowerCase()
-              const selectedFinishNormalized = selectedFinish.toString().trim().toLowerCase()
-              return variantFinish === selectedFinishNormalized
-            })
-            
-            if (finishVariants.length === 0) return false
-            
-            // Verificar si alguna variante con color y finish tiene stock
-            return finishVariants.some(v => (v.stock ?? 0) > 0)
-          }
-          
-          // Verificar si alguna variante con color tiene stock
-          return colorVariants.some(v => (v.stock ?? 0) > 0)
-        }
-        
-        // Si hay finish seleccionado pero no color, filtrar por finish
-        if (selectedFinish) {
-          const finishVariants = matchingVariants.filter(v => {
-            const variantFinish = (v.finish || '').toString().trim().toLowerCase()
-            const selectedFinishNormalized = selectedFinish.toString().trim().toLowerCase()
-            return variantFinish === selectedFinishNormalized
-          })
-          
-          if (finishVariants.length === 0) return false
-          
-          // Verificar si alguna variante con finish tiene stock
-          return finishVariants.some(v => (v.stock ?? 0) > 0)
-        }
-        
-        // Sin filtros de color/finish: verificar si alguna variante tiene stock
+        // Verificar si alguna variante tiene stock (sin filtrar por color/finish)
+        // Esto asegura que siempre se muestren todas las medidas disponibles con stock
         return matchingVariants.some(v => (v.stock ?? 0) > 0)
       })
       

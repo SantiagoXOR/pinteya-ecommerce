@@ -1,10 +1,12 @@
 'use client'
 
 import React from 'react'
+import { logger } from '../utils/logger'
 
 interface UseProductCardStateOptions {
   image?: string
   title?: string
+  resolvedImage?: string // Imagen resuelta dinámicamente desde useProductCardData
 }
 
 interface UseProductCardStateResult {
@@ -43,10 +45,12 @@ interface UseProductCardStateResult {
 
 /**
  * Hook para manejar el estado del ProductCard
+ * Mejorado para soportar imágenes dinámicas cuando cambia la variante seleccionada
  */
 export const useProductCardState = ({
   image,
-  title
+  title,
+  resolvedImage
 }: UseProductCardStateOptions): UseProductCardStateResult => {
   // Estados de UI
   const [isHovered, setIsHovered] = React.useState(false)
@@ -66,55 +70,43 @@ export const useProductCardState = ({
   // Ref para ignorar clics justo después de cerrar el modal
   const ignoreClicksUntilRef = React.useRef<number>(0)
 
-  // Actualizar imagen cuando cambie la prop
+  // Actualizar imagen cuando cambie la prop o la imagen resuelta dinámicamente
+  // Prioridad: resolvedImage > image > placeholder
   React.useEffect(() => {
-    if (image && image !== currentImageSrc) {
-      console.log(`🔄 [ProductCardState] Actualizando imagen para ${title}:`, {
+    const newImageSrc = resolvedImage || image || '/images/products/placeholder.svg'
+    
+    if (newImageSrc && newImageSrc !== currentImageSrc) {
+      logger.debug(`[ProductCardState] Actualizando imagen para ${title}`, {
         from: currentImageSrc,
-        to: image
+        to: newImageSrc,
+        source: resolvedImage ? 'resolvedImage' : 'image'
       })
-      setCurrentImageSrc(image)
+      setCurrentImageSrc(newImageSrc)
       setImageError(false)
     }
-  }, [image, currentImageSrc, title])
+  }, [image, resolvedImage, currentImageSrc, title])
 
   // Handler para abrir el modal
   const handleOpenModal = React.useCallback(() => {
-    console.log('🔵 [ProductCardState] handleOpenModal llamado')
     setShowShopDetailModal(true)
-    console.log('✅ [ProductCardState] showShopDetailModal establecido en true')
   }, [])
-
-  // Debug: Rastrear cambios en showShopDetailModal
-  React.useEffect(() => {
-    console.log('📊 [ProductCardState] showShopDetailModal cambió a:', showShopDetailModal, 'para producto:', title)
-  }, [showShopDetailModal, title])
 
   // Handler para el modal
   const handleModalOpenChange = React.useCallback((open: boolean) => {
-    console.log('🔄 [ProductCardState] onOpenChange llamado:', { 
-      open, 
-      currentState: showShopDetailModal,
-      productTitle: title 
-    })
-    
     setShowShopDetailModal(open)
     
     // Si el modal se está cerrando, ignorar clics en el card por un breve período
     if (!open) {
       ignoreClicksUntilRef.current = Date.now() + 300
-      console.log('🛡️ [ProductCardState] Activando guardia anti-click fantasma')
     }
-  }, [showShopDetailModal, title])
+  }, [])
 
   // Función para manejar errores de imagen
   const handleImageError = React.useCallback(() => {
-    console.log(`❌ [ProductCardState] Error de imagen: ${currentImageSrc}`)
-    
     if (!imageError) {
+      logger.warn(`[ProductCardState] Error de imagen: ${currentImageSrc}`)
       setImageError(true)
       setCurrentImageSrc('/images/products/placeholder.svg')
-      console.log(`✅ Fallback aplicado: /images/products/placeholder.svg`)
     }
   }, [currentImageSrc, imageError])
 

@@ -5,6 +5,8 @@ import { useCartUnified } from '@/hooks/useCartUnified'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 
 interface ProductItemProps {
   product?: Product
@@ -62,42 +64,21 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
   const autoFree = dsShouldShowFreeShipping(finalPrice, config)
   const freeShipping = Boolean((productData as any)?.freeShipping) || autoFree
 
-  // ✅ PRIORIDAD DE IMAGEN: image_url desde product_images > Variante por defecto > Producto padre
-  const productImage = (() => {
-    // 1. ✅ CORREGIDO: Priorizar image_url desde product_images (API pública)
-    if ((productData as any)?.image_url && typeof (productData as any).image_url === 'string') {
-      const imageUrl = (productData as any).image_url.trim()
-      if (imageUrl && !imageUrl.includes('placeholder')) {
-        return imageUrl
-      }
+  // Resolver imagen usando image-resolver.ts unificado
+  const productImage = React.useMemo(() => {
+    // Preparar estructura compatible con ProductImageSource
+    const imageSource = {
+      image_url: (productData as any)?.image_url || null,
+      default_variant: (productData as any)?.default_variant || null,
+      variants: (productData.variants || []) as ProductVariant[],
+      images: productData.images || null,
+      imgs: productData.imgs || null
     }
     
-    // 2. Imagen de variante por defecto (productos con sistema de variantes)
-    const defaultVariant = (productData as any).default_variant || (productData as any).variants?.[0]
-    if (defaultVariant?.image_url) {
-      return defaultVariant.image_url
-    }
-    
-    // 3. Imagen del producto padre (formato array)
-    if (Array.isArray((productData as any).images) && (productData as any).images[0]) {
-      return (productData as any).images[0]
-    }
-    
-    // 4. Imagen del producto padre (formato objeto)
-    const candidates = [
-      (productData as any).images?.main,
-      (productData as any).images?.previews?.[0],
-      (productData as any).images?.thumbnails?.[0],
-      (productData as any).images?.gallery?.[0],
-      (productData as any).imgs?.previews?.[0],
-    ]
-    for (const c of candidates) {
-      if (typeof c === 'string' && c.trim() !== '') return c.trim()
-    }
-    
-    // 5. Placeholder
-    return '/images/products/placeholder.svg'
-  })()
+    return resolveProductImage(imageSource, {
+      logContext: `ProductItem-${productData.id}`
+    })
+  }, [productData])
 
   return (
     <CommercialProductCard
@@ -160,12 +141,17 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
   
   if (!prevProduct || !nextProduct) return false
   
+  // ✅ CORREGIDO: Comparar también variants para que se re-renderice cuando se cargan
+  const prevVariantsLength = prevProduct.variants?.length || 0
+  const nextVariantsLength = nextProduct.variants?.length || 0
+  
   // Comparar propiedades clave
   return (
     prevProduct.id === nextProduct.id &&
     prevProduct.price === nextProduct.price &&
     prevProduct.discountedPrice === nextProduct.discountedPrice &&
-    prevProduct.stock === nextProduct.stock
+    prevProduct.stock === nextProduct.stock &&
+    prevVariantsLength === nextVariantsLength // ✅ Incluir comparación de variants
   )
 })
 

@@ -1,9 +1,11 @@
-'use client'
+"use client"
 
-import React, { useState } from 'react'
-import Image from 'next/image'
-import { Calculator } from '@/lib/optimized-imports'
-import { cn } from '@/lib/utils'
+import type React from "react"
+import { useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Calculator } from "@/lib/optimized-imports"
+import { cn } from "@/lib/utils"
 
 interface CalculatorCardProps {
   className?: string
@@ -11,69 +13,55 @@ interface CalculatorCardProps {
 
 const CalculatorCard: React.FC<CalculatorCardProps> = ({ className }) => {
   const [isHovered, setIsHovered] = useState(false)
-  
-  const handleClick = () => {
-    window.location.href = 'https://www.pinteya.com/calculator'
-  }
 
   return (
-    <div
+    <Link
+      href="https://www.pinteya.com/calculator"
       className={cn(
-        'relative rounded-xl bg-white shadow-md flex flex-col w-full cursor-pointer overflow-hidden',
-        'h-[300px] sm:h-[360px]',
-        'md:h-[400px] lg:h-[440px]',
-        'md:rounded-2xl',
-        'transition-all duration-200 ease-out hover:scale-[1.02] hover:shadow-xl',
-        'transform-gpu will-change-transform',
-        className
+        "relative rounded-xl md:rounded-[1.5rem] bg-[#FFC805] shadow-[0_10px_20px_rgba(0,0,0,0.1)] flex flex-col w-full cursor-pointer",
+        "overflow-hidden",
+        "min-h-[280px] sm:min-h-[320px] md:h-[400px] lg:h-[440px]",
+        "transition-all duration-300 ease-out",
+        "hover:-translate-y-[5px] hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)]",
+        className,
       )}
-      style={{
-        transformOrigin: 'center',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-        boxShadow: isHovered ? '0 10px 25px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.1)',
-      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={handleClick}
     >
-      {/* Imagen de fondo */}
-      <div className='relative w-full h-full'>
+      {/* Background Layer - Sección superior (60%) (z-0) */}
+      <div className="relative w-full h-[60%] bg-[#0044cc] overflow-hidden">
+        {/* Imagen de fondo optimizada desde Supabase Storage */}
         <Image
-          src='/images/promo/calculator.png'
-          alt='Calculadora de pintura'
+          src="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/promo/calculator.webp"
+          alt="Calculadora de pintura"
           fill
-          className='object-cover'
-          sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
           quality={90}
         />
-        
-        {/* Contenido superpuesto */}
-        <div className='absolute inset-0 flex flex-col'>
-          {/* Sección superior azul - Recuadro verde */}
-          <div className='flex-1 relative flex items-start justify-center pt-4 sm:pt-6 md:pt-8'>
-            <div className='bg-green-500/90 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-2.5 md:px-5 md:py-3 rounded-lg shadow-lg'>
-              <p className='text-white text-[10px] sm:text-xs md:text-sm font-semibold text-center'>
-                Obtené un presupuesto detallado al instante.
-              </p>
-            </div>
-          </div>
-          
-          {/* Sección inferior amarilla - Texto y calculadora */}
-          <div className='relative flex flex-col items-center justify-center pb-4 sm:pb-6 md:pb-8 space-y-2 sm:space-y-3'>
-            <h3 className='text-orange-600 text-lg sm:text-xl md:text-2xl font-bold drop-shadow-md'>
-              Calculá tu pintura
-            </h3>
-            
-            {/* Icono de calculadora en cuadrado blanco */}
-            <div className='w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-white rounded-lg flex items-center justify-center shadow-lg'>
-              <Calculator className='w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-orange-600' />
-            </div>
-          </div>
+      </div>
+
+      {/* Badge blanco superpuesto - Por encima del cuadro de color (z-20) - 2 líneas - Tamaño fijo */}
+      <div className="absolute top-[calc(60%-18px)] left-5 right-5 z-20 bg-white text-[#006400] px-5 py-3 rounded-[20px] font-bold text-sm text-left shadow-[0_4px_6px_rgba(0,0,0,0.1)] leading-tight">
+        Obtené un presupuesto
+        <br />
+        detallado al instante.
+      </div>
+
+      {/* Content Layer - Sección inferior (40%) (z-10) */}
+      <div className="relative h-[40%] bg-[#FFC805] flex flex-col pt-16 px-5 pb-6">
+        <div className="text-left pr-20 flex-1">
+          <div className="text-[#FF6B00] text-2xl leading-none font-black mb-1">Calculá</div>
+          <div className="text-[#FF6B00] text-lg leading-tight font-extrabold">tu pintura</div>
+        </div>
+
+        {/* Ícono calculadora en círculo naranja - Tamaño fijo */}
+        <div className="absolute bottom-6 right-6 w-16 h-16 rounded-full bg-[#FF6B00] text-white flex items-center justify-center z-10 shadow-lg">
+          <Calculator className="w-8 h-8" strokeWidth={2.5} />
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

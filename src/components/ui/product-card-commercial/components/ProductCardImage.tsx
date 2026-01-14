@@ -21,8 +21,8 @@ export const ProductCardImage = React.memo(function ProductCardImage({
   const displaySrc = currentImageSrc || image || '/images/products/placeholder.svg'
 
   const handleLoad = React.useCallback(() => {
-    console.log(`✅ [ProductCardImage] Imagen cargada - Producto ID: ${productId}`)
-  }, [productId])
+    // Imagen cargada exitosamente - no requiere logging
+  }, [])
 
   return (
     <div className='relative w-full h-full flex justify-center items-center'>
@@ -60,6 +60,15 @@ export const ProductCardImage = React.memo(function ProductCardImage({
       </div>
 
     </div>
+  )
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.image === nextProps.image &&
+    prevProps.currentImageSrc === nextProps.currentImageSrc &&
+    prevProps.imageError === nextProps.imageError &&
+    prevProps.title === nextProps.title &&
+    prevProps.productId === nextProps.productId &&
+    prevProps.onImageError === nextProps.onImageError
   )
 })
 

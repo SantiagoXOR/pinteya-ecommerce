@@ -5,7 +5,9 @@ import { useRouter, useParams } from 'next/navigation'
 import ShopDetailModal from '@/components/ShopDetails/ShopDetailModal'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { getProductBySlug, getProductById } from '@/lib/api/products'
-import { getProductImage, getValidImageUrl } from '@/lib/utils/image-helpers'
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import { getValidImageUrl } from '@/lib/adapters/product-adapter'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 import { SimplePageLoading } from '@/components/ui/simple-page-loading'
 import { trackProductView } from '@/lib/google-analytics'
 import { trackViewContent } from '@/lib/meta-pixel'
@@ -71,10 +73,17 @@ function mapToModalProduct(apiProduct: any) {
     }
   }
   
-  // Prioridad 3: Parsear desde images JSONB
+  // Prioridad 3: Parsear desde images JSONB usando resolver unificado
   if (mainImage === '/images/products/placeholder.svg') {
+    const resolvedImage = resolveProductImage({
+      image_url: (apiProduct as any)?.image_url || null,
+      default_variant: (apiProduct as any)?.default_variant || null,
+      variants: ((apiProduct as any)?.variants || []) as ProductVariant[],
+      images: (apiProduct as any)?.images || null,
+      imgs: (apiProduct as any)?.imgs || null
+    })
     const candidates: any[] = [
-      getProductImage((apiProduct as any)?.images),
+      resolvedImage,
       (apiProduct as any)?.image,
     ]
     for (const c of candidates) {

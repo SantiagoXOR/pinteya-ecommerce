@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { FinishPill } from './FinishPill'
+import { useHorizontalScroll } from '../hooks/useHorizontalScroll'
 
 interface FinishPillSelectorProps {
   finishes: string[]
@@ -12,7 +13,7 @@ interface FinishPillSelectorProps {
 
 /**
  * Selector de finishes (terminaciones) con scroll horizontal
- * Similar a ColorPillSelector y MeasurePillSelector
+ * Usa useHorizontalScroll para lógica de scroll compartida
  */
 export const FinishPillSelector = React.memo(function FinishPillSelector({
   finishes,
@@ -20,40 +21,10 @@ export const FinishPillSelector = React.memo(function FinishPillSelector({
   selectedFinish,
   onFinishSelect,
 }: FinishPillSelectorProps) {
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
-  const [canScrollRight, setCanScrollRight] = React.useState(false)
-
-  React.useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    // ⚡ FASE 5: Optimizado - agrupar lecturas de geometría en requestAnimationFrame
-    const checkScroll = () => {
-      requestAnimationFrame(() => {
-        if (!container) return
-        // Agrupar todas las lecturas de geometría
-        const scrollLeft = container.scrollLeft
-        const scrollWidth = container.scrollWidth
-        const clientWidth = container.clientWidth
-        
-        // Actualizar estado en el siguiente frame
-        requestAnimationFrame(() => {
-          setCanScrollLeft(scrollLeft > 0)
-          setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
-        })
-      })
-    }
-
-    checkScroll()
-    container.addEventListener('scroll', checkScroll, { passive: true })
-    window.addEventListener('resize', checkScroll, { passive: true })
-
-    return () => {
-      container.removeEventListener('scroll', checkScroll)
-      window.removeEventListener('resize', checkScroll)
-    }
-  }, [finishes])
+  // Usar hook compartido de scroll horizontal
+  const { scrollContainerRef, canScrollLeft, canScrollRight } = useHorizontalScroll({
+    deps: [finishes]
+  })
 
   if (!finishes || finishes.length === 0) return null
 
@@ -108,6 +79,31 @@ export const FinishPillSelector = React.memo(function FinishPillSelector({
         />
       )}
     </div>
+  )
+}, (prevProps, nextProps) => {
+  // Comparación de arrays de finishes
+  const prevFinishesLength = prevProps.finishes?.length || 0
+  const nextFinishesLength = nextProps.finishes?.length || 0
+  const prevAvailableLength = prevProps.availableFinishes?.length || 0
+  const nextAvailableLength = nextProps.availableFinishes?.length || 0
+  
+  if (prevFinishesLength !== nextFinishesLength || prevAvailableLength !== nextAvailableLength) {
+    return false
+  }
+  
+  // Comparar strings de finishes
+  const finishesEqual = prevProps.finishes.every((finish, idx) => 
+    finish === nextProps.finishes?.[idx]
+  )
+  const availableEqual = prevProps.availableFinishes.every((finish, idx) => 
+    finish === nextProps.availableFinishes?.[idx]
+  )
+  
+  return (
+    finishesEqual &&
+    availableEqual &&
+    prevProps.selectedFinish === nextProps.selectedFinish &&
+    prevProps.onFinishSelect === nextProps.onFinishSelect
   )
 })
 

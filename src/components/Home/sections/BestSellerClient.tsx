@@ -10,9 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Trophy } from '@/lib/optimized-imports'
 import HelpCard from '../BestSeller/HelpCard'
-import DiscountCard from '../BestSeller/DiscountCard'
+import PromoCard from '../BestSeller/PromoCard'
 import CalculatorCard from '../BestSeller/CalculatorCard'
-// import { PaintVisualizerCard } from '@/components/PaintVisualizer' // Ocultado temporalmente
 import { 
   limitByPerformance, 
   shouldShowHelpCards 
@@ -64,9 +63,9 @@ export const BestSellerClient: React.FC<BestSellerClientProps> = React.memo(({ i
               ))}
               {shouldShowHelpCard && (
                 <>
-                  <HelpCard categoryName={selectedCategory} />
-                  <DiscountCard />
+                  <PromoCard />
                   <CalculatorCard />
+                  <HelpCard categoryName={selectedCategory} />
                 </>
               )}
             </>

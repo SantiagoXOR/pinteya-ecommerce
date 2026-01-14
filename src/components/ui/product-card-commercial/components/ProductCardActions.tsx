@@ -61,6 +61,13 @@ export const ProductCardActions = React.memo(function ProductCardActions({
       </button>
     </div>
   )
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.isAddingToCart === nextProps.isAddingToCart &&
+    prevProps.stock === nextProps.stock &&
+    prevProps.cartAddCount === nextProps.cartAddCount &&
+    prevProps.onAddToCart === nextProps.onAddToCart
+  )
 })
 
 ProductCardActions.displayName = 'ProductCardActions'

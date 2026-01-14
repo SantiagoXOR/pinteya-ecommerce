@@ -336,6 +336,10 @@ module.exports.__esModule = true;
   // El script prebuild:vercel copia el polyfill a node_modules/react/cache.js
   // Configuramos alias para que Turbopack resuelva correctamente
   turbopack: {
+    // ⚡ FIX: Especificar directorio raíz para evitar warning de múltiples lockfiles
+    // Esto evita que Turbopack confunda el package-lock.json del home del usuario
+    // con el del proyecto
+    root: process.cwd(),
     resolveAlias: {
       'react/cache': require('path').resolve(process.cwd(), 'node_modules/react/cache.js'),
     },

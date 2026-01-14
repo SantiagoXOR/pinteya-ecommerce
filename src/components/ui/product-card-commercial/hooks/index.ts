@@ -8,4 +8,7 @@ export * from './useProductFinishes'
 export * from './useProductVariants'
 export * from './useProductBadges'
 export * from './useProductCardState'
+export * from './useProductVariantSelection'
+export * from './useProductCardData'
+export * from './useHorizontalScroll'
 

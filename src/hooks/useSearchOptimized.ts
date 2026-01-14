@@ -15,7 +15,8 @@ import { useTrendingSearches } from './useTrendingSearches'
 import { useRecentSearches } from './useRecentSearches'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
 import { hasDiscount } from '@/lib/adapters/product-adapter'
-import { getProductImage } from '@/lib/utils/image-helpers'
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 
 // ===================================
 // TIPOS
@@ -236,8 +237,14 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
 
       if (products.length > 0) {
         const productSuggestions = products.map((product: ProductWithCategory) => {
-          // Usar helper universal para extraer imagen (ahora prioriza variantes)
-          const imageUrl = getProductImage((product as any)?.images, product)
+          // Usar resolver unificado para extraer imagen (prioriza variantes)
+          const imageUrl = resolveProductImage({
+            image_url: (product as any)?.image_url || null,
+            default_variant: (product as any)?.default_variant || null,
+            variants: (product.variants || []) as ProductVariant[],
+            images: (product as any)?.images || null,
+            imgs: (product as any)?.imgs || null
+          })
 
           return {
             id: product.id.toString(),

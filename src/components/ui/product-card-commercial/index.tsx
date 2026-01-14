@@ -16,12 +16,11 @@ import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useScrollActive } from '@/hooks/useScrollActive'
 
 // Hooks personalizados
-import { useProductColors } from './hooks/useProductColors'
-import { useProductMeasures } from './hooks/useProductMeasures'
-import { useProductFinishes } from './hooks/useProductFinishes'
-import { useProductVariants } from './hooks/useProductVariants'
+import { useProductVariantSelection } from './hooks/useProductVariantSelection'
 import { useProductBadges } from './hooks/useProductBadges'
 import { useProductCardState } from './hooks/useProductCardState'
+// Utils
+import { resolveProductImage } from './utils/image-resolver'
 
 // Componentes
 import { ColorPillSelector } from './components/ColorPillSelector'
@@ -40,6 +39,7 @@ import {
 } from './types'
 
 // Modal con lazy loading - Importar desde el index directamente
+// NOTA: Usar import directo para evitar problemas con HMR de Turbopack
 const ShopDetailModal = React.lazy(async () => {
   const startTime = Date.now()
   try {
@@ -47,13 +47,9 @@ const ShopDetailModal = React.lazy(async () => {
       timestamp: new Date().toISOString()
     })
     
-    // Agregar timeout para detectar si el import se queda colgado
-    const importPromise = import('@/components/ShopDetails/ShopDetailModal/index')
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout: El import tardó más de 10 segundos')), 10000)
-    )
-    
-    const mod = await Promise.race([importPromise, timeoutPromise]) as any
+    // Import directo para evitar problemas con caché de Turbopack
+    // Usar ruta absoluta para asegurar resolución correcta
+    const mod = await import('@/components/ShopDetails/ShopDetailModal/index')
     
     const loadTime = Date.now() - startTime
     console.log(`📦 [ProductCard] Módulo cargado en ${loadTime}ms:`, {
@@ -157,26 +153,13 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
     // ⚡ OPTIMIZACIÓN: Detectar scroll activo para deshabilitar animaciones
     const isScrolling = useScrollActive(150)
 
-    // Hooks personalizados
-    const colors = useProductColors({ variants, title, color })
-    const finishes = useProductFinishes({
-      variants, 
-      selectedColor: colors.selectedColor,
-      productId,
-      productName: title
-    })
-    const measures = useProductMeasures({ 
-      variants, 
-      title, 
-      medida,
-      selectedColor: colors.selectedColor,
-      selectedFinish: finishes.selectedFinish
-    }) // ✅ NUEVO: Pasar medida como fallback y filtros de stock
-    const variantsData = useProductVariants({
+    // Hooks personalizados unificados
+    const variantSelection = useProductVariantSelection({
       variants,
-      selectedColor: colors.selectedColor,
-      selectedMeasure: measures.selectedMeasure,
-      selectedFinish: finishes.selectedFinish,
+      title,
+      color,
+      medida,
+      productId,
       price,
       originalPrice
     })
@@ -194,7 +177,38 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       price,
       medida
     })
-    const state = useProductCardState({ image, title })
+    // Resolver imagen dinámicamente basada en la variante seleccionada
+    // Esto permite que la imagen cambie cuando el usuario selecciona diferentes variantes
+    const resolvedImage = React.useMemo(() => {
+      // Preparar fuente de imagen con todas las posibles fuentes
+      const imageSource = {
+        image_url: null, // No disponible en props del componente
+        default_variant: variants?.[0] || null,
+        variants: variants || [],
+        images: Array.isArray(image) ? image : image ? [image] : null,
+        imgs: null
+      }
+      
+      // Resolver imagen usando image-resolver con prioridad en variante activa
+      return resolveProductImage(imageSource, {
+        selectedVariant: variantSelection.currentVariant || null,
+        selectedColor: variantSelection.selectedColor || null,
+        selectedMeasure: variantSelection.selectedMeasure || null,
+        selectedFinish: variantSelection.selectedFinish || null,
+        logContext: `ProductCard-${productId || title || 'unknown'}`
+      })
+    }, [
+      variants,
+      image,
+      variantSelection.currentVariant,
+      variantSelection.selectedColor,
+      variantSelection.selectedMeasure,
+      variantSelection.selectedFinish,
+      productId,
+      title
+    ])
+    
+    const state = useProductCardState({ image, title, resolvedImage })
 
     // Estado para saber si el módulo del modal ya está precargado
     const [isModalPreloaded, setIsModalPreloaded] = React.useState(false)
@@ -243,15 +257,13 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       return item?.quantity || 0
     }, [cartItems, productId])
 
-    // ✅ NUEVO: Calcular stock efectivo basado en la variante seleccionada
-    // Si hay variante seleccionada con stock definido, usar ese stock
-    // Si no hay variante, usar stock del producto principal
+    // Calcular stock efectivo basado en la variante seleccionada
     const effectiveStock = React.useMemo(() => {
-      if (variantsData.currentVariant?.stock !== undefined && variantsData.currentVariant?.stock !== null) {
-        return variantsData.currentVariant.stock
+      if (variantSelection.currentVariant?.stock !== undefined && variantSelection.currentVariant?.stock !== null) {
+        return variantSelection.currentVariant.stock
       }
       return stock
-    }, [variantsData.currentVariant, stock])
+    }, [variantSelection.currentVariant, stock])
 
     // Calcular si mostrar envío gratis
     const autoFreeShipping = price ? dsShouldShowFreeShipping(price, config) : false
@@ -278,22 +290,22 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         }
 
         try {
-          const selectedColorData = colors.uniqueColors.find(c => c.hex === colors.selectedColor)
+          const selectedColorData = variantSelection.uniqueColors.find(c => c.hex === variantSelection.selectedColor)
           
           const productData = {
             id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
             name: title || 'Producto',
-            price: variantsData.displayPrice || price || 0,
-            discounted_price: variantsData.currentVariant?.price_sale || undefined,
+            price: variantSelection.displayPrice || price || 0,
+            discounted_price: variantSelection.currentVariant?.price_sale || undefined,
             images: image ? [image] : [],
             variants: variants || [],
             quantity: 1,
           }
 
           const attributes = {
-            color: selectedColorData?.name || colors.selectedColor || '',
-            medida: measures.selectedMeasure || '',
-            finish: finishes.selectedFinish || variantsData.currentVariant?.finish || '',
+            color: selectedColorData?.name || variantSelection.selectedColor || '',
+            medida: variantSelection.selectedMeasure || '',
+            finish: variantSelection.selectedFinish || variantSelection.currentVariant?.finish || '',
           }
 
           addProduct(productData, { quantity: 1, attributes })
@@ -305,8 +317,8 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
 
             trackGA4AddToCart(String(productData.id), productData.name, category, productPrice, 1, 'ARS')
             
-            const contentIdForMeta = variantsData.currentVariant?.id
-              ? String(variantsData.currentVariant.id)
+            const contentIdForMeta = variantSelection.currentVariant?.id
+              ? String(variantSelection.currentVariant.id)
               : String(productData.id)
             trackMetaAddToCart(productData.name, contentIdForMeta, category, productPrice, 'ARS')
             trackCartAction('add', String(productData.id), {
@@ -325,7 +337,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           console.error('Error al agregar al carrito:', error)
         }
       },
-      [state.isAddingToCart, effectiveStock, currentCartQuantity, showCartAnimation, colors, measures, finishes, variantsData, productId, title, image, variants, price, brand, addProduct, trackCartAction]
+      [state.isAddingToCart, effectiveStock, currentCartQuantity, showCartAnimation, variantSelection, productId, title, image, variants, price, brand, addProduct, trackCartAction]
     )
 
     // Handler para clic en el card
@@ -481,52 +493,66 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
             <ProductCardContent
               brand={brand}
               title={title}
-              displayPrice={variantsData.displayPrice}
-              displayOriginalPrice={variantsData.displayOriginalPrice}
+              displayPrice={variantSelection.displayPrice}
+              displayOriginalPrice={variantSelection.displayOriginalPrice}
               discount={discount}
               variants={variants}
-              selectedColorName={colors.uniqueColors.find(c => c.hex === colors.selectedColor)?.name}
+              selectedColorName={variantSelection.uniqueColors.find(c => c.hex === variantSelection.selectedColor)?.name}
             />
           </div>
 
           {/* Selectores de color y medida - Full width sin padding horizontal */}
-          <div className='relative z-10 w-full pb-2 md:pb-1.5 overflow-hidden'>
-            <div className='flex flex-col gap-0 overflow-hidden' style={{ marginBottom: '0' }}>
-              {/* Selector de colores */}
-              <ColorPillSelector
-                colors={colors.uniqueColors}
-                selectedColor={colors.selectedColor}
-                onColorSelect={colors.setSelectedColor}
-                isImpregnante={badges.isImpregnante}
-                selectedFinish={finishes.selectedFinish}
-              />
+          {(() => {
+            const hasColors = variantSelection.uniqueColors.length > 0
+            const hasMeasures = variantSelection.uniqueMeasures.length > 0
+            const shouldRender = hasColors || hasMeasures
+            
+            if (!shouldRender) return null
+            
+            return (
+              <div className='relative z-10 w-full pb-2 md:pb-1.5 overflow-hidden'>
+                <div className='flex flex-col gap-0 overflow-hidden' style={{ marginBottom: '0' }}>
+                  {/* Selector de colores */}
+                  {hasColors && (
+                    <ColorPillSelector
+                      colors={variantSelection.uniqueColors}
+                      selectedColor={variantSelection.selectedColor}
+                      onColorSelect={variantSelection.setSelectedColor}
+                      isImpregnante={variantSelection.isImpregnante}
+                      selectedFinish={variantSelection.selectedFinish || undefined}
+                    />
+                  )}
 
-              {/* Selector de medidas */}
-              <MeasurePillSelector
-                measures={measures.uniqueMeasures}
-                selectedMeasure={measures.selectedMeasure}
-                onMeasureSelect={measures.setSelectedMeasure}
-                commonUnit={measures.commonUnit}
-                colors={colors.uniqueColors}
-                selectedColor={colors.selectedColor}
-                onColorSelect={colors.setSelectedColor}
-                onAddToCart={handleAddToCart}
-                isAddingToCart={state.isAddingToCart}
-                stock={effectiveStock}
-                isImpregnante={badges.isImpregnante}
-              />
+                  {/* Selector de medidas */}
+                  {hasMeasures && (
+                    <MeasurePillSelector
+                      measures={variantSelection.uniqueMeasures}
+                      selectedMeasure={variantSelection.selectedMeasure}
+                      onMeasureSelect={variantSelection.setSelectedMeasure}
+                      commonUnit={variantSelection.commonUnit}
+                      colors={variantSelection.uniqueColors}
+                      selectedColor={variantSelection.selectedColor}
+                      onColorSelect={variantSelection.setSelectedColor}
+                      onAddToCart={handleAddToCart}
+                      isAddingToCart={state.isAddingToCart}
+                      stock={effectiveStock}
+                      isImpregnante={variantSelection.isImpregnante}
+                    />
+                  )}
 
-              {/* Selector de finishes (terminaciones) */}
-              {finishes.uniqueFinishes.length > 0 && (
-                <FinishPillSelector
-                  finishes={finishes.uniqueFinishes}
-                  availableFinishes={finishes.availableFinishesForColor}
-                  selectedFinish={finishes.selectedFinish}
-                  onFinishSelect={finishes.setSelectedFinish}
-                />
-              )}
-            </div>
-          </div>
+                  {/* Selector de finishes (terminaciones) */}
+                  {variantSelection.uniqueFinishes.length > 0 && (
+                    <FinishPillSelector
+                      finishes={variantSelection.uniqueFinishes}
+                      availableFinishes={variantSelection.availableFinishesForColor}
+                      selectedFinish={variantSelection.selectedFinish}
+                      onFinishSelect={variantSelection.setSelectedFinish}
+                    />
+                  )}
+                </div>
+              </div>
+            )
+          })()}
         </div>
 
         {children}
@@ -569,13 +595,13 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                   id: typeof productId === 'string' ? parseInt(productId, 10) : (productId || 0),
                   name: title || '',
                   slug: slug || '',
-                  price: variantsData.displayPrice || price || 0,
-                  originalPrice: variantsData.displayOriginalPrice || originalPrice,
+                  price: variantSelection.displayPrice || price || 0,
+                  originalPrice: variantSelection.displayOriginalPrice || originalPrice,
                   image: image || '',
                   brand: brand || '',
                   stock: effectiveStock || 0,
                   description: description || '',
-              colors: colors.uniqueColors.length > 0 ? colors.uniqueColors.map(c => ({
+              colors: variantSelection.uniqueColors.length > 0 ? variantSelection.uniqueColors.map(c => ({
                 id: c.name.toLowerCase().replace(/\s+/g, '-'),
                 name: c.name.toLowerCase(),
                 displayName: c.name,
@@ -585,7 +611,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                 isPopular: false,
                 description: `Color ${c.name}`
               })) : undefined,
-                  capacities: measures.uniqueMeasures.length > 0 ? measures.uniqueMeasures : [],
+                  capacities: variantSelection.uniqueMeasures.length > 0 ? variantSelection.uniqueMeasures : [],
                   ...(variants && variants.length > 0 ? { variants } : {}),
                 } as any
                 
@@ -682,7 +708,12 @@ CommercialProductCardBase.displayName = 'CommercialProductCardBase'
 // Solo re-renderiza si las props relevantes cambian
 const CommercialProductCard = React.memo(CommercialProductCardBase, (prevProps, nextProps) => {
   // Comparación personalizada para evitar re-renders innecesarios
-  return (
+  // ✅ CORREGIDO: Incluir variants en la comparación para que se re-renderice cuando se cargan
+  const prevVariantsLength = prevProps.variants?.length || 0
+  const nextVariantsLength = nextProps.variants?.length || 0
+  
+  // ✅ DEBUG: Log para verificar la comparación del memo
+  const shouldSkipRender = (
     prevProps.productId === nextProps.productId &&
     prevProps.price === nextProps.price &&
     prevProps.originalPrice === nextProps.originalPrice &&
@@ -692,8 +723,11 @@ const CommercialProductCard = React.memo(CommercialProductCardBase, (prevProps, 
     prevProps.title === nextProps.title &&
     prevProps.slug === nextProps.slug &&
     prevProps.isNew === nextProps.isNew &&
-    prevProps.freeShipping === nextProps.freeShipping
+    prevProps.freeShipping === nextProps.freeShipping &&
+    prevVariantsLength === nextVariantsLength
   )
+  
+  return shouldSkipRender
 })
 
 CommercialProductCard.displayName = 'CommercialProductCard'

@@ -86,6 +86,13 @@ export const FinishPill = React.memo(function FinishPill({
       )}
     </button>
   )
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.finish === nextProps.finish &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isAvailable === nextProps.isAvailable &&
+    prevProps.onSelect === nextProps.onSelect
+  )
 })
 
 FinishPill.displayName = 'FinishPill'

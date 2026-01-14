@@ -25,7 +25,8 @@ import {
 } from '@/lib/optimized-imports'
 import { OrderEnterprise, OrderStatusHistory, OrderNote } from '@/types/orders-enterprise'
 import { formatOrderStatus, formatPaymentStatus } from '@/lib/orders-enterprise'
-import { getProductImage } from '@/lib/utils/image-helpers'
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 import { useToast } from '@/hooks/use-toast'
 import { OrderStatusManager } from './OrderStatusManager'
 import { OrderNotesManager } from './OrderNotesManager'
@@ -378,13 +379,22 @@ export const OrderDetailEnterprise: React.FC<OrderDetailEnterpriseProps> = ({
         <div className='space-y-4'>
           {order.order_items?.map((item, index) => (
             <div key={item.id} className='flex items-center gap-4 p-4 border rounded-lg'>
-              {getProductImage(item.products?.images, item.products) && getProductImage(item.products?.images, item.products) !== '/images/products/placeholder.svg' && (
-                <img
-                  src={getProductImage(item.products?.images, item.products)}
-                  alt={item.products.name}
-                  className='w-16 h-16 object-cover rounded'
-                />
-              )}
+              {(() => {
+                const productImage = resolveProductImage({
+                  image_url: (item.products as any)?.image_url || null,
+                  default_variant: (item.products as any)?.default_variant || null,
+                  variants: ((item.products as any)?.variants || []) as ProductVariant[],
+                  images: (item.products as any)?.images || null,
+                  imgs: (item.products as any)?.imgs || null
+                })
+                return productImage && productImage !== '/images/products/placeholder.svg' ? (
+                  <img
+                    src={productImage}
+                    alt={item.products.name}
+                    className='w-16 h-16 object-cover rounded'
+                  />
+                ) : null
+              })()}
               <div className='flex-1'>
                 <h4 className='font-medium'>{item.products?.name || 'Producto'}</h4>
                 <p className='text-sm text-gray-600'>

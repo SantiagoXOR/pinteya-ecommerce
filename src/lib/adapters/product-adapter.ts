@@ -4,6 +4,8 @@
 
 import { Product } from '@/types/product'
 import { ProductWithCategory } from '@/types/api'
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 
 /**
  * Convierte un producto de la API al formato esperado por los componentes
@@ -21,59 +23,42 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
     console.log('🎨 Variantes:', apiProduct.variants);
   }
   
-  // ✅ PRIORIDAD DE IMAGEN: image_url desde product_images > Variante por defecto > Producto padre
-  let firstImage = '/images/products/placeholder.svg'
+  // Resolver imagen usando image-resolver.ts unificado
+  const imageSource = {
+    image_url: (apiProduct as any)?.image_url || null,
+    default_variant: (apiProduct as any)?.default_variant || null,
+    variants: (apiProduct.variants || []) as ProductVariant[],
+    images: apiProduct.images || null,
+    imgs: apiProduct.imgs || null
+  }
+  
+  const firstImage = resolveProductImage(imageSource, {
+    logContext: `ProductAdapter-${apiProduct.id}`
+  })
+  
+  // Normalizar imágenes para compatibilidad
   let normalizedImages: string[] = []
-  
-  // 1. ✅ CORREGIDO: Priorizar image_url desde product_images (API pública)
-  if ((apiProduct as any)?.image_url && typeof (apiProduct as any).image_url === 'string') {
-    const imageUrl = (apiProduct as any).image_url.trim()
-    if (imageUrl && !imageUrl.includes('placeholder')) {
-      firstImage = imageUrl
-      normalizedImages = [firstImage]
-      console.log('🎯 Usando image_url desde product_images:', firstImage)
-    }
-  }
-  
-  // 2. Si no hay image_url, intentar obtener imagen de variante por defecto
-  if (firstImage === '/images/products/placeholder.svg') {
-    const defaultVariant = (apiProduct as any).default_variant || (apiProduct as any).variants?.[0]
-    if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
-      firstImage = defaultVariant.image_url.trim()
-      normalizedImages = [firstImage]
-      console.log('🎯 Usando imagen de variante por defecto:', firstImage)
-    }
-  }
-  
-  // 3. Si aún no hay imagen, usar imágenes del producto padre
-  if (firstImage === '/images/products/placeholder.svg') {
-    // Normalizar imágenes del producto padre
-    normalizedImages = Array.isArray(apiProduct.images)
-      ? (
-          apiProduct.images
-            .map((img: any) => {
-              if (typeof img === 'string') return img
-              if (img && typeof img?.url === 'string') return img.url
-              if (img && typeof img?.image_url === 'string') return img.image_url
-              return null
-            })
-            .filter(Boolean) as string[]
-        )
-      : apiProduct.images?.previews && Array.isArray(apiProduct.images.previews) && apiProduct.images.previews.length > 0
-        ? apiProduct.images.previews // ✅ USAR TODOS los previews, no solo el primero
-        : apiProduct.images?.thumbnails && Array.isArray(apiProduct.images.thumbnails) && apiProduct.images.thumbnails.length > 0
-          ? apiProduct.images.thumbnails // ✅ USAR TODOS los thumbnails
-          : apiProduct.images?.main
-            ? [apiProduct.images.main]
-            : apiProduct.images?.gallery && Array.isArray(apiProduct.images.gallery) && apiProduct.images.gallery.length > 0
-              ? apiProduct.images.gallery
-              : ['/images/products/placeholder.svg']
-
-    firstImage = normalizedImages[0] || '/images/products/placeholder.svg'
-    if (shouldLog) {
-      console.log('🎯 Usando imagen de producto padre:', firstImage);
-      console.log('📸 Imágenes normalizadas:', normalizedImages);
-    }
+  if (firstImage && !firstImage.includes('placeholder')) {
+    normalizedImages = [firstImage]
+  } else if (Array.isArray(apiProduct.images)) {
+    normalizedImages = apiProduct.images
+      .map((img: any) => {
+        if (typeof img === 'string') return img
+        if (img && typeof img?.url === 'string') return img.url
+        if (img && typeof img?.image_url === 'string') return img.image_url
+        return null
+      })
+      .filter(Boolean) as string[]
+  } else if (apiProduct.images?.previews && Array.isArray(apiProduct.images.previews)) {
+    normalizedImages = apiProduct.images.previews
+  } else if (apiProduct.images?.thumbnails && Array.isArray(apiProduct.images.thumbnails)) {
+    normalizedImages = apiProduct.images.thumbnails
+  } else if (apiProduct.images?.main) {
+    normalizedImages = [apiProduct.images.main]
+  } else if (apiProduct.images?.gallery && Array.isArray(apiProduct.images.gallery)) {
+    normalizedImages = apiProduct.images.gallery
+  } else {
+    normalizedImages = [firstImage]
   }
 
   const adaptedProduct: Product = {
@@ -203,54 +188,22 @@ export function getFinalPrice(product: Product | ProductWithCategory): number {
 
 /**
  * Obtiene la imagen principal del producto
+ * Usa image-resolver.ts para resolución unificada
  * @param product - Producto
  * @returns string - URL de la imagen
  */
 export function getMainImage(product: Product | ProductWithCategory): string {
-  // 1. ✅ CORREGIDO: PRIORIDAD MÁXIMA - image_url desde product_images (API pública)
-  if ((product as any)?.image_url && typeof (product as any).image_url === 'string') {
-    const imageUrl = (product as any).image_url.trim()
-    if (imageUrl && !imageUrl.includes('placeholder')) {
-      return imageUrl
-    }
+  const imageSource = {
+    image_url: (product as any)?.image_url || null,
+    default_variant: (product as any)?.default_variant || null,
+    variants: ((product as any).variants || []) as ProductVariant[],
+    images: (product as any).images || null,
+    imgs: (product as any).imgs || null
   }
-
-  // 2. PRIORIDAD: Imagen de variante por defecto (productos con sistema de variantes)
-  const defaultVariant = (product as any).default_variant || (product as any).variants?.[0]
-  if (defaultVariant?.image_url && typeof defaultVariant.image_url === 'string' && defaultVariant.image_url.trim() !== '') {
-    return defaultVariant.image_url.trim()
-  }
-
-  // 3. Priorizar el formato de array. Puede ser string[] u objetos con url
-  if ('images' in product && Array.isArray((product as any).images) && (product as any).images[0]) {
-    const first = (product as any).images[0]
-    const url = typeof first === 'string' ? first : first?.url ?? first?.image_url
-    if (url && typeof url === 'string' && url.trim() !== '') {
-      return url.trim()
-    }
-  }
-  // 4. Nuevo formato basado en objeto { main, previews, thumbnails, gallery }
-  if (
-    'images' in product &&
-    product &&
-    typeof (product as any).images === 'object' &&
-    (product as any).images !== null
-  ) {
-    const imagesObj: any = (product as any).images
-    const candidates = [imagesObj.main, imagesObj.previews?.[0], imagesObj.thumbnails?.[0], imagesObj.gallery?.[0]]
-    for (const c of candidates) {
-      if (typeof c === 'string' && c.trim() !== '') return c.trim()
-    }
-  }
-  // 5. Compatibilidad con estructuras antiguas
-  if ('imgs' in product && (product as any).imgs?.previews?.[0]) {
-    return (product as any).imgs.previews[0]
-  }
-  if ('images' in product && (product as any).images?.previews?.[0]) {
-    return (product as any).images.previews[0]
-  }
-  // 5. Placeholder
-  return '/images/products/placeholder.svg'
+  
+  return resolveProductImage(imageSource, {
+    logContext: `ProductAdapter.getMainImage`
+  })
 }
 
 /**
@@ -295,50 +248,40 @@ export function getValidImageUrl(
 
 /**
  * Obtiene la imagen thumbnail del producto con validación robusta
+ * Usa image-resolver.ts para resolución unificada, priorizando thumbnails
  * @param product - Producto
  * @returns string - URL de la imagen thumbnail válida
  */
 export function getThumbnailImage(product: Product | ProductWithCategory): string {
-  let imageUrl: string | undefined
-
-  // Priorizar el nuevo formato de array simple
-  if ('images' in product && Array.isArray(product.images) && product.images[0]) {
-    imageUrl = product.images[0]
-  } else if ('imgs' in product && product.imgs?.thumbnails?.[0]) {
-    imageUrl = product.imgs.thumbnails[0]
-  } else if ('images' in product && product.images?.thumbnails?.[0]) {
-    imageUrl = product.images.thumbnails[0]
-  } else if ('images' in product && (product as any).images?.previews?.[0]) {
-    imageUrl = (product as any).images.previews[0]
-  } else if ('images' in product && typeof (product as any).images?.main === 'string') {
-    imageUrl = (product as any).images.main
+  // Intentar obtener thumbnail específico primero
+  if ((product as any).images?.thumbnails?.[0]) {
+    return getValidImageUrl((product as any).images.thumbnails[0])
   }
-
-  return getValidImageUrl(imageUrl)
+  if ((product as any).imgs?.thumbnails?.[0]) {
+    return getValidImageUrl((product as any).imgs.thumbnails[0])
+  }
+  
+  // Fallback a getMainImage usando image-resolver
+  return getMainImage(product)
 }
 
 /**
  * Obtiene la imagen preview del producto con validación robusta
+ * Usa image-resolver.ts para resolución unificada, priorizando previews
  * @param product - Producto
  * @returns string - URL de la imagen preview válida
  */
 export function getPreviewImage(product: Product | ProductWithCategory): string {
-  let imageUrl: string | undefined
-
-  // Priorizar el nuevo formato de array simple
-  if ('images' in product && Array.isArray(product.images) && product.images[0]) {
-    imageUrl = product.images[0]
-  } else if ('imgs' in product && product.imgs?.previews?.[0]) {
-    imageUrl = product.imgs.previews[0]
-  } else if ('images' in product && product.images?.previews?.[0]) {
-    imageUrl = product.images.previews[0]
-  } else if ('images' in product && product.images?.thumbnails?.[0]) {
-    imageUrl = product.images.thumbnails[0]
-  } else if ('images' in product && typeof (product as any).images?.main === 'string') {
-    imageUrl = (product as any).images.main
+  // Intentar obtener preview específico primero
+  if ((product as any).images?.previews?.[0]) {
+    return getValidImageUrl((product as any).images.previews[0])
   }
-
-  return getValidImageUrl(imageUrl)
+  if ((product as any).imgs?.previews?.[0]) {
+    return getValidImageUrl((product as any).imgs.previews[0])
+  }
+  
+  // Fallback a getMainImage usando image-resolver
+  return getMainImage(product)
 }
 
 /**

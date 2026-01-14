@@ -6,7 +6,8 @@ import { useState, useEffect } from 'react'
 import { getProducts } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
 import { getColorHexFromName } from '@/components/ui/product-card-commercial/utils/color-utils'
-import { getProductImage } from '@/lib/utils/image-helpers'
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 import { PaintProduct, PaintColor } from '@/components/PaintVisualizer/types'
 
 interface UsePaintProductsResult {
@@ -77,8 +78,14 @@ export function usePaintProducts(): UsePaintProductsResult {
 
             // Si hay colores, crear el producto para paint visualizer
             if (colorsMap.size > 0) {
-              // Usar getProductImage para obtener la imagen correctamente
-              const productImage = getProductImage(product.images, product) || product.image || undefined
+              // Usar resolver unificado para obtener la imagen correctamente
+              const productImage = resolveProductImage({
+                image_url: (product as any)?.image_url || null,
+                default_variant: (product as any)?.default_variant || null,
+                variants: (product.variants || []) as ProductVariant[],
+                images: (product as any)?.images || null,
+                imgs: (product as any)?.imgs || null
+              }) || product.image || undefined
               
               return {
                 id: product.id,

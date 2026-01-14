@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils'
 import { getProducts } from '@/lib/api/products'
 import { ProductWithCategory } from '@/types/api'
 import { getValidImageUrl, getMainImage } from '@/lib/adapters/product-adapter'
-import { getProductImage } from '@/lib/utils/image-helpers'
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 import Image from 'next/image'
 import { useCartUnified } from '@/hooks/useCartUnified'
 
@@ -150,7 +151,13 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
                 {/* Imagen del producto */}
                 <div className='w-16 h-16 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-gray-300'>
                   <Image
-                    src={getValidImageUrl(getProductImage(product.images, product))}
+                    src={getValidImageUrl(resolveProductImage({
+                      image_url: (product as any)?.image_url || null,
+                      default_variant: (product as any)?.default_variant || null,
+                      variants: ((product as any)?.variants || []) as ProductVariant[],
+                      images: (product as any)?.images || null,
+                      imgs: (product as any)?.imgs || null
+                    }))}
                     alt={product.name}
                     width={64}
                     height={64}

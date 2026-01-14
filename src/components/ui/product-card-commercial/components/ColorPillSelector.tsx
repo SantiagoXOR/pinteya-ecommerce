@@ -2,11 +2,12 @@
 
 import React from 'react'
 import { ColorPill } from './ColorPill'
+import { useHorizontalScroll } from '../hooks/useHorizontalScroll'
 import type { ColorPillSelectorProps } from '../types'
 
 /**
  * Selector de colores con scroll horizontal
- * Usa ColorPill internamente
+ * Usa ColorPill internamente y useHorizontalScroll para lógica de scroll
  */
 export const ColorPillSelector = React.memo(function ColorPillSelector({
   colors,
@@ -15,42 +16,14 @@ export const ColorPillSelector = React.memo(function ColorPillSelector({
   isImpregnante,
   selectedFinish
 }: ColorPillSelectorProps) {
-  if (colors.length === 0) return null
+  if (colors.length === 0) {
+    return null
+  }
 
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
-  const [canScrollRight, setCanScrollRight] = React.useState(false)
-
-  React.useEffect(() => {
-    const container = scrollContainerRef.current
-    if (!container) return
-
-    // ⚡ FASE 5: Optimizado - agrupar lecturas de geometría en requestAnimationFrame
-    const checkScroll = () => {
-      requestAnimationFrame(() => {
-        if (!container) return
-        // Agrupar todas las lecturas de geometría
-        const scrollLeft = container.scrollLeft
-        const scrollWidth = container.scrollWidth
-        const clientWidth = container.clientWidth
-        
-        // Actualizar estado en el siguiente frame
-        requestAnimationFrame(() => {
-          setCanScrollLeft(scrollLeft > 0)
-          setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
-        })
-      })
-    }
-
-    checkScroll()
-    container.addEventListener('scroll', checkScroll, { passive: true })
-    window.addEventListener('resize', checkScroll, { passive: true })
-
-    return () => {
-      container.removeEventListener('scroll', checkScroll)
-      window.removeEventListener('resize', checkScroll)
-    }
-  }, [colors])
+  // Usar hook compartido de scroll horizontal
+  const { scrollContainerRef, canScrollLeft, canScrollRight } = useHorizontalScroll({
+    deps: [colors]
+  })
 
   return (
     <div className='relative w-full overflow-hidden'>
@@ -101,6 +74,26 @@ export const ColorPillSelector = React.memo(function ColorPillSelector({
         />
       )}
     </div>
+  )
+}, (prevProps, nextProps) => {
+  // Comparación profunda de arrays de colores
+  const prevColorsLength = prevProps.colors?.length || 0
+  const nextColorsLength = nextProps.colors?.length || 0
+  
+  if (prevColorsLength !== nextColorsLength) return false
+  
+  // Comparar hex de cada color
+  const colorsEqual = prevProps.colors.every((color, idx) => 
+    color.hex === nextProps.colors?.[idx]?.hex &&
+    color.name === nextProps.colors?.[idx]?.name
+  )
+  
+  return (
+    colorsEqual &&
+    prevProps.selectedColor === nextProps.selectedColor &&
+    prevProps.isImpregnante === nextProps.isImpregnante &&
+    prevProps.selectedFinish === nextProps.selectedFinish &&
+    prevProps.onColorSelect === nextProps.onColorSelect
   )
 })
 

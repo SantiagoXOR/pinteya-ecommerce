@@ -39,7 +39,8 @@ import {
   findProductByMeasure,
 } from '@/lib/api/related-products'
 import { getValidImageUrl } from '@/lib/adapters/product-adapter'
-import { getProductImage } from '@/lib/utils/image-helpers'
+import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
+import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 import { useShopDetailState } from './hooks/useShopDetailState'
 import { useProductData } from './hooks/useProductData'
 import { useProductVariants } from './hooks/useProductVariants'
@@ -527,9 +528,23 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       if (validated && !validated.includes('placeholder')) return validated
     }
     
+    const resolvedProductDataImage = resolveProductImage({
+      image_url: (productData as any)?.image_url || null,
+      default_variant: (productData as any)?.default_variant || null,
+      variants: ((productData as any)?.variants || []) as ProductVariant[],
+      images: (productData as any)?.images || null,
+      imgs: (productData as any)?.imgs || null
+    })
+    const resolvedProductImage = resolveProductImage({
+      image_url: (product as any)?.image_url || null,
+      default_variant: (product as any)?.default_variant || null,
+      variants: ((product as any)?.variants || []) as ProductVariant[],
+      images: (product as any)?.images || null,
+      imgs: (product as any)?.imgs || null
+    })
     const candidates: any[] = [
-      getProductImage((productData as any)?.images),
-      getProductImage((product as any)?.images),
+      resolvedProductDataImage,
+      resolvedProductImage,
       product?.image,
     ]
     for (const c of candidates) {
