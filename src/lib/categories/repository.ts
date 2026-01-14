@@ -140,8 +140,10 @@ export class CategoryRepository {
 
     // Ensure timestamps are set
     const now = new Date().toISOString()
+    // Filtrar description ya que no existe en la tabla categories
+    const { description, ...dataWithoutDescription } = categoryData
     const insertData: CategoryInsert = {
-      ...categoryData,
+      ...dataWithoutDescription,
       created_at: categoryData.created_at || now,
       updated_at: categoryData.updated_at || now,
     }
@@ -168,8 +170,10 @@ export class CategoryRepository {
     }
 
     // Ensure updated_at is set
+    // Filtrar description ya que no existe en la tabla categories
+    const { description, ...dataWithoutDescription } = categoryData
     const updateData: CategoryUpdate = {
-      ...categoryData,
+      ...dataWithoutDescription,
       updated_at: categoryData.updated_at || new Date().toISOString(),
     }
 

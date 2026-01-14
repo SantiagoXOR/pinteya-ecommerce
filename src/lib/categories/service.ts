@@ -110,10 +110,10 @@ export class CategoryService {
     }
 
     // Create category in database - siempre con parent_id = null
+    // Nota: description no existe en la tabla categories, no se incluye
     const dbCategory = await this.repository.create({
       name: payload.name,
       slug,
-      description: payload.description || null,
       image_url: payload.image_url || null,
       parent_id: null, // Siempre null - no crear categorías hijas
       display_order: payload.display_order || null,
@@ -166,10 +166,10 @@ export class CategoryService {
     }
 
     // Update category
+    // Nota: description no existe en la tabla categories, no se incluye
     const dbCategory = await this.repository.update(categoryId, {
       name: payload.name,
       slug: payload.slug,
-      description: payload.description,
       image_url: payload.image_url,
       parent_id: payload.parent_id,
       display_order: payload.display_order,
