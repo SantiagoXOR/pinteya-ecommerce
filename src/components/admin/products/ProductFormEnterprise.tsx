@@ -325,6 +325,7 @@ export function ProductFormEnterprise({
                     value={watchedData.category_id}
                     onChange={value => setValue('category_id', value)}
                     error={errors.category_id?.message}
+                    allowCreate={true}
                   />
                 </div>
 

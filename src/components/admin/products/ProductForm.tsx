@@ -457,6 +457,7 @@ export function ProductForm({
                   value={watchedData.category_id}
                   onChange={categoryId => setValue('category_id', categoryId)}
                   error={errors.category_id?.message}
+                  allowCreate={true}
                 />
               </AdminCard>
 

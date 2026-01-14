@@ -799,6 +799,7 @@ export function ProductFormMinimal({
                 value={watchedData.category_ids || []}
                 onChange={(categoryIds) => form.setValue('category_ids', Array.isArray(categoryIds) ? categoryIds : [categoryIds], { shouldDirty: true })}
                 multiple={true}
+                allowCreate={true}
                 {...(errors.category_ids?.message && { error: errors.category_ids.message })}
               />
             </div>
