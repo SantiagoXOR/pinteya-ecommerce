@@ -328,7 +328,6 @@ const Header = () => {
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}
                       debounceMs={100}
-                      maxSuggestions={6}
                       showRecentSearches={true}
                       showTrendingSearches={true}
                       autoFocus={true}
@@ -361,7 +360,6 @@ const Header = () => {
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}
                       debounceMs={100}
-                      maxSuggestions={6}
                       showRecentSearches={true}
                       showTrendingSearches={true}
                       onFocusChange={handleSearchFocusChange}
@@ -462,7 +460,6 @@ const Header = () => {
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}
                       debounceMs={100}
-                      maxSuggestions={6}
                       showRecentSearches={true}
                       showTrendingSearches={true}
                       autoFocus={true}
@@ -500,7 +497,6 @@ const Header = () => {
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}
                       debounceMs={100}
-                      maxSuggestions={6}
                       showRecentSearches={true}
                       showTrendingSearches={true}
                       onFocusChange={handleSearchFocusChange}

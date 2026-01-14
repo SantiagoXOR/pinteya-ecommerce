@@ -65,8 +65,8 @@ export interface UseSearchOptimizedOptions {
 export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
   const {
     debounceMs = 150,
-    maxSuggestions = 6,
-    searchLimit = 12,
+    maxSuggestions = 20,
+    searchLimit = 25,
     saveRecentSearches = true,
     enablePrefetch = true,
     categoryId,
