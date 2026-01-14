@@ -15,11 +15,6 @@ import { BestSellerSection } from './sections/BestSellerSection'
 
 // ⚡ OPTIMIZACIÓN LCP: Lazy loading agresivo de componentes below-fold para reducir Script Evaluation
 // Estos componentes se cargan después del LCP para no bloquear la carga inicial
-const PromoBanners = dynamic(() => import('./PromoBanners'), {
-  ssr: false, // No SSR para componentes below-fold
-  loading: () => null, // No mostrar skeleton para mejor UX
-})
-
 const CombosOptimized = dynamic(() => import('./CombosOptimized'), {
   ssr: false,
   loading: () => null,
@@ -155,38 +150,17 @@ const Home = ({ categories, bestSellerProducts }: HomeProps) => {
       {/* 2. Ofertas Especiales (BestSeller) - Sin lazy loading, datos pre-fetched */}
       <BestSellerSection products={bestSellerProducts} />
 
-      {/* 3. Banner PINTURA FLASH DAYS - Sin lazy loading */}
-      <div 
-        className='mt-3 sm:mt-4' 
-        style={{ 
-          minHeight: '48px',
-          height: 'auto'
-        }}
-      >
-        <PromoBanners bannerId={1} />
-      </div>
+      {/* 5. Carrusel Dinámico - Solo Envío Gratis - Sin lazy loading */}
+      <DynamicProductCarousel freeShippingOnly={true} />
 
       {/* 4. Productos Destacados (Combos) - Sin lazy loading */}
       <div className='mt-4 sm:mt-6 product-section'>
         <CombosOptimized />
       </div>
 
-      {/* 5. Carrusel Dinámico - Solo Envío Gratis - Sin lazy loading */}
-      <DynamicProductCarousel freeShippingOnly={true} />
-
-      {/* 6. Banner ASESORAMIENTO GRATIS - Sin lazy loading */}
-      <div className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content'>
-        <PromoBanners bannerId={2} />
-      </div>
-
       {/* 7. Nuevos productos - Sin lazy loading */}
-      <div className="mt-0 product-section">
+      <div className="mt-4 sm:mt-6 product-section">
         <NewArrivals />
-      </div>
-
-      {/* 8. Banner CALCULADORA DE PINTURA - Sin lazy loading */}
-      <div className='mt-0 sm:mt-1 mb-3 sm:mb-4 below-fold-content'>
-        <PromoBanners bannerId={3} />
       </div>
 
       {/* 9. Búsquedas Populares - Sin lazy loading */}

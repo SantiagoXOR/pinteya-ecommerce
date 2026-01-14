@@ -177,9 +177,10 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Carrusel Horizontal de productos - ancho igual que grid */}
-        <div className='relative'>
+      {/* Carrusel Horizontal de productos - full width en mobile */}
+      <div className='relative -mx-4 sm:mx-0 sm:px-4 lg:px-8'>
           {/* Contenedor para los botones que se extiende hasta los bordes */}
           <div className='absolute inset-0 pointer-events-none z-20'>
             {/* Flecha izquierda - Centrada verticalmente, al lado izquierdo */}
@@ -204,7 +205,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
           {/* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll fluido a 60fps */}
           <div
             ref={scrollRef}
-            className='flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4'
+            className='flex items-stretch gap-2 pl-4 sm:pl-0 sm:gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 pr-4 sm:pr-0'
             style={{ 
               scrollbarWidth: 'none', 
               msOverflowStyle: 'none',
@@ -214,7 +215,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             }}
           >
             {products.map((product, idx) => (
-              <div key={idx} className='w-[calc(50%-0.5rem)] md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] flex-shrink-0 flex flex-col'>
+              <div key={idx} className='w-[calc(50vw-1.5rem)] sm:w-[calc(50%-0.5rem)] md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.75rem)] flex-shrink-0'>
                 <ProductItem product={product} />
               </div>
             ))}
@@ -222,7 +223,6 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
 
           {/* Fade edges - Eliminados para envío gratis */}
         </div>
-      </div>
     </section>
   )
 }

@@ -13,41 +13,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set())
 
-  const banners = [
-    {
-      id: 1,
-      title: 'EN TODOS NUESTROS PRODUCTOS',
-      subtitle: '',
-      badge: '30% OFF',
-      badgeColor: 'bg-yellow-400 text-gray-900',
-      ctaText: 'Ver Todos los Productos',
-      ctaUrl: '/products',
-      bgImage: '/images/promo/CYBERMONDAY.png',
-      bgGradient: 'from-red-600/85 via-red-500/85 to-orange-600/85',
-    },
-    {
-      id: 2,
-      title: 'ASESORAMIENTO GRATIS',
-      subtitle: 'Te ayudamos con tu proyecto',
-      badge: '100% GRATIS',
-      badgeColor: 'bg-blue-500',
-      ctaText: 'Contactar ahora',
-      ctaUrl: 'https://wa.me/5493513411796?text=Hola!%20Necesito%20asesoramiento%20para%20mi%20proyecto',
-      bgImage: '/images/promo/assetpaint.png',
-      bgGradient: 'from-blue-900/80 to-blue-700/80',
-    },
-    {
-      id: 3,
-      title: 'CALCULÁ TU PINTURA',
-      subtitle: 'Herramienta para estimar materiales',
-      badge: 'GRATIS',
-      badgeColor: 'bg-purple-500',
-      ctaText: 'Calcular ahora',
-      ctaUrl: '/calculator',
-      bgImage: '/images/promo/assetpaint.png',
-      bgGradient: 'from-purple-900/80 to-purple-700/80',
-    },
-  ]
+  const banners = []
 
   const handleBannerClick = (e: React.MouseEvent<HTMLAnchorElement>, url: string) => {
     if (url.startsWith('#')) {
