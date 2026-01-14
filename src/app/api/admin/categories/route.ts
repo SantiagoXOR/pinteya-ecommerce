@@ -21,6 +21,10 @@ import {
 } from '@/lib/categories/api/server'
 import { createCategoryService } from '@/lib/categories/service'
 import type { CategoryApiResponse, CreateCategoryPayload } from '@/lib/categories/types'
+import { composeMiddlewares } from '@/lib/api/middleware-composer'
+import { withErrorHandler, ApiError, ValidationError } from '@/lib/api/error-handler'
+import { withApiLogging } from '@/lib/api/api-logger'
+import { withAdminAuth } from '@/lib/auth/api-auth-middleware'
 
 // ===================================
 // CONFIGURACIÓN
@@ -317,43 +321,37 @@ export async function GET(request: NextRequest) {
 // ===================================
 // POST /api/admin/categories - Crear categoría o operaciones masivas (Admin)
 // ===================================
-export async function POST(request: NextRequest) {
+const postHandler = async (request: NextRequest) => {
   const startTime = Date.now()
 
-  try {
-    // Rate limiting
-    const rateLimitResult = await checkRateLimit(
-      request,
-      {
-        windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
-        maxRequests: Math.floor(RATE_LIMIT_CONFIGS.admin.maxRequests / 2),
-        message: 'Demasiadas creaciones de categorías',
-      },
-      'admin-categories-create'
-    )
+  // Rate limiting (después de autenticación)
+  const rateLimitResult = await checkRateLimit(
+    request,
+    {
+      windowMs: RATE_LIMIT_CONFIGS.admin.windowMs,
+      maxRequests: Math.floor(RATE_LIMIT_CONFIGS.admin.maxRequests / 2),
+      message: 'Demasiadas creaciones de categorías',
+    },
+    'admin-categories-create'
+  )
 
-    if (!rateLimitResult.success) {
-      const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
-      // Rate limit headers are handled internally
-      return response
+  if (!rateLimitResult.success) {
+    throw new ApiError(rateLimitResult.message, 429, 'RATE_LIMIT_EXCEEDED')
+  }
+
+  // Obtener usuario autenticado (el middleware withAdminAuth ya verificó la autenticación)
+  let userId: string | undefined
+  if (process.env.BYPASS_AUTH !== 'true') {
+    try {
+      const { auth } = await import('@/lib/auth/config')
+      const session = await auth()
+      userId = session?.user?.id
+    } catch (authError: any) {
+      console.warn('[POST /categories] No se pudo obtener usuario')
     }
+  }
 
-    // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_create'])
-
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          error: authResult.error,
-          code: authResult.code,
-          enterprise: true,
-          timestamp: new Date().toISOString(),
-        },
-        { status: authResult.status || 401 }
-      )
-    }
-
-    const body = await request.json()
+  const body = await request.json()
     const { operation } = body
 
     if (operation === 'bulk') {
@@ -407,7 +405,7 @@ export async function POST(request: NextRequest) {
 
           // Registrar auditoría para cada categoría eliminada
           for (const categoryId of bulkData.category_ids) {
-            await logAuditAction('bulk_delete', categoryId, authResult.user?.id!, bulkData)
+            await logAuditAction('bulk_delete', categoryId, userId!, bulkData)
           }
 
           const deleteResponse: ApiResponse<typeof deletedCategories> = {
@@ -440,7 +438,7 @@ export async function POST(request: NextRequest) {
           await logAuditAction(
             `bulk_${bulkData.action}`,
             categoryId,
-            authResult.user?.id!,
+            userId!,
             bulkData
           )
         }
@@ -468,22 +466,14 @@ export async function POST(request: NextRequest) {
 
     // Validar que image_url esté presente
     if (!categoryPayload.image_url) {
-      return NextResponse.json(
-        {
-          error: 'La imagen de la categoría es requerida',
-          code: 'MISSING_IMAGE',
-          enterprise: true,
-          timestamp: new Date().toISOString(),
-        },
-        { status: 400 }
-      )
+      throw ValidationError('La imagen de la categoría es requerida')
     }
 
     // Use new CategoryService to create category
-    const newCategory = await createCategory(categoryPayload, authResult.user?.id!)
+    const newCategory = await createCategory(categoryPayload, userId!)
 
     // Registrar auditoría
-    await logAuditAction('create', newCategory.id, authResult.user?.id!, categoryData)
+    await logAuditAction('create', newCategory.id, userId!, categoryData)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -491,7 +481,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 201,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id,
+      userId: userId,
     })
 
     const response: ApiResponse<Category> = {
@@ -500,27 +490,12 @@ export async function POST(request: NextRequest) {
       message: 'Categoría creada exitosamente',
     }
 
-    const nextResponse = NextResponse.json(response, { status: 201 })
-    // Rate limit headers are handled internally
-    return nextResponse
-  } catch (error: any) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/categories', { error })
-
-    // Registrar métricas de error
-    metricsCollector.recordApiCall({
-      endpoint: '/api/admin/categories',
-      method: 'POST',
-      statusCode: 500,
-      responseTime: Date.now() - startTime,
-      error: error.message || 'Unknown error',
-    })
-
-    const errorResponse: ApiResponse<null> = {
-      data: null,
-      success: false,
-      error: error.message || 'Error interno del servidor',
-    }
-
-    return NextResponse.json(errorResponse, { status: 500 })
-  }
+    return NextResponse.json(response, { status: 201 })
 }
+
+// Aplicar middlewares
+export const POST = composeMiddlewares(
+  withAdminAuth(['categories_create']), // Ejecutar PRIMERO para verificar autenticación
+  withErrorHandler,
+  withApiLogging
+)(postHandler)
