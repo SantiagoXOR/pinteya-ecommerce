@@ -62,7 +62,7 @@ const CreateCategorySchema = z.object({
     .max(100, 'El slug es muy largo')
     .regex(/^[a-z0-9-]+$/, 'El slug solo puede contener letras minúsculas, números y guiones'),
   description: z.string().max(500, 'La descripción es muy larga').optional(),
-  parent_id: z.string().uuid().optional(),
+  parent_id: z.string().uuid().nullable().optional(), // Acepta null, undefined o string UUID
 
   // SEO
   meta_title: z.string().max(60, 'El meta título es muy largo').optional(),
