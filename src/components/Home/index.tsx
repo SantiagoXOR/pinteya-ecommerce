@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
 import { useBreakpoint } from '@/contexts/BreakpointContext'
-import type { Category } from '@/types/category'
+import type { Category } from '@/lib/categories/types'
 import type { Product } from '@/types/product'
 
 // ⚡ OPTIMIZACIÓN: Imports estáticos de componentes críticos (sin lazy loading)

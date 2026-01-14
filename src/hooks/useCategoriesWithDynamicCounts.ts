@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useRef, useEffect } from 'react'
-import { useCategories } from './useCategories'
-import { CategoryFilters } from '@/types/api'
+import { useCategories } from '@/lib/categories/hooks/useCategories'
+import type { CategoryFilters } from '@/lib/categories/types'
 import { useCategoryProductCounts, ProductFilters } from './useFilteredProducts'
-import { Category } from '@/types/database'
+import type { Category } from '@/lib/categories/types'
+import { toUICategories } from '@/lib/categories/adapters'
 
 // ===================================
 // TIPOS
@@ -12,6 +13,7 @@ import { Category } from '@/types/database'
 
 export interface CategoryWithDynamicCount extends Category {
   products_count: number
+  count?: number // Alias para products_count
   isLoading?: boolean
 }
 
@@ -59,7 +61,7 @@ export const useCategoriesWithDynamicCounts = ({
   // Obtener categorías base con filtros de búsqueda si existen
   const {
     categories: baseCategories,
-    loading: categoriesLoading,
+    isLoading: categoriesLoading,
     error: categoriesError,
   } = useCategories({
     initialFilters: categoryFilters,
@@ -120,9 +122,13 @@ export const useCategoriesWithDynamicCounts = ({
       const dynamicCount =
         enableDynamicCounts && dynamicCounts ? dynamicCounts[category.slug] : undefined
 
+      // Use count from category or dynamicCount, default to 0
+      const productCount = dynamicCount !== undefined ? dynamicCount : category.count || 0
+
       return {
         ...category,
-        products_count: dynamicCount !== undefined ? dynamicCount : category.products_count || 0,
+        products_count: productCount,
+        count: productCount, // Alias for compatibility
         isLoading: enableDynamicCounts && countsLoading,
       }
     })

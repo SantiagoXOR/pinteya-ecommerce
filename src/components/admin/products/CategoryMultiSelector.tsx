@@ -1,15 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { ChevronDown, X, Search, Check } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
-
-interface Category {
-  id: number
-  name: string
-  slug: string
-}
+import { useCategories } from '@/lib/categories/hooks/useCategories'
+import { denormalizeCategoryId } from '@/lib/categories/adapters'
+import type { Category } from '@/lib/categories/types'
 
 interface CategoryMultiSelectorProps {
   value?: number[] // Array de IDs de categorías seleccionadas
@@ -18,16 +14,6 @@ interface CategoryMultiSelectorProps {
   placeholder?: string
   className?: string
   maxSelections?: number
-}
-
-// API function to fetch categories
-async function fetchCategories(): Promise<Category[]> {
-  const response = await fetch('/api/categories')
-  if (!response.ok) {
-    throw new Error('Error fetching categories')
-  }
-  const data = await response.json()
-  return data.data || []
 }
 
 export function CategoryMultiSelector({
@@ -41,16 +27,19 @@ export function CategoryMultiSelector({
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Fetch categories
+  // Fetch categories using new hook
   const {
-    data: categories = [],
+    categories: uiCategories = [],
     isLoading,
     error: fetchError,
-  } = useQuery({
-    queryKey: ['categories'],
-    queryFn: fetchCategories,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
+  } = useCategories()
+
+  // Convert UI categories to format with numeric IDs for compatibility
+  const categories = uiCategories.map(cat => ({
+    id: denormalizeCategoryId(cat.id) || 0,
+    name: cat.name,
+    slug: cat.slug,
+  })).filter(cat => cat.id > 0)
 
   // Find selected categories
   const selectedCategories = categories.filter(cat => value.includes(cat.id))

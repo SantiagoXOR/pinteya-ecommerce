@@ -5,7 +5,7 @@
  */
 
 import React from 'react'
-import type { CategoryId, CategoryInteractionEvent, CategoryChangeEvent } from '@/types/categories'
+import type { CategoryId, CategoryInteractionEvent, CategoryChangeEvent } from '@/lib/categories/types'
 
 /**
  * Analytics event types

@@ -12,6 +12,7 @@ import { useCategoriesWithDynamicCounts } from '@/hooks/useCategoriesWithDynamic
 import { DynamicCarouselSkeleton } from '@/components/ui/skeletons'
 import { updateProductWithMostExpensiveVariant } from '@/lib/products/utils/variant-utils'
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/products/constants'
+import { getCategoryImage } from '@/lib/categories/adapters'
 
 interface DynamicProductCarouselProps {
   maxProducts?: number
@@ -47,7 +48,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     : null
   
   // Icono: usar el de la categoría real si existe, sino el del config
-  const categoryIcon = currentCategory?.image_url || categoryConfig.iconUrl
+  const categoryIcon = currentCategory ? getCategoryImage(currentCategory) : categoryConfig.iconUrl
   
   // ⚡ OPTIMIZACIÓN: Si freeShippingOnly es true, usar useFilteredProducts para compartir cache con FreeShippingSection
   // Esto evita peticiones duplicadas a /api/products con los mismos filtros

@@ -5,7 +5,7 @@ import { QueryClient, dehydrate, Hydrate } from '@tanstack/react-query'
 import { productQueryKeys } from '@/hooks/queries/productQueryKeys'
 import { getCategoriesServer, getBestSellerProductsServer } from '@/lib/server/data-server'
 import Home from '@/components/Home'
-import type { Category } from '@/types/category'
+import type { Category } from '@/lib/categories/types'
 import type { Product } from '@/types/product'
 
 export const metadata: Metadata = {

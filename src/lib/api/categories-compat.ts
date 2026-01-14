@@ -1,12 +1,9 @@
 /**
- * Category API Functions (DEPRECATED)
- * Pinteya E-commerce - API functions for categories
+ * Compatibility Layer for Category API
+ * Pinteya E-commerce - Backward compatibility exports
  * 
  * @deprecated Use @/lib/categories/api/client instead
  * This file provides backward compatibility during migration
- * 
- * This file will be removed in a future version.
- * Please migrate to: import { fetchCategories, ... } from '@/lib/categories/api/client'
  */
 
 // Re-export from new unified API client
@@ -20,7 +17,7 @@ export {
   searchCategories,
 } from '@/lib/categories/api/client'
 
-// Legacy function aliases for backward compatibility
+// Legacy function aliases
 import { fetchCategories, fetchCategoryBySlug } from '@/lib/categories/api/client'
 import type { Category } from '@/lib/categories/types'
 import type { ApiResponse } from '@/types/api'
@@ -51,6 +48,3 @@ export async function getCategoryBySlug(
 export async function searchCategories(searchTerm: string): Promise<Category[]> {
   return fetchCategories({ search: searchTerm })
 }
-
-// Legacy types for backward compatibility
-export type { CategoryFilters } from '@/lib/categories/types'

@@ -6,7 +6,16 @@
 
 import React, { useCallback, useState, useMemo } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import type { CategoryId, UseCategoryNavigationReturn } from '@/types/categories'
+import type { CategoryId } from '@/lib/categories/types'
+import { getCategoryUrl } from '@/lib/categories/adapters'
+
+// Type for navigation return
+export interface UseCategoryNavigationReturn {
+  navigateToFiltered: (categories: CategoryId[]) => void
+  navigateToHome: () => void
+  getCurrentUrl: () => string
+  isNavigating: boolean
+}
 
 /**
  * Configuration options for the category navigation hook

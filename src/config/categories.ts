@@ -5,7 +5,7 @@
  */
 
 import React from 'react'
-import type { Category, CategoriesConfig } from '@/types/categories'
+import type { Category, CategoryComponentConfig as CategoriesConfig } from '@/lib/categories/types'
 
 /**
  * Environment-based configuration

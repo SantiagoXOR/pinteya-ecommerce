@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
 import { CategoryFilterContext } from '@/contexts/CategoryFilterContext'
 import { usePrefetchOnHover, usePrefetchBestSellerOnHover } from '@/hooks/usePrefetchOnHover'
+import { getCategoryImage } from '@/lib/categories/adapters'
 
 interface CategoryTogglePillsProps {
   onCategoryChange: (selectedCategories: string[]) => void
@@ -25,6 +26,7 @@ interface CategoryPillItemProps {
     slug: string
     name: string
     image_url?: string | null
+    icon?: string
   }
   isSelected: boolean
   useDynamicCarousel: boolean
@@ -79,23 +81,26 @@ const CategoryPillItemBase: React.FC<CategoryPillItemProps> = ({
             }
           `}
         >
-          {category.image_url && (
-            <div className={`
-              flex items-center justify-center 
-              w-9 h-9 sm:w-10 sm:h-10 md:w-10 md:h-10
-              transition-transform duration-300 ease-out
-              ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
-            `}>
-              <Image
-                src={category.image_url}
-                alt=''
-                width={40}
-                height={40}
-                className='w-full h-full object-contain'
-                loading='lazy'
-              />
-            </div>
-          )}
+          {(() => {
+            const imageUrl = getCategoryImage(category)
+            return imageUrl ? (
+              <div className={`
+                flex items-center justify-center 
+                w-9 h-9 sm:w-10 sm:h-10 md:w-10 md:h-10
+                transition-transform duration-300 ease-out
+                ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
+              `}>
+                <Image
+                  src={imageUrl}
+                  alt=''
+                  width={40}
+                  height={40}
+                  className='w-full h-full object-contain'
+                  loading='lazy'
+                />
+              </div>
+            ) : null
+          })()}
           <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
             {category.name}
           </span>

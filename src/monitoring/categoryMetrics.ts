@@ -5,7 +5,7 @@
  */
 
 import React from 'react'
-import type { CategoryId } from '@/types/categories'
+import type { CategoryId } from '@/lib/categories/types'
 
 /**
  * Performance metrics interface

@@ -14,6 +14,13 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { metricsCollector } from '@/lib/enterprise/metrics'
 import { ApiResponse } from '@/types/api'
 import { Category } from '@/types/database'
+import { 
+  getCategoriesServer, 
+  createCategoryInDB,
+  getCategoriesFromDB 
+} from '@/lib/categories/api/server'
+import { createCategoryService } from '@/lib/categories/service'
+import type { CategoryApiResponse, CreateCategoryPayload } from '@/lib/categories/types'
 
 // ===================================
 // CONFIGURACIÓN
@@ -94,73 +101,43 @@ const BulkCategoryActionSchema = z.object({
 // FUNCIONES AUXILIARES
 // ===================================
 async function getCategoriesWithStats(filters: z.infer<typeof CategoryFiltersSchema>) {
-  const supabase = getSupabaseClient(true)
-
-  if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible')
+  // Use new CategoryService to get categories
+  const service = createCategoryService(true)
+  
+  // Convert filters to CategoryFilters format
+  const categoryFilters = {
+    search: filters.search,
+    parent_id: filters.parent_id ? parseInt(filters.parent_id, 10) : null,
+    sortBy: filters.sort_by === 'product_count' ? 'products_count' : filters.sort_by === 'order_index' ? 'display_order' : filters.sort_by,
+    sortOrder: filters.sort_order,
+    limit: filters.limit,
+    offset: (filters.page - 1) * filters.limit,
   }
 
-  let query = supabase.from('categories').select('*', { count: 'exact' })
+  // Get categories with counts
+  const uiCategories = await service.getCategoriesWithCounts(categoryFilters)
+  const total = await service.getCategoryCount(categoryFilters)
 
-  // Aplicar filtros
-  if (filters.search) {
-    query = query.or(
-      `name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,slug.ilike.%${filters.search}%`
-    )
-  }
-
-  if (filters.parent_id !== undefined) {
-    if (filters.parent_id === null) {
-      query = query.is('parent_id', null)
-    } else {
-      query = query.eq('parent_id', filters.parent_id)
-    }
-  }
-
-  // Filtros deshabilitados temporalmente hasta que se agreguen las columnas necesarias
-  // if (filters.is_active !== undefined) {
-  //   query = query.eq('is_active', filters.is_active);
-  // }
-
-  // if (filters.level !== undefined) {
-  //   query = query.eq('level', filters.level);
-  // }
-
-  // if (filters.has_products !== undefined) {
-  //   if (filters.has_products) {
-  //     query = query.gt('products_count', 0);
-  //   } else {
-  //     query = query.eq('products_count', 0);
-  //   }
-  // }
-
-  // Ordenamiento - usando solo columnas que existen
-  const validSortColumns = ['name', 'created_at', 'updated_at']
-  const sortBy = validSortColumns.includes(filters.sort_by) ? filters.sort_by : 'name'
-  query = query.order(sortBy, { ascending: filters.sort_order === 'asc' })
-
-  // Paginación
-  const from = (filters.page - 1) * filters.limit
-  const to = from + filters.limit - 1
-  query = query.range(from, to)
-
-  const { data: categories, error, count } = await query
-
-  if (error) {
-    throw new Error(`Error al obtener categorías: ${error.message}`)
-  }
-
-  // Procesar datos - usando solo campos que existen en la tabla
-  const processedCategories = (categories || []).map(category => ({
-    ...category,
-    children: [], // Inicializar como array vacío
-    products_count: 0, // Valor por defecto
-    meta_keywords: [], // Valor por defecto
+  // Convert to DB format for backward compatibility
+  const processedCategories = uiCategories.map(cat => ({
+    id: parseInt(cat.id, 10),
+    name: cat.name,
+    slug: cat.slug,
+    description: cat.description || null,
+    icon: cat.icon,
+    image_url: cat.icon, // Map icon to image_url
+    parent_id: cat.parentId ? parseInt(cat.parentId, 10) : null,
+    created_at: cat.createdAt || new Date().toISOString(),
+    updated_at: cat.updatedAt || null,
+    display_order: cat.displayOrder || null,
+    products_count: cat.count || 0,
+    children: [], // Initialize as empty array
+    meta_keywords: [], // Default value
   }))
 
   return {
     categories: processedCategories,
-    total: count || 0,
+    total: total,
     page: filters.page,
     limit: filters.limit,
     pages: Math.ceil((count || 0) / filters.limit),
@@ -168,57 +145,32 @@ async function getCategoriesWithStats(filters: z.infer<typeof CategoryFiltersSch
 }
 
 async function createCategory(categoryData: z.infer<typeof CreateCategorySchema>, userId: string) {
-  const supabase = getSupabaseClient(true)
-
-  if (!supabase) {
-    throw new Error('Cliente administrativo de Supabase no disponible')
-  }
-
-  // Verificar que el slug sea único
-  const { data: existingCategory } = await supabase
-    .from('categories')
-    .select('id')
-    .eq('slug', categoryData.slug)
-    .single()
-
-  if (existingCategory) {
-    throw new Error('Ya existe una categoría con este slug')
-  }
-
-  // Calcular nivel y path si tiene padre - simplificado para esquema actual
-  if (categoryData.parent_id) {
-    const { data: parentCategory, error: parentError } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('id', categoryData.parent_id)
-      .single()
-
-    if (parentError || !parentCategory) {
-      throw new Error('Categoría padre no encontrada')
-    }
-  }
-
-  // Preparar datos para inserción - usando solo campos que existen en la tabla
-  const insertData = {
+  // Use new CategoryService to create category
+  const payload: CreateCategoryPayload = {
     name: categoryData.name,
     slug: categoryData.slug,
-    parent_id: categoryData.parent_id || null,
+    description: categoryData.description,
     image_url: categoryData.image_url || null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    parent_id: categoryData.parent_id ? parseInt(categoryData.parent_id, 10) : null,
+    display_order: categoryData.order_index || null,
   }
 
-  const { data: newCategory, error: insertError } = await supabase
-    .from('categories')
-    .insert(insertData)
-    .select()
-    .single()
+  const newCategory = await createCategoryInDB(payload, true)
 
-  if (insertError) {
-    throw new Error(`Error al crear categoría: ${insertError.message}`)
+  // Convert to DB format for backward compatibility
+  return {
+    id: parseInt(newCategory.id, 10),
+    name: newCategory.name,
+    slug: newCategory.slug,
+    description: newCategory.description || null,
+    icon: newCategory.icon,
+    image_url: newCategory.icon,
+    parent_id: newCategory.parentId ? parseInt(newCategory.parentId, 10) : null,
+    created_at: newCategory.createdAt || new Date().toISOString(),
+    updated_at: newCategory.updatedAt || null,
+    display_order: newCategory.displayOrder || null,
+    products_count: newCategory.count || 0,
   }
-
-  return newCategory
 }
 
 async function logAuditAction(action: string, categoryId: string, userId: string, details?: any) {
@@ -508,15 +460,27 @@ export async function POST(request: NextRequest) {
     // Crear categoría individual
     const categoryData = CreateCategorySchema.parse(body)
 
-    // Crear slug si no se proporciona
-    if (!categoryData.slug && categoryData.name) {
-      categoryData.slug = categoryData.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '')
+    // Asegurar que parent_id sea siempre NULL (no crear categorías hijas)
+    const categoryPayload = {
+      ...categoryData,
+      parent_id: null, // Forzar a null - no crear categorías hijas
     }
 
-    const newCategory = await createCategory(categoryData, authResult.user?.id!)
+    // Validar que image_url esté presente
+    if (!categoryPayload.image_url) {
+      return NextResponse.json(
+        {
+          error: 'La imagen de la categoría es requerida',
+          code: 'MISSING_IMAGE',
+          enterprise: true,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      )
+    }
+
+    // Use new CategoryService to create category
+    const newCategory = await createCategory(categoryPayload, authResult.user?.id!)
 
     // Registrar auditoría
     await logAuditAction('create', newCategory.id, authResult.user?.id!, categoryData)

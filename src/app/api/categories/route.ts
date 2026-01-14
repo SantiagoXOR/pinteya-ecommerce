@@ -10,6 +10,9 @@ import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supab
 import { validateData, CategoryFiltersSchema, CategorySchema } from '@/lib/validations'
 import { ApiResponse } from '@/types/api'
 import { Category } from '@/types/database'
+import { getCategories, createCategoryInDB } from '@/lib/categories/api/server'
+import { toUICategories } from '@/lib/categories/adapters'
+import type { CategoryApiResponse } from '@/lib/categories/types'
 
 // ===================================
 // MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
@@ -94,54 +97,29 @@ export async function GET(request: NextRequest) {
           return NextResponse.json(errorResponse, { status: 503 })
         }
 
-        // Construir query base - simplificado para la estructura actual
-        const baseQuery = supabase
-          .from('categories')
-          .select(`
-            *,
-            products_count:products(count)
-          `)
-          .order('display_order', { ascending: true })
-          .order('name', { ascending: true })
-
-        // Aplicar filtros
-        let query = baseQuery
-        if (filters.search) {
-          query = query.ilike('name', `%${filters.search}%`)
+        // Use new CategoryService to get categories
+        const categoryFilters = {
+          search: filters.search,
+          sortBy: 'display_order' as const,
+          sortOrder: 'asc' as const,
         }
 
-        // Ejecutar query con timeout de base de datos
-        const { data: categories, error } = await withDatabaseTimeout(async signal => {
-          return await query
-        }, API_TIMEOUTS.database)
+        const uiCategories = await getCategories(categoryFilters, false)
 
-        if (error) {
-          console.error('Error en GET /api/categories:', error)
-
-          // Log de error de seguridad
-          securityLogger.logApiError(
-            securityLogger.context,
-            new Error(`Database error: ${error.message}`),
-            {
-              endpoint: '/api/categories',
-              operation: 'select_categories',
-            }
-          )
-
-          const errorResponse: ApiResponse<null> = {
-            data: null,
-            success: false,
-            error: error.message || 'Error obteniendo categorías',
-          }
-          return NextResponse.json(errorResponse, { status: 500 })
-        }
-
-        // Procesar datos para incluir conteo de productos
-        const processedCategories =
-          categories?.map(category => ({
-            ...category,
-            products_count: category.products_count?.[0]?.count || 0,
-          })) || []
+        // Convert back to DB format for API response (maintain backward compatibility)
+        const processedCategories = uiCategories.map(cat => ({
+          id: parseInt(cat.id, 10),
+          name: cat.name,
+          slug: cat.slug,
+          description: cat.description || null,
+          icon: cat.icon,
+          image_url: cat.icon, // Map icon back to image_url for compatibility
+          parent_id: cat.parentId ? parseInt(cat.parentId, 10) : null,
+          created_at: cat.createdAt || new Date().toISOString(),
+          updated_at: cat.updatedAt || null,
+          display_order: cat.displayOrder || null,
+          products_count: cat.count || 0,
+        }))
 
         // Log de operación exitosa
         securityLogger.log({
@@ -227,40 +205,33 @@ export async function POST(request: NextRequest) {
     // Validar datos de la categoría
     const categoryData = validateData(CategorySchema, body)
 
-    const supabase = getSupabaseClient(true) // Usar cliente admin
+    // Use new CategoryService to create category
+    const newCategory = await createCategoryInDB({
+      name: categoryData.name,
+      slug: categoryData.slug,
+      description: categoryData.description,
+      image_url: categoryData.image_url || categoryData.icon,
+      parent_id: categoryData.parent_id || null,
+      display_order: categoryData.display_order || null,
+    }, true)
 
-    // Verificar que el cliente administrativo esté disponible
-    if (!supabase) {
-      console.error('Cliente administrativo de Supabase no disponible en POST /api/categories')
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'Servicio administrativo no disponible',
-      }
-      return NextResponse.json(errorResponse, { status: 503 })
-    }
-
-    // Crear slug si no se proporciona
-    if (!categoryData.slug) {
-      categoryData.slug = categoryData.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '')
-    }
-
-    // Insertar categoría
-    const { data: category, error } = await supabase
-      .from('categories')
-      .insert(categoryData)
-      .select()
-      .single()
-
-    if (error) {
-      handleSupabaseError(error, 'POST /api/categories')
+    // Convert to DB format for API response (maintain backward compatibility)
+    const dbCategory: Category = {
+      id: parseInt(newCategory.id, 10),
+      name: newCategory.name,
+      slug: newCategory.slug,
+      description: newCategory.description || null,
+      icon: newCategory.icon,
+      image_url: newCategory.icon, // Map icon to image_url for compatibility
+      parent_id: newCategory.parentId ? parseInt(newCategory.parentId, 10) : null,
+      created_at: newCategory.createdAt || new Date().toISOString(),
+      updated_at: newCategory.updatedAt || null,
+      display_order: newCategory.displayOrder || null,
+      products_count: newCategory.count || 0,
     }
 
     const response: ApiResponse<Category> = {
-      data: category,
+      data: dbCategory,
       success: true,
       message: 'Categoría creada exitosamente',
     }

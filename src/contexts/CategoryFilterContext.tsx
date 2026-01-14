@@ -7,7 +7,7 @@
 // entre CategoryTogglePills y DynamicProductCarousel
 
 import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react'
-import { getCategoryConfig, CategoryConfig } from '@/constants/categories'
+import { getCategoryConfig, type CategoryConfig } from '@/lib/categories/config'
 
 interface CategoryFilterContextType {
   selectedCategory: string | null

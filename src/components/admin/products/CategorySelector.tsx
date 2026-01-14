@@ -1,18 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { ChevronDown, Plus, Search, Folder, FolderOpen, X, Check } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
-
-interface Category {
-  id: number
-  name: string
-  description?: string
-  parent_id?: number
-  level: number
-  children?: Category[]
-}
+import { useCategories } from '@/lib/categories/hooks'
+import { buildCategoryHierarchy, denormalizeCategoryId } from '@/lib/categories/adapters'
+import type { Category } from '@/lib/categories/types'
+import { CreateCategoryModal } from '@/components/admin/categories/CreateCategoryModal'
 
 interface CategorySelectorProps {
   value?: number | number[]
@@ -24,49 +18,14 @@ interface CategorySelectorProps {
   multiple?: boolean // Para habilitar selección múltiple
 }
 
-// API function to fetch categories
-async function fetchCategories(): Promise<Category[]> {
-  const response = await fetch('/api/categories')
-  if (!response.ok) {
-    throw new Error('Error fetching categories')
-  }
-  const data = await response.json()
-  return data.data || []
-}
-
-// Build category tree
+// Build category tree from UI categories
 function buildCategoryTree(categories: Category[]): Category[] {
-  // ✅ CORREGIDO: Asegurar que categories siempre sea un array
-  const safeCategories = Array.isArray(categories) ? categories : []
-  
-  const categoryMap = new Map<number, Category>()
-  const rootCategories: Category[] = []
-
-  // Create map of all categories
-  safeCategories.forEach(category => {
-    categoryMap.set(category.id, { ...category, children: [] })
-  })
-
-  // Build tree structure
-  safeCategories.forEach(category => {
-    const categoryNode = categoryMap.get(category.id)!
-
-    if (category.parent_id) {
-      const parent = categoryMap.get(category.parent_id)
-      if (parent) {
-        parent.children!.push(categoryNode)
-      }
-    } else {
-      rootCategories.push(categoryNode)
-    }
-  })
-
-  return rootCategories
+  return buildCategoryHierarchy(categories)
 }
 
 // Flatten categories for search
-function flattenCategories(categories: Category[], level = 0): Category[] {
-  const flattened: Category[] = []
+function flattenCategories(categories: Category[], level = 0): Array<Category & { level: number }> {
+  const flattened: Array<Category & { level: number }> = []
 
   categories.forEach(category => {
     flattened.push({ ...category, level })
@@ -88,36 +47,33 @@ export function CategorySelector({
   multiple = false,
 }: CategorySelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set())
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
 
-  // Fetch categories
+  // Fetch categories using new hook
   const {
-    data: categories = [],
+    categories: uiCategories = [],
     isLoading,
     error: fetchError,
-  } = useQuery({
-    queryKey: ['categories'],
-    queryFn: fetchCategories,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  })
+    refetch,
+  } = useCategories()
 
-  // ✅ CORREGIDO: Asegurar que categories siempre sea un array antes de procesarlo
-  const safeCategories = Array.isArray(categories) ? categories : []
+  // Ensure categories is an array
+  const safeCategories = Array.isArray(uiCategories) ? uiCategories : []
   const categoryTree = buildCategoryTree(safeCategories)
   const flatCategories = flattenCategories(categoryTree)
 
-  // Handle value as array or single number
-  const selectedIds = multiple 
-    ? (Array.isArray(value) ? value : value ? [value] : [])
-    : (Array.isArray(value) ? [value[0]] : value ? [value] : [])
+  // Handle value as array or single number - convert to string IDs for comparison
+  const valueIds = multiple 
+    ? (Array.isArray(value) ? value.map(String) : value ? [String(value)] : [])
+    : (Array.isArray(value) ? [String(value[0])] : value ? [String(value)] : [])
 
   // Find selected categories
-  const selectedCategories = flatCategories.filter(cat => selectedIds.includes(cat.id))
+  const selectedCategories = flatCategories.filter(cat => valueIds.includes(cat.id))
   const selectedCategory = !multiple ? selectedCategories[0] : undefined
 
   // Filter categories based on search
-  // ✅ CORREGIDO: Asegurar que flatCategories y categoryTree siempre sean arrays
   const safeFlatCategories = Array.isArray(flatCategories) ? flatCategories : []
   const safeCategoryTree = Array.isArray(categoryTree) ? categoryTree : []
   const filteredCategories = searchTerm
@@ -126,7 +82,7 @@ export function CategorySelector({
       )
     : safeCategoryTree
 
-  const toggleExpanded = (categoryId: number) => {
+  const toggleExpanded = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories)
     if (newExpanded.has(categoryId)) {
       newExpanded.delete(categoryId)
@@ -136,36 +92,42 @@ export function CategorySelector({
     setExpandedCategories(newExpanded)
   }
 
-  const handleSelect = (categoryId: number) => {
+  const handleSelect = (categoryId: string) => {
+    // Convert string ID to number for backward compatibility
+    const numId = denormalizeCategoryId(categoryId)
+    if (numId === null) return
+
     if (multiple) {
       const currentIds = Array.isArray(value) ? value : value ? [value] : []
-      const newIds = currentIds.includes(categoryId)
-        ? currentIds.filter(id => id !== categoryId)
-        : [...currentIds, categoryId]
+      const newIds = currentIds.includes(numId)
+        ? currentIds.filter(id => id !== numId)
+        : [...currentIds, numId]
       onChange(newIds)
       // No cerrar el dropdown en modo múltiple para permitir múltiples selecciones
     } else {
-      onChange(categoryId)
+      onChange(numId)
       setIsOpen(false)
       setSearchTerm('')
     }
   }
 
-  const handleRemoveCategory = (categoryId: number, e: React.MouseEvent) => {
+  const handleRemoveCategory = (categoryId: string, e: React.MouseEvent) => {
     e.stopPropagation()
+    const numId = denormalizeCategoryId(categoryId)
+    if (numId === null) return
+
     if (multiple && Array.isArray(value)) {
-      const newIds = value.filter(id => id !== categoryId)
+      const newIds = value.filter(id => id !== numId)
       onChange(newIds)
     }
   }
 
   const renderCategoryTree = (categories: Category[], level = 0) => {
-    // ✅ CORREGIDO: Asegurar que categories siempre sea un array
     const safeCategories = Array.isArray(categories) ? categories : []
     if (safeCategories.length === 0) return []
     
     return safeCategories.map(category => {
-      const isSelected = selectedIds.includes(category.id)
+      const isSelected = valueIds.includes(category.id)
       return (
         <div key={category.id}>
           <div
@@ -229,11 +191,10 @@ export function CategorySelector({
     })
   }
 
-  const renderFlatList = (categories: Category[]) => {
-    // ✅ CORREGIDO: Asegurar que categories siempre sea un array
+  const renderFlatList = (categories: Array<Category & { level: number }>) => {
     const safeCategories = Array.isArray(categories) ? categories : []
     return safeCategories.map(category => {
-      const isSelected = selectedIds.includes(category.id)
+      const isSelected = valueIds.includes(category.id)
       return (
         <div
           key={category.id}
@@ -372,9 +333,9 @@ export function CategorySelector({
               <button
                 type='button'
                 className='flex items-center space-x-2 text-sm text-blaze-orange-600 hover:text-blaze-orange-700'
-                onClick={() => {
-                  // TODO: Implement create category modal
-                  console.log('Create new category')
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsCreateModalOpen(true)
                 }}
               >
                 <Plus className='w-4 h-4' />
@@ -387,6 +348,26 @@ export function CategorySelector({
 
       {/* Overlay */}
       {isOpen && <div className='fixed inset-0 z-40' onClick={() => setIsOpen(false)} />}
+
+      {/* Create Category Modal */}
+      {allowCreate && (
+        <CreateCategoryModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={async (newCategory) => {
+            // Refresh categories list
+            await refetch()
+            // Optionally select the newly created category
+            if (newCategory && newCategory.id) {
+              const numId = denormalizeCategoryId(newCategory.id)
+              if (numId !== null) {
+                onChange(numId)
+              }
+            }
+            setIsOpen(false)
+          }}
+        />
+      )}
     </div>
   )
 }

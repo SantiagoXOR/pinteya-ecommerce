@@ -6,13 +6,13 @@ import { createPublicClient } from '@/lib/integrations/supabase/server'
 import { BESTSELLER_PRODUCTS_SLUGS, PRODUCT_LIMITS } from '@/lib/products/constants'
 import { adaptApiProductToComponent } from '@/lib/adapters/product-adapter'
 import type { Product } from '@/types/product'
-import type { Category } from '@/types/category'
+import type { CategoryBase } from '@/lib/categories/types'
 import type { ProductWithCategory } from '@/types/api'
 
 /**
  * Obtiene todas las categorías activas desde el servidor
  */
-export const getCategoriesServer = cache(async (): Promise<Category[]> => {
+export const getCategoriesServer = cache(async (): Promise<CategoryBase[]> => {
   const supabase = createPublicClient()
 
   try {
