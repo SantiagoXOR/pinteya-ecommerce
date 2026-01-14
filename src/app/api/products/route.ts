@@ -27,6 +27,109 @@ import { expandQueryIntents, stripDiacritics } from '@/lib/search/intents'
 import { normalizeProductTitle } from '@/lib/core/utils'
 
 // ===================================
+// FUNCIÓN DE REORDENAMIENTO INTELIGENTE
+// ===================================
+
+interface RelevanceScore {
+  exactMatch: number      // Coincidencia exacta en nombre
+  startsWith: number      // Nombre empieza con query
+  contains: number        // Nombre contiene query
+  descriptionMatch: number // Coincidencia en descripción
+  brandMatch: number      // Coincidencia en marca
+  ftsRank: number         // Rank de FTS (si aplica)
+}
+
+/**
+ * Calcula el score de relevancia de un producto para una búsqueda
+ */
+function calculateRelevanceScore(
+  product: any,
+  query: string,
+  ftsRank?: number
+): number {
+  const normalizedQuery = stripDiacritics(query.toLowerCase().trim())
+  const productName = stripDiacritics((product.name || '').toLowerCase())
+  const productDescription = stripDiacritics((product.description || '').toLowerCase())
+  const productBrand = stripDiacritics((product.brand || '').toLowerCase())
+
+  let score = 0
+
+  // Coincidencia exacta en nombre (mayor prioridad)
+  if (productName === normalizedQuery) {
+    score += 100
+  }
+
+  // Nombre empieza con query
+  if (productName.startsWith(normalizedQuery)) {
+    score += 50
+  }
+
+  // Nombre contiene query
+  if (productName.includes(normalizedQuery)) {
+    score += 30
+  }
+
+  // Descripción contiene query
+  if (productDescription.includes(normalizedQuery)) {
+    score += 10
+  }
+
+  // Marca contiene query
+  if (productBrand.includes(normalizedQuery)) {
+    score += 15
+  }
+
+  // Rank de FTS (si está disponible, multiplicar por factor)
+  if (ftsRank !== undefined && ftsRank > 0) {
+    score += ftsRank * 20
+  }
+
+  // Bonus por tener variantes (productos más completos)
+  if (product.has_variants || product.variant_count > 0) {
+    score += 5
+  }
+
+  return score
+}
+
+/**
+ * Reordena productos por relevancia de búsqueda
+ */
+function reorderSearchResults(
+  products: any[],
+  query: string,
+  ftsProductsMap?: Map<number, number> // Map de product_id -> fts_rank
+): any[] {
+  if (!query || !query.trim()) {
+    return products
+  }
+
+  // Calcular scores para cada producto
+  const productsWithScores = products.map(product => {
+    const ftsRank = ftsProductsMap?.get(product.id)
+    const score = calculateRelevanceScore(product, query, ftsRank)
+    return { product, score }
+  })
+
+  // Ordenar por score descendente
+  productsWithScores.sort((a, b) => {
+    // Primero por score
+    if (b.score !== a.score) {
+      return b.score - a.score
+    }
+    // En caso de empate, productos con variantes primero
+    const aHasVariants = a.product.has_variants || a.product.variant_count > 0
+    const bHasVariants = b.product.has_variants || b.product.variant_count > 0
+    if (aHasVariants && !bHasVariants) return -1
+    if (!aHasVariants && bHasVariants) return 1
+    // Si ambos tienen o no tienen variantes, por fecha de creación
+    return new Date(b.product.created_at || 0).getTime() - new Date(a.product.created_at || 0).getTime()
+  })
+
+  return productsWithScores.map(item => item.product)
+}
+
+// ===================================
 // GET /api/products - Obtener productos con filtros
 // ===================================
 export async function GET(request: NextRequest) {
@@ -152,6 +255,7 @@ export async function GET(request: NextRequest) {
       let ftsUsedOuter = false
       let orderedIdsOuter: number[] = []
       let overrideCountOuter: number | null = null
+      let ftsProductsMapOuter = new Map<number, number>() // Map de product_id -> fts_rank
 
       // Obtener IDs de categorías antes del timeout si es necesario
       let categoryId: number | null = null
@@ -251,36 +355,45 @@ export async function GET(request: NextRequest) {
 
         if (filters.search) {
           // ================================
-          // BÚSQUEDA MEJORADA: FTS + INTENCIÓN + FALLBACK ILIKE/TRIGRAM
+          // BÚSQUEDA MEJORADA: FTS + ILIKE COMBINADOS + REORDENAMIENTO INTELIGENTE
           // ================================
           const raw = String(filters.search).trim()
 
           // Expandir intención (sinónimos, singularización, diacríticos)
           const candidates = new Set<string>(expandQueryIntents(raw))
 
-          // Intentar primero FTS vía RPC para resultados relevantes
+          // Obtener más resultados de la RPC mejorada (hasta 50) para poder reordenar
+          // La función RPC ya combina FTS e ILIKE, así que obtenemos todos los resultados relevantes
           const page = filters.page || 1
           const limit = filters.limit || 10
           const from = (page - 1) * limit
           let ftsUsed = false
           let orderedIds: number[] = []
           let overrideCount: number | null = null
+          let ftsProductsMap = new Map<number, number>() // Map de product_id -> fts_rank
 
           try {
-            // Intentar usar FTS solo si la función existe
-            // NOTA: products_search RPC debe estar definida en la base de datos
+            // Usar la función RPC mejorada que combina FTS e ILIKE
+            // Obtener más resultados (50) para poder reordenar correctamente
             const { data: ftsProducts, error: ftsError } = await supabase.rpc('products_search', {
               q: raw,
-              lim: limit,
-              off: from,
+              lim: 50, // Obtener más resultados para reordenar
+              off: 0,  // Empezar desde el inicio
             })
 
             if (!ftsError && ftsProducts && ftsProducts.length > 0) {
               orderedIds = ftsProducts.map((p: any) => p.id)
-              overrideCount = orderedIds.length // RPC no devuelve count total; usamos tamaño de la página
+              overrideCount = ftsProducts.length
               ftsUsed = true
 
-              // Limitar resultados de la consulta principal a los IDs devueltos por FTS
+              // Crear mapa de ranks FTS para usar en reordenamiento
+              ftsProducts.forEach((p: any) => {
+                if (p.id && p.rank !== undefined) {
+                  ftsProductsMap.set(p.id, p.rank)
+                }
+              })
+
+              // Limitar resultados de la consulta principal a los IDs devueltos por RPC
               query = query.in('id', orderedIds)
             } else if (ftsError) {
               console.warn('[FTS] Error en products_search RPC:', ftsError.message)
@@ -310,6 +423,7 @@ export async function GET(request: NextRequest) {
           ftsUsedOuter = ftsUsed
           orderedIdsOuter = orderedIds
           overrideCountOuter = overrideCount
+          ftsProductsMapOuter = ftsProductsMap
         }
 
         // Filtro por productos con descuento real (discounted_price < price)
@@ -534,46 +648,32 @@ export async function GET(request: NextRequest) {
             }
           })
 
-          // Reordenar productos priorizando aquellos con variantes
-          console.log('🔍 REORDENAMIENTO: Aplicando reordenamiento')
-          console.log('🔍 REORDENAMIENTO: Antes del sort:', enrichedProducts.map(p => ({
-            id: p.id,
-            name: p.name,
-            has_variants: p.has_variants,
-            variant_count: p.variant_count
-          })))
+          // Reordenar productos: usar reordenamiento inteligente si hay búsqueda, sino ordenar por variantes
+          let sortedProducts = enrichedProducts
           
-          // Reordenar productos: primero los que tienen variantes
-          const sortedProducts = [...enrichedProducts].sort((a, b) => {
-            // Si uno tiene variantes y el otro no, el que tiene variantes va primero
-            if (a.has_variants && !b.has_variants) {
-              console.log(`🔍 REORDENAMIENTO: ${a.id} (con variantes) va antes que ${b.id} (sin variantes)`)
-              return -1
-            }
-            if (!a.has_variants && b.has_variants) {
-              console.log(`🔍 REORDENAMIENTO: ${b.id} (con variantes) va antes que ${a.id} (sin variantes)`)
-              return 1
-            }
-            
-            // Si ambos tienen o no tienen variantes, ordenar por cantidad
-            if (a.variant_count !== b.variant_count) {
-              const result = b.variant_count - a.variant_count
-              console.log(`🔍 REORDENAMIENTO: ${a.id} (${a.variant_count}) vs ${b.id} (${b.variant_count}) = ${result}`)
-              return result
-            }
-            
-            // Si tienen la misma cantidad, ordenar por fecha
-            const dateResult = new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            console.log(`🔍 REORDENAMIENTO: Ordenando por fecha: ${a.id} vs ${b.id} = ${dateResult}`)
-            return dateResult
-          })
-          
-          console.log('🔍 REORDENAMIENTO: Después del sort:', sortedProducts.map(p => ({
-            id: p.id,
-            name: p.name,
-            has_variants: p.has_variants,
-            variant_count: p.variant_count
-          })))
+          if (filters.search) {
+            // Usar reordenamiento inteligente basado en relevancia de búsqueda
+            sortedProducts = reorderSearchResults(enrichedProducts, filters.search, ftsProductsMapOuter)
+          } else {
+            // Reordenar productos: primero los que tienen variantes (solo si no hay búsqueda)
+            sortedProducts = [...enrichedProducts].sort((a, b) => {
+              // Si uno tiene variantes y el otro no, el que tiene variantes va primero
+              if (a.has_variants && !b.has_variants) {
+                return -1
+              }
+              if (!a.has_variants && b.has_variants) {
+                return 1
+              }
+              
+              // Si ambos tienen o no tienen variantes, ordenar por cantidad
+              if (a.variant_count !== b.variant_count) {
+                return b.variant_count - a.variant_count
+              }
+              
+              // Si tienen la misma cantidad, ordenar por fecha
+              return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+            })
+          }
           
           // Aplicar paginación después del reordenamiento
           const page = filters.page || 1
@@ -591,24 +691,11 @@ export async function GET(request: NextRequest) {
       const page = filters.page || 1
       const limit = filters.limit || 10
 
-      // Si FTS fue utilizado, preservar orden y ajustar conteo
+      // Si FTS fue utilizado, ajustar conteo (el ordenamiento ya se aplicó arriba)
       let totalForPagination = count || 0
       if (ftsUsedOuter) {
-        console.log('🔍 FTS REORDENAMIENTO: Aplicando reordenamiento FTS que puede sobrescribir nuestro orden')
-        // Reordenar productos según IDs devueltos por FTS
-        const orderMap = new Map<number, number>((orderedIdsOuter || []).map((id: number, i: number) => [id, i]))
-        enrichedProducts = (enrichedProducts || []).slice().sort((a: any, b: any) => {
-          const ai = orderMap.get(a.id) ?? 0
-          const bi = orderMap.get(b.id) ?? 0
-          return ai - bi
-        })
-        console.log('🔍 FTS REORDENAMIENTO: Después del FTS:', enrichedProducts.map(p => ({
-          id: p.id,
-          name: p.name,
-          has_variants: p.has_variants,
-          variant_count: p.variant_count
-        })))
-        // Ajustar total (RPC no da total real; usar tamaño de página)
+        // El reordenamiento por relevancia ya se aplicó arriba cuando hay búsqueda
+        // Solo ajustar el conteo total
         totalForPagination = overrideCountOuter ?? enrichedProducts.length
       }
 
@@ -629,28 +716,14 @@ export async function GET(request: NextRequest) {
         },
       })
 
-      // REORDENAMIENTO FINAL: Aplicar al final para asegurar que se mantenga
-      if (enrichedProducts && enrichedProducts.length > 0) {
-        console.log('🔍 REORDENAMIENTO FINAL: Aplicando reordenamiento final')
-        console.log('🔍 REORDENAMIENTO FINAL: Antes:', enrichedProducts.map(p => ({
-          id: p.id,
-          name: p.name,
-          has_variants: p.has_variants,
-          variant_count: p.variant_count
-        })))
-        
+      // REORDENAMIENTO FINAL: Solo aplicar si NO hay búsqueda activa
+      // (cuando hay búsqueda, el ordenamiento por relevancia ya se aplicó)
+      if (enrichedProducts && enrichedProducts.length > 0 && !filters.search) {
         enrichedProducts.sort((a, b) => {
           if (a.has_variants && !b.has_variants) return -1
           if (!a.has_variants && b.has_variants) return 1
           return b.variant_count - a.variant_count
         })
-        
-        console.log('🔍 REORDENAMIENTO FINAL: Después:', enrichedProducts.map(p => ({
-          id: p.id,
-          name: p.name,
-          has_variants: p.has_variants,
-          variant_count: p.variant_count
-        })))
       }
 
       const response: PaginatedResponse<ProductWithCategory> = {
