@@ -568,6 +568,22 @@ export async function GET(request: NextRequest) {
             const productVariants = variantsByProduct[product.id] || []
             const defaultVariant = productVariants.find(v => v.is_default) || productVariants[0]
             
+            // ✅ NUEVO: Calcular stock efectivo considerando variantes
+            // Si tiene variantes, sumar stock de todas las variantes activas
+            // Si no tiene variantes, usar stock del producto
+            let effectiveStock = 0
+            if (productVariants.length > 0) {
+              // Si tiene variantes, sumar stock de todas las variantes activas
+              effectiveStock = productVariants
+                .filter(v => v.is_active !== false)
+                .reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
+            } else {
+              // Si no tiene variantes, usar stock del producto
+              effectiveStock = product.stock !== null && product.stock !== undefined 
+                ? Number(product.stock) || 0 
+                : 0
+            }
+            
             return {
               ...product,
               // ✅ NUEVO: Normalizar título del producto a formato capitalizado
@@ -597,7 +613,8 @@ export async function GET(request: NextRequest) {
               // Mantener precio y stock exclusivamente desde tabla products (requerimiento)
               price: product.price,
               discounted_price: product.discounted_price,
-              stock: product.stock,
+              // ✅ CORREGIDO: Usar stock efectivo (considerando variantes)
+              stock: effectiveStock,
               // ✅ NUEVO: Agregar image_url desde product_images si está disponible
               // ✅ MEJORADO: Fallback a images JSONB si no hay imagen en product_images
               image_url: (() => {
@@ -648,6 +665,13 @@ export async function GET(request: NextRequest) {
             }
           })
 
+          // ✅ NUEVO: Filtrar productos sin stock efectivo (stock <= 0)
+          // Esto evita que productos sin stock aparezcan en el frontend público
+          enrichedProducts = enrichedProducts.filter(product => (product.stock || 0) > 0)
+
+          // ✅ NUEVO: Guardar total de productos después del filtro (antes de paginación)
+          const totalAfterStockFilter = enrichedProducts.length
+
           // Reordenar productos: usar reordenamiento inteligente si hay búsqueda, sino ordenar por variantes
           let sortedProducts = enrichedProducts
           
@@ -681,6 +705,10 @@ export async function GET(request: NextRequest) {
           const from = (page - 1) * limit
           const to = from + limit
           enrichedProducts = sortedProducts.slice(from, to)
+          
+          // ✅ NUEVO: Guardar total después del filtro para ajustar paginación
+          // Esto se usará más abajo para ajustar el conteo total
+          ;(enrichedProducts as any).__totalAfterStockFilter = totalAfterStockFilter
         } catch (variantError) {
           // Si hay error obteniendo variantes, continuar con productos originales
           console.warn('Error obteniendo variantes:', variantError)
@@ -691,12 +719,30 @@ export async function GET(request: NextRequest) {
       const page = filters.page || 1
       const limit = filters.limit || 10
 
-      // Si FTS fue utilizado, ajustar conteo (el ordenamiento ya se aplicó arriba)
+      // ✅ CORREGIDO: Ajustar conteo total considerando el filtro de stock
       let totalForPagination = count || 0
-      if (ftsUsedOuter) {
-        // El reordenamiento por relevancia ya se aplicó arriba cuando hay búsqueda
-        // Solo ajustar el conteo total
+      
+      // Si se aplicó filtro de stock, usar el total después del filtro
+      const totalAfterStockFilter = (enrichedProducts as any).__totalAfterStockFilter
+      if (totalAfterStockFilter !== undefined) {
+        // Usar el total después del filtro de stock
+        totalForPagination = totalAfterStockFilter
+        // Limpiar la propiedad temporal
+        delete (enrichedProducts as any).__totalAfterStockFilter
+      } else if (ftsUsedOuter) {
+        // Si FTS fue utilizado, ajustar conteo (el ordenamiento ya se aplicó arriba)
         totalForPagination = overrideCountOuter ?? enrichedProducts.length
+      } else {
+        // Para listados normales sin búsqueda: ajustar conteo basado en productos filtrados
+        // Si tenemos menos productos de los esperados después del filtro, ajustar el conteo
+        const originalCount = products?.length || 0
+        const filteredCount = enrichedProducts.length
+        if (originalCount > 0 && filteredCount < originalCount) {
+          // Estimar el total ajustado basado en la proporción de productos filtrados
+          // Esto es una aproximación, pero es mejor que usar el conteo original
+          const filterRatio = filteredCount / originalCount
+          totalForPagination = Math.max(0, Math.floor((count || 0) * filterRatio))
+        }
       }
 
       const totalPages = Math.ceil((totalForPagination || 0) / limit)
