@@ -287,9 +287,11 @@ async function generateUniqueSlug(
     uniqueSlug = `${baseSlug}-${counter}`
     
     // Protección contra loops infinitos
-    if (counter > 1000) {
-      // Fallback: usar timestamp
-      return `${baseSlug}-${Date.now()}`
+    // ✅ CORREGIDO: En lugar de usar timestamp, usar un sufijo más grande
+    // Esto evita generar slugs con timestamps que luego necesitan limpieza
+    if (counter > 10000) {
+      // Si llegamos a 10000, algo está muy mal. Lanzar error en lugar de usar timestamp
+      throw new Error(`No se pudo generar slug único para "${name}" después de 10000 intentos. Hay demasiados productos con nombres similares.`)
     }
   }
 }
@@ -503,8 +505,45 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   }
   
   // Generar slug único si se actualiza el nombre
+  // ✅ NUEVO: También limpiar slug si tiene timestamp (aunque no se actualice el nombre)
   if (validatedData.name) {
     updateData.slug = await generateUniqueSlug(supabaseAdmin, validatedData.name, numericProductId)
+  } else {
+    // Si no se actualiza el nombre, verificar si el slug actual tiene timestamp y limpiarlo
+    const { data: currentProduct } = await supabaseAdmin
+      .from('products')
+      .select('slug')
+      .eq('id', numericProductId)
+      .single()
+    
+    if (currentProduct?.slug && /-\d{13}$/.test(currentProduct.slug)) {
+      // El slug tiene timestamp, limpiarlo y verificar unicidad
+      const cleanedSlug = currentProduct.slug.replace(/-\d{13}$/, '')
+      
+      // Verificar si el slug limpio ya existe (excluyendo este producto)
+      const { data: existing } = await supabaseAdmin
+        .from('products')
+        .select('id')
+        .eq('slug', cleanedSlug)
+        .neq('id', numericProductId)
+        .limit(1)
+      
+      if (!existing || existing.length === 0) {
+        // El slug limpio no existe, usarlo
+        updateData.slug = cleanedSlug
+      } else {
+        // El slug limpio existe, generar uno único
+        const { data: product } = await supabaseAdmin
+          .from('products')
+          .select('name')
+          .eq('id', numericProductId)
+          .single()
+        
+        if (product?.name) {
+          updateData.slug = await generateUniqueSlug(supabaseAdmin, product.name, numericProductId)
+        }
+      }
+    }
   }
 
   console.log('🔍 updateData preparado:', JSON.stringify(updateData, null, 2))

@@ -823,16 +823,46 @@ const postHandlerSimple = async (request: NextRequest) => {
       images: body.image_url 
         ? JSON.stringify({ url: body.image_url, is_primary: true })
         : null,
-      // Generar slug automático (agregar timestamp solo si es necesario para evitar duplicados)
-      slug: (() => {
-        const baseSlug = body.name
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .trim()
-        // Agregar timestamp para asegurar unicidad (se puede mejorar con verificación de duplicados)
-        return `${baseSlug}-${Date.now()}`
+      // ✅ CORREGIDO: Generar slug único sin timestamp
+      slug: await (async () => {
+        const { generateCleanSlug } = await import('@/lib/products/slug-utils')
+        const baseSlug = generateCleanSlug(body.name)
+        
+        // Verificar si el slug ya existe
+        const { data: existing } = await supabase
+          .from('products')
+          .select('id')
+          .eq('slug', baseSlug)
+          .limit(1)
+        
+        // Si no existe, usarlo
+        if (!existing || existing.length === 0) {
+          return baseSlug
+        }
+        
+        // Si existe, agregar sufijo numérico
+        let counter = 1
+        let uniqueSlug = `${baseSlug}-${counter}`
+        
+        while (true) {
+          const { data: existingWithSuffix } = await supabase
+            .from('products')
+            .select('id')
+            .eq('slug', uniqueSlug)
+            .limit(1)
+          
+          if (!existingWithSuffix || existingWithSuffix.length === 0) {
+            return uniqueSlug
+          }
+          
+          counter++
+          uniqueSlug = `${baseSlug}-${counter}`
+          
+          // Protección contra loops infinitos
+          if (counter > 10000) {
+            throw new Error(`No se pudo generar slug único para "${body.name}" después de 10000 intentos.`)
+          }
+        }
       })(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

@@ -18,6 +18,7 @@ import {
   AlertCircle,
 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
+import { cleanSlug } from '@/lib/products/slug-utils'
 
 interface Product {
   id: string
@@ -121,8 +122,8 @@ export default function ProductDetailPage() {
   }
 
   const handleViewPublic = () => {
-    // Usar slug si está disponible, sino usar ID
-    const productSlug = product?.slug
+    // ✅ CORREGIDO: Usar slug limpio (sin timestamp) si está disponible, sino usar ID
+    const productSlug = product?.slug ? cleanSlug(product.slug) : null
     const productUrl = productSlug ? `/products/${productSlug}` : `/products/${productId}`
     window.open(productUrl, '_blank')
   }
@@ -458,7 +459,12 @@ export default function ProductDetailPage() {
                   {product.slug && (
                     <div>
                       <span className='text-sm font-medium text-gray-500'>URL:</span>
-                      <p className='text-sm text-gray-900 break-all'>/productos/{product.slug}</p>
+                      <p className='text-sm text-gray-900 break-all'>/productos/{cleanSlug(product.slug)}</p>
+                      {/-\d{13}$/.test(product.slug) && (
+                        <p className='text-xs text-amber-600 mt-1'>
+                          ⚠️ Este slug tiene un timestamp y será corregido automáticamente al guardar
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
