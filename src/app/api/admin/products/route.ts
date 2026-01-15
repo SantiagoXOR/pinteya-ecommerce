@@ -1060,14 +1060,15 @@ export const GET = async (request: NextRequest) => {
       }
     }
     
-    // Stock status filter
-    if (stockStatus === 'low_stock') {
-      query = query.gt('stock', 0).lte('stock', 10)
-      logger.dev('[API] Filtro LOW_STOCK aplicado')
-    } else if (stockStatus === 'out_of_stock') {
-      query = query.or('stock.eq.0,stock.is.null')
-      logger.dev('[API] Filtro OUT_OF_STOCK aplicado')
-    }
+    // ✅ CORREGIDO: NO aplicar filtro de stock aquí porque necesitamos calcular stock efectivo primero
+    // El filtro se aplicará DESPUÉS de calcular el stock efectivo considerando variantes
+    // if (stockStatus === 'low_stock') {
+    //   query = query.gt('stock', 0).lte('stock', 10)
+    //   logger.dev('[API] Filtro LOW_STOCK aplicado')
+    // } else if (stockStatus === 'out_of_stock') {
+    //   query = query.or('stock.eq.0,stock.is.null')
+    //   logger.dev('[API] Filtro OUT_OF_STOCK aplicado')
+    // }
 
     // Apply pagination
     const from = (page - 1) * limit
@@ -1310,13 +1311,29 @@ export const GET = async (request: NextRequest) => {
         }
       }) || []
 
+    // ✅ CORREGIDO: Aplicar filtro de stock DESPUÉS de calcular el stock efectivo
+    let filteredProducts = transformedProducts
+    if (stockStatus === 'out_of_stock') {
+      // Filtrar productos con stock efectivo <= 0 (considerando variantes)
+      filteredProducts = transformedProducts.filter(p => (p.stock || 0) <= 0)
+      logger.dev('[API] Filtro OUT_OF_STOCK aplicado post-transformación:', filteredProducts.length, 'productos')
+    } else if (stockStatus === 'low_stock') {
+      // Filtrar productos con stock efectivo entre 1 y 10
+      filteredProducts = transformedProducts.filter(p => p.stock > 0 && p.stock <= 10)
+      logger.dev('[API] Filtro LOW_STOCK aplicado post-transformación:', filteredProducts.length, 'productos')
+    }
+
+    // ✅ CORREGIDO: Ajustar conteo total después del filtro
+    const filteredTotal = stockStatus ? filteredProducts.length : (count || 0)
+    const totalPages = Math.ceil(filteredTotal / limit)
+
     return NextResponse.json({
-      products: transformedProducts,
-      data: transformedProducts,
-      total: count || 0,
+      products: filteredProducts,
+      data: filteredProducts,
+      total: filteredTotal,
       page,
       pageSize: limit,
-      totalPages: Math.ceil((count || 0) / limit),
+      totalPages,
     })
   } catch (error) {
     logger.error('[API] Error en GET /api/admin/products:', error)
