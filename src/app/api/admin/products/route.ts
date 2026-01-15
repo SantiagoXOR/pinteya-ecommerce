@@ -1070,13 +1070,22 @@ export const GET = async (request: NextRequest) => {
     //   logger.dev('[API] Filtro OUT_OF_STOCK aplicado')
     // }
 
-    // Apply pagination
-    const from = (page - 1) * limit
-    const to = from + limit - 1
-    
-    logger.db('range', 'products', { from, to, page, limit })
-    
-    query = query.range(from, to)
+    // ✅ CORREGIDO: Si hay filtro de stock, NO aplicar paginación aquí
+    // Necesitamos obtener más productos para poder filtrar correctamente después de calcular stock efectivo
+    // La paginación se aplicará DESPUÉS del filtro de stock
+    if (!stockStatus) {
+      // Solo aplicar paginación si NO hay filtro de stock
+      const from = (page - 1) * limit
+      const to = from + limit - 1
+      
+      logger.db('range', 'products', { from, to, page, limit })
+      
+      query = query.range(from, to)
+    } else {
+      // Si hay filtro de stock, obtener más productos (hasta 500 para asegurar que encontremos todos los que cumplen el criterio)
+      query = query.range(0, 499)
+      logger.dev('[API] Filtro de stock activo, obteniendo más productos para filtrar correctamente')
+    }
 
     // Apply sorting - IMPORTANTE: Asegurar que el ordenamiento se aplique correctamente
     query = query.order(sortBy, { ascending: sortOrder === 'asc' })
@@ -1323,13 +1332,29 @@ export const GET = async (request: NextRequest) => {
       logger.dev('[API] Filtro LOW_STOCK aplicado post-transformación:', filteredProducts.length, 'productos')
     }
 
+    // ✅ CORREGIDO: Aplicar paginación DESPUÉS del filtro de stock
+    let paginatedProducts = filteredProducts
+    if (stockStatus) {
+      // Si hay filtro de stock, aplicar paginación después del filtro
+      const from = (page - 1) * limit
+      const to = from + limit
+      paginatedProducts = filteredProducts.slice(from, to)
+      logger.dev('[API] Paginación aplicada después del filtro de stock:', {
+        totalFiltrados: filteredProducts.length,
+        pagina: page,
+        desde: from,
+        hasta: to,
+        productosEnPagina: paginatedProducts.length
+      })
+    }
+
     // ✅ CORREGIDO: Ajustar conteo total después del filtro
     const filteredTotal = stockStatus ? filteredProducts.length : (count || 0)
     const totalPages = Math.ceil(filteredTotal / limit)
 
     return NextResponse.json({
-      products: filteredProducts,
-      data: filteredProducts,
+      products: paginatedProducts,
+      data: paginatedProducts,
       total: filteredTotal,
       page,
       pageSize: limit,
