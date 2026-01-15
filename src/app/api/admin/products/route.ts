@@ -1096,6 +1096,7 @@ export const GET = async (request: NextRequest) => {
     const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
     const variantTotalStocks: Record<number, number> = {} // ✅ NUEVO: Stock total de variantes por producto
     const hasActiveVariantsWithStock: Record<number, boolean> = {} // ✅ NUEVO: Indica si hay variantes activas con stock
+    let variantDataForTransform: ProductVariant[] = [] // ✅ NUEVO: Declarar fuera del if para que esté disponible siempre
     
     if (productIds.length > 0) {
       // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
@@ -1120,7 +1121,7 @@ export const GET = async (request: NextRequest) => {
         .eq('is_active', true)
       
       // ✅ REFACTORIZADO: Guardar variantData tipado para usar con el servicio
-      const variantDataForTransform = (variantData || []) as ProductVariant[]
+      variantDataForTransform = (variantData || []) as ProductVariant[]
       
       variantDataForTransform.forEach(variant => {
         const productId = variant.product_id
