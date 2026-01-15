@@ -32,7 +32,23 @@ const ProductSchema = z.object({
   is_active: z.boolean().default(true),
   
   // Metadata
-  aikon_id: z.string().max(50).optional(),
+  aikon_id: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined) return null
+      // Convertir string a número si es necesario
+      if (typeof val === 'string') {
+        const cleaned = val.trim().replace(/[^0-9]/g, '')
+        if (cleaned === '') return null
+        const parsed = parseInt(cleaned, 10)
+        return isNaN(parsed) ? null : parsed
+      }
+      return typeof val === 'number' ? val : null
+    },
+    z.union([
+      z.number().int().min(0, 'El código debe ser mayor o igual a 0').max(999999, 'El código debe ser menor o igual a 999999'),
+      z.null(),
+    ]).optional().nullable()
+  ),
   color: z.string().max(100).optional(),
   medida: z.array(z.string()).optional(),
   terminaciones: z.array(z.string()).optional(),
@@ -806,13 +822,48 @@ export function ProductFormMinimal({
 
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Código Aikon (SKU)
+                Código Aikon (SKU) {variants.length === 0 && newVariants.length === 0 ? '*' : ''}
               </label>
               <input
-                {...register('aikon_id')}
+                type='number'
+                min={0}
+                max={999999}
+                {...register('aikon_id', {
+                  validate: (value) => {
+                    // Si no hay variantes, aikon_id es requerido
+                    if (variants.length === 0 && newVariants.length === 0) {
+                      if (value === null || value === undefined || value === '') {
+                        return 'El código Aikon es requerido cuando el producto no tiene variantes'
+                      }
+                      const numValue = typeof value === 'string' ? parseInt(value, 10) : Number(value)
+                      if (isNaN(numValue) || numValue < 0 || numValue > 999999) {
+                        return 'El código debe ser un número entre 0 y 999999'
+                      }
+                    }
+                    return true
+                  },
+                })}
                 className='w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blaze-orange-500'
-                placeholder='Ej: AIKON-12345'
+                placeholder='Ej: 141 (6 dígitos máximo)'
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Permitir solo números
+                  if (value === '' || /^\d+$/.test(value)) {
+                    const numValue = value === '' ? null : parseInt(value, 10)
+                    if (numValue === null || (numValue >= 0 && numValue <= 999999)) {
+                      form.setValue('aikon_id', numValue, { shouldDirty: true })
+                    }
+                  }
+                }}
               />
+              {errors.aikon_id && (
+                <p className='text-red-600 text-sm mt-1'>{errors.aikon_id.message}</p>
+              )}
+              {watchedData.aikon_id && (
+                <p className='text-xs text-gray-500 mt-1'>
+                  Formato: {String(watchedData.aikon_id).padStart(6, '0')}
+                </p>
+              )}
             </div>
 
             <ColorPickerField

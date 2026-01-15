@@ -55,6 +55,7 @@ const ProductParamsSchema = z.object({
 // Enterprise imports for error handling
 import { ApiError, NotFoundError, ValidationError } from '@/lib/api/error-handler'
 import { normalizeProductTitle } from '@/lib/core/utils'
+import { formatAikonId } from '@/lib/products/aikon-id-utils'
 
 // Helper function to get product by ID - Returns null if not found
 async function getProductById(
@@ -82,6 +83,7 @@ async function getProductById(
       low_stock_threshold,
       category_id,
       brand,
+      aikon_id,
       images,
       terminaciones,
       is_active,
@@ -187,6 +189,13 @@ async function getProductById(
     return null
   }
 
+  // ✅ AGREGADO: Procesar aikon_id (convertir a número si es necesario)
+  const aikonId = (product as any).aikon_id !== null && (product as any).aikon_id !== undefined
+    ? (typeof (product as any).aikon_id === 'string' 
+        ? parseInt((product as any).aikon_id, 10) 
+        : Number((product as any).aikon_id))
+    : null
+
   const transformedProduct = {
     ...product,
     // ✅ NUEVO: Normalizar título del producto a formato capitalizado
@@ -205,6 +214,8 @@ async function getProductById(
       : [],
     // ✅ NUEVO: Stock efectivo calculado desde variantes
     stock: effectiveStock,
+    // ✅ AGREGADO: aikon_id como número
+    aikon_id: (!isNaN(aikonId as number) && aikonId !== null) ? aikonId : null,
     // Defaults para campos opcionales
     cost_price: product.cost_price ?? null,
     compare_price: product.compare_price ?? product.discounted_price ?? null,
@@ -380,6 +391,20 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   if (validatedData.brand !== undefined) updateData.brand = validatedData.brand
   if (validatedData.images !== undefined) updateData.images = validatedData.images
   if (validatedData.is_active !== undefined) updateData.is_active = validatedData.is_active
+  // ✅ AGREGADO: Mapear aikon_id (convertir string a number si es necesario)
+  if ((validatedData as any).aikon_id !== undefined) {
+    const aikonIdValue = (validatedData as any).aikon_id
+    if (aikonIdValue === null || aikonIdValue === undefined || aikonIdValue === '') {
+      updateData.aikon_id = null
+    } else {
+      const numValue = typeof aikonIdValue === 'string' 
+        ? parseInt(aikonIdValue, 10) 
+        : Number(aikonIdValue)
+      if (!isNaN(numValue) && numValue >= 0 && numValue <= 999999) {
+        updateData.aikon_id = numValue
+      }
+    }
+  }
   // ✅ NUEVO: Mapear terminaciones (array de texto)
   if ((validatedData as any).terminaciones !== undefined) {
     const terminaciones = Array.isArray((validatedData as any).terminaciones)
@@ -501,6 +526,7 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
       stock,
       category_id,
       brand,
+      aikon_id,
       images,
       terminaciones,
       created_at,
@@ -688,7 +714,7 @@ export async function GET(
     const productId = parseInt(id, 10)
     console.log('🔥🔥🔥 ID parseado:', productId)
     
-    // Query directa
+    // Query directa - ✅ AGREGADO: aikon_id en el select
     const { data, error } = await supabaseAdmin
       .from('products')
       .select(`
@@ -722,13 +748,14 @@ export async function GET(
       data.product_categories = []
     }
     
-    // Obtener variantes reales de la BD
+    // ✅ OPTIMIZADO: Obtener solo campos necesarios de variantes
     const { data: variants } = await supabaseAdmin
       .from('product_variants')
-      .select('*')
+      .select('id,product_id,aikon_id,variant_slug,color_name,color_hex,measure,finish,price_list,price_sale,stock,is_active,is_default,image_url,created_at,updated_at')
       .eq('product_id', productId)
       .eq('is_active', true)
       .order('is_default', { ascending: false })
+      .order('created_at', { ascending: true })
     
     const defaultVariant = variants?.find(v => v.is_default) || variants?.[0]
     
@@ -861,6 +888,12 @@ export async function GET(
       terminaciones: (data as any).terminaciones && Array.isArray((data as any).terminaciones) 
         ? (data as any).terminaciones.filter((t: string) => t && t.trim() !== '')
         : [],
+      // ✅ AGREGADO: aikon_id (puede ser número o null)
+      aikon_id: (data as any).aikon_id !== null && (data as any).aikon_id !== undefined
+        ? (typeof (data as any).aikon_id === 'string' 
+            ? parseInt((data as any).aikon_id, 10) 
+            : Number((data as any).aikon_id))
+        : null,
       // Defaults para campos opcionales
       cost_price: data.cost_price ?? null,
       compare_price: data.compare_price ?? data.discounted_price ?? null,

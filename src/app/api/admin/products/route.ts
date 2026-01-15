@@ -16,6 +16,18 @@ import { ProductFiltersSchema } from '@/lib/validation/admin-schemas'
 import type { ValidatedRequest } from '@/lib/validation/enterprise-validation-middleware'
 import { logger } from '@/lib/utils/logger'
 import { normalizeProductTitle } from '@/lib/core/utils'
+import {
+  transformProducts,
+  groupVariantsByProductId,
+  type DatabaseProduct,
+  type ProductVariant,
+} from '@/lib/services/product-service'
+import {
+  getAllVariantAikonIds,
+  getAllVariantAikonIdsFormatted,
+  getProductAikonId,
+  getProductAikonIdFormatted,
+} from '@/lib/products/aikon-id-utils'
 
 // =====================================================
 // HELPERS
@@ -262,14 +274,14 @@ const getHandler = async (request: ValidatedRequest) => {
       ultimos3: products?.slice(-3).map(p => `${p.id}:${p.name?.substring(0, 15)}`) || [],
     })
 
-    // ✅ NUEVO: Obtener TODAS las medidas y colores únicos de variantes, y solo el código aikon de la variante predeterminada
+    // ✅ REFACTORIZADO: Obtener todas las medidas, colores y aikon_id de variantes
     const productIds = products?.map(p => p.id) || []
     const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
     const variantColors: Record<number, string[]> = {} // ✅ Array de colores
-    const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+    const variantAikonIdsByProduct: Record<number, number[]> = {} // ✅ NUEVO: Todos los aikon_id de variantes por producto
     const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
     const variantTotalStocks: Record<number, number> = {} // ✅ NUEVO: Stock total de variantes por producto
-    let variantData: any[] = [] // ✅ NUEVO: Guardar variantData para debug
+    let variantData: ProductVariant[] = [] // ✅ NUEVO: Guardar variantData tipado
     
     if (productIds.length > 0) {
       // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
@@ -287,63 +299,67 @@ const getHandler = async (request: ValidatedRequest) => {
         }
       })
       
+      // ✅ OPTIMIZADO: Obtener solo campos necesarios de variantes para mejor performance
       const { data: variantDataResult, error: variantError } = await supabaseAdmin
         .from('product_variants')
-        .select('product_id,is_default,measure,color_name,aikon_id,stock')
+        .select('id,product_id,is_default,measure,color_name,aikon_id,stock,is_active')
         .in('product_id', productIds)
         .eq('is_active', true)
+        .order('product_id', { ascending: true })
+        .order('is_default', { ascending: false })
       
-      // ✅ NUEVO: Guardar variantData para uso en debug
-      variantData = variantDataResult || []
+      // ✅ REFACTORIZADO: Guardar variantData tipado
+      variantData = (variantDataResult || []) as ProductVariant[]
       
-      // ✅ NUEVO: Calcular stock total de variantes por producto
-      // ✅ NUEVO: También verificar si hay variantes activas con stock
-      const hasActiveVariantsWithStock: Record<number, boolean> = {}
+      // ✅ REFACTORIZADO: Procesar variantes usando utilidades
       variantData.forEach(variant => {
-        // ✅ CORREGIDO: Asegurar que stock sea número
-        const variantStockValue = typeof variant.stock === 'string' 
-          ? parseInt(variant.stock, 10) || 0 
-          : Number(variant.stock) || 0
+        const productId = variant.product_id
         
-        // Sumar stock de cada variante activa
-        if (!variantTotalStocks[variant.product_id]) {
-          variantTotalStocks[variant.product_id] = 0
+        // Calcular stock total de variantes por producto
+        const variantStockValue = Number(variant.stock) || 0
+        if (!variantTotalStocks[productId]) {
+          variantTotalStocks[productId] = 0
         }
-        variantTotalStocks[variant.product_id] += variantStockValue
+        variantTotalStocks[productId] += variantStockValue
         
-        // ✅ NUEVO: Marcar si el producto tiene variantes activas con stock
-        if (variantStockValue > 0) {
-          hasActiveVariantsWithStock[variant.product_id] = true
-        }
-      })
-      
-      variantData.forEach(variant => {
         // Obtener TODAS las medidas únicas de las variantes
         if (variant.measure && variant.measure.trim() !== '') {
-          if (!variantMeasures[variant.product_id]) {
-            variantMeasures[variant.product_id] = []
+          if (!variantMeasures[productId]) {
+            variantMeasures[productId] = []
           }
-          if (!variantMeasures[variant.product_id].includes(variant.measure)) {
-            variantMeasures[variant.product_id].push(variant.measure)
+          if (!variantMeasures[productId].includes(variant.measure)) {
+            variantMeasures[productId].push(variant.measure)
           }
         }
         
-        // ✅ Obtener TODOS los colores únicos de las variantes
+        // Obtener TODOS los colores únicos de las variantes
         if (variant.color_name && variant.color_name.trim() !== '') {
-          if (!variantColors[variant.product_id]) {
-            variantColors[variant.product_id] = []
+          if (!variantColors[productId]) {
+            variantColors[productId] = []
           }
-          if (!variantColors[variant.product_id].includes(variant.color_name)) {
-            variantColors[variant.product_id].push(variant.color_name)
+          if (!variantColors[productId].includes(variant.color_name)) {
+            variantColors[productId].push(variant.color_name)
           }
         }
         
-        // ✅ CAMBIADO: Obtener SOLO el código aikon de la variante predeterminada
-        if (variant.is_default && variant.aikon_id && variant.aikon_id.trim() !== '') {
-          variantAikonIds[variant.product_id] = variant.aikon_id
+        // ✅ NUEVO: Obtener TODOS los aikon_id de las variantes (no solo el predeterminado)
+        if (variant.aikon_id !== null && variant.aikon_id !== undefined) {
+          if (!variantAikonIdsByProduct[productId]) {
+            variantAikonIdsByProduct[productId] = []
+          }
+          // Asegurar que sea número (puede venir como string desde la BD antes de la migración)
+          const aikonIdNum = typeof variant.aikon_id === 'string' 
+            ? parseInt(variant.aikon_id, 10) 
+            : Number(variant.aikon_id)
+          if (!isNaN(aikonIdNum) && aikonIdNum >= 0 && aikonIdNum <= 999999) {
+            variantAikonIdsByProduct[productId].push(aikonIdNum)
+          }
         }
       })
     }
+    
+    // ✅ REFACTORIZADO: Agrupar variantes por product_id para usar con el servicio
+    const variantsByProductId = groupVariantsByProductId(variantData)
 
     // Transform data to include category name and all fields
     const transformedProducts =
@@ -387,8 +403,12 @@ const getHandler = async (request: ValidatedRequest) => {
         const variantColorsList = variantColors[product.id] || []
         const allColors = Array.from(new Set([...productColor, ...variantColorsList]))
         
-        // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
-        const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
+        // ✅ REFACTORIZADO: Usar utilidades para obtener aikon_id
+        const variants = variantsByProductIdForTransform[product.id] || []
+        const aikonId = getProductAikonId(product as DatabaseProduct, variants)
+        const aikonIdFormatted = getProductAikonIdFormatted(product as DatabaseProduct, variants)
+        const variantAikonIds = variantAikonIdsByProduct[product.id] || []
+        const variantAikonIdsFormatted = getAllVariantAikonIdsFormatted(variants)
         
         // ✅ NUEVO: Calcular stock efectivo (suma de variantes si hay, sino stock del producto)
         // ✅ CORREGIDO: Si hay variantes con stock, SIEMPRE usar la suma de stock de variantes
@@ -436,8 +456,12 @@ const getHandler = async (request: ValidatedRequest) => {
           terminaciones: product.terminaciones && Array.isArray(product.terminaciones) 
             ? product.terminaciones.filter((t: string) => t && t.trim() !== '')
             : [],
-          // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
-          aikon_id: defaultAikonId,
+          // ✅ REFACTORIZADO: aikon_id como número y formateado, más arrays de variantes
+          aikon_id: aikonId,
+          aikon_id_formatted: aikonIdFormatted,
+          variant_aikon_ids: variantAikonIds,
+          variant_aikon_ids_formatted: variantAikonIdsFormatted,
+          has_variants: variants.length > 0,
         }
       }) || []
 
@@ -1125,12 +1149,25 @@ export const GET = async (request: NextRequest) => {
           }
         }
         
-        // ✅ CAMBIADO: Obtener SOLO el código aikon de la variante predeterminada
-        if (variant.is_default && variant.aikon_id && variant.aikon_id.trim() !== '') {
-          variantAikonIds[variant.product_id] = variant.aikon_id
+        // ✅ REFACTORIZADO: Obtener TODOS los aikon_id de las variantes
+        if (variant.aikon_id !== null && variant.aikon_id !== undefined) {
+          const productId = variant.product_id
+          if (!variantAikonIdsByProduct[productId]) {
+            variantAikonIdsByProduct[productId] = []
+          }
+          // Asegurar que sea número (puede venir como string desde la BD antes de la migración)
+          const aikonIdNum = typeof variant.aikon_id === 'string' 
+            ? parseInt(variant.aikon_id, 10) 
+            : Number(variant.aikon_id)
+          if (!isNaN(aikonIdNum) && aikonIdNum >= 0 && aikonIdNum <= 999999) {
+            variantAikonIdsByProduct[productId].push(aikonIdNum)
+          }
         }
       })
     }
+    
+    // ✅ REFACTORIZADO: Agrupar variantes por product_id para usar con el servicio
+    const variantsByProductIdForTransform = groupVariantsByProductId(variantDataForTransform)
     
     const transformedProducts =
       products?.map(product => {
@@ -1174,8 +1211,12 @@ export const GET = async (request: NextRequest) => {
         const variantColorsList = variantColors[product.id] || []
         const allColors = Array.from(new Set([...productColor, ...variantColorsList]))
         
-        // ✅ CAMBIADO: Usar el código aikon del producto o el de la variante predeterminada
-        const defaultAikonId = variantAikonIds[product.id] || product.aikon_id || null
+        // ✅ REFACTORIZADO: Usar utilidades para obtener aikon_id
+        const variants = variantsByProductId[product.id] || []
+        const aikonId = getProductAikonId(product as DatabaseProduct, variants)
+        const aikonIdFormatted = getProductAikonIdFormatted(product as DatabaseProduct, variants)
+        const variantAikonIds = variantAikonIdsByProduct[product.id] || []
+        const variantAikonIdsFormatted = getAllVariantAikonIdsFormatted(variants)
         
         return {
           ...product,
@@ -1201,8 +1242,12 @@ export const GET = async (request: NextRequest) => {
           terminaciones: product.terminaciones && Array.isArray(product.terminaciones) 
             ? product.terminaciones.filter((t: string) => t && t.trim() !== '')
             : [],
-          // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
-          aikon_id: defaultAikonId,
+          // ✅ REFACTORIZADO: aikon_id como número y formateado, más arrays de variantes
+          aikon_id: aikonId,
+          aikon_id_formatted: aikonIdFormatted,
+          variant_aikon_ids: variantAikonIds,
+          variant_aikon_ids_formatted: variantAikonIdsFormatted,
+          has_variants: variants.length > 0,
         }
       }) || []
 

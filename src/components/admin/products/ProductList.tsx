@@ -83,6 +83,12 @@ interface Product {
   status: 'active' | 'inactive' | 'draft'
   created_at: string
   updated_at: string
+  // ✅ AGREGADO: Campos de aikon_id
+  aikon_id?: number | null
+  aikon_id_formatted?: string | null
+  variant_aikon_ids?: number[]
+  variant_aikon_ids_formatted?: string[]
+  has_variants?: boolean
 }
 
 interface Category {
@@ -663,11 +669,37 @@ export function ProductList({
     {
       key: 'aikon_id',
       title: 'Código Aikon',
-      defaultWidth: 120,
-      render: (aikonId: string) => {
-        // ✅ CAMBIADO: Mostrar solo el código aikon (ya viene de la variante predeterminada desde la API)
+      defaultWidth: 150,
+      render: (aikonId: string | number | null, product: any) => {
+        // ✅ REFACTORIZADO: Mostrar todos los códigos aikon de variantes si existen
+        const variantAikonIdsFormatted = product?.variant_aikon_ids_formatted || []
+        const hasVariants = product?.has_variants || false
+        
+        // Si tiene variantes, mostrar todos los códigos
+        if (hasVariants && variantAikonIdsFormatted.length > 0) {
+          return (
+            <div className='flex flex-wrap gap-1'>
+              {variantAikonIdsFormatted.map((code: string, index: number) => (
+                <span
+                  key={`${product.id}-aikon-${index}`}
+                  className='inline-flex items-center px-2 py-0.5 text-xs font-mono bg-gray-100 text-gray-700 rounded border border-gray-300'
+                >
+                  {code}
+                </span>
+              ))}
+            </div>
+          )
+        }
+        
+        // Si no tiene variantes, mostrar el código del producto
+        const displayCode = aikonId 
+          ? (typeof aikonId === 'number' 
+              ? aikonId.toString().padStart(6, '0') 
+              : aikonId)
+          : product?.aikon_id_formatted || '-'
+        
         return (
-          <span className='text-xs text-gray-500 font-mono'>{aikonId || '-'}</span>
+          <span className='text-xs text-gray-500 font-mono'>{displayCode}</span>
         )
       },
     },
