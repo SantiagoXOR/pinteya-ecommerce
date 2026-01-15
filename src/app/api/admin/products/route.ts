@@ -1092,8 +1092,10 @@ export const GET = async (request: NextRequest) => {
     const variantImages: Record<number, string | null> = {}
     const variantMeasures: Record<number, string[]> = {} // ✅ Array de medidas
     const variantColors: Record<number, string[]> = {} // ✅ Array de colores
-    const variantAikonIds: Record<number, string | null> = {} // ✅ CAMBIADO: Solo el código aikon de la variante predeterminada
+    const variantAikonIdsByProduct: Record<number, number[]> = {} // ✅ NUEVO: Todos los aikon_id de variantes por producto
     const productImagesFromTable: Record<number, string | null> = {} // ✅ NUEVO: Imágenes desde product_images
+    const variantTotalStocks: Record<number, number> = {} // ✅ NUEVO: Stock total de variantes por producto
+    const hasActiveVariantsWithStock: Record<number, boolean> = {} // ✅ NUEVO: Indica si hay variantes activas con stock
     
     if (productIds.length > 0) {
       // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
@@ -1113,45 +1115,60 @@ export const GET = async (request: NextRequest) => {
       
       const { data: variantData, error: variantError } = await supabaseAdmin
         .from('product_variants')
-        .select('product_id,image_url,is_default,measure,color_name,aikon_id') // ✅ AGREGADO: color_name, aikon_id
+        .select('id,product_id,image_url,is_default,measure,color_name,aikon_id,stock,is_active') // ✅ AGREGADO: id, color_name, aikon_id, stock, is_active
         .in('product_id', productIds)
         .eq('is_active', true)
       
-      variantData.forEach(variant => {
+      // ✅ REFACTORIZADO: Guardar variantData tipado para usar con el servicio
+      const variantDataForTransform = (variantData || []) as ProductVariant[]
+      
+      variantDataForTransform.forEach(variant => {
+        const productId = variant.product_id
         const normalizedImage = extractImageUrl(variant.image_url)
-        variantCounts[variant.product_id] = (variantCounts[variant.product_id] || 0) + 1
+        variantCounts[productId] = (variantCounts[productId] || 0) + 1
 
-        if (!variantImages[variant.product_id] && normalizedImage) {
-          variantImages[variant.product_id] = normalizedImage
+        if (!variantImages[productId] && normalizedImage) {
+          variantImages[productId] = normalizedImage
         }
 
         if (variant.is_default && normalizedImage) {
-          variantImages[variant.product_id] = normalizedImage
+          variantImages[productId] = normalizedImage
+        }
+        
+        // ✅ NUEVO: Calcular stock total de variantes por producto
+        const variantStockValue = Number(variant.stock) || 0
+        if (!variantTotalStocks[productId]) {
+          variantTotalStocks[productId] = 0
+        }
+        variantTotalStocks[productId] += variantStockValue
+        
+        // ✅ NUEVO: Verificar si hay variantes activas con stock
+        if (variantStockValue > 0 && variant.is_active) {
+          hasActiveVariantsWithStock[productId] = true
         }
         
         // ✅ Obtener TODAS las medidas únicas de las variantes
         if (variant.measure && variant.measure.trim() !== '') {
-          if (!variantMeasures[variant.product_id]) {
-            variantMeasures[variant.product_id] = []
+          if (!variantMeasures[productId]) {
+            variantMeasures[productId] = []
           }
-          if (!variantMeasures[variant.product_id].includes(variant.measure)) {
-            variantMeasures[variant.product_id].push(variant.measure)
+          if (!variantMeasures[productId].includes(variant.measure)) {
+            variantMeasures[productId].push(variant.measure)
           }
         }
         
         // ✅ Obtener TODOS los colores únicos de las variantes
         if (variant.color_name && variant.color_name.trim() !== '') {
-          if (!variantColors[variant.product_id]) {
-            variantColors[variant.product_id] = []
+          if (!variantColors[productId]) {
+            variantColors[productId] = []
           }
-          if (!variantColors[variant.product_id].includes(variant.color_name)) {
-            variantColors[variant.product_id].push(variant.color_name)
+          if (!variantColors[productId].includes(variant.color_name)) {
+            variantColors[productId].push(variant.color_name)
           }
         }
         
         // ✅ REFACTORIZADO: Obtener TODOS los aikon_id de las variantes
         if (variant.aikon_id !== null && variant.aikon_id !== undefined) {
-          const productId = variant.product_id
           if (!variantAikonIdsByProduct[productId]) {
             variantAikonIdsByProduct[productId] = []
           }
@@ -1212,14 +1229,25 @@ export const GET = async (request: NextRequest) => {
         const allColors = Array.from(new Set([...productColor, ...variantColorsList]))
         
         // ✅ REFACTORIZADO: Usar utilidades para obtener aikon_id
-        const variants = variantsByProductId[product.id] || []
+        const variants = variantsByProductIdForTransform[product.id] || []
         const aikonId = getProductAikonId(product as DatabaseProduct, variants)
         const aikonIdFormatted = getProductAikonIdFormatted(product as DatabaseProduct, variants)
         const variantAikonIds = variantAikonIdsByProduct[product.id] || []
         const variantAikonIdsFormatted = getAllVariantAikonIdsFormatted(variants)
         
+        // ✅ NUEVO: Calcular stock efectivo (suma de variantes si hay, sino stock del producto)
+        const variantStock = variantTotalStocks[product.id] || 0
+        const numericVariantStock = typeof variantStock === 'string' 
+          ? parseInt(variantStock, 10) || 0 
+          : Number(variantStock) || 0
+        const effectiveStock = numericVariantStock > 0
+          ? numericVariantStock  // Suma de todas las variantes
+          : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
+        
         return {
           ...product,
+          // ✅ CRÍTICO: Stock efectivo (suma de variantes si hay, sino stock del producto)
+          stock: effectiveStock,
           category_name: product.category?.name || categories[0]?.name || null,
           category: undefined,
           product_categories: undefined, // Remove nested object
