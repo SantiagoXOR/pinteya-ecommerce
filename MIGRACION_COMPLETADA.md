@@ -77,6 +77,4 @@ Los siguientes valores problemáticos fueron convertidos automáticamente:
 ### Archivos Relacionados
 
 - `supabase/migrations/20250129_convert_aikon_id_to_integer.sql` - Script de migración
-- `ANALISIS_BD_AIKON_ID.md` - Análisis previo
-- `PRODUCTOS_SIN_AIKON_ID.md` - Lista de productos corregidos
-- `RESUMEN_ANALISIS_BD.md` - Resumen del análisis
+- `docs/refactorizaciones-productos-slugs-aikon-id.md` - Documentación consolidada completa
