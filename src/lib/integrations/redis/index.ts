@@ -204,29 +204,52 @@ export function getRedisClient(): Redis | MockRedis {
 
       // Event listeners para logging
       redisClient.on('connect', () => {
+        console.log('[REDIS] ✅ Connected successfully')
         logger.info(LogCategory.API, 'Redis connected successfully')
         isUsingMock = false
       })
 
       redisClient.on('error', error => {
+        console.error('[REDIS] ❌ Connection error:', error.message)
         logger.error(LogCategory.API, 'Redis connection error', error)
         // Si hay error de conexión, usar mock
         if (!isUsingMock) {
-          console.log('[REDIS] Cambiando a modo mock debido a error de conexión')
+          console.log('[REDIS] ⚠️ Cambiando a modo mock debido a error de conexión')
           redisClient = new MockRedis()
           isUsingMock = true
         }
       })
 
       redisClient.on('close', () => {
+        console.log('[REDIS] ⚠️ Connection closed')
         logger.warn(LogCategory.API, 'Redis connection closed')
       })
 
       redisClient.on('reconnecting', () => {
+        console.log('[REDIS] 🔄 Reconnecting...')
         logger.info(LogCategory.API, 'Redis reconnecting...')
       })
-    } catch (error) {
-      console.log('[REDIS] Error inicializando Redis, usando mock:', error.message)
+
+      // Intentar conectar inmediatamente (forzar conexión con lazyConnect)
+      // Esto asegura que Redis intente conectarse al menos una vez
+      if (typeof window === 'undefined') {
+        // Solo en el servidor
+        redisClient
+          .connect()
+          .then(() => {
+            console.log('[REDIS] ✅ Lazy connection successful')
+          })
+          .catch((error: Error) => {
+            console.error('[REDIS] ❌ Lazy connection failed:', error.message)
+            // Si falla la conexión lazy, usar mock
+            if (!isUsingMock) {
+              redisClient = new MockRedis()
+              isUsingMock = true
+            }
+          })
+      }
+    } catch (error: any) {
+      console.log('[REDIS] ❌ Error inicializando Redis, usando mock:', error.message)
       redisClient = new MockRedis()
       isUsingMock = true
     }
