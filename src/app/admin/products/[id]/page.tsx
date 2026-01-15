@@ -1,10 +1,11 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminCard } from '@/components/admin/ui/AdminCard'
 import Image from 'next/image'
+import { toast } from 'react-hot-toast'
 import {
   Edit,
   Trash2,
@@ -16,6 +17,8 @@ import {
   Calendar,
   Tag,
   AlertCircle,
+  CheckCircle,
+  XCircle,
 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { cleanSlug } from '@/lib/products/slug-utils'
@@ -97,6 +100,7 @@ function StatusBadge({ status }: { status: Product['status'] }) {
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const productId = params.id as string
 
   // Fetch product data
@@ -110,6 +114,47 @@ export default function ProductDetailPage() {
     enabled: !!productId,
     staleTime: 0, // Siempre considerar los datos como obsoletos
     refetchOnMount: 'always', // Siempre refetch al montar
+  })
+
+  // ✅ NUEVO: Mutation para cambiar estado del producto
+  const toggleStatusMutation = useMutation({
+    mutationFn: async () => {
+      // Obtener el estado actual
+      const currentIsActive = product?.status === 'active' || (product as any)?.is_active === true
+      const newIsActive = !currentIsActive
+
+      // Actualizar el producto
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ is_active: newIsActive }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Error al actualizar estado del producto')
+      }
+
+      return response.json()
+    },
+    onSuccess: async () => {
+      // Invalidar todas las queries relevantes
+      await queryClient.invalidateQueries({ queryKey: ['admin-product', productId] })
+      await queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+      await queryClient.invalidateQueries({ queryKey: ['admin-products-stats'] })
+
+      // Refetch inmediato
+      await queryClient.refetchQueries({ queryKey: ['admin-product', productId] })
+      
+      const newStatus = product?.status === 'active' ? 'inactivo' : 'activo'
+      toast.success(`Producto ${newStatus} correctamente`)
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al cambiar estado del producto')
+    },
   })
 
   const handleEdit = () => {
@@ -126,6 +171,11 @@ export default function ProductDetailPage() {
     const productSlug = product?.slug ? cleanSlug(product.slug) : null
     const productUrl = productSlug ? `/products/${productSlug}` : `/products/${productId}`
     window.open(productUrl, '_blank')
+  }
+
+  // ✅ NUEVO: Handler para cambiar estado
+  const handleToggleStatus = async () => {
+    await toggleStatusMutation.mutateAsync()
   }
 
   if (isLoading) {
@@ -176,6 +226,29 @@ export default function ProductDetailPage() {
       >
         <Edit className='w-4 h-4' />
         <span>Editar</span>
+      </button>
+
+      {/* ✅ NUEVO: Botón para cambiar estado activo/inactivo */}
+      <button
+        onClick={handleToggleStatus}
+        disabled={toggleStatusMutation.isPending}
+        className={`inline-flex items-center justify-center gap-2 px-3 py-2 h-10 border rounded-lg transition-colors text-sm font-medium whitespace-nowrap ${
+          product?.status === 'active'
+            ? 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
+            : 'border-green-300 text-green-700 hover:bg-green-50'
+        } ${toggleStatusMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+      >
+        {product?.status === 'active' ? (
+          <>
+            <XCircle className='w-4 h-4' />
+            <span>Desactivar</span>
+          </>
+        ) : (
+          <>
+            <CheckCircle className='w-4 h-4' />
+            <span>Activar</span>
+          </>
+        )}
       </button>
 
       <button

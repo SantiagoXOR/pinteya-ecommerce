@@ -425,6 +425,19 @@ export function ProductFormMinimal({
   const normalizedInitialData = initialData
     ? {
         ...initialData,
+        // ✅ CORREGIDO: Mapear status a is_active si viene status en lugar de is_active
+        is_active: (() => {
+          // Si ya viene is_active, usarlo
+          if ((initialData as any).is_active !== undefined) {
+            return Boolean((initialData as any).is_active)
+          }
+          // Si viene status, convertirlo a is_active
+          if ((initialData as any).status) {
+            return (initialData as any).status === 'active'
+          }
+          // Por defecto, activo
+          return true
+        })(),
         // ✅ CORREGIDO: Extraer category_ids desde product_categories si está presente
         category_ids: (() => {
           // Si ya hay category_ids, usarlos

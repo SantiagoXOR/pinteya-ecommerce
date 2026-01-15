@@ -115,6 +115,8 @@ interface ProductListProps {
     hasPrev?: boolean
   }
   onProductAction?: (action: string, productId: string) => void
+  // ✅ NUEVO: Función para cambiar estado de un producto
+  onToggleStatus?: (productId: string) => Promise<void>
   // ✅ NUEVO: Funciones para acciones masivas
   onBulkStatusChange?: (productIds: string[], status: 'active' | 'inactive') => Promise<void>
   onBulkCategoryChange?: (productIds: string[], categoryId: number) => Promise<void>
@@ -218,6 +220,8 @@ export function ProductList({
     prevPage: () => {},
   },
   onProductAction,
+  // ✅ NUEVO: Función para cambiar estado
+  onToggleStatus,
   // ✅ NUEVO: Funciones para acciones masivas
   onBulkStatusChange,
   onBulkCategoryChange,
@@ -401,6 +405,7 @@ export function ProductList({
           onEdit={id => router.push(`/admin/products/${id}/edit`)}
           onDelete={handleDeleteProduct}
           onDuplicate={handleDuplicateProduct}
+          onToggleStatus={onToggleStatus}
           isLoading={isDeleting}
         />
       ),

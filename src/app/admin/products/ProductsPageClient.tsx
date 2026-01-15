@@ -44,6 +44,8 @@ export function ProductsPageClient() {
     refreshStats,
     handleBulkOperation,
     handleProductAction,
+    // ✅ NUEVO: Función para cambiar estado de producto
+    toggleProductStatus,
     // ✅ NUEVO: Funciones para acciones masivas
     bulkUpdateStatus,
     bulkUpdateCategory,
@@ -255,6 +257,8 @@ export function ProductsPageClient() {
                     updateFilters={updateFilters}
                     resetFilters={resetFilters}
                     pagination={pagination}
+                    // ✅ NUEVO: Función para cambiar estado
+                    onToggleStatus={toggleProductStatus}
                     // ✅ NUEVO: Funciones para acciones masivas
                     onBulkStatusChange={bulkUpdateStatus}
                     onBulkCategoryChange={bulkUpdateCategory}
@@ -285,6 +289,8 @@ export function ProductsPageClient() {
                       updateFilters={updateFilters}
                       resetFilters={resetFilters}
                       pagination={pagination}
+                      // ✅ NUEVO: Función para cambiar estado
+                      onToggleStatus={toggleProductStatus}
                       // ✅ NUEVO: Funciones para acciones masivas
                       onBulkStatusChange={bulkUpdateStatus}
                       onBulkCategoryChange={bulkUpdateCategory}
@@ -314,6 +320,8 @@ export function ProductsPageClient() {
                       updateFilters={updateFilters}
                       resetFilters={resetFilters}
                       pagination={pagination}
+                      // ✅ NUEVO: Función para cambiar estado
+                      onToggleStatus={toggleProductStatus}
                       // ✅ NUEVO: Funciones para acciones masivas
                       onBulkStatusChange={bulkUpdateStatus}
                       onBulkCategoryChange={bulkUpdateCategory}

@@ -353,6 +353,57 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
     [updateProductMutation]
   )
 
+  // ✅ NUEVO: Función para cambiar el estado activo/inactivo de un producto
+  const toggleProductStatus = useCallback(
+    async (productId: string) => {
+      try {
+        // Obtener el producto actual para conocer su estado
+        const response = await fetch(`/api/admin/products/${productId}`, {
+          credentials: 'include',
+        })
+
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`)
+        }
+
+        const result = await response.json()
+        const product = result.data
+
+        if (!product) {
+          throw new Error('Producto no encontrado')
+        }
+
+        // Invertir el estado is_active
+        const currentIsActive = product.is_active !== undefined 
+          ? Boolean(product.is_active) 
+          : (product.status === 'active')
+        const newIsActive = !currentIsActive
+
+        // Actualizar el producto con el nuevo estado
+        await updateProductMutation.mutateAsync({
+          id: productId,
+          data: { is_active: newIsActive },
+        })
+
+        // Invalidar todas las queries relevantes
+        await queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
+        await queryClient.invalidateQueries({ queryKey: ['admin-product', productId], exact: false })
+        await queryClient.invalidateQueries({ queryKey: ['admin-products-stats'], exact: false })
+
+        // Refetch inmediato para asegurar datos frescos
+        await queryClient.refetchQueries({ queryKey: ['admin-product', productId] })
+        await queryClient.refetchQueries({ queryKey: ['admin-products'], exact: false })
+        await queryClient.refetchQueries({ queryKey: ['admin-products-stats'] })
+
+        return { success: true, is_active: newIsActive }
+      } catch (error) {
+        console.error('Error al cambiar estado del producto:', error)
+        throw error
+      }
+    },
+    [updateProductMutation, queryClient]
+  )
+
   const bulkUpdateStatus = useCallback(
     (productIds: string[], status: 'active' | 'inactive') => {
       return bulkOperationMutation.mutateAsync({
@@ -521,6 +572,7 @@ export function useProductsEnterprise(initialFilters?: Partial<ProductFilters>) 
     // Acciones CRUD
     createProduct,
     updateProduct,
+    toggleProductStatus,
     refetchProducts,
 
     // Operaciones masivas

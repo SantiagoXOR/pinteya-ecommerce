@@ -107,14 +107,16 @@ export default function EditProductPage() {
     onSuccess: async (data) => {
       console.log('✅ Actualización exitosa, datos recibidos:', data)
       
-      // Invalidate queries y forzar refetch
-      await queryClient.invalidateQueries({ queryKey: ['admin-products'] })
+      // ✅ CORREGIDO: Invalidar todas las queries relevantes incluyendo stats
+      await queryClient.invalidateQueries({ queryKey: ['admin-products'], exact: false })
       await queryClient.invalidateQueries({ queryKey: ['admin-product', productId] })
       await queryClient.invalidateQueries({ queryKey: ['product-variants', productId] })
+      await queryClient.invalidateQueries({ queryKey: ['admin-products-stats'] })
       
       // Refetch inmediato para asegurar datos frescos
       await queryClient.refetchQueries({ queryKey: ['admin-product', productId] })
       await queryClient.refetchQueries({ queryKey: ['product-variants', productId] })
+      await queryClient.refetchQueries({ queryKey: ['admin-products-stats'] })
 
       // Show success message
       toast.success('Producto actualizado exitosamente')
