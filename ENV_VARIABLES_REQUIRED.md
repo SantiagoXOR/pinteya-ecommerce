@@ -24,6 +24,13 @@ NEXTAUTH_URL=https://tu-dominio-produccion.com
 
 NEXT_PUBLIC_MP_PUBLIC_KEY=tu_mercadopago_public_key
 MP_ACCESS_TOKEN=tu_mercadopago_access_token
+
+# Redis (Opcional pero recomendado)
+REDIS_HOST=tu-redis-host.redis.cloud
+REDIS_PORT=12345
+REDIS_PASSWORD=tu-redis-password
+REDIS_DB=0
+DISABLE_REDIS=false
 ```
 
 ## 📋 Pasos para Configurar en Vercel
@@ -77,6 +84,19 @@ https://www.mercadopago.com.ar/developers/panel/credentials
 → Credenciales de Producción
 ```
 
+#### Redis:
+```
+Opción 1: Redis Cloud (Recomendado)
+https://redis.com/try-free/
+→ Crear cuenta → Crear base de datos → Copiar credenciales
+
+Opción 2: Upstash (Serverless)
+https://console.upstash.com/
+→ Crear cuenta → Crear base de datos → Copiar credenciales
+
+Ver guía completa: docs/REDIS_CONFIGURATION_GUIDE.md
+```
+
 ### 4. Redesplegar
 
 Después de agregar todas las variables:
@@ -100,6 +120,10 @@ Marca las que ya configuraste:
 - [ ] `NEXTAUTH_URL`
 - [ ] `NEXT_PUBLIC_MP_PUBLIC_KEY`
 - [ ] `MP_ACCESS_TOKEN`
+- [ ] `REDIS_HOST` (Opcional - Recomendado)
+- [ ] `REDIS_PORT` (Opcional - Recomendado)
+- [ ] `REDIS_PASSWORD` (Opcional - Recomendado)
+- [ ] `DISABLE_REDIS=false` (Cambiar de true a false)
 
 ## 🔍 Verificar Configuración
 
@@ -138,9 +162,13 @@ Luego accede a: `https://tu-dominio.com/api/debug/env-check`
 7. `NEXT_PUBLIC_MP_PUBLIC_KEY`
 8. `MP_ACCESS_TOKEN`
 
-### 🟢 Opcionales:
-9. `GOOGLE_MAPS_API_KEY`
-10. `NEXT_PUBLIC_DEBUG`
+### 🟢 Opcionales (Recomendados):
+9. `REDIS_HOST` - Para rate limiting distribuido y cache
+10. `REDIS_PORT` - Puerto de Redis
+11. `REDIS_PASSWORD` - Password de Redis
+12. `DISABLE_REDIS` - Debe ser `false` para habilitar Redis
+13. `GOOGLE_MAPS_API_KEY`
+14. `NEXT_PUBLIC_DEBUG`
 
 ## 🚨 Seguridad
 
@@ -165,6 +193,9 @@ Luego accede a: `https://tu-dominio.com/api/debug/env-check`
 5. ✅ Redesplegar
 6. ✅ Probar login
 7. ✅ Configurar MercadoPago (si usas pagos)
+8. ✅ Configurar Redis (recomendado para producción)
+   - Ver: `docs/REDIS_CONFIGURATION_GUIDE.md`
+   - Test: `node scripts/test-redis-connection.js`
 
 ---
 
