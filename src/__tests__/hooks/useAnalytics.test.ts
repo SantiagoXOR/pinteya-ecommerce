@@ -21,8 +21,8 @@ jest.mock('next/navigation', () => ({
   usePathname: () => '/test-page',
 }))
 
-// Mock analytics lib
-jest.mock('@/lib/analytics', () => ({
+// Mock analytics lib - corregir ruta de import
+jest.mock('@/lib/integrations/analytics', () => ({
   analytics: {
     trackEvent: jest.fn().mockResolvedValue(undefined),
     trackEcommerceEvent: jest.fn().mockResolvedValue(undefined),

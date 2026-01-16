@@ -36,9 +36,16 @@ class SendStrategies {
    * Enviar evento usando múltiples estrategias con fallback
    */
   async sendEvent(event: AnalyticsEvent): Promise<SendResult> {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Analytics] sendEvent:', { event: event.event, category: event.category, action: event.action })
+    }
+
     // Estrategia 1: Fetch al endpoint alternativo (menos detectable)
     const alternativeResult = await this.tryFetchAlternative(event)
     if (alternativeResult.success) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Analytics] ✅ Evento enviado (alternative):', alternativeResult)
+      }
       return alternativeResult
     }
 
@@ -46,6 +53,9 @@ class SendStrategies {
     if (adBlockDetector.isSendBeaconAvailable()) {
       const beaconResult = await this.trySendBeacon(event)
       if (beaconResult.success) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Analytics] ✅ Evento enviado (beacon):', beaconResult)
+        }
         return beaconResult
       }
     }
@@ -53,11 +63,18 @@ class SendStrategies {
     // Estrategia 3: Fetch al endpoint original (compatibilidad)
     const primaryResult = await this.tryFetchPrimary(event)
     if (primaryResult.success) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Analytics] ✅ Evento enviado (primary):', primaryResult)
+      }
       return primaryResult
     }
 
     // Estrategia 4: Persistir en IndexedDB para envío posterior
     await indexedDBManager.storeEvent(event)
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Analytics] ⚠️ Todas las estrategias fallaron, evento guardado en IndexedDB')
+    }
 
     return {
       success: false,

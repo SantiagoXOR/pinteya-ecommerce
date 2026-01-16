@@ -169,7 +169,7 @@ describe('UnifiedAnalyticsProvider', () => {
 
       expect(mockSendEvent).toHaveBeenCalledWith(
         expect.objectContaining({
-          event: 'ecommerce',
+          event: 'purchase', // Cambiado de 'ecommerce' a 'purchase' después del mapeo
           category: 'shop',
           action: 'purchase',
           value: 1000,
@@ -192,7 +192,7 @@ describe('UnifiedAnalyticsProvider', () => {
 
       expect(mockSendEvent).toHaveBeenCalledWith(
         expect.objectContaining({
-          event: 'ecommerce',
+          event: 'product_view', // Cambiado de 'ecommerce' a 'product_view' después del mapeo
           category: 'shop',
           action: 'view_item',
         })
@@ -214,7 +214,7 @@ describe('UnifiedAnalyticsProvider', () => {
 
       expect(mockSendEvent).toHaveBeenCalledWith(
         expect.objectContaining({
-          event: 'ecommerce',
+          event: 'add_to_cart', // Cambiado de 'ecommerce' a 'add_to_cart' después del mapeo
           category: 'shop',
           action: 'add_to_cart',
         })
@@ -234,7 +234,7 @@ describe('UnifiedAnalyticsProvider', () => {
 
       expect(mockSendEvent).toHaveBeenCalledWith(
         expect.objectContaining({
-          event: 'ecommerce',
+          event: 'remove_from_cart', // Cambiado de 'ecommerce' a 'remove_from_cart' después del mapeo
           category: 'shop',
           action: 'remove_from_cart',
         })

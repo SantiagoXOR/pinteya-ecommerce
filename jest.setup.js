@@ -15,6 +15,13 @@ global.ReadableStream = ReadableStream
 global.WritableStream = WritableStream
 global.TransformStream = TransformStream
 
+// Polyfill para structuredClone (requerido por fake-indexeddb en Node.js)
+if (!global.structuredClone) {
+  global.structuredClone = (obj) => {
+    return JSON.parse(JSON.stringify(obj))
+  }
+}
+
 // Mock fetch si no está disponible
 if (!global.fetch) {
   global.fetch = jest.fn()

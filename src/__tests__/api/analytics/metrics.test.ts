@@ -25,12 +25,28 @@ jest.mock('@/lib/analytics/metrics-cache', () => ({
     generateKey: (...args: any[]) => mockGenerateKey(...args),
     get: (...args: any[]) => mockGet(...args),
     getTTL: (...args: any[]) => mockGetTTL(...args),
+    set: jest.fn().mockResolvedValue(undefined), // Agregar método set que falta
   },
 }))
 
-jest.mock('@supabase/supabase-js', () => ({
-  createClient: jest.fn(),
-}))
+// Mock Supabase client que se usa directamente en la ruta
+jest.mock('@supabase/supabase-js', () => {
+  const mockSupabaseClient = {
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+      order: jest.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
+    })),
+  }
+  return {
+    createClient: jest.fn(() => mockSupabaseClient),
+  }
+})
 
 describe('GET /api/analytics/metrics', () => {
   const mockMetrics = {

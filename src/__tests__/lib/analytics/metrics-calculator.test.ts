@@ -35,6 +35,7 @@ describe('MetricsCalculator', () => {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: mockAnalyticsEvents,
           error: null,
@@ -58,6 +59,7 @@ describe('MetricsCalculator', () => {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: mockAnalyticsEvents,
           error: null,
@@ -107,6 +109,7 @@ describe('MetricsCalculator', () => {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: [],
           error: null,
@@ -130,6 +133,7 @@ describe('MetricsCalculator', () => {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
@@ -154,6 +158,7 @@ describe('MetricsCalculator', () => {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: mockAnalyticsEvents,
           error: null,
@@ -218,6 +223,7 @@ describe('MetricsCalculator', () => {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: events,
           error: null,
@@ -293,6 +299,7 @@ describe('MetricsCalculator', () => {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: events,
           error: null,
@@ -354,6 +361,7 @@ describe('MetricsCalculator', () => {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: events,
           error: null,
@@ -407,15 +415,17 @@ describe('MetricsCalculator', () => {
         },
       ]
 
-      mockSupabaseInstance.from.mockReturnValue({
+      const mockQuery = {
         select: jest.fn().mockReturnThis(),
         gte: jest.fn().mockReturnThis(),
         lte: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
         order: jest.fn().mockResolvedValue({
           data: events,
           error: null,
         }),
-      } as any)
+      }
+      mockSupabaseInstance.from.mockReturnValue(mockQuery as any)
 
       const params = {
         startDate: new Date('2026-01-01'),

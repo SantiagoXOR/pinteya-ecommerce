@@ -31,8 +31,21 @@ export async function POST(request: NextRequest) {
   try {
     const event: TrackEvent = await request.json()
 
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[API /api/track/events] Evento recibido:', {
+        event: event.event,
+        category: event.category,
+        action: event.action,
+        label: event.label,
+        sessionId: event.sessionId,
+      })
+    }
+
     // Validación rápida y simple
     if (!event.event || !event.category || !event.action || !event.sessionId) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[API /api/track/events] Evento inválido:', event)
+      }
       return NextResponse.json(
         { error: 'Evento inválido: faltan campos requeridos' },
         { status: 400 }
@@ -65,16 +78,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Procesar evento de forma asíncrona usando función RPC optimizada
-    setImmediate(async () => {
+    // Usar Promise para asegurar que se ejecute incluso si setImmediate falla
+    Promise.resolve().then(async () => {
       try {
         const supabase = getSupabaseClient()
         if (!supabase) {
-          console.error('Error: Supabase client no disponible')
+          console.error('[API /api/track/events] ❌ Supabase client no disponible')
           return
         }
 
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[API /api/track/events] 🔄 Insertando evento en BD...', {
+            event: event.event,
+            category: event.category,
+            action: event.action,
+          })
+        }
+
         // Usar función RPC optimizada para insertar en tabla optimizada
-        const { error: rpcError } = await supabase.rpc('insert_analytics_event_optimized', {
+        const { error: rpcError, data: rpcData } = await supabase.rpc('insert_analytics_event_optimized', {
           p_event_name: event.event,
           p_category: event.category,
           p_action: event.action,
@@ -87,11 +109,37 @@ export async function POST(request: NextRequest) {
         })
 
         if (rpcError) {
-          console.error('Error insertando evento analytics (RPC):', rpcError)
+          console.error('[API /api/track/events] ❌ Error insertando evento analytics (RPC):', {
+            error: rpcError,
+            code: rpcError.code,
+            message: rpcError.message,
+            details: rpcError.details,
+            hint: rpcError.hint,
+            event: event.event,
+            category: event.category,
+            action: event.action,
+          })
+        } else {
+          console.log('[API /api/track/events] ✅ Evento insertado exitosamente:', {
+            eventId: rpcData,
+            event: event.event,
+            category: event.category,
+            action: event.action,
+          })
+          // Invalidar cache de métricas (fire-and-forget para no bloquear)
+          // No importa si falla, el evento ya está insertado
         }
-      } catch (error) {
-        console.error('Error procesando evento analytics (async):', error)
+      } catch (error: any) {
+        console.error('[API /api/track/events] ❌ Error procesando evento analytics (async):', {
+          error: error?.message || error,
+          stack: error?.stack,
+          event: event.event,
+          category: event.category,
+          action: event.action,
+        })
       }
+    }).catch(error => {
+      console.error('[API /api/track/events] ❌ Error crítico en Promise:', error)
     })
 
     // Respuesta inmediata

@@ -110,31 +110,47 @@ class MetricsCache {
    * Invalidar cache por patrón (para rangos de fechas)
    */
   async invalidatePattern(pattern: string): Promise<void> {
-    // Invalidar en Redis
-    if (this.redis) {
-      try {
-        const keys = await this.redis.keys(pattern)
-        if (keys.length > 0) {
-          // Eliminar keys de forma segura (ioredis acepta múltiples keys)
-          if (keys.length === 1) {
-            await this.redis.del(keys[0])
-          } else {
-            // Para múltiples keys, usar pipeline o eliminar uno por uno
-            for (const key of keys) {
-              await this.redis.del(key)
-            }
-          }
-        }
-      } catch (error) {
-        console.warn('Error invalidando Redis cache por patrón:', error)
-      }
-    }
-
-    // Invalidar en memoria
+    // Invalidar en memoria primero (rápido y seguro)
     const regex = new RegExp(pattern.replace('*', '.*'))
     for (const key of this.memoryCache.keys()) {
       if (regex.test(key)) {
         this.memoryCache.delete(key)
+      }
+    }
+
+    // Invalidar en Redis (no bloqueante con timeout)
+    if (this.redis) {
+      try {
+        // Usar Promise.race para evitar que keys() bloquee indefinidamente
+        const keysPromise = this.redis.keys(pattern)
+        const timeoutPromise = new Promise<string[]>((_, reject) => {
+          setTimeout(() => reject(new Error('Redis keys timeout')), 2000) // 2 segundos máximo
+        })
+        
+        const keys = await Promise.race([keysPromise, timeoutPromise]) as string[]
+        
+        if (keys.length > 0) {
+          // Usar pipeline para eliminar múltiples keys eficientemente
+          if (keys.length === 1) {
+            await Promise.race([
+              this.redis.del(keys[0]),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Redis del timeout')), 1000))
+            ]).catch(() => {}) // Ignorar errores de timeout
+          } else {
+            // Para múltiples keys, eliminar en batch con timeout
+            const pipeline = this.redis.pipeline()
+            for (const key of keys) {
+              pipeline.del(key)
+            }
+            await Promise.race([
+              pipeline.exec(),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Redis pipeline timeout')), 2000))
+            ]).catch(() => {}) // Ignorar errores de timeout
+          }
+        }
+      } catch (error) {
+        // Silenciar errores de Redis - no es crítico para la inserción de eventos
+        // console.warn('Error invalidando Redis cache por patrón (no crítico):', error)
       }
     }
   }

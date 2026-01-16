@@ -189,7 +189,25 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
   // Track e-commerce event
   const trackEcommerceEvent = useCallback(
     (action: string, data: Record<string, any>) => {
-      trackEvent('ecommerce', 'shop', action, undefined, data.value, data)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Analytics] trackEcommerceEvent:', { action, data })
+      }
+      // Mapear action a event_name correcto para la función RPC
+      // La función RPC espera event_name específico, no "ecommerce"
+      let eventName = 'ecommerce'
+      if (action === 'add_to_cart') {
+        eventName = 'add_to_cart'
+      } else if (action === 'remove_from_cart') {
+        eventName = 'remove_from_cart'
+      } else if (action === 'view_item') {
+        eventName = 'product_view'
+      } else if (action === 'begin_checkout') {
+        eventName = 'begin_checkout'
+      } else if (action === 'purchase') {
+        eventName = 'purchase'
+      }
+      
+      trackEvent(eventName, 'shop', action, undefined, data.value, data)
     },
     [trackEvent]
   )
@@ -210,6 +228,9 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
   const trackCartAction = useCallback(
     (action: string, productId?: string, properties?: Record<string, any>) => {
       const eventName = action === 'add' ? 'add_to_cart' : action === 'remove' ? 'remove_from_cart' : 'cart_action'
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Analytics] trackCartAction:', { action, eventName, productId, properties })
+      }
       trackEcommerceEvent(eventName, {
         item_id: productId,
         ...properties,

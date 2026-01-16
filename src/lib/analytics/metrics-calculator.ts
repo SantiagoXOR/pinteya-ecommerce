@@ -163,7 +163,7 @@ class MetricsCalculator {
       action: event.analytics_actions?.name || event.action || 'unknown',
       label: event.label,
       value: event.value,
-      userId: event.user_id,
+      userId: event.user_id || null, // Asegurar que sea null si no existe, no undefined
       sessionId: event.session_hash?.toString() || event.session_id || '',
       page: event.analytics_pages?.path || event.page || '',
       createdAt: event.created_at,
@@ -232,7 +232,11 @@ class MetricsCalculator {
     const normalized = events.map(e => this.normalizeEvent(e))
 
     const uniqueSessions = new Set(normalized.map(e => e.sessionId)).size
-    const uniqueUsers = new Set(normalized.filter(e => e.userId).map(e => e.userId)).size
+    const uniqueUsers = new Set(
+      normalized
+        .filter(e => e.userId != null && e.userId !== undefined && e.userId !== '')
+        .map(e => e.userId)
+    ).size
     const averageEventsPerSession = uniqueSessions > 0 ? normalized.length / uniqueSessions : 0
 
     // Calcular duración de sesión

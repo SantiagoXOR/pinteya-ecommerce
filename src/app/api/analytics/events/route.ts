@@ -76,8 +76,10 @@ export async function POST(request: NextRequest) {
         if (rpcError) {
           console.error('Error insertando evento analytics (RPC):', rpcError)
         } else {
-          // Invalidar cache de métricas al insertar nuevo evento
-          await metricsCache.invalidatePattern('analytics:*')
+          // Invalidar cache de métricas al insertar nuevo evento (fire-and-forget para no bloquear)
+          metricsCache.invalidatePattern('analytics:*').catch(error => {
+            console.warn('Error invalidando cache (no crítico):', error)
+          })
         }
       } catch (error) {
         console.error('Error procesando evento analytics (async):', error)
