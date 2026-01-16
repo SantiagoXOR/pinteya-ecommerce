@@ -128,47 +128,6 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
     }
   }, [pathname, isEnabled, enableCustomAnalytics])
 
-  // Habilitar/deshabilitar ElementTracker automáticamente
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    if (isEnabled && enableCustomAnalytics) {
-      // Callback para enviar eventos de interacciones al sistema de analytics
-      elementTracker.enableTracking((interactionData) => {
-        const eventName = interactionData.interactionType === 'click' ? 'click' 
-          : interactionData.interactionType === 'hover' ? 'hover'
-          : interactionData.interactionType === 'scroll' ? 'scroll'
-          : 'interaction'
-
-        trackEvent(
-          eventName,
-          'interaction',
-          interactionData.interactionType,
-          interactionData.elementSelector,
-          undefined,
-          {
-            elementSelector: interactionData.elementSelector,
-            elementX: interactionData.elementPosition.x,
-            elementY: interactionData.elementPosition.y,
-            elementWidth: interactionData.elementDimensions.width,
-            elementHeight: interactionData.elementDimensions.height,
-            deviceType: interactionData.deviceType,
-            page: interactionData.page,
-            ...interactionData.metadata,
-          }
-        )
-      })
-    } else {
-      elementTracker.disableTracking()
-    }
-
-    return () => {
-      elementTracker.disableTracking()
-    }
-  }, [isEnabled, enableCustomAnalytics, trackEvent])
-
   // Función helper para crear evento base
   const createBaseEvent = useCallback(
     (
@@ -413,6 +372,47 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
   const flushPendingEvents = useCallback(async () => {
     return eventPersistence.flushPendingEvents()
   }, [])
+
+  // Habilitar/deshabilitar ElementTracker automáticamente (después de definir trackEvent)
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    if (isEnabled && enableCustomAnalytics) {
+      // Callback para enviar eventos de interacciones al sistema de analytics
+      elementTracker.enableTracking((interactionData) => {
+        const eventName = interactionData.interactionType === 'click' ? 'click' 
+          : interactionData.interactionType === 'hover' ? 'hover'
+          : interactionData.interactionType === 'scroll' ? 'scroll'
+          : 'interaction'
+
+        trackEvent(
+          eventName,
+          'interaction',
+          interactionData.interactionType,
+          interactionData.elementSelector,
+          undefined,
+          {
+            elementSelector: interactionData.elementSelector,
+            elementX: interactionData.elementPosition.x,
+            elementY: interactionData.elementPosition.y,
+            elementWidth: interactionData.elementDimensions.width,
+            elementHeight: interactionData.elementDimensions.height,
+            deviceType: interactionData.deviceType,
+            page: interactionData.page,
+            ...interactionData.metadata,
+          }
+        )
+      })
+    } else {
+      elementTracker.disableTracking()
+    }
+
+    return () => {
+      elementTracker.disableTracking()
+    }
+  }, [isEnabled, enableCustomAnalytics, trackEvent])
 
   const contextValue: UnifiedAnalyticsContextType = {
     isEnabled,
