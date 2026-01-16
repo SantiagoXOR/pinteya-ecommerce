@@ -216,7 +216,7 @@ export const getBestSellerProductsServer = cache(
 
     try {
       if (categorySlug) {
-        // Con categoría: obtener todos los productos de la categoría
+        // Con categoría: obtener productos de la categoría, priorizando exclusivos
         const { data: category, error: categoryError } = await supabase
           .from('categories')
           .select('id')
@@ -228,24 +228,119 @@ export const getBestSellerProductsServer = cache(
           return []
         }
 
-        const { data: products, error: productsError } = await supabase
-          .from('products')
-          .select('*')
+        // ✅ FIX: Primero obtener productos exclusivos de esta categoría
+        // Un producto es exclusivo si solo tiene esta categoría en product_categories
+        // 1. Obtener todos los productos de esta categoría a través de product_categories
+        const { data: categoryProducts, error: categoryProductsError } = await supabase
+          .from('product_categories')
+          .select('product_id')
           .eq('category_id', category.id)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .limit(PRODUCT_LIMITS.CATEGORY)
 
-        if (productsError) {
-          console.error('Error fetching products by category:', productsError)
+        if (categoryProductsError) {
+          console.error('Error fetching products by category:', categoryProductsError)
           return []
         }
 
-        if (!products || products.length === 0) {
-          return []
+        if (!categoryProducts || categoryProducts.length === 0) {
+          // Si no hay productos en product_categories, usar category_id como fallback
+          const { data: fallbackProducts, error: fallbackError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('category_id', category.id)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(PRODUCT_LIMITS.CATEGORY)
+
+          if (fallbackError) {
+            console.error('Error fetching products by category_id:', fallbackError)
+            return []
+          }
+
+          if (!fallbackProducts || fallbackProducts.length === 0) {
+            return []
+          }
+
+          // Usar fallbackProducts como productos (todos son exclusivos por defecto si solo tienen category_id)
+          // Procesar directamente sin necesidad de identificar exclusivos
+          const products = fallbackProducts
+        } else {
+          // 2. Identificar productos exclusivos (solo tienen esta categoría)
+          const productIdsInCategory = categoryProducts.map(cp => cp.product_id)
+        
+        // Obtener todas las categorías de estos productos para identificar exclusivos
+        const { data: allProductCategories, error: allCategoriesError } = await supabase
+          .from('product_categories')
+          .select('product_id, category_id')
+          .in('product_id', productIdsInCategory)
+
+        if (allCategoriesError) {
+          console.warn('Error fetching all product categories:', allCategoriesError)
         }
 
-        // ✅ FIX: Obtener variantes e imágenes para enriquecer productos
+        // Agrupar categorías por producto
+        const categoriesByProduct = new Map<number, number[]>()
+        allProductCategories?.forEach(pc => {
+          if (!categoriesByProduct.has(pc.product_id)) {
+            categoriesByProduct.set(pc.product_id, [])
+          }
+          categoriesByProduct.get(pc.product_id)!.push(pc.category_id)
+        })
+
+        // Separar productos exclusivos (solo tienen esta categoría) y no exclusivos
+        const exclusiveProductIds: number[] = []
+        const nonExclusiveProductIds: number[] = []
+
+        productIdsInCategory.forEach(productId => {
+          const productCategories = categoriesByProduct.get(productId) || []
+          if (productCategories.length === 1 && productCategories[0] === category.id) {
+            exclusiveProductIds.push(productId)
+          } else {
+            nonExclusiveProductIds.push(productId)
+          }
+        })
+
+        // 3. Obtener productos exclusivos primero
+        let exclusiveProducts: any[] = []
+        if (exclusiveProductIds.length > 0) {
+          const { data: exclusive, error: exclusiveError } = await supabase
+            .from('products')
+            .select('*')
+            .in('id', exclusiveProductIds)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(PRODUCT_LIMITS.CATEGORY)
+
+          if (!exclusiveError && exclusive) {
+            exclusiveProducts = exclusive
+          }
+        }
+
+        // 4. Si no hay suficientes productos exclusivos, completar con no exclusivos
+        let nonExclusiveProducts: any[] = []
+        if (exclusiveProducts.length < PRODUCT_LIMITS.CATEGORY && nonExclusiveProductIds.length > 0) {
+          const needed = PRODUCT_LIMITS.CATEGORY - exclusiveProducts.length
+          const { data: nonExclusive, error: nonExclusiveError } = await supabase
+            .from('products')
+            .select('*')
+            .in('id', nonExclusiveProductIds)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(needed)
+
+          if (!nonExclusiveError && nonExclusive) {
+            nonExclusiveProducts = nonExclusive
+          }
+        }
+
+          // 5. Combinar: primero exclusivos, luego no exclusivos
+          const products = [...exclusiveProducts, ...nonExclusiveProducts].slice(0, PRODUCT_LIMITS.CATEGORY)
+
+          if (products.length === 0) {
+            return []
+          }
+        }
+
+        // ✅ FIX: Obtener variantes e imágenes para enriquecer productos (código compartido)
         const productIds = products.map(p => p.id)
         
         // Obtener variantes
