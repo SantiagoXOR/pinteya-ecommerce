@@ -579,24 +579,24 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   return (
     <section className='bg-transparent sticky top-[92px] lg:top-[105px] z-40 py-0 w-full overflow-hidden'>
       <div className='relative w-full max-w-7xl mx-auto'>
-        {/* Contenedor para los botones que se extiende hasta los bordes */}
-        <div className='absolute inset-0 pointer-events-none z-20'>
+        {/* Contenedor para los botones que se extiende hasta los bordes - Ocultos en desktop */}
+        <div className='absolute inset-0 pointer-events-none z-20 md:hidden'>
           {/* Flecha izquierda - Centrada verticalmente con los iconos de categorías */}
           <button
             onClick={() => scroll('left')}
-            className='absolute left-0 z-20 w-6 h-10 md:w-8 md:h-12 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-r-full border border-l-0 border-gray-200 pointer-events-auto top-1/2 -translate-y-1/2'
+            className='absolute left-0 z-20 w-6 h-10 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-r-full border border-l-0 border-gray-200 pointer-events-auto top-1/2 -translate-y-1/2'
             aria-label='Anterior'
           >
-            <ChevronLeft className='w-3 h-3 md:w-4 md:h-4 text-gray-600' />
+            <ChevronLeft className='w-3 h-3 text-gray-600' />
           </button>
 
           {/* Flecha derecha - Centrada verticalmente con los iconos de categorías */}
           <button
             onClick={() => scroll('right')}
-            className='absolute right-0 z-20 w-6 h-10 md:w-8 md:h-12 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-l-full border border-r-0 border-gray-200 pointer-events-auto top-1/2 -translate-y-1/2'
+            className='absolute right-0 z-20 w-6 h-10 bg-white hover:bg-gray-50 shadow-lg transition-all duration-200 flex items-center justify-center rounded-l-full border border-r-0 border-gray-200 pointer-events-auto top-1/2 -translate-y-1/2'
             aria-label='Siguiente'
           >
-            <ChevronRight className='w-3 h-3 md:w-4 md:h-4 text-gray-600' />
+            <ChevronRight className='w-3 h-3 text-gray-600' />
           </button>
         </div>
 
@@ -604,7 +604,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         {/* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll fluido a 60fps */}
         <div
           ref={carouselRef}
-          className='flex items-center gap-4 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full md:justify-center'
+          className='flex items-center gap-6 sm:gap-8 md:gap-10 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full md:justify-center'
           style={{
             willChange: 'scroll-position',
             transform: 'translateZ(0)', // GPU acceleration
