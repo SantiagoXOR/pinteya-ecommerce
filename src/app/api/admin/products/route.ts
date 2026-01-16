@@ -16,6 +16,7 @@ import { ProductFiltersSchema } from '@/lib/validation/admin-schemas'
 import type { ValidatedRequest } from '@/lib/validation/enterprise-validation-middleware'
 import { logger } from '@/lib/utils/logger'
 import { normalizeProductTitle } from '@/lib/core/utils'
+import { cleanProductFieldsForVariants } from '@/lib/validation/product-variant-utils'
 import {
   transformProducts,
   groupVariantsByProductId,
@@ -786,9 +787,15 @@ const postHandlerSimple = async (request: NextRequest) => {
       }
     }
 
+    // ✅ NOTA: Las variantes normalmente se crean DESPUÉS de crear el producto usando un endpoint separado.
+    // Si el payload indica que se van a crear variantes (body.variants o body.hasVariants),
+    // limpiaremos los campos inconsistentes automáticamente.
+    const hasVariantsInPayload = (body.variants && Array.isArray(body.variants) && body.variants.length > 0) 
+      || body.hasVariants === true
+
     // Mapear datos del frontend al formato de base de datos
     // ✅ price y stock son opcionales si el producto tiene variantes
-    const productData = {
+    let productData = {
       name: body.name,
       description: body.description || '',
       price: body.price !== undefined && body.price !== null && body.price !== '' 
@@ -866,6 +873,12 @@ const postHandlerSimple = async (request: NextRequest) => {
       })(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+    }
+
+    // ✅ Limpiar campos inconsistentes si el payload indica que habrá variantes
+    if (hasVariantsInPayload) {
+      productData = cleanProductFieldsForVariants(productData, true)
+      console.log('🧹 Campos limpiados porque el producto tendrá variantes')
     }
 
     console.log('🔄 Mapped product data:', JSON.stringify(productData, null, 2))

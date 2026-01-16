@@ -56,6 +56,9 @@ const ProductParamsSchema = z.object({
 import { ApiError, NotFoundError, ValidationError } from '@/lib/api/error-handler'
 import { normalizeProductTitle } from '@/lib/core/utils'
 import { formatAikonId } from '@/lib/products/aikon-id-utils'
+import { cleanProductFieldsIfHasVariants, getVariantExclusiveFields } from '@/lib/validation/product-variant-utils'
+
+const VARIANT_EXCLUSIVE_FIELDS = getVariantExclusiveFields()
 
 // Helper function to get product by ID - Returns null if not found
 async function getProductById(
@@ -378,24 +381,38 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   console.log('📥 validatedData recibido del frontend:', JSON.stringify(validatedData, null, 2))
   console.log('📦 Stock recibido:', validatedData.stock, '(tipo:', typeof validatedData.stock, ')')
 
+  // ✅ NUEVO: Limpiar campos inconsistentes si el producto tiene variantes activas
+  // Cuando un producto tiene variantes, price, stock, color, medida, terminaciones
+  // deben estar en las variantes, no en el producto principal
+  const numericProductId = parseInt(productId, 10)
+  const cleanedData = await cleanProductFieldsIfHasVariants(numericProductId, validatedData)
+  
+  // Log si se limpiaron campos
+  const fieldsCleaned = VARIANT_EXCLUSIVE_FIELDS.filter(
+    field => validatedData[field] !== undefined && cleanedData[field] === null
+  )
+  if (fieldsCleaned.length > 0) {
+    console.log('🧹 Campos limpiados automáticamente por tener variantes:', fieldsCleaned)
+  }
+
   // Crear updateData solo con campos que existen en la tabla products
   const updateData: any = {
     updated_at: new Date().toISOString(),
   }
 
-  // Mapear solo campos válidos de la BD
-  if (validatedData.name !== undefined) updateData.name = validatedData.name
-  if (validatedData.description !== undefined) updateData.description = validatedData.description
-  if (validatedData.price !== undefined) updateData.price = validatedData.price
-  if (validatedData.discounted_price !== undefined) updateData.discounted_price = validatedData.discounted_price
-  if (validatedData.stock !== undefined) updateData.stock = validatedData.stock
-  if (validatedData.category_id !== undefined) updateData.category_id = validatedData.category_id
-  if (validatedData.brand !== undefined) updateData.brand = validatedData.brand
-  if (validatedData.images !== undefined) updateData.images = validatedData.images
-  if (validatedData.is_active !== undefined) updateData.is_active = validatedData.is_active
+  // Mapear solo campos válidos de la BD (usar cleanedData en lugar de validatedData)
+  if (cleanedData.name !== undefined) updateData.name = cleanedData.name
+  if (cleanedData.description !== undefined) updateData.description = cleanedData.description
+  if (cleanedData.price !== undefined) updateData.price = cleanedData.price
+  if (cleanedData.discounted_price !== undefined) updateData.discounted_price = cleanedData.discounted_price
+  if (cleanedData.stock !== undefined) updateData.stock = cleanedData.stock
+  if (cleanedData.category_id !== undefined) updateData.category_id = cleanedData.category_id
+  if (cleanedData.brand !== undefined) updateData.brand = cleanedData.brand
+  if (cleanedData.images !== undefined) updateData.images = cleanedData.images
+  if (cleanedData.is_active !== undefined) updateData.is_active = cleanedData.is_active
   // ✅ AGREGADO: Mapear aikon_id (convertir string a number si es necesario)
-  if ((validatedData as any).aikon_id !== undefined) {
-    const aikonIdValue = (validatedData as any).aikon_id
+  if ((cleanedData as any).aikon_id !== undefined) {
+    const aikonIdValue = (cleanedData as any).aikon_id
     if (aikonIdValue === null || aikonIdValue === undefined || aikonIdValue === '') {
       updateData.aikon_id = null
     } else {
@@ -407,20 +424,20 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
       }
     }
   }
-  // ✅ NUEVO: Mapear terminaciones (array de texto)
-  if ((validatedData as any).terminaciones !== undefined) {
-    const terminaciones = Array.isArray((validatedData as any).terminaciones)
-      ? (validatedData as any).terminaciones.filter((t: string) => t && t.trim() !== '')
+  // ✅ NUEVO: Mapear terminaciones (array de texto) - usar cleanedData
+  if ((cleanedData as any).terminaciones !== undefined) {
+    const terminaciones = Array.isArray((cleanedData as any).terminaciones)
+      ? (cleanedData as any).terminaciones.filter((t: string) => t && t.trim() !== '')
       : []
     updateData.terminaciones = terminaciones.length > 0 ? terminaciones : null
   }
   
-  // ✅ NUEVO: Normalizar medida: convertir array a string (tomar primera medida)
-  if ((validatedData as any).medida !== undefined) {
-    const medidaValue = Array.isArray((validatedData as any).medida) && (validatedData as any).medida.length > 0
-      ? (validatedData as any).medida[0]  // Solo primera medida
-      : (typeof (validatedData as any).medida === 'string' && (validatedData as any).medida.trim() !== ''
-        ? (validatedData as any).medida
+  // ✅ NUEVO: Normalizar medida: convertir array a string (tomar primera medida) - usar cleanedData
+  if ((cleanedData as any).medida !== undefined) {
+    const medidaValue = Array.isArray((cleanedData as any).medida) && (cleanedData as any).medida.length > 0
+      ? (cleanedData as any).medida[0]  // Solo primera medida
+      : (typeof (cleanedData as any).medida === 'string' && (cleanedData as any).medida.trim() !== ''
+        ? (cleanedData as any).medida
         : null)
     
     if (medidaValue !== null && medidaValue !== undefined) {
@@ -429,9 +446,6 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
       updateData.medida = null
     }
   }
-  
-  // Convertir productId a número para la query
-  const numericProductId = parseInt(productId, 10)
 
   // Verificar que supabaseAdmin esté disponible
   if (!supabaseAdmin) {
@@ -598,26 +612,9 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
     stockTipo: typeof updatedProduct.stock
   })
 
-  // Si se actualizó el stock del producto principal, actualizar también la variante predeterminada
-  // (las demás variantes se manejan de forma independiente a través del endpoint específico)
-  if (validatedData.stock !== undefined) {
-    console.log('📦 Actualizando stock de variante predeterminada a:', validatedData.stock)
-    // @ts-ignore - Supabase types are too strict
-    const { error: variantError, count } = await supabaseAdmin
-      .from('product_variants')
-      .update({ 
-        stock: validatedData.stock,
-        updated_at: new Date().toISOString()
-      })
-      .eq('product_id', numericProductId)
-      .eq('is_default', true)
-    
-    if (variantError) {
-      console.error('⚠️ Error actualizando variante predeterminada:', variantError)
-    } else {
-      console.log(`✅ Variante predeterminada actualizada con stock ${validatedData.stock} (${count || 0} registros)`)
-    }
-  }
+  // ✅ NOTA: Si el producto tiene variantes, el stock debe manejarse en las variantes, no en el producto principal.
+  // La lógica anterior de actualizar la variante predeterminada cuando se actualiza el stock del producto
+  // ya no se aplica porque si hay variantes, cleanedData.stock será null.
 
   // Log de auditoría
   await logAdminAction(user?.id || 'system', 'UPDATE', 'product', productId, existingProduct, updatedProduct)

@@ -808,10 +808,10 @@ class MetricsCalculator {
       e => e.action === 'add_to_cart' || e.action === 'add'
     ).length
 
-    // Contar begin_checkout: aceptar eventos con eventName === 'begin_checkout' 
-    // aunque tengan action incorrecta (compatibilidad con eventos mal guardados)
+    // Contar begin_checkout: priorizar action sobre eventName para mayor flexibilidad
+    // Aceptar eventos con eventName === 'begin_checkout' aunque tengan action incorrecta (compatibilidad con eventos mal guardados)
     const checkoutStarts = normalized.filter(
-      e => e.eventName === 'begin_checkout' || (e.action === 'begin_checkout' && e.eventName === 'begin_checkout')
+      e => e.action === 'begin_checkout' || e.eventName === 'begin_checkout'
     ).length
     // Solo contar eventos reales de purchase, no page_view con action purchase
     const purchases = normalized.filter(
@@ -831,7 +831,7 @@ class MetricsCalculator {
         step = 'product_view'
       } else if (event.action === 'add_to_cart' || event.action === 'add') {
         step = 'add_to_cart'
-      } else if (event.action === 'begin_checkout' && event.eventName === 'begin_checkout') {
+      } else if (event.action === 'begin_checkout' || event.eventName === 'begin_checkout') {
         step = 'begin_checkout'
       } else if (event.action === 'purchase' && event.eventName === 'purchase') {
         step = 'purchase'
@@ -976,9 +976,11 @@ class MetricsCalculator {
       }
 
       const pageData = pageInteractionsMap.get(page)!
-      if (event.action === 'click') pageData.clicks++
-      if (event.action === 'hover') pageData.hovers++
-      if (event.action === 'scroll') pageData.scrolls++
+      // Priorizar action sobre eventName para mayor flexibilidad
+      const actionType = event.action || event.eventName
+      if (actionType === 'click') pageData.clicks++
+      if (actionType === 'hover') pageData.hovers++
+      if (actionType === 'scroll') pageData.scrolls++
       pageData.times.push(new Date(event.createdAt).getTime())
     })
 
@@ -1071,8 +1073,11 @@ class MetricsCalculator {
   calculateSearchAnalytics(events: RawEvent[]): SearchAnalytics {
     const normalized = events.map(e => this.normalizeEvent(e))
 
+    // Filtro flexible: priorizar action sobre eventName
     const searchEvents = normalized.filter(
       e =>
+        e.action === 'search' ||
+        e.action === 'search_query' ||
         (e.category === 'search' && (e.action === 'search' || e.action === 'search_query')) ||
         e.eventName === 'search' ||
         e.eventName === 'search_query'

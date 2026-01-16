@@ -565,8 +565,35 @@ export function ProductFormMinimal({
       // ✅ VALIDACIÓN: Si no hay variantes (existentes o nuevas), precio y stock son requeridos
       const hasVariants = variants.length > 0 || newVariants.length > 0
       
+      // ✅ NUEVO: Limpiar campos inconsistentes si el producto tiene variantes
+      // Cuando un producto tiene variantes, estos campos deben ser null en el producto principal
+      const cleanedData = { ...data }
+      if (hasVariants) {
+        cleanedData.price = null
+        cleanedData.discounted_price = null
+        cleanedData.stock = null
+        cleanedData.color = undefined
+        cleanedData.medida = undefined
+        cleanedData.terminaciones = undefined
+        
+        // Mostrar advertencia si se intentaron guardar estos campos
+        const fieldsThatWereCleaned = []
+        if (data.price !== null && data.price !== undefined) fieldsThatWereCleaned.push('precio')
+        if (data.discounted_price !== null && data.discounted_price !== undefined) fieldsThatWereCleaned.push('precio con descuento')
+        if (data.stock !== null && data.stock !== undefined) fieldsThatWereCleaned.push('stock')
+        if (data.color) fieldsThatWereCleaned.push('color')
+        if (data.medida && data.medida.length > 0) fieldsThatWereCleaned.push('medida')
+        if (data.terminaciones && data.terminaciones.length > 0) fieldsThatWereCleaned.push('terminaciones')
+        
+        if (fieldsThatWereCleaned.length > 0) {
+          notifications.showInfoMessage(
+            `Los campos ${fieldsThatWereCleaned.join(', ')} fueron limpiados automáticamente porque el producto tiene variantes. Estos valores se definen en las variantes.`
+          )
+        }
+      }
+      
       if (!hasVariants) {
-        if (!data.price || data.price <= 0) {
+        if (!cleanedData.price || cleanedData.price <= 0) {
           form.setError('price', {
             type: 'manual',
             message: 'El precio es requerido cuando el producto no tiene variantes',
@@ -574,7 +601,7 @@ export function ProductFormMinimal({
           notifications.showErrorMessage('El precio es requerido cuando el producto no tiene variantes')
           return
         }
-        if (data.stock === null || data.stock === undefined || data.stock < 0) {
+        if (cleanedData.stock === null || cleanedData.stock === undefined || cleanedData.stock < 0) {
           form.setError('stock', {
             type: 'manual',
             message: 'El stock es requerido cuando el producto no tiene variantes',
@@ -588,9 +615,10 @@ export function ProductFormMinimal({
         hasVariants,
         variantsCount: variants.length,
         newVariantsCount: newVariants.length,
-        price: data.price,
-        stock: data.stock,
-        errors: Object.keys(errors).length
+        price: cleanedData.price,
+        stock: cleanedData.stock,
+        errors: Object.keys(errors).length,
+        fieldsCleaned: hasVariants ? ['price', 'discounted_price', 'stock', 'color', 'medida', 'terminaciones'] : []
       })
       
       notifications.showProcessingInfo(

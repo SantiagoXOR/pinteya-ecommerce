@@ -38,7 +38,7 @@ interface TrackEvent {
 
 // Cache simple en memoria para eventos recientes (evita duplicados)
 const eventCache = new Map<string, number>()
-const CACHE_TTL = 5000 // 5 segundos
+const CACHE_TTL = 10000 // 10 segundos (aumentado para prevenir duplicados)
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,13 +66,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Cache key para evitar eventos duplicados
-    const cacheKey = `${event.event}-${event.category}-${event.action}-${event.sessionId}`
+    // Incluir timestamp redondeado a segundos para mayor granularidad
+    const timestampRounded = Math.floor(Date.now() / 1000) * 1000
+    const cacheKey = `${event.event}-${event.category}-${event.action}-${event.sessionId}-${timestampRounded}`
     const now = Date.now()
 
     // Verificar cache para evitar duplicados recientes
     if (eventCache.has(cacheKey)) {
       const lastTime = eventCache.get(cacheKey)!
       if (now - lastTime < CACHE_TTL) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[API /api/track/events] ⚠️ Evento duplicado detectado y rechazado:', {
+            event: event.event,
+            category: event.category,
+            action: event.action,
+            sessionId: event.sessionId,
+            timeSinceLast: now - lastTime,
+          })
+        }
         return NextResponse.json({ success: true, cached: true })
       }
     }
@@ -130,12 +141,19 @@ export async function POST(request: NextRequest) {
         const quantity = event.quantity || event.metadata?.quantity || 1
 
         // Extraer metadata de elementos
+        // Asegurar que si hay elementSelector, también haya coordenadas
         const elementSelector = event.elementSelector || event.metadata?.elementSelector
-        const elementX = event.elementPosition?.x || event.metadata?.elementPosition?.x
-        const elementY = event.elementPosition?.y || event.metadata?.elementPosition?.y
+        let elementX = event.elementPosition?.x || event.metadata?.elementPosition?.x
+        let elementY = event.elementPosition?.y || event.metadata?.elementPosition?.y
         const elementWidth = event.elementDimensions?.width || event.metadata?.elementDimensions?.width
         const elementHeight = event.elementDimensions?.height || event.metadata?.elementDimensions?.height
         const deviceType = event.deviceType || event.metadata?.deviceType
+        
+        // Si hay elementSelector pero no coordenadas, usar 0 como fallback
+        if (elementSelector && (elementX === undefined || elementY === undefined)) {
+          elementX = elementX || 0
+          elementY = elementY || 0
+        }
 
         // Preparar metadata adicional (excluyendo campos que ya se guardan por separado)
         const additionalMetadata: Record<string, any> = {}
