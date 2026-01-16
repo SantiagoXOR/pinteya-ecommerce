@@ -626,7 +626,8 @@ export function ProductFormMinimal({
         for (const variant of newVariants) {
           try {
             // ✅ VALIDACIÓN: Verificar que la variante tenga los campos requeridos
-            if (!variant.aikon_id || variant.aikon_id.trim() === '') {
+            const aikonIdStr = String(variant.aikon_id || '').trim()
+            if (!aikonIdStr) {
               console.warn('⚠️ [ProductFormMinimal] Variante sin aikon_id, saltando:', variant)
               failedVariants.push({ variant, error: 'Código Aikon requerido' })
               continue
@@ -659,7 +660,7 @@ export function ProductFormMinimal({
               credentials: 'include', // ✅ Incluir cookies de autenticación
               body: JSON.stringify({
                 product_id: parseInt(String(finalProductId)),
-                aikon_id: variant.aikon_id.trim(),
+                aikon_id: String(variant.aikon_id || '').trim(),
                 color_name: variant.color_name && variant.color_name.trim() !== '' ? variant.color_name.trim() : null,
                 color_hex: variant.color_hex && variant.color_hex.trim() !== '' ? variant.color_hex.trim() : null,
                 measure: variant.measure.trim(),
@@ -1520,7 +1521,11 @@ interface VariantModalProps {
 }
 
 function VariantModal({ variant, productId, productData, onSave, onCancel }: VariantModalProps) {
-  const [formData, setFormData] = useState(variant)
+  // ✅ CORREGIDO: Asegurar que aikon_id siempre sea string al inicializar
+  const [formData, setFormData] = useState({
+    ...variant,
+    aikon_id: variant.aikon_id != null ? String(variant.aikon_id) : ''
+  })
   const [imagePreview, setImagePreview] = useState<string | null>(variant.image_url || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -1529,7 +1534,8 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
     
     // Color y medida son opcionales ahora
     
-    if (!formData.aikon_id || formData.aikon_id.trim() === '') {
+    const aikonIdStr = String(formData.aikon_id || '').trim()
+    if (!aikonIdStr) {
       newErrors.aikon_id = 'El código Aikon es requerido'
     }
     
@@ -1559,7 +1565,7 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
           : null,
         measure: formData.measure?.trim() || undefined,
         finish: formData.finish || undefined,
-        aikon_id: formData.aikon_id?.trim() || undefined,
+        aikon_id: String(formData.aikon_id || '').trim() || undefined,
         // Asegurar que price_list sea número
         price_list: typeof formData.price_list === 'number' 
           ? formData.price_list 

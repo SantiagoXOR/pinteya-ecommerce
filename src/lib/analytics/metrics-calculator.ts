@@ -808,8 +808,10 @@ class MetricsCalculator {
       e => e.action === 'add_to_cart' || e.action === 'add'
     ).length
 
+    // Contar begin_checkout: aceptar eventos con eventName === 'begin_checkout' 
+    // aunque tengan action incorrecta (compatibilidad con eventos mal guardados)
     const checkoutStarts = normalized.filter(
-      e => e.action === 'begin_checkout' && e.eventName === 'begin_checkout'
+      e => e.eventName === 'begin_checkout' || (e.action === 'begin_checkout' && e.eventName === 'begin_checkout')
     ).length
     // Solo contar eventos reales de purchase, no page_view con action purchase
     const purchases = normalized.filter(

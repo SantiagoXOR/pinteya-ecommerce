@@ -144,7 +144,7 @@ async function generateExcel(rows: ExportRow[], aikonRows: Record<string, any>[]
     rows.filter((row: any) => !row.category_id).map((row: any) => row.product_id)
   )
   const variantsWithoutAikon = rows.filter(
-    (row: any) => !row.variant_aikon_id || row.variant_aikon_id.trim() === ''
+    (row: any) => !row.variant_aikon_id || String(row.variant_aikon_id || '').trim() === ''
   ).length
 
   summarySheet.addRows([

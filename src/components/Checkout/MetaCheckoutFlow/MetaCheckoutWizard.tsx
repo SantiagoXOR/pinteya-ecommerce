@@ -50,7 +50,7 @@ const STEP_ORDER: MetaCheckoutStep[] = ['summary', 'contact', 'shipping', 'payme
 
 export const MetaCheckoutWizard: React.FC = () => {
   const router = useRouter()
-  const { trackEvent: trackAnalyticsEvent } = useAnalytics()
+  const { trackEcommerceEvent } = useAnalytics()
   // ✅ AGREGAR: Estado para controlar la pantalla de loading durante redirección
   const [isRedirecting, setIsRedirecting] = useState(false)
   
@@ -140,9 +140,10 @@ export const MetaCheckoutWizard: React.FC = () => {
         trackGoogleAdsBeginCheckout(totalPrice, 'ARS', items)
 
         // 📊 Analytics propio - Trackear begin_checkout
-        trackAnalyticsEvent('begin_checkout', 'ecommerce', 'begin_checkout', undefined, totalPrice, {
-          itemCount: cartItems.length,
+        trackEcommerceEvent('begin_checkout', {
+          value: totalPrice,
           currency: 'ARS',
+          num_items: cartItems.length,
           items: items,
         })
 

@@ -20,6 +20,9 @@ export class ElementTracker {
   private hoverTimers: Map<HTMLElement, NodeJS.Timeout> = new Map()
   private scrollThrottle: number | null = null
   private readonly SCROLL_THROTTLE_MS = 1000 // Track scroll cada 1 segundo
+  private isTrackingEnabled: boolean = false
+  private globalListeners: Array<{ type: string; handler: EventListener; options?: boolean | AddEventListenerOptions }> = []
+  private trackEventCallback?: (data: ElementInteractionData) => void
 
   /**
    * Trackea un click en un elemento
@@ -192,6 +195,146 @@ export class ElementTracker {
       clearTimeout(this.scrollThrottle)
       this.scrollThrottle = null
     }
+  }
+
+  /**
+   * Habilita el tracking automático
+   */
+  enableTracking(callback?: (data: ElementInteractionData) => void): void {
+    if (this.isTrackingEnabled) {
+      return
+    }
+    this.isTrackingEnabled = true
+    this.trackEventCallback = callback
+    this.init()
+  }
+
+  /**
+   * Deshabilita el tracking automático
+   */
+  disableTracking(): void {
+    if (!this.isTrackingEnabled) {
+      return
+    }
+    this.isTrackingEnabled = false
+    this.removeGlobalListeners()
+    this.cleanup()
+  }
+
+  /**
+   * Inicializa listeners globales para tracking automático
+   */
+  private init(): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return
+    }
+
+    // Listener para clicks
+    const clickHandler = (event: MouseEvent) => {
+      if (!this.isTrackingEnabled) return
+      const target = event.target as HTMLElement
+      if (!target) return
+
+      // Ignorar clicks en elementos que no son interactivos (opcional)
+      const interactiveElements = ['button', 'a', 'input', 'select', 'textarea']
+      if (!interactiveElements.includes(target.tagName.toLowerCase()) && !target.onclick) {
+        // Solo trackear si tiene data-analytics-id o es clickeable
+        if (!target.getAttribute('data-analytics-id') && !target.closest('button, a')) {
+          return
+        }
+      }
+
+      const interactionData = this.trackClick(target)
+      if (interactionData && this.trackEventCallback) {
+        this.trackEventCallback(interactionData)
+      }
+    }
+
+    // Listener para hovers (con debounce)
+    const hoverHandler = (event: MouseEvent) => {
+      if (!this.isTrackingEnabled) return
+      const target = event.target as HTMLElement
+      if (!target) return
+
+      // Solo trackear hovers en elementos interactivos
+      const interactiveElements = ['button', 'a', 'input', 'select', 'textarea']
+      const isInteractive = interactiveElements.some(tag => 
+        target.tagName.toLowerCase() === tag || target.closest(tag)
+      ) || target.getAttribute('role') === 'button'
+
+      if (!isInteractive) {
+        return
+      }
+
+      // Usar trackHover que maneja el debounce internamente
+      // El callback se llamará después del delay
+      const hoverData = this.trackHover(target, undefined, 500)
+      // trackHover retorna null inicialmente, el callback se maneja internamente
+      // Necesitamos un enfoque diferente para hovers globales
+      const existingTimer = this.hoverTimers.get(target)
+      if (existingTimer) {
+        clearTimeout(existingTimer)
+      }
+
+      const timer = setTimeout(() => {
+        const interactionData = this.trackClick(target) // Reutilizar trackClick para obtener datos
+        if (interactionData && this.trackEventCallback) {
+          const hoverInteractionData: ElementInteractionData = {
+            ...interactionData,
+            interactionType: 'hover',
+          }
+          this.trackEventCallback(hoverInteractionData)
+        }
+        this.hoverTimers.delete(target)
+      }, 500)
+
+      this.hoverTimers.set(target, timer)
+    }
+
+    // Listener para scroll (con throttle)
+    let lastScrollY = window.scrollY
+    const scrollHandler = () => {
+      if (!this.isTrackingEnabled) return
+      const scrollY = window.scrollY
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight
+      const scrollPercent = scrollHeight > 0 ? (scrollY / scrollHeight) * 100 : 0
+
+      // Solo trackear si hay un cambio significativo
+      if (Math.abs(scrollY - lastScrollY) < 50) {
+        return
+      }
+      lastScrollY = scrollY
+
+      const interactionData = this.trackScroll({ scrollY, scrollPercent })
+      if (interactionData && this.trackEventCallback) {
+        this.trackEventCallback(interactionData)
+      }
+    }
+
+    // Registrar listeners
+    document.addEventListener('click', clickHandler, { passive: true, capture: true })
+    document.addEventListener('mouseover', hoverHandler, { passive: true, capture: true })
+    window.addEventListener('scroll', scrollHandler, { passive: true })
+
+    this.globalListeners = [
+      { type: 'click', handler: clickHandler, options: { passive: true, capture: true } },
+      { type: 'mouseover', handler: hoverHandler, options: { passive: true, capture: true } },
+      { type: 'scroll', handler: scrollHandler, options: { passive: true } },
+    ]
+  }
+
+  /**
+   * Remueve listeners globales
+   */
+  private removeGlobalListeners(): void {
+    this.globalListeners.forEach(({ type, handler, options }) => {
+      if (type === 'scroll') {
+        window.removeEventListener(type, handler, options as boolean | EventListenerOptions)
+      } else {
+        document.removeEventListener(type, handler, options as boolean | EventListenerOptions)
+      }
+    })
+    this.globalListeners = []
   }
 }
 
