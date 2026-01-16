@@ -52,8 +52,9 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   
   // ⚡ OPTIMIZACIÓN: Si freeShippingOnly es true, usar useFilteredProducts para compartir cache con FreeShippingSection
   // Esto evita peticiones duplicadas a /api/products con los mismos filtros
+  // ✅ FIX: Aumentar límite a 100 para obtener más productos y luego filtrar por variantes
   const freeShippingQuery = useFilteredProducts({
-    limit: 30, // ⚡ OPTIMIZACIÓN: Mismo límite que FreeShippingSection para compartir cache
+    limit: 100, // ✅ FIX: Aumentar para obtener más productos y filtrar los que tienen variantes con envío gratis
     sortBy: 'price',
     sortOrder: 'desc',
   })
@@ -102,6 +103,15 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
       const finalPrice = discountedPrice > 0 ? discountedPrice : price
       return finalPrice >= FREE_SHIPPING_THRESHOLD
     })
+    
+    // ✅ DEBUG: Log para verificar cuántos productos califican
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[FreeShippingCarousel] Productos calificados:', {
+        totalAdapted: adaptedProducts.length,
+        withFreeShipping: productsWithFreeShippingVariants.length,
+        threshold: FREE_SHIPPING_THRESHOLD
+      })
+    }
     
     // ⚡ PASO 2: Actualizar cada producto calificado con su variante más costosa
     // Esto asegura que se muestre el precio más alto (que califica para envío gratis)
