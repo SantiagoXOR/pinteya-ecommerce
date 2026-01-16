@@ -485,23 +485,19 @@ export const getBestSellerProductsServer = cache(
             ? productVariants.reduce((sum: number, v: any) => sum + (Number(v.stock) || 0), 0)
             : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
 
-          // ✅ FIX: Resolver image_url con la misma prioridad que la API
-          // Prioridad 1: Imagen desde product_images
-          // Prioridad 2: Imagen de variante por defecto
-          // Prioridad 3: image_url del producto
-          let resolvedImageUrl = productImagesByProduct[product.id] || null
-          if (!resolvedImageUrl && defaultVariant?.image_url) {
-            resolvedImageUrl = defaultVariant.image_url
-          }
-          if (!resolvedImageUrl) {
-            resolvedImageUrl = product.image_url || null
-          }
+          // ✅ FIX: NO resolver image_url aquí, dejar que adaptApiProductToComponent lo haga con resolveProductImage
+          // Solo establecer image_url desde product_images como prioridad, pero mantener todos los datos
+          // para que resolveProductImage pueda hacer la resolución completa
+          const imageUrlFromTable = productImagesByProduct[product.id] || null
 
           return {
             ...product,
             variants: productVariants,
             default_variant: defaultVariant,
-            image_url: resolvedImageUrl,
+            // ✅ FIX: Pasar image_url desde product_images (prioridad 1) pero mantener images JSONB
+            // para que adaptApiProductToComponent pueda usar resolveProductImage con toda la información
+            image_url: imageUrlFromTable || product.image_url || null,
+            images: product.images || null, // Mantener images JSONB para resolución completa en adaptApiProductToComponent
             stock: effectiveStock,
             // ✅ FIX: Incluir color y medida desde default_variant como lo hace la API
             color: product.color || defaultVariant?.color_name || undefined,
