@@ -529,7 +529,9 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     })
   }, [categories, selectedCategory, useDynamicCarousel, selectedCategoriesSet])
 
-  if (loading) {
+  // ✅ FIX: Mostrar skeleton mientras carga o si no hay categorías pero no hay error
+  // Esto asegura que el componente se renderice correctamente después de navegar
+  if (loading || (categories.length === 0 && !error)) {
     if (variant === 'bare') return null
     return (
       <section className='bg-transparent'>
@@ -547,8 +549,10 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     )
   }
 
-  if (error || categories.length === 0) {
-    return null // No mostrar nada si hay error o no hay categorías
+  // ✅ FIX: Solo retornar null si hay error Y no hay categorías
+  // Si hay categorías pero hay error, mostrar las categorías de todas formas
+  if (error && categories.length === 0) {
+    return null // No mostrar nada solo si hay error Y no hay categorías
   }
 
   // Variante bare: solo las pills sin sección ni degradados ni márgenes
