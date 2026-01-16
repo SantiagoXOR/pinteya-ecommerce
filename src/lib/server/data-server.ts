@@ -16,43 +16,30 @@ export const getCategoriesServer = cache(async (): Promise<CategoryBase[]> => {
   const supabase = createPublicClient()
 
   try {
-    // Intentar primero con display_order, si falla usar sort_order o name
+    // Intentar primero con display_order, si falla usar solo name
     let { data: categories, error } = await supabase
       .from('categories')
       .select('*')
       .order('display_order', { ascending: true, nullsFirst: false })
-      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('name', { ascending: true })
 
     if (error) {
       console.error('Error fetching categories with display_order:', error)
-      // Intentar sin display_order si falla
+      // Fallback: solo ordenar por name si display_order falla
       const fallbackResult = await supabase
         .from('categories')
         .select('*')
-        .order('sort_order', { ascending: true, nullsFirst: false })
         .order('name', { ascending: true })
 
       if (fallbackResult.error) {
         console.error('Error fetching categories (fallback):', fallbackResult.error)
-        // Último intento: solo ordenar por name
-        const lastResult = await supabase
-          .from('categories')
-          .select('*')
-          .order('name', { ascending: true })
-
-        if (lastResult.error) {
-          console.error('Error fetching categories (last attempt):', lastResult.error)
-          return []
-        }
-
-        categories = lastResult.data
-      } else {
-        categories = fallbackResult.data
+        return []
       }
+
+      categories = fallbackResult.data
     }
 
-    return (categories as Category[]) || []
+    return (categories as CategoryBase[]) || []
   } catch (error) {
     console.error('Error in getCategoriesServer:', error)
     return []
