@@ -609,11 +609,17 @@ export function ProductList({
       align: 'right' as const,
       sortable: true,
       defaultWidth: 100,
-      render: (price: number) => (
-        <div className='text-right'>
-          <span className='font-semibold text-sm text-green-600'>${price.toLocaleString('es-AR')}</span>
-        </div>
-      ),
+      render: (price: number, product: Product) => {
+        // ✅ CORREGIDO: Si el producto tiene variantes, no mostrar precio del producto principal
+        if (product.has_variants) {
+          return <span className='text-sm text-gray-400'>-</span>
+        }
+        return (
+          <div className='text-right'>
+            <span className='font-semibold text-sm text-green-600'>${price.toLocaleString('es-AR')}</span>
+          </div>
+        )
+      },
     },
     {
       key: 'discounted_price',
@@ -621,8 +627,13 @@ export function ProductList({
       align: 'right' as const,
       sortable: true,
       defaultWidth: 120,
-      render: (discountedPrice: number, product: Product) => (
-        discountedPrice ? (
+      render: (discountedPrice: number, product: Product) => {
+        // ✅ CORREGIDO: Si el producto tiene variantes, no mostrar precio con descuento del producto principal
+        if (product.has_variants) {
+          return <span className='text-gray-400 text-sm'>-</span>
+        }
+        
+        return discountedPrice ? (
           <div className='text-right'>
             <span className='font-bold text-lg text-green-600'>
               ${Number(discountedPrice).toLocaleString('es-AR')}
@@ -634,7 +645,7 @@ export function ProductList({
         ) : (
           <span className='text-gray-400 text-sm'>-</span>
         )
-      ),
+      },
     },
     {
       key: 'stock',
@@ -642,18 +653,29 @@ export function ProductList({
       align: 'center' as const,
       sortable: true,
       defaultWidth: 100,
-      render: (stock: number) => <StockBadge stock={stock} />,
+      render: (stock: number | null, product: Product) => {
+        // ✅ Si el producto tiene variantes, no mostrar stock del producto principal
+        if (product.has_variants) {
+          return <span className='text-sm text-gray-400'>-</span>
+        }
+        return <StockBadge stock={stock || 0} />
+      },
     },
     {
       key: 'color',
       title: 'Color',
       defaultWidth: 100,
       render: (color: string, product: Product) => {
-        // ✅ NUEVO: Obtener todos los colores del array 'colores' o usar el color individual
+        // ✅ CORREGIDO: Si el producto tiene variantes, no mostrar color del producto principal
+        if (product.has_variants) {
+          return <span className='text-sm text-gray-400'>-</span>
+        }
+        
+        // ✅ Obtener todos los colores del array 'colores' o usar el color individual
         const colores = (product as any).colores || (color ? [color] : [])
         
         if (colores.length === 0) {
-          return <span className='text-sm text-gray-500'>Sin colores</span>
+          return <span className='text-sm text-gray-400'>-</span>
         }
 
         return (

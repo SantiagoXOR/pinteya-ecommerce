@@ -173,19 +173,27 @@ export function transformProduct(
     ? product.terminaciones.filter((t: string) => t && t.trim() !== '')
     : []
 
-  // Calcular stock efectivo
-  const variantTotalStock = variants
-    .filter(v => v.is_active !== false)
-    .reduce((sum, v) => sum + (v.stock || 0), 0)
-  
-  const effectiveStock = variantTotalStock > 0
-    ? variantTotalStock
+  // ✅ CORREGIDO: Si el producto tiene variantes, stock/color/medida/precio deben ser null/0
+  // Estos valores se definen en las variantes, no en el producto principal
+  const effectiveStock = hasVariants
+    ? null  // Si tiene variantes, el stock del producto principal debe ser null
     : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
 
-  // Obtener precio de variante predeterminada si existe
-  const defaultVariant = variants.find(v => v.is_default) || variants[0]
-  const effectivePrice = defaultVariant?.price_list || product.price
-  const effectiveDiscountedPrice = defaultVariant?.price_sale || product.discounted_price
+  // ✅ CORREGIDO: Precio también debe ser 0 si tiene variantes (NOT NULL constraint)
+  const effectivePrice = hasVariants
+    ? 0  // Si tiene variantes, el precio del producto principal debe ser 0
+    : (product.price !== null && product.price !== undefined ? Number(product.price) || 0 : 0)
+
+  // ✅ CORREGIDO: Precio con descuento también debe ser null si tiene variantes
+  const effectiveDiscountedPrice = hasVariants
+    ? null
+    : (product.discounted_price !== null && product.discounted_price !== undefined ? Number(product.discounted_price) : null)
+
+  // ✅ CORREGIDO: Color y medida deben ser null si tiene variantes
+  const effectiveColor = hasVariants ? null : (allColors.length > 0 ? allColors[0] : null)
+  const effectiveColores = hasVariants ? [] : allColors
+  const effectiveMedida = hasVariants ? null : (allMeasures.length > 0 ? allMeasures[0] : null)
+  const effectiveMedidas = hasVariants ? [] : allMeasures
 
   // Transformar producto
   const transformed: TransformedProduct = {
@@ -205,11 +213,12 @@ export function transformProduct(
     variant_aikon_ids_formatted: variantAikonIdsFormatted,
     has_variants: hasVariants,
     variant_count: variantCount,
-    color: allColors.length > 0 ? allColors[0] : null,
-    colores: allColors,
-    medida: allMeasures.length > 0 ? allMeasures[0] : null,
-    medidas: allMeasures,
-    terminaciones,
+    // ✅ CORREGIDO: Si tiene variantes, color/medida deben ser null
+    color: effectiveColor,
+    colores: effectiveColores,
+    medida: effectiveMedida,
+    medidas: effectiveMedidas,
+    terminaciones: hasVariants ? [] : terminaciones, // ✅ CORREGIDO: Terminaciones también null si tiene variantes
     image_url: null, // Se debe establecer desde fuera usando extractImageUrl
     status: product.is_active ? 'active' : 'inactive',
     is_active: product.is_active ?? true,

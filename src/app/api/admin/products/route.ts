@@ -426,15 +426,25 @@ const getHandler = async (request: ValidatedRequest) => {
         
         // ✅ CRÍTICO: Si hay variantes con stock, SIEMPRE usar la suma, incluso si product.stock > 0
         // Si hay variantes, usar la suma; si no hay variantes, usar el stock del producto
-        const effectiveStock = numericVariantStock > 0
-          ? numericVariantStock  // Suma de todas las variantes
+        // ✅ NUEVO: Si el producto tiene variantes, no mostrar stock/color/medida del producto principal
+        // Estos valores se definen en las variantes, no en el producto principal
+        const hasVariants = variantCounts[product.id] > 0
+        
+        const effectiveStock = hasVariants
+          ? null  // Si tiene variantes, el stock del producto principal debe ser null
           : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
+
+        // ✅ NUEVO: Si tiene variantes, no mostrar color/medida del producto principal
+        const effectiveColor = hasVariants ? null : (allColors.length > 0 ? allColors[0] : null)
+        const effectiveColores = hasVariants ? [] : allColors
+        const effectiveMedida = hasVariants ? null : (allMeasures.length > 0 ? allMeasures[0] : null)
+        const effectiveMedidas = hasVariants ? [] : allMeasures
 
         return {
           ...product,
           // ✅ NUEVO: Normalizar título del producto a formato capitalizado
           name: normalizeProductTitle(product.name),
-          // ✅ CRÍTICO: Stock efectivo (suma de variantes si hay, sino stock del producto)
+          // ✅ CORREGIDO: Si tiene variantes, stock debe ser null (no suma de variantes)
           // IMPORTANTE: Debe ir después del spread para sobrescribir product.stock
           stock: effectiveStock,
           category_name: product.category?.name || categories[0]?.name || null,
@@ -447,12 +457,12 @@ const getHandler = async (request: ValidatedRequest) => {
           image_url: primaryImageFromTable || resolvedImage,
           // Derive status from is_active (status column doesn't exist in DB)
           status: product.is_active ? 'active' : 'inactive',
-          // ✅ NUEVO: Array de todas las medidas (producto + variantes)
-          medida: allMeasures.length > 0 ? allMeasures[0] : null, // Mantener compatibilidad con campo string
-          medidas: allMeasures, // ✅ NUEVO: Array de todas las medidas
-          // ✅ NUEVO: Array de todos los colores (producto + variantes)
-          color: allColors.length > 0 ? allColors[0] : null, // Mantener compatibilidad con campo string
-          colores: allColors, // ✅ NUEVO: Array de todos los colores
+          // ✅ CORREGIDO: Si tiene variantes, medida debe ser null (no agregar medidas de variantes)
+          medida: effectiveMedida,
+          medidas: effectiveMedidas,
+          // ✅ CORREGIDO: Si tiene variantes, color debe ser null (no agregar colores de variantes)
+          color: effectiveColor,
+          colores: effectiveColores,
           // ✅ NUEVO: Terminaciones del producto (array de texto)
           terminaciones: product.terminaciones && Array.isArray(product.terminaciones) 
             ? product.terminaciones.filter((t: string) => t && t.trim() !== '')
