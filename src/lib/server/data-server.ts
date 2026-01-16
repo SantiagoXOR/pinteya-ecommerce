@@ -5,6 +5,7 @@ import { cache } from 'react'
 import { createPublicClient } from '@/lib/integrations/supabase/server'
 import { BESTSELLER_PRODUCTS_SLUGS, PRODUCT_LIMITS } from '@/lib/products/constants'
 import { adaptApiProductToComponent } from '@/lib/adapters/product-adapter'
+import { normalizeProductTitle } from '@/lib/core/utils'
 import type { Product } from '@/types/product'
 import type { CategoryBase } from '@/lib/categories/types'
 import type { ProductWithCategory } from '@/types/api'
@@ -47,13 +48,118 @@ export const getCategoriesServer = cache(async (): Promise<CategoryBase[]> => {
 })
 
 /**
+ * Obtiene los IDs de los productos más vistos según analytics
+ * @param supabase - Cliente de Supabase
+ * @param excludeIds - IDs de productos a excluir
+ * @param limit - Número máximo de productos a retornar
+ * @returns Array de IDs de productos más vistos
+ */
+async function getMostViewedProductIds(
+  supabase: ReturnType<typeof createPublicClient>,
+  excludeIds: number[],
+  limit: number = 7
+): Promise<number[]> {
+  try {
+    // Intentar consultar analytics_events_unified primero (vista unificada)
+    // Si no existe, usar analytics_events como fallback
+    let analyticsQuery = supabase
+      .from('analytics_events_unified')
+      .select('metadata, action, event_name')
+      .or('action.eq.view_item,event_name.eq.view_item,action.eq.product_view,event_name.eq.product_view')
+      .order('created_at', { ascending: false })
+      .limit(1000) // Obtener suficientes eventos para procesar
+
+    const { data: events, error: unifiedError } = await analyticsQuery
+
+    // Si falla con analytics_events_unified, intentar con analytics_events
+    let finalEvents = events
+    if (unifiedError || !events || events.length === 0) {
+      const { data: fallbackEvents, error: fallbackError } = await supabase
+        .from('analytics_events')
+        .select('metadata, action, event_name')
+        .or('action.eq.view_item,event_name.eq.view_item,action.eq.product_view,event_name.eq.product_view')
+        .order('created_at', { ascending: false })
+        .limit(1000)
+
+      if (fallbackError) {
+        console.warn('Error fetching analytics events for most viewed products:', fallbackError)
+        return [] // Retornar vacío para usar fallback a created_at
+      }
+
+      finalEvents = fallbackEvents
+    }
+
+    if (!finalEvents || finalEvents.length === 0) {
+      return [] // No hay datos de analytics, usar fallback
+    }
+
+    // Procesar eventos para contar vistas por producto
+    const productViewCounts = new Map<number, number>()
+
+    finalEvents.forEach((event: any) => {
+      // Extraer product_id desde metadata
+      let productId: number | null = null
+
+      if (event.metadata) {
+        // Intentar parsear metadata si es string
+        let metadata = event.metadata
+        if (typeof metadata === 'string') {
+          try {
+            metadata = JSON.parse(metadata)
+          } catch {
+            // Si no se puede parsear, intentar extraer directamente
+            const idMatch = metadata.match(/["']?item_id["']?\s*:\s*(\d+)/i) || 
+                           metadata.match(/["']?product_id["']?\s*:\s*(\d+)/i)
+            if (idMatch) {
+              productId = parseInt(idMatch[1], 10)
+            }
+          }
+        }
+
+        // Si metadata es objeto, buscar item_id o product_id
+        if (typeof metadata === 'object' && metadata !== null) {
+          productId = metadata.item_id || metadata.product_id || null
+          if (productId) {
+            productId = parseInt(String(productId), 10)
+          }
+        }
+      }
+
+      // Si no se encontró en metadata, intentar desde la página (URL)
+      if (!productId && event.page) {
+        const pageMatch = event.page.match(/\/product\/(\d+)/) || 
+                         event.page.match(/\/buy\/(\d+)/)
+        if (pageMatch) {
+          productId = parseInt(pageMatch[1], 10)
+        }
+      }
+
+      if (productId && !isNaN(productId) && !excludeIds.includes(productId)) {
+        productViewCounts.set(productId, (productViewCounts.get(productId) || 0) + 1)
+      }
+    })
+
+    // Ordenar por cantidad de vistas y retornar los top IDs
+    const sortedProductIds = Array.from(productViewCounts.entries())
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, limit)
+      .map(([id]) => id)
+
+    return sortedProductIds
+  } catch (error) {
+    console.warn('Error in getMostViewedProductIds:', error)
+    return [] // Retornar vacío para usar fallback a created_at
+  }
+}
+
+/**
  * Adapta un producto de la base de datos al formato esperado por componentes
  */
 function adaptProductForServer(dbProduct: any): Product {
   // Crear objeto compatible con adaptApiProductToComponent
   const apiProduct: ProductWithCategory = {
     id: dbProduct.id,
-    name: dbProduct.name || '',
+    name: normalizeProductTitle(dbProduct.name || ''),
     description: dbProduct.description || '',
     price: dbProduct.price || 0,
     discounted_price: dbProduct.discounted_price || dbProduct.price || 0,
@@ -203,29 +309,86 @@ export const getBestSellerProductsServer = cache(
           return []
         }
 
-        // 2. Obtener 7 productos adicionales populares (excluyendo los ya obtenidos)
+        // 2. Obtener 7 productos adicionales populares según analytics (excluyendo los ya obtenidos)
         const specificProductIds = orderedSpecificProducts.map(p => p.id)
-        const { data: additionalProductsRaw, error: additionalError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .limit(20) // Obtener más para asegurar que tengamos suficientes después de filtrar
+        
+        // Intentar obtener productos más vistos desde analytics
+        const mostViewedIds = await getMostViewedProductIds(supabase, specificProductIds, 7)
+        
+        let additionalProducts: any[] = []
+        
+        if (mostViewedIds.length > 0) {
+          // Obtener productos más vistos desde analytics
+          const { data: analyticsProducts, error: analyticsError } = await supabase
+            .from('products')
+            .select('*')
+            .in('id', mostViewedIds)
+            .eq('is_active', true)
 
-        // Filtrar productos adicionales excluyendo los ya obtenidos
-        const additionalProducts = (additionalProductsRaw || []).filter(
-          p => !specificProductIds.includes(p.id)
-        ).slice(0, 7)
+          if (!analyticsError && analyticsProducts) {
+            // Ordenar según el orden de mostViewedIds para mantener prioridad
+            const productsMap = new Map(analyticsProducts.map(p => [p.id, p]))
+            additionalProducts = mostViewedIds
+              .map(id => productsMap.get(id))
+              .filter(Boolean) as any[]
+          }
 
-        if (additionalError) {
-          console.warn('Error fetching additional products:', additionalError)
+          // Si no hay suficientes productos desde analytics, completar con created_at
+          if (additionalProducts.length < 7) {
+            const needed = 7 - additionalProducts.length
+            const additionalIds = [...specificProductIds, ...mostViewedIds]
+            
+            const { data: fallbackProducts, error: fallbackError } = await supabase
+              .from('products')
+              .select('*')
+              .eq('is_active', true)
+              .order('created_at', { ascending: false })
+              .limit(needed * 3) // Obtener más para asegurar que tengamos suficientes después de filtrar
+
+            if (!fallbackError && fallbackProducts) {
+              // Filtrar en JavaScript para excluir IDs ya obtenidos
+              const filtered = fallbackProducts.filter(
+                p => !additionalIds.includes(p.id)
+              ).slice(0, needed)
+              
+              additionalProducts = [
+                ...additionalProducts,
+                ...filtered
+              ]
+            }
+          }
+        } else {
+          // Fallback: si no hay datos de analytics, usar created_at
+          const { data: fallbackProducts, error: fallbackError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(30) // Obtener más para asegurar que tengamos suficientes después de filtrar
+
+          if (fallbackError) {
+            console.warn('Error fetching additional products (fallback):', fallbackError)
+          } else if (fallbackProducts) {
+            // Filtrar en JavaScript para excluir IDs ya obtenidos
+            additionalProducts = fallbackProducts.filter(
+              p => !specificProductIds.includes(p.id)
+            ).slice(0, 7)
+          }
         }
 
         // Combinar productos: primero los específicos, luego los adicionales
+        // Asegurar que additionalProducts tenga máximo 7 productos
+        const limitedAdditionalProducts = (additionalProducts || []).slice(0, 7)
         const allProducts = [
           ...orderedSpecificProducts,
-          ...(additionalProducts || [])
+          ...limitedAdditionalProducts
         ]
+        
+        // Verificar que tenemos exactamente 17 productos (10 específicos + 7 adicionales)
+        // Si hay menos de 10 específicos, ajustar para mantener total de 17
+        if (allProducts.length > 17) {
+          allProducts.splice(17)
+        }
 
         // ✅ FIX: Obtener variantes e imágenes para enriquecer productos
         const productIds = allProducts.map(p => p.id)
