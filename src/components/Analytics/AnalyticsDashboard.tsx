@@ -239,6 +239,15 @@ const AnalyticsDashboard: React.FC = () => {
     }
   }, [])
 
+  // Memoizar getDateRange para evitar recalcular en cada render
+  const { startDate, endDate } = useMemo(() => {
+    const end = new Date().toISOString()
+    const start = new Date(
+      Date.now() - (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 1) * 24 * 60 * 60 * 1000
+    ).toISOString()
+    return { startDate: start, endDate: end }
+  }, [timeRange])
+
   useEffect(() => {
     fetchMetrics()
     fetchRealTimeMetrics()
@@ -250,59 +259,6 @@ const AnalyticsDashboard: React.FC = () => {
 
     return () => clearInterval(interval)
   }, [fetchMetrics, fetchRealTimeMetrics])
-
-  const fetchMetrics = async () => {
-    try {
-      setLoading(true)
-      const endDate = new Date().toISOString()
-      const startDate = new Date(
-        Date.now() - (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 1) * 24 * 60 * 60 * 1000
-      ).toISOString()
-
-      // Incluir análisis avanzado para obtener todas las métricas
-      const response = await fetch(
-        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}&advanced=true`
-      )
-      const data = await response.json()
-      setMetricsData(data)
-    } catch (error) {
-      console.error('Error fetching metrics:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Memoizar getDateRange para evitar recalcular en cada render
-  const { startDate, endDate } = useMemo(() => {
-    const end = new Date().toISOString()
-    const start = new Date(
-      Date.now() - (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 1) * 24 * 60 * 60 * 1000
-    ).toISOString()
-    return { startDate: start, endDate: end }
-  }, [timeRange])
-
-  const fetchRealTimeMetrics = async () => {
-    try {
-      // Obtener métricas de las últimas 2 horas desde la DB
-      const endDate = new Date().toISOString()
-      const startDate = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-
-      const response = await fetch(
-        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}`
-      )
-      if (response.ok) {
-        const data = await response.json()
-        setRealTimeMetrics({
-          productViews: data.ecommerce?.productViews || 0,
-          cartAdditions: data.ecommerce?.cartAdditions || 0,
-          checkoutStarts: data.ecommerce?.checkoutStarts || 0,
-          checkoutCompletions: data.ecommerce?.checkoutCompletions || 0,
-        })
-      }
-    } catch (error) {
-      console.error('Error fetching real-time metrics:', error)
-    }
-  }
 
   if (loading) {
     return (

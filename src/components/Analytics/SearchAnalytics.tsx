@@ -20,7 +20,7 @@ interface SearchQuery {
   conversionRate: number
 }
 
-export const SearchAnalytics: React.FC<SearchAnalyticsProps> = React.memo(({ startDate, endDate }) => {
+const SearchAnalyticsComponent: React.FC<SearchAnalyticsProps> = ({ startDate, endDate }) => {
   const [topQueries, setTopQueries] = useState<SearchQuery[]>([])
   const [noResults, setNoResults] = useState<Array<{ query: string; count: number }>>([])
   const [conversionRate, setConversionRate] = useState(0)
@@ -160,6 +160,7 @@ export const SearchAnalytics: React.FC<SearchAnalyticsProps> = React.memo(({ sta
   )
 }
 
-SearchAnalytics.displayName = 'SearchAnalytics'
+SearchAnalyticsComponent.displayName = 'SearchAnalytics'
 
+export const SearchAnalytics = React.memo(SearchAnalyticsComponent)
 export default SearchAnalytics

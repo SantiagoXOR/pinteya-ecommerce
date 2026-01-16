@@ -22,7 +22,7 @@ interface PageInteraction {
   averageTime: number
 }
 
-export const PageInteractions: React.FC<PageInteractionsProps> = React.memo(({ startDate, endDate }) => {
+const PageInteractionsComponent: React.FC<PageInteractionsProps> = ({ startDate, endDate }) => {
   const [pageInteractions, setPageInteractions] = useState<PageInteraction[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'total' | 'clicks' | 'time'>('total')
@@ -176,6 +176,7 @@ export const PageInteractions: React.FC<PageInteractionsProps> = React.memo(({ s
   )
 }
 
-PageInteractions.displayName = 'PageInteractions'
+PageInteractionsComponent.displayName = 'PageInteractions'
 
+export const PageInteractions = React.memo(PageInteractionsComponent)
 export default PageInteractions

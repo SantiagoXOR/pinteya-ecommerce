@@ -29,7 +29,7 @@ const stepLabels: Record<string, string> = {
   purchase: 'Compra Completada',
 }
 
-export const FunnelAnalysis: React.FC<FunnelAnalysisProps> = React.memo(({ startDate, endDate }) => {
+const FunnelAnalysisComponent: React.FC<FunnelAnalysisProps> = ({ startDate, endDate }) => {
   const [funnelData, setFunnelData] = useState<{
     steps: FunnelStep[]
     dropOffPoints: Array<{
@@ -204,6 +204,7 @@ export const FunnelAnalysis: React.FC<FunnelAnalysisProps> = React.memo(({ start
   )
 }
 
-FunnelAnalysis.displayName = 'FunnelAnalysis'
+FunnelAnalysisComponent.displayName = 'FunnelAnalysis'
 
+export const FunnelAnalysis = React.memo(FunnelAnalysisComponent)
 export default FunnelAnalysis
