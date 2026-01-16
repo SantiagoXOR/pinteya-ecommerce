@@ -19,15 +19,27 @@ export class FreeShippingStrategy extends BaseProductStrategy {
   
   /**
    * Filtra productos con precio > FREE_SHIPPING_THRESHOLD
+   * ✅ FIX: Considera productos que tengan AL MENOS UNA variante con precio >= $50.000
    * Usa el precio con descuento si existe, sino el precio original
    */
   filter(products: Product[]): Product[] {
     return products.filter(p => {
+      // Si el producto tiene variantes, verificar si alguna califica para envío gratis
+      if (p.variants && Array.isArray(p.variants) && p.variants.length > 0) {
+        // Verificar si alguna variante tiene precio >= $50.000
+        const hasFreeShippingVariant = p.variants.some((v: any) => {
+          const variantPrice = Number(v.price_sale) || Number(v.price_list) || 0
+          return variantPrice >= FREE_SHIPPING_THRESHOLD
+        })
+        return hasFreeShippingVariant
+      }
+      
+      // Si no tiene variantes, verificar el precio del producto base
       const price = Number(p.price) || 0
       const discountedPrice = Number(p.discountedPrice) || price
       // Usar el precio más bajo (con descuento si existe) para filtrar
       const finalPrice = discountedPrice > 0 ? discountedPrice : price
-      return finalPrice > FREE_SHIPPING_THRESHOLD
+      return finalPrice >= FREE_SHIPPING_THRESHOLD
     })
   }
   
