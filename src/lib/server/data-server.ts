@@ -154,15 +154,20 @@ async function getMostViewedProductIds(
 
 /**
  * Adapta un producto de la base de datos al formato esperado por componentes
+ * Usa la misma lógica de enriquecimiento que la API /api/products
  */
 function adaptProductForServer(dbProduct: any): Product {
+  const defaultVariant = dbProduct.default_variant || (dbProduct.variants?.[0] || null)
+  
   // Crear objeto compatible con adaptApiProductToComponent
+  // ✅ FIX: Incluir todos los campos que la API incluye para que las imágenes y variantes funcionen
   const apiProduct: ProductWithCategory = {
     id: dbProduct.id,
     name: normalizeProductTitle(dbProduct.name || ''),
     description: dbProduct.description || '',
     price: dbProduct.price || 0,
     discounted_price: dbProduct.discounted_price || dbProduct.price || 0,
+    original_price: dbProduct.price || 0,
     stock: dbProduct.stock || 0,
     slug: dbProduct.slug || `product-${dbProduct.id}`,
     image_url: dbProduct.image_url || null,
@@ -175,7 +180,25 @@ function adaptProductForServer(dbProduct: any): Product {
     category: dbProduct.category || null,
     // ✅ FIX: Incluir variantes y default_variant para productos con variantes
     variants: dbProduct.variants || [],
-    default_variant: dbProduct.default_variant || null,
+    default_variant: defaultVariant,
+    // ✅ FIX: Incluir color y medida desde default_variant como lo hace la API
+    color: dbProduct.color || defaultVariant?.color_name || undefined,
+    medida: (() => {
+      const rawMedida = dbProduct.medida || defaultVariant?.measure
+      if (!rawMedida) return undefined
+      // Parsear medida si viene como string de array (igual que la API)
+      if (typeof rawMedida === 'string' && rawMedida.trim().startsWith('[') && rawMedida.trim().endsWith(']')) {
+        try {
+          const parsed = JSON.parse(rawMedida)
+          return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : rawMedida
+        } catch {
+          return rawMedida
+        }
+      }
+      return rawMedida
+    })(),
+    // ✅ FIX: Incluir aikon_id desde default_variant
+    aikon_id: dbProduct.aikon_id || defaultVariant?.aikon_id || undefined,
   }
 
   // Usar el adaptador existente
@@ -379,15 +402,34 @@ export const getBestSellerProductsServer = cache(
         // Combinar productos: primero los específicos, luego los adicionales
         // Asegurar que additionalProducts tenga máximo 7 productos
         const limitedAdditionalProducts = (additionalProducts || []).slice(0, 7)
-        const allProducts = [
+        let allProducts = [
           ...orderedSpecificProducts,
           ...limitedAdditionalProducts
         ]
         
-        // Verificar que tenemos exactamente 17 productos (10 específicos + 7 adicionales)
-        // Si hay menos de 10 específicos, ajustar para mantener total de 17
+        // ✅ FIX: Asegurar exactamente 17 productos
+        // Si tenemos menos de 17, intentar completar con más productos
+        if (allProducts.length < 17) {
+          const needed = 17 - allProducts.length
+          const existingIds = allProducts.map(p => p.id)
+          
+          const { data: extraProducts, error: extraError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(needed * 3) // Obtener más para asegurar que tengamos suficientes después de filtrar
+          
+          if (!extraError && extraProducts) {
+            // Filtrar en JavaScript para excluir IDs ya obtenidos
+            const filtered = extraProducts.filter(p => !existingIds.includes(p.id)).slice(0, needed)
+            allProducts = [...allProducts, ...filtered]
+          }
+        }
+        
+        // Limitar a exactamente 17 productos
         if (allProducts.length > 17) {
-          allProducts.splice(17)
+          allProducts = allProducts.slice(0, 17)
         }
 
         // ✅ FIX: Obtener variantes e imágenes para enriquecer productos
@@ -433,7 +475,7 @@ export const getBestSellerProductsServer = cache(
           }
         })
 
-        // Enriquecer productos con variantes e imágenes
+        // Enriquecer productos con variantes e imágenes (igual que la API /api/products)
         const enrichedProducts = allProducts.map(product => {
           const productVariants = variantsByProduct[product.id] || []
           const defaultVariant = productVariants.find((v: any) => v.is_default) || productVariants[0] || null
@@ -443,19 +485,52 @@ export const getBestSellerProductsServer = cache(
             ? productVariants.reduce((sum: number, v: any) => sum + (Number(v.stock) || 0), 0)
             : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
 
+          // ✅ FIX: Resolver image_url con la misma prioridad que la API
+          // Prioridad 1: Imagen desde product_images
+          // Prioridad 2: Imagen de variante por defecto
+          // Prioridad 3: image_url del producto
+          let resolvedImageUrl = productImagesByProduct[product.id] || null
+          if (!resolvedImageUrl && defaultVariant?.image_url) {
+            resolvedImageUrl = defaultVariant.image_url
+          }
+          if (!resolvedImageUrl) {
+            resolvedImageUrl = product.image_url || null
+          }
+
           return {
             ...product,
             variants: productVariants,
             default_variant: defaultVariant,
-            image_url: productImagesByProduct[product.id] || product.image_url || null,
+            image_url: resolvedImageUrl,
             stock: effectiveStock,
+            // ✅ FIX: Incluir color y medida desde default_variant como lo hace la API
+            color: product.color || defaultVariant?.color_name || undefined,
+            medida: (() => {
+              const rawMedida = product.medida || defaultVariant?.measure
+              if (!rawMedida) return undefined
+              // Parsear medida si viene como string de array (igual que la API)
+              if (typeof rawMedida === 'string' && rawMedida.trim().startsWith('[') && rawMedida.trim().endsWith(']')) {
+                try {
+                  const parsed = JSON.parse(rawMedida)
+                  return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : rawMedida
+                } catch {
+                  return rawMedida
+                }
+              }
+              return rawMedida
+            })(),
+            aikon_id: product.aikon_id || defaultVariant?.aikon_id || undefined,
           }
         })
 
         // Adaptar productos enriquecidos al formato esperado por componentes
         const adaptedProducts = enrichedProducts.map(adaptProductForServer) as Product[]
 
-        // Limitar a 17 productos (para mostrar 17 productos + 3 cards = 20 items)
+        // ✅ FIX: Asegurar exactamente 17 productos (para mostrar 17 productos + 3 cards = 20 items)
+        // Si tenemos menos de 17, loguear para debug
+        if (adaptedProducts.length < 17) {
+          console.warn(`[getBestSellerProductsServer] Solo se obtuvieron ${adaptedProducts.length} productos en vez de 17`)
+        }
         return adaptedProducts.slice(0, 17)
       }
     } catch (error) {
