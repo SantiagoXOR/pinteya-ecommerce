@@ -128,6 +128,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   const message = event.message || '';
                   const target = event.target;
                   
+                  // ✅ FIX: Ignorar errores sin información útil (objetos vacíos)
+                  // Si no hay message, filename, error, ni target útil, es probablemente un error sin información
+                  if (!message && !source && !event.error && (!target || (target && !target.tagName))) {
+                    return; // No procesar errores vacíos
+                  }
+                  
                   // Ignorar errores de scripts de Vercel Analytics/Speed Insights (bloqueados por ad blockers)
                   if (source.includes('_vercel/') || 
                       source.includes('speed-insights') || 
@@ -161,14 +167,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     return; // No procesar como error crítico
                   }
                   
-                  // Solo reportar errores críticos reales de la aplicación
-                  console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: Error global detectado:', {
+                  // ✅ FIX: Solo reportar errores críticos reales con información útil
+                  // Construir objeto de error solo si hay información válida
+                  const errorInfo: any = {
                     timestamp: new Date().toISOString(),
-                    message: event.message,
-                    source: event.filename + ':' + event.lineno + ':' + event.colno,
-                    error: event.error,
-                    stack: event.error?.stack,
-                  });
+                  };
+                  
+                  if (message) errorInfo.message = message;
+                  if (source || event.filename || event.lineno || event.colno) {
+                    errorInfo.source = (event.filename || source || 'unknown') + ':' + (event.lineno || '?') + ':' + (event.colno || '?');
+                  }
+                  if (event.error) {
+                    errorInfo.error = event.error;
+                    if (event.error.stack) errorInfo.stack = event.error.stack;
+                  }
+                  
+                  // Solo reportar si hay al menos un campo útil además del timestamp
+                  if (errorInfo.message || errorInfo.source || errorInfo.error) {
+                    console.error('🚨🚨🚨 DIAGNÓSTICO [TEMPRANO]: Error global detectado:', errorInfo);
+                  }
                 }, true);
 
                 // ⚡ DIAGNÓSTICO: Detectar promise rejections (ignorar errores esperados)
