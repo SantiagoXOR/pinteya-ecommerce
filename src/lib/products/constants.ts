@@ -8,28 +8,28 @@
  * Extraído de useBestSellerProducts.ts para centralización
  */
 export const BESTSELLER_PRODUCTS_SLUGS = [
-  // Petrilac (6 productos)
-  'sintetico-converlux',                        // 1. Petrilac - Sintético Converlux
-  'impregnante-danzke-1l-brillante-petrilac',   // 2. Petrilac - Impregnante Danzke Brillante
-  'barniz-campbell',                           // 3. Petrilac - Barniz Campbell
-  'esmalte-sintetico-petrilac',                // 4. Petrilac - Esmalte Sintético
-  'latex-interior-petrilac',                    // 5. Petrilac - Látex Interior
-  'hidroesmalte-petrilac',                      // 6. Petrilac - Hidroesmalte
+  // Plavicon (8 productos)
+  'plavipint-fibrado-plavicon',                // 1. Plavicon - Plavipint Fibrado
+  'membrana-performa-20l-plavicon',            // 2. Plavicon - Membrana Performa
+  'plavipint-techos-poliuretanico',            // 3. Plavicon - Plavipint Techos
+  'latex-frentes',                              // 4. Plavicon - Látex Frentes
+  'latex-interior',                             // 5. Plavicon - Látex Interior
+  'latex-muros',                                // 6. Plavicon - Látex Muros
+  'piscinas-solvente-plavipint-plavicon',      // 7. Plavicon - Pintura Piscinas
+  'cielorrasos',                                // 8. Plavicon - Cielorraso
   
-  // Plavicon (6 productos)
-  'plavipint-fibrado-plavicon',                // 7. Plavicon - Plavipint Fibrado
-  'membrana-performa-20l-plavicon',            // 8. Plavicon - Membrana Performa
-  'plavipint-techos-poliuretanico',            // 9. Plavicon - Plavipint Techos
-  'latex-frentes',                              // 10. Plavicon - Látex Frentes
-  'latex-interior',                             // 11. Plavicon - Látex Interior
-  'latex-muros',                                // 12. Plavicon - Látex Muros
+  // Sinteplast (6 productos)
+  'recuplast-interior',                         // 9. Sinteplast - Recuplast Interior
+  'recuplast-bano-cocina',                      // 10. Sinteplast - Recuplast Baño y Cocina
+  'recuplast-techos',                           // 11. Sinteplast - Recuplast Techos
+  'membrana-cauchogoma-sinteplast',            // 12. Sinteplast - Membrana Cauchogoma
+  'latex-eco-painting',                         // 13. Sinteplast - Látex Eco Painting
+  'recuplast-muros',                            // 14. Sinteplast - Recuplast Muros (si existe, sino se completará con otro de la marca)
   
-  // Sinteplast (5 productos)
-  'recuplast-interior',                         // 13. Sinteplast - Recuplast Interior
-  'recuplast-bano-cocina',                      // 14. Sinteplast - Recuplast Baño y Cocina
-  'recuplast-techos',                           // 15. Sinteplast - Recuplast Techos
-  'membrana-cauchogoma-sinteplast',            // 16. Sinteplast - Membrana Cauchogoma
-  'latex-eco-painting',                         // 17. Sinteplast - Látex Eco Painting
+  // Petrilac (3 productos)
+  'sintetico-converlux',                        // 15. Petrilac - Sintético Converlux
+  'impregnante-danzke-1l-brillante-petrilac',   // 16. Petrilac - Impregnante Danzke Brillante
+  'barniz-campbell',                           // 17. Petrilac - Barniz Campbell
 ] as const
 
 /**
