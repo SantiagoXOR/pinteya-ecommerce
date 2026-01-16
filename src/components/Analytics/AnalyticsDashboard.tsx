@@ -25,6 +25,11 @@ import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProv
 // Lazy load de componentes pesados
 const GoogleAnalyticsEmbed = lazy(() => import('./GoogleAnalyticsEmbed'))
 const MetaMetrics = lazy(() => import('./MetaMetrics'))
+const ProductAnalytics = lazy(() => import('./ProductAnalytics'))
+const FunnelAnalysis = lazy(() => import('./FunnelAnalysis'))
+const SearchAnalytics = lazy(() => import('./SearchAnalytics'))
+const RouteVisualizer = lazy(() => import('./RouteVisualizer'))
+const PageInteractions = lazy(() => import('./PageInteractions'))
 
 interface MetricsData {
   ecommerce: {
@@ -208,10 +213,9 @@ const AnalyticsDashboard: React.FC = () => {
         Date.now() - (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 1) * 24 * 60 * 60 * 1000
       ).toISOString()
 
-      // Incluir análisis avanzado solo si es necesario (lazy loading)
-      const includeAdvanced = timeRange === '30d' // Solo para rangos largos
+      // Incluir análisis avanzado para obtener todas las métricas
       const response = await fetch(
-        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}&advanced=${includeAdvanced}`
+        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}&advanced=true`
       )
       const data = await response.json()
       setMetricsData(data)
@@ -220,6 +224,14 @@ const AnalyticsDashboard: React.FC = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const getDateRange = () => {
+    const endDate = new Date().toISOString()
+    const startDate = new Date(
+      Date.now() - (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 1) * 24 * 60 * 60 * 1000
+    ).toISOString()
+    return { startDate, endDate }
   }
 
   const fetchRealTimeMetrics = async () => {
@@ -260,7 +272,7 @@ const AnalyticsDashboard: React.FC = () => {
     )
   }
 
-  if (!metricsData) {
+  if (!metricsData && activeTab === 'overview') {
     return (
       <div className='p-6 text-center'>
         <p className='text-gray-500'>Error cargando métricas</p>
@@ -268,27 +280,56 @@ const AnalyticsDashboard: React.FC = () => {
     )
   }
 
+  const { startDate, endDate } = getDateRange()
+
   return (
     <div className='space-y-6'>
-      {/* Rango de fechas */}
-      <div className='flex justify-end gap-2'>
-        {['1d', '7d', '30d'].map(range => (
-          <button
-            key={range}
-            onClick={() => setTimeRange(range)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              timeRange === range
-                ? 'bg-yellow-400 text-gray-900'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            {range === '1d' ? 'Hoy' : range === '7d' ? '7 días' : '30 días'}
-          </button>
-        ))}
+      {/* Rango de fechas y Tabs */}
+      <div className='flex items-center justify-between'>
+        <div className='flex gap-2 flex-wrap'>
+          {[
+            { id: 'overview', label: 'Resumen' },
+            { id: 'products', label: 'Productos' },
+            { id: 'funnel', label: 'Embudo' },
+            { id: 'search', label: 'Búsquedas' },
+            { id: 'interactions', label: 'Interacciones' },
+            { id: 'visualizer', label: 'Visualizador' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-yellow-400 text-gray-900'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div className='flex gap-2'>
+          {['1d', '7d', '30d'].map(range => (
+            <button
+              key={range}
+              onClick={() => setTimeRange(range)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                timeRange === range
+                  ? 'bg-yellow-400 text-gray-900'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {range === '1d' ? 'Hoy' : range === '7d' ? '7 días' : '30 días'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Comparación con período anterior */}
-      {metricsData.comparison?.changes && (
+      {/* Contenido según tab activo */}
+      {activeTab === 'overview' && metricsData && (
+        <>
+          {/* Comparación con período anterior */}
+          {metricsData.comparison?.changes && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -633,16 +674,48 @@ const AnalyticsDashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Integración Google Analytics y Meta - Lazy loaded */}
-      <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
-        <div className='space-y-6'>
-          {/* Google Analytics Embed */}
-          <GoogleAnalyticsEmbed />
+          {/* Integración Google Analytics y Meta - Lazy loaded */}
+          <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
+            <div className='space-y-6'>
+              {/* Google Analytics Embed */}
+              <GoogleAnalyticsEmbed />
 
-          {/* Meta Pixel Metrics */}
-          <MetaMetricsMemoized timeRange={timeRange} />
-        </div>
-      </Suspense>
+              {/* Meta Pixel Metrics */}
+              <MetaMetricsMemoized timeRange={timeRange} />
+            </div>
+          </Suspense>
+        </>
+      )}
+
+      {activeTab === 'products' && (
+        <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
+          <ProductAnalytics startDate={startDate} endDate={endDate} />
+        </Suspense>
+      )}
+
+      {activeTab === 'funnel' && (
+        <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
+          <FunnelAnalysis startDate={startDate} endDate={endDate} />
+        </Suspense>
+      )}
+
+      {activeTab === 'search' && (
+        <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
+          <SearchAnalytics startDate={startDate} endDate={endDate} />
+        </Suspense>
+      )}
+
+      {activeTab === 'interactions' && (
+        <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
+          <PageInteractions startDate={startDate} endDate={endDate} />
+        </Suspense>
+      )}
+
+      {activeTab === 'visualizer' && (
+        <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
+          <RouteVisualizer startDate={startDate} endDate={endDate} />
+        </Suspense>
+      )}
     </div>
   )
 }

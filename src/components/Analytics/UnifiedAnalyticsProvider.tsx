@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { sendStrategies, AnalyticsEvent } from '@/lib/analytics/send-strategies'
 import { eventPersistence } from '@/lib/analytics/event-persistence'
 import { adBlockDetector } from '@/lib/analytics/adblock-detector'
+import { elementTracker } from '@/lib/analytics/element-tracker'
 
 interface UnifiedAnalyticsContextType {
   // Estado
@@ -231,9 +232,21 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
       if (process.env.NODE_ENV === 'development') {
         console.log('[Analytics] trackCartAction:', { action, eventName, productId, properties })
       }
+      
+      // Extraer metadata de producto del properties
+      const productMetadata = {
+        productId: productId || properties?.productId || properties?.item_id,
+        productName: properties?.productName || properties?.item_name,
+        category: properties?.category || properties?.category_name,
+        price: properties?.price || properties?.value,
+        quantity: properties?.quantity || 1,
+      }
+      
       trackEcommerceEvent(eventName, {
         item_id: productId,
         ...properties,
+        // Incluir metadata de producto en el evento
+        ...productMetadata,
       })
     },
     [trackEcommerceEvent]
@@ -272,9 +285,25 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
   // Track click
   const trackClick = useCallback(
     (elementName: string, properties?: Record<string, any>) => {
+      // Si se proporciona un elemento HTML, usar ElementTracker
+      let elementData = null
+      if (properties?.element && properties.element instanceof HTMLElement) {
+        elementData = elementTracker.trackClick(properties.element, properties)
+        // Remover el elemento del properties para no enviarlo en el metadata
+        const { element, ...restProperties } = properties
+        properties = restProperties
+      }
+      
       trackEvent('click', 'interaction', 'click', elementName, undefined, {
         element: elementName,
         ...properties,
+        // Incluir datos del elemento si están disponibles
+        ...(elementData && {
+          elementSelector: elementData.elementSelector,
+          elementPosition: elementData.elementPosition,
+          elementDimensions: elementData.elementDimensions,
+          deviceType: elementData.deviceType,
+        }),
       })
     },
     [trackEvent]
@@ -283,9 +312,25 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
   // Track hover
   const trackHover = useCallback(
     (elementName: string, properties?: Record<string, any>) => {
+      // Si se proporciona un elemento HTML, usar ElementTracker
+      let elementData = null
+      if (properties?.element && properties.element instanceof HTMLElement) {
+        elementData = elementTracker.trackHover(properties.element, properties)
+        // Remover el elemento del properties
+        const { element, ...restProperties } = properties
+        properties = restProperties
+      }
+      
       trackEvent('hover', 'interaction', 'hover', elementName, undefined, {
         element: elementName,
         ...properties,
+        // Incluir datos del elemento si están disponibles
+        ...(elementData && {
+          elementSelector: elementData.elementSelector,
+          elementPosition: elementData.elementPosition,
+          elementDimensions: elementData.elementDimensions,
+          deviceType: elementData.deviceType,
+        }),
       })
     },
     [trackEvent]
@@ -294,7 +339,17 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
   // Track scroll
   const trackScroll = useCallback(
     (scrollData: { scrollY: number; scrollPercent: number }) => {
-      trackEvent('scroll', 'interaction', 'scroll', undefined, scrollData.scrollPercent, scrollData)
+      const elementData = elementTracker.trackScroll(scrollData)
+      trackEvent('scroll', 'interaction', 'scroll', undefined, scrollData.scrollPercent, {
+        ...scrollData,
+        // Incluir datos del elemento si están disponibles
+        ...(elementData && {
+          elementSelector: elementData.elementSelector,
+          elementPosition: elementData.elementPosition,
+          elementDimensions: elementData.elementDimensions,
+          deviceType: elementData.deviceType,
+        }),
+      })
     },
     [trackEvent]
   )

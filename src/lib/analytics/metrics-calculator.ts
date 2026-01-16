@@ -14,6 +14,10 @@ import {
   BehaviorAnalysis,
   RetentionAnalysis,
   MetricsQueryParams,
+  ProductAnalytics,
+  FunnelAnalysis,
+  InteractionMetrics,
+  SearchAnalytics,
 } from './types'
 
 const supabase = createClient(
@@ -32,6 +36,19 @@ interface RawEvent {
   session_hash?: string
   page_id?: number
   created_at: string
+  // Nuevos campos de metadata de productos
+  product_id?: number
+  product_name?: string
+  category_name?: string
+  price?: number
+  quantity?: number
+  // Nuevos campos de tracking de elementos
+  element_selector?: string
+  element_x?: number
+  element_y?: number
+  element_width?: number
+  element_height?: number
+  device_type?: string
   // Campos de lookup (cuando se hace JOIN)
   analytics_event_types?: { name: string }
   analytics_categories?: { name: string }
@@ -76,6 +93,12 @@ class MetricsCalculator {
     const categories = this.analyzeCategories(events)
     const behavior = this.analyzeBehavior(events, engagement)
     const retention = this.analyzeRetention(events)
+    
+    // Nuevas métricas detalladas
+    const products = this.calculateProductAnalytics(events)
+    const funnel = this.calculateFunnelAnalysis(events)
+    const interactions = this.calculateInteractionMetrics(events)
+    const search = this.calculateSearchAnalytics(events)
 
     return {
       ecommerce,
@@ -85,6 +108,10 @@ class MetricsCalculator {
       categories,
       behavior,
       retention,
+      products,
+      funnel,
+      interactions,
+      search,
     }
   }
 
@@ -107,6 +134,17 @@ class MetricsCalculator {
           session_hash,
           page_id,
           created_at,
+          product_id,
+          product_name,
+          category_name,
+          price,
+          quantity,
+          element_selector,
+          element_x,
+          element_y,
+          element_width,
+          element_height,
+          device_type,
           analytics_event_types(name),
           analytics_categories(name),
           analytics_actions(name),
@@ -167,6 +205,22 @@ class MetricsCalculator {
       sessionId: event.session_hash?.toString() || event.session_id || '',
       page: event.analytics_pages?.path || event.page || '',
       createdAt: event.created_at,
+      // Nuevos campos de metadata
+      metadata: {
+        productId: event.product_id?.toString(),
+        productName: event.product_name,
+        category: event.category_name,
+        price: event.price,
+        quantity: event.quantity,
+        elementSelector: event.element_selector,
+        elementPosition: event.element_x !== undefined && event.element_y !== undefined
+          ? { x: event.element_x, y: event.element_y }
+          : undefined,
+        elementDimensions: event.element_width !== undefined && event.element_height !== undefined
+          ? { width: event.element_width, height: event.element_height }
+          : undefined,
+        deviceType: event.device_type,
+      },
     }
   }
 
@@ -540,6 +594,471 @@ class MetricsCalculator {
         totalUsers > 0
           ? Object.values(userSessions).reduce((sum, sessions) => sum + sessions.size, 0) / totalUsers
           : 0,
+    }
+  }
+
+  /**
+   * Calcular métricas detalladas de productos
+   */
+  calculateProductAnalytics(events: RawEvent[]): ProductAnalytics {
+    const normalized = events.map(e => this.normalizeEvent(e))
+    
+    // Productos agregados al carrito
+    const cartAdditions = normalized.filter(
+      e => e.action === 'add_to_cart' || e.action === 'add'
+    )
+    
+    const productAdditionsMap = new Map<string, {
+      productId: string
+      productName: string
+      category: string
+      additions: number
+      revenue: number
+      prices: number[]
+    }>()
+
+    cartAdditions.forEach(event => {
+      // Priorizar campos directos de la BD sobre metadata
+      const productId = event.product_id?.toString() || event.label || event.metadata?.productId || event.metadata?.item_id || 'unknown'
+      const productName = event.product_name || event.metadata?.productName || event.metadata?.item_name || 'Unknown Product'
+      const category = event.category_name || event.metadata?.category || event.metadata?.category_name || 'Unknown'
+      const price = event.price || event.value || event.metadata?.price || 0
+      const quantity = event.quantity || event.metadata?.quantity || 1
+
+      const key = `${productId}:${productName}`
+      if (!productAdditionsMap.has(key)) {
+        productAdditionsMap.set(key, {
+          productId,
+          productName,
+          category,
+          additions: 0,
+          revenue: 0,
+          prices: [],
+        })
+      }
+
+      const product = productAdditionsMap.get(key)!
+      product.additions += quantity
+      product.revenue += price * quantity
+      product.prices.push(price)
+    })
+
+    const topProductsAddedToCart = Array.from(productAdditionsMap.values())
+      .map(product => ({
+        productId: product.productId,
+        productName: product.productName,
+        category: product.category,
+        totalAdditions: product.additions,
+        totalRevenue: product.revenue,
+        averagePrice: product.prices.length > 0
+          ? product.prices.reduce((a, b) => a + b, 0) / product.prices.length
+          : 0,
+        conversionRate: 0, // Se calculará después con datos de checkout
+      }))
+      .sort((a, b) => b.totalAdditions - a.totalAdditions)
+      .slice(0, 20)
+
+    // Productos más vistos
+    const productViews = normalized.filter(
+      e => e.action === 'view_item' || e.page?.includes('/product/') || e.page?.includes('/buy/')
+    )
+
+    const productViewsMap = new Map<string, {
+      productId: string
+      productName: string
+      category: string
+      views: number
+    }>()
+
+    productViews.forEach(event => {
+      const productId = event.label || event.metadata?.productId || 'unknown'
+      const productName = event.metadata?.productName || 'Unknown Product'
+      const category = event.metadata?.category || event.metadata?.category_name || 'Unknown'
+      const key = `${productId}:${productName}`
+
+      if (!productViewsMap.has(key)) {
+        productViewsMap.set(key, {
+          productId,
+          productName,
+          category,
+          views: 0,
+        })
+      }
+
+      productViewsMap.get(key)!.views++
+    })
+
+    const topProductsViewed = Array.from(productViewsMap.values())
+      .sort((a, b) => b.views - a.views)
+      .slice(0, 20)
+
+    // Productos por categoría
+    const categoryMap = new Map<string, { count: number; revenue: number }>()
+    normalized.forEach(event => {
+      const category = event.metadata?.category || event.metadata?.category_name || 'Unknown'
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, { count: 0, revenue: 0 })
+      }
+      const cat = categoryMap.get(category)!
+      cat.count++
+      if (event.action === 'purchase' && event.value) {
+        cat.revenue += event.value
+      }
+    })
+
+    const productsByCategory = Array.from(categoryMap.entries())
+      .map(([category, data]) => ({
+        category,
+        count: data.count,
+        revenue: data.revenue,
+      }))
+      .sort((a, b) => b.count - a.count)
+
+    // Distribución de valores de carrito (simplificado)
+    const cartValues = cartAdditions
+      .map(e => e.value || 0)
+      .filter(v => v > 0)
+      .sort((a, b) => a - b)
+
+    const cartValueDistribution = [
+      { range: '0-100', count: cartValues.filter(v => v <= 100).length },
+      { range: '101-500', count: cartValues.filter(v => v > 100 && v <= 500).length },
+      { range: '501-1000', count: cartValues.filter(v => v > 500 && v <= 1000).length },
+      { range: '1000+', count: cartValues.filter(v => v > 1000).length },
+    ]
+
+    return {
+      topProductsAddedToCart,
+      topProductsViewed,
+      productsByCategory,
+      cartValueDistribution,
+    }
+  }
+
+  /**
+   * Calcular análisis de embudo de conversión
+   */
+  calculateFunnelAnalysis(events: RawEvent[]): FunnelAnalysis {
+    const normalized = events.map(e => this.normalizeEvent(e))
+    
+    // Identificar pasos del embudo
+    const productViews = normalized.filter(
+      e => e.action === 'view_item' || e.page?.includes('/product/') || e.page?.includes('/buy/')
+    ).length
+
+    const cartAdditions = normalized.filter(
+      e => e.action === 'add_to_cart' || e.action === 'add'
+    ).length
+
+    const checkoutStarts = normalized.filter(e => e.action === 'begin_checkout').length
+    const purchases = normalized.filter(e => e.action === 'purchase').length
+
+    // Calcular tiempos promedio entre pasos
+    const sessionSteps: Record<string, Array<{ step: string; time: number }>> = {}
+    normalized.forEach(event => {
+      const sessionId = event.sessionId
+      if (!sessionSteps[sessionId]) {
+        sessionSteps[sessionId] = []
+      }
+
+      let step = ''
+      if (event.action === 'view_item' || event.page?.includes('/product/')) {
+        step = 'product_view'
+      } else if (event.action === 'add_to_cart' || event.action === 'add') {
+        step = 'add_to_cart'
+      } else if (event.action === 'begin_checkout') {
+        step = 'begin_checkout'
+      } else if (event.action === 'purchase') {
+        step = 'purchase'
+      }
+
+      if (step) {
+        sessionSteps[sessionId].push({
+          step,
+          time: new Date(event.createdAt).getTime(),
+        })
+      }
+    })
+
+    // Calcular tiempos promedio
+    const stepTimes: Record<string, number[]> = {}
+    Object.values(sessionSteps).forEach(steps => {
+      steps.sort((a, b) => a.time - b.time)
+      for (let i = 1; i < steps.length; i++) {
+        const fromStep = steps[i - 1].step
+        const toStep = steps[i].step
+        const duration = steps[i].time - steps[i - 1].time
+        const key = `${fromStep}_${toStep}`
+        if (!stepTimes[key]) {
+          stepTimes[key] = []
+        }
+        stepTimes[key].push(duration)
+      }
+    })
+
+    const steps: FunnelAnalysis['steps'] = [
+      {
+        step: 'product_view',
+        count: productViews,
+        conversionRate: productViews > 0 ? (cartAdditions / productViews) * 100 : 0,
+        averageTime: 0,
+        dropOffRate: productViews > 0 ? ((productViews - cartAdditions) / productViews) * 100 : 0,
+      },
+      {
+        step: 'add_to_cart',
+        count: cartAdditions,
+        conversionRate: cartAdditions > 0 ? (checkoutStarts / cartAdditions) * 100 : 0,
+        averageTime: stepTimes['product_view_add_to_cart']
+          ? stepTimes['product_view_add_to_cart'].reduce((a, b) => a + b, 0) /
+            stepTimes['product_view_add_to_cart'].length /
+            1000
+          : 0,
+        dropOffRate: cartAdditions > 0 ? ((cartAdditions - checkoutStarts) / cartAdditions) * 100 : 0,
+      },
+      {
+        step: 'begin_checkout',
+        count: checkoutStarts,
+        conversionRate: checkoutStarts > 0 ? (purchases / checkoutStarts) * 100 : 0,
+        averageTime: stepTimes['add_to_cart_begin_checkout']
+          ? stepTimes['add_to_cart_begin_checkout'].reduce((a, b) => a + b, 0) /
+            stepTimes['add_to_cart_begin_checkout'].length /
+            1000
+          : 0,
+        dropOffRate: checkoutStarts > 0 ? ((checkoutStarts - purchases) / checkoutStarts) * 100 : 0,
+      },
+      {
+        step: 'purchase',
+        count: purchases,
+        conversionRate: 100,
+        averageTime: stepTimes['begin_checkout_purchase']
+          ? stepTimes['begin_checkout_purchase'].reduce((a, b) => a + b, 0) /
+            stepTimes['begin_checkout_purchase'].length /
+            1000
+          : 0,
+        dropOffRate: 0,
+      },
+    ]
+
+    const dropOffPoints = [
+      {
+        fromStep: 'product_view',
+        toStep: 'add_to_cart',
+        dropOffCount: productViews - cartAdditions,
+        dropOffRate: productViews > 0 ? ((productViews - cartAdditions) / productViews) * 100 : 0,
+      },
+      {
+        fromStep: 'add_to_cart',
+        toStep: 'begin_checkout',
+        dropOffCount: cartAdditions - checkoutStarts,
+        dropOffRate: cartAdditions > 0 ? ((cartAdditions - checkoutStarts) / cartAdditions) * 100 : 0,
+      },
+      {
+        fromStep: 'begin_checkout',
+        toStep: 'purchase',
+        dropOffCount: checkoutStarts - purchases,
+        dropOffRate: checkoutStarts > 0 ? ((checkoutStarts - purchases) / checkoutStarts) * 100 : 0,
+      },
+    ]
+
+    return {
+      steps,
+      dropOffPoints,
+      totalConversionRate: productViews > 0 ? (purchases / productViews) * 100 : 0,
+    }
+  }
+
+  /**
+   * Calcular métricas de interacciones
+   */
+  calculateInteractionMetrics(events: RawEvent[]): InteractionMetrics {
+    const normalized = events.map(e => this.normalizeEvent(e))
+
+    // Tipos de interacción
+    const interactionCounts: Record<string, number> = {}
+    normalized.forEach(event => {
+      const type = event.action || event.eventName
+      if (['click', 'hover', 'scroll', 'focus', 'input'].includes(type)) {
+        interactionCounts[type] = (interactionCounts[type] || 0) + 1
+      }
+    })
+
+    const totalInteractions = Object.values(interactionCounts).reduce((a, b) => a + b, 0)
+    const topInteractions = Object.entries(interactionCounts)
+      .map(([type, count]) => ({
+        type,
+        count,
+        percentage: totalInteractions > 0 ? (count / totalInteractions) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+
+    // Interacciones por página
+    const pageInteractionsMap = new Map<string, {
+      clicks: number
+      hovers: number
+      scrolls: number
+      times: number[]
+    }>()
+
+    normalized.forEach(event => {
+      const page = event.page || 'unknown'
+      if (!pageInteractionsMap.has(page)) {
+        pageInteractionsMap.set(page, {
+          clicks: 0,
+          hovers: 0,
+          scrolls: 0,
+          times: [],
+        })
+      }
+
+      const pageData = pageInteractionsMap.get(page)!
+      if (event.action === 'click') pageData.clicks++
+      if (event.action === 'hover') pageData.hovers++
+      if (event.action === 'scroll') pageData.scrolls++
+      pageData.times.push(new Date(event.createdAt).getTime())
+    })
+
+    const pageInteractions = Array.from(pageInteractionsMap.entries())
+      .map(([page, data]) => ({
+        page,
+        clicks: data.clicks,
+        hovers: data.hovers,
+        scrolls: data.scrolls,
+        averageTime: data.times.length > 1
+          ? (data.times[data.times.length - 1] - data.times[0]) / 1000 / data.times.length
+          : 0,
+      }))
+      .sort((a, b) => b.clicks + b.hovers + b.scrolls - (a.clicks + a.hovers + a.scrolls))
+
+    // Flujo de usuario
+    const userFlows: Record<string, number> = {}
+    const previousPages: Record<string, string> = {}
+
+    normalized.forEach(event => {
+      const sessionId = event.sessionId
+      const page = event.page || 'unknown'
+
+      if (previousPages[sessionId]) {
+        const flow = `${previousPages[sessionId]} → ${page}`
+        userFlows[flow] = (userFlows[flow] || 0) + 1
+      }
+
+      previousPages[sessionId] = page
+    })
+
+    const userJourney = Object.entries(userFlows)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 20)
+      .map(([flow, count]) => ({ flow, count }))
+
+    // Páginas de salida y entrada
+    const exitPagesMap = new Map<string, number>()
+    const entryPagesMap = new Map<string, number>()
+    const sessionFirstPages: Record<string, string> = {}
+    const sessionLastPages: Record<string, string> = {}
+
+    normalized.forEach(event => {
+      const sessionId = event.sessionId
+      const page = event.page || 'unknown'
+
+      if (!sessionFirstPages[sessionId]) {
+        sessionFirstPages[sessionId] = page
+        entryPagesMap.set(page, (entryPagesMap.get(page) || 0) + 1)
+      }
+
+      sessionLastPages[sessionId] = page
+    })
+
+    Object.values(sessionLastPages).forEach(page => {
+      exitPagesMap.set(page, (exitPagesMap.get(page) || 0) + 1)
+    })
+
+    const totalSessions = Object.keys(sessionLastPages).length
+    const exitPages = Array.from(exitPagesMap.entries())
+      .map(([page, count]) => ({
+        page,
+        count,
+        percentage: totalSessions > 0 ? (count / totalSessions) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+
+    const entryPages = Array.from(entryPagesMap.entries())
+      .map(([page, count]) => ({
+        page,
+        count,
+        percentage: totalSessions > 0 ? (count / totalSessions) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10)
+
+    return {
+      topInteractions,
+      pageInteractions,
+      userJourney,
+      exitPages,
+      entryPages,
+    }
+  }
+
+  /**
+   * Calcular métricas de búsqueda
+   */
+  calculateSearchAnalytics(events: RawEvent[]): SearchAnalytics {
+    const normalized = events.map(e => this.normalizeEvent(e))
+
+    const searchEvents = normalized.filter(
+      e =>
+        (e.category === 'search' && (e.action === 'search' || e.action === 'search_query')) ||
+        e.eventName === 'search' ||
+        e.eventName === 'search_query'
+    )
+
+    const queryCounts: Record<string, number> = {}
+    const queryConversions: Record<string, number> = {}
+
+    searchEvents.forEach(event => {
+      const query = event.label || 'unknown'
+      queryCounts[query] = (queryCounts[query] || 0) + 1
+
+      // Buscar si hubo conversión después de esta búsqueda
+      const sessionId = event.sessionId
+      const searchTime = new Date(event.createdAt).getTime()
+      const hasConversion = normalized.some(
+        e =>
+          e.sessionId === sessionId &&
+          new Date(e.createdAt).getTime() > searchTime &&
+          (e.action === 'purchase' || e.action === 'add_to_cart')
+      )
+
+      if (hasConversion) {
+        queryConversions[query] = (queryConversions[query] || 0) + 1
+      }
+    })
+
+    const topQueries = Object.entries(queryCounts)
+      .map(([query, count]) => ({
+        query,
+        count,
+        conversionRate: queryConversions[query]
+          ? (queryConversions[query] / count) * 100
+          : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20)
+
+    // Búsquedas sin resultados (simplificado - asumimos que si no hay conversión y count es bajo, no hay resultados)
+    const noResults = topQueries
+      .filter(q => q.count <= 1 && q.conversionRate === 0)
+      .map(q => ({ query: q.query, count: q.count }))
+
+    const totalSearches = searchEvents.length
+    const totalConversions = Object.values(queryConversions).reduce((a, b) => a + b, 0)
+    const conversionRate = totalSearches > 0 ? (totalConversions / totalSearches) * 100 : 0
+
+    return {
+      topQueries,
+      noResults,
+      conversionRate,
     }
   }
 }

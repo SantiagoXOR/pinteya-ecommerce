@@ -21,6 +21,18 @@ interface TrackEvent {
   page: string
   userAgent?: string
   metadata?: Record<string, any>
+  // Metadata de productos
+  productId?: number | string
+  productName?: string
+  category?: string
+  category_name?: string
+  price?: number
+  quantity?: number
+  // Metadata de elementos
+  elementSelector?: string
+  elementPosition?: { x: number; y: number }
+  elementDimensions?: { width: number; height: number }
+  deviceType?: string
 }
 
 // Cache simple en memoria para eventos recientes (evita duplicados)
@@ -95,6 +107,34 @@ export async function POST(request: NextRequest) {
           })
         }
 
+        // Extraer metadata de productos del metadata o campos directos
+        const productId = event.productId || event.metadata?.productId || event.metadata?.item_id
+        const productName = event.productName || event.metadata?.productName || event.metadata?.item_name
+        const categoryName = event.category_name || event.category || event.metadata?.category || event.metadata?.category_name
+        const price = event.price || event.metadata?.price || event.value
+        const quantity = event.quantity || event.metadata?.quantity || 1
+
+        // Extraer metadata de elementos
+        const elementSelector = event.elementSelector || event.metadata?.elementSelector
+        const elementX = event.elementPosition?.x || event.metadata?.elementPosition?.x
+        const elementY = event.elementPosition?.y || event.metadata?.elementPosition?.y
+        const elementWidth = event.elementDimensions?.width || event.metadata?.elementDimensions?.width
+        const elementHeight = event.elementDimensions?.height || event.metadata?.elementDimensions?.height
+        const deviceType = event.deviceType || event.metadata?.deviceType
+
+        // Preparar metadata adicional (excluyendo campos que ya se guardan por separado)
+        const additionalMetadata: Record<string, any> = {}
+        if (event.metadata) {
+          Object.keys(event.metadata).forEach(key => {
+            // Excluir campos que ya se guardan en columnas separadas
+            if (!['productId', 'productName', 'category', 'category_name', 'price', 'quantity',
+                  'elementSelector', 'elementPosition', 'elementDimensions', 'deviceType',
+                  'item_id', 'item_name'].includes(key)) {
+              additionalMetadata[key] = event.metadata![key]
+            }
+          })
+        }
+
         // Usar función RPC optimizada para insertar en tabla optimizada
         const { error: rpcError, data: rpcData } = await supabase.rpc('insert_analytics_event_optimized', {
           p_event_name: event.event,
@@ -106,6 +146,21 @@ export async function POST(request: NextRequest) {
           p_session_id: event.sessionId,
           p_page: event.page || null,
           p_user_agent: event.userAgent || null,
+          // Metadata de productos
+          p_product_id: productId ? parseInt(String(productId)) : null,
+          p_product_name: productName || null,
+          p_category_name: categoryName || null,
+          p_price: price ? parseFloat(String(price)) : null,
+          p_quantity: quantity ? parseInt(String(quantity)) : null,
+          // Metadata de elementos
+          p_element_selector: elementSelector || null,
+          p_element_x: elementX ? parseInt(String(elementX)) : null,
+          p_element_y: elementY ? parseInt(String(elementY)) : null,
+          p_element_width: elementWidth ? parseInt(String(elementWidth)) : null,
+          p_element_height: elementHeight ? parseInt(String(elementHeight)) : null,
+          p_device_type: deviceType || null,
+          // Metadata adicional (se comprimirá)
+          p_metadata: Object.keys(additionalMetadata).length > 0 ? additionalMetadata : null,
         })
 
         if (rpcError) {
