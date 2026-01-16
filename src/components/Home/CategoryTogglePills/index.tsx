@@ -53,12 +53,12 @@ const CategoryPillItemBase: React.FC<CategoryPillItemProps> = ({
 
   return (
     <div 
-      className='flex flex-col items-center gap-1.5 flex-shrink-0 md:flex-row md:gap-0'
+      className='flex flex-col items-center gap-1.5 flex-shrink-0'
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className={`
+      <div className={` 
         relative rounded-full transition-all duration-300
         ${isSelected && useDynamicCarousel ? 'ring-2 ring-bright-sun-400 scale-105 shadow-md' : 'scale-100'}
       `}>
@@ -69,8 +69,7 @@ const CategoryPillItemBase: React.FC<CategoryPillItemProps> = ({
           className={`
             group transition-all duration-200 border-2
             flex items-center justify-center p-0
-            w-14 h-14 sm:w-16 sm:h-16 rounded-full
-            md:flex-row md:w-auto md:h-11 md:px-3.5 md:gap-1.5 md:rounded-full
+            w-14 h-14 sm:w-16 sm:h-16 md:w-16 md:h-16 rounded-full
             ${isSelected ? 'glass-category-pill-active' : 'glass-category-pill'}
             ${
               isSelected && useDynamicCarousel
@@ -88,7 +87,7 @@ const CategoryPillItemBase: React.FC<CategoryPillItemProps> = ({
                 flex items-center justify-center 
                 w-9 h-9 sm:w-10 sm:h-10 md:w-10 md:h-10
                 transition-transform duration-300 ease-out
-                ${isSelected ? 'scale-125 -translate-y-1 md:scale-100 md:translate-y-0' : 'scale-100'}
+                ${isSelected ? 'scale-125 -translate-y-1' : 'scale-100'}
               `}>
                 <Image
                   src={imageUrl}
@@ -101,12 +100,9 @@ const CategoryPillItemBase: React.FC<CategoryPillItemProps> = ({
               </div>
             ) : null
           })()}
-          <span className={`hidden md:inline-block text-sm font-medium ml-1.5 ${isSelected ? '!text-white' : '!text-gray-900'}`}>
-            {category.name}
-          </span>
         </Button>
       </div>
-      <span className='text-[9px] font-medium text-center leading-[1.1] text-white max-w-[85px] line-clamp-1 md:hidden truncate'>{category.name}</span>
+      <span className='text-[9px] sm:text-[10px] md:text-[10px] font-medium text-center leading-[1.1] text-white max-w-[85px] line-clamp-1 truncate'>{category.name}</span>
     </div>
   )
 }
