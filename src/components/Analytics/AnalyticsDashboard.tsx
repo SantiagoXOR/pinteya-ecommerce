@@ -186,6 +186,7 @@ const AnalyticsDashboard: React.FC = () => {
   const [metricsData, setMetricsData] = useState<MetricsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('7d')
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'funnel' | 'search' | 'interactions' | 'visualizer'>('overview')
   const [realTimeMetrics, setRealTimeMetrics] = useState({
     productViews: 0,
     cartAdditions: 0,

@@ -60,6 +60,9 @@ export const RouteVisualizer: React.FC<RouteVisualizerProps> = ({ startDate, end
   }, [])
 
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:62',message:'useEffect triggered',data:{selectedRoute,device,startDate,endDate},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     if (selectedRoute) {
       fetchElementMetrics()
     }
@@ -74,8 +77,15 @@ export const RouteVisualizer: React.FC<RouteVisualizerProps> = ({ startDate, end
       const data = await response.json()
       
       if (data.engagement?.topPages) {
-        const routes = data.engagement.topPages.map((p: { page: string }) => p.page).slice(0, 10)
-        setAvailableRoutes(['/', ...routes])
+        // Mapear y filtrar rutas vacías o nulas
+        const routes = data.engagement.topPages
+          .map((p: { page: string }) => p.page || '/')
+          .filter((route: string) => route && route.trim() !== '')
+          .slice(0, 10)
+        
+        // Eliminar duplicados usando Set y asegurar que '/' esté presente
+        const uniqueRoutes = Array.from(new Set(['/', ...routes]))
+        setAvailableRoutes(uniqueRoutes)
       }
     } catch (error) {
       console.error('Error fetching routes:', error)
@@ -83,18 +93,41 @@ export const RouteVisualizer: React.FC<RouteVisualizerProps> = ({ startDate, end
   }
 
   const fetchElementMetrics = async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:87',message:'fetchElementMetrics START',data:{selectedRoute,device,startDate,endDate},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     try {
       setLoading(true)
-      const response = await fetch(
-        `/api/analytics/elements?route=${encodeURIComponent(selectedRoute)}&device=${device}&startDate=${startDate}&endDate=${endDate}`
-      )
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:90',message:'loading set to true',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      const url = `/api/analytics/elements?route=${encodeURIComponent(selectedRoute)}&device=${device}&startDate=${startDate}&endDate=${endDate}`
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:93',message:'fetching API',data:{url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      const response = await fetch(url)
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:96',message:'response received',data:{status:response.status,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       const data = await response.json()
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:99',message:'data parsed',data:{hasElements:!!data.elements,elementsCount:data.elements?.length||0,error:data.error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
       setElements(data.elements || [])
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:100',message:'elements set',data:{elementsCount:data.elements?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
     } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:102',message:'fetchElementMetrics ERROR',data:{error:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       console.error('Error fetching element metrics:', error)
       setElements([])
     } finally {
       setLoading(false)
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:106',message:'loading set to false',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
     }
   }
 
@@ -117,8 +150,8 @@ export const RouteVisualizer: React.FC<RouteVisualizerProps> = ({ startDate, end
                 onChange={e => setSelectedRoute(e.target.value)}
                 className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400'
               >
-                {availableRoutes.map(route => (
-                  <option key={route} value={route}>
+                {availableRoutes.map((route, index) => (
+                  <option key={`${route}-${index}`} value={route}>
                     {route || '/'}
                   </option>
                 ))}
@@ -194,12 +227,13 @@ export const RouteVisualizer: React.FC<RouteVisualizerProps> = ({ startDate, end
                 interactionFilter={interactionFilter}
               />
             </PageRenderer>
-          </div>
-        )}
-
-        {elements.length === 0 && !loading && (
-          <div className='text-center py-12 text-gray-500'>
-            <p>No hay datos de interacciones para esta ruta en el período seleccionado</p>
+            {elements.length === 0 && (
+              <div className='absolute top-4 left-1/2 transform -translate-x-1/2 z-20 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 shadow-sm'>
+                <p className='text-sm text-yellow-800 font-medium'>
+                  No hay datos de interacciones para esta ruta en el período seleccionado
+                </p>
+              </div>
+            )}
           </div>
         )}
       </motion.div>
