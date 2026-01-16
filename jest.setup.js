@@ -2,6 +2,9 @@
 // PINTEYA E-COMMERCE - SETUP DE JEST
 // ===================================
 
+// Importar fake-indexeddb antes que cualquier otra cosa para que IndexedDB esté disponible
+import 'fake-indexeddb/auto'
+
 // Polyfills para MSW
 import { TextEncoder, TextDecoder } from 'util'
 import { ReadableStream, WritableStream, TransformStream } from 'stream/web'

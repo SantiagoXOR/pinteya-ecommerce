@@ -392,11 +392,38 @@ class AnalyticsManager {
   private queueTimeout: NodeJS.Timeout | null = null
 
   private async sendToInternalAPI(event: AnalyticsEvent): Promise<void> {
-    // Agregar evento a la cola en lugar de enviarlo inmediatamente
-    this.eventQueue.push(event)
+    // Solo ejecutar en el cliente
+    if (typeof window === 'undefined') {
+      return
+    }
 
-    // Procesar la cola con debounce
-    this.debouncedProcessQueue()
+    // Usar nuevas estrategias de envío con fallback automático
+    try {
+      const { sendStrategies } = await import('@/lib/analytics/send-strategies')
+      const result = await sendStrategies.sendEvent({
+        event: event.event,
+        category: event.category,
+        action: event.action,
+        label: event.label,
+        value: event.value,
+        userId: event.userId,
+        sessionId: event.sessionId,
+        page: event.page,
+        userAgent: event.userAgent,
+        metadata: event.metadata,
+      })
+
+      if (!result.success) {
+        // Si todas las estrategias fallaron, el evento ya está en IndexedDB
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Evento guardado para retry:', result.error)
+        }
+      }
+    } catch (error) {
+      // Fallback: agregar a cola tradicional si las nuevas estrategias fallan
+      this.eventQueue.push(event)
+      this.debouncedProcessQueue()
+    }
   }
 
   private debouncedProcessQueue(): void {
@@ -438,19 +465,27 @@ class AnalyticsManager {
 
         for (const event of batch) {
           try {
-            const response = await fetch('/api/analytics/events', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(event),
+            // Usar nuevas estrategias de envío
+            const { sendStrategies } = await import('@/lib/analytics/send-strategies')
+            const result = await sendStrategies.sendEvent({
+              event: event.event,
+              category: event.category,
+              action: event.action,
+              label: event.label,
+              value: event.value,
+              userId: event.userId,
+              sessionId: event.sessionId,
+              page: event.page,
+              userAgent: event.userAgent,
+              metadata: event.metadata,
             })
 
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`)
+            if (!result.success) {
+              // El evento ya está guardado en IndexedDB por sendStrategies
+              throw new Error(result.error || 'Failed to send event')
             }
           } catch (error) {
-            // En caso de error, almacenar el evento para reintento
+            // En caso de error, almacenar el evento para reintento (fallback)
             this.storeEventForRetry(event)
           }
         }
@@ -469,36 +504,40 @@ class AnalyticsManager {
     }
   }
 
-  private storeEventForRetry(event: AnalyticsEvent): void {
+  private async storeEventForRetry(event: AnalyticsEvent): Promise<void> {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        // Usar parsing seguro para evitar errores JSON
-        const stored = localStorage.getItem('analytics_failed_events') || '[]'
-        let failedEvents: AnalyticsEvent[] = []
-
-        try {
-          failedEvents = JSON.parse(stored)
-          // Verificar que sea un array válido
-          if (!Array.isArray(failedEvents)) {
-            failedEvents = []
-          }
-        } catch (parseError) {
-          console.warn('Error parsing analytics failed events, resetting:', parseError)
-          failedEvents = []
-        }
-
-        failedEvents.push(event)
-
-        // Limitar a los últimos 50 eventos fallidos
-        if (failedEvents.length > 50) {
-          failedEvents.splice(0, failedEvents.length - 50)
-        }
-
-        localStorage.setItem('analytics_failed_events', JSON.stringify(failedEvents))
+      // Usar IndexedDB en lugar de localStorage (más confiable)
+      if (typeof window !== 'undefined') {
+        const { indexedDBManager } = await import('@/lib/analytics/indexeddb-manager')
+        await indexedDBManager.storeEvent(event)
       }
     } catch (error) {
-      // Ignorar errores de localStorage
-      console.warn('Error storing analytics event for retry:', error)
+      // Fallback a localStorage si IndexedDB no está disponible
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const stored = localStorage.getItem('analytics_failed_events') || '[]'
+          let failedEvents: AnalyticsEvent[] = []
+
+          try {
+            failedEvents = JSON.parse(stored)
+            if (!Array.isArray(failedEvents)) {
+              failedEvents = []
+            }
+          } catch (parseError) {
+            failedEvents = []
+          }
+
+          failedEvents.push(event)
+
+          if (failedEvents.length > 50) {
+            failedEvents.splice(0, failedEvents.length - 50)
+          }
+
+          localStorage.setItem('analytics_failed_events', JSON.stringify(failedEvents))
+        }
+      } catch (localStorageError) {
+        console.warn('Error storing analytics event for retry:', localStorageError)
+      }
     }
   }
 

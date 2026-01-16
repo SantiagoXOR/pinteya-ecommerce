@@ -14,6 +14,9 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { metricsCalculator } from '@/lib/analytics/metrics-calculator'
+import { metricsCache } from '@/lib/analytics/metrics-cache'
+import { MetricsQueryParams } from '@/lib/analytics/types'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN

@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react'
 // ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
 import { motion } from '@/lib/framer-motion-lazy'
 import {
@@ -20,9 +20,11 @@ import {
   Target,
   Activity,
 } from '@/lib/optimized-imports'
-import { useAnalytics } from '@/hooks/useAnalytics'
-import GoogleAnalyticsEmbed from './GoogleAnalyticsEmbed'
-import MetaMetrics from './MetaMetrics'
+import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProvider'
+
+// Lazy load de componentes pesados
+const GoogleAnalyticsEmbed = lazy(() => import('./GoogleAnalyticsEmbed'))
+const MetaMetrics = lazy(() => import('./MetaMetrics'))
 
 interface MetricsData {
   ecommerce: {
@@ -206,8 +208,10 @@ const AnalyticsDashboard: React.FC = () => {
         Date.now() - (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 1) * 24 * 60 * 60 * 1000
       ).toISOString()
 
+      // Incluir análisis avanzado solo si es necesario (lazy loading)
+      const includeAdvanced = timeRange === '30d' // Solo para rangos largos
       const response = await fetch(
-        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}`
+        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}&advanced=${includeAdvanced}`
       )
       const data = await response.json()
       setMetricsData(data)
@@ -629,14 +633,16 @@ const AnalyticsDashboard: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Integración Google Analytics y Meta */}
-      <div className='space-y-6'>
-        {/* Google Analytics Embed */}
-        <GoogleAnalyticsEmbed />
+      {/* Integración Google Analytics y Meta - Lazy loaded */}
+      <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
+        <div className='space-y-6'>
+          {/* Google Analytics Embed */}
+          <GoogleAnalyticsEmbed />
 
-        {/* Meta Pixel Metrics */}
-        <MetaMetricsMemoized timeRange={timeRange} />
-      </div>
+          {/* Meta Pixel Metrics */}
+          <MetaMetricsMemoized timeRange={timeRange} />
+        </div>
+      </Suspense>
     </div>
   )
 }

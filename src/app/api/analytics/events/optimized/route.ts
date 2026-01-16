@@ -8,6 +8,7 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { metricsCache } from '@/lib/analytics/metrics-cache'
 
 interface OptimizedAnalyticsEvent {
   event: string
@@ -59,6 +60,8 @@ export async function POST(request: NextRequest) {
     setImmediate(async () => {
       try {
         await processEventsBatch(batch.events, supabase)
+        // Invalidar cache de métricas al insertar nuevos eventos
+        await metricsCache.invalidatePattern('analytics:*')
       } catch (error) {
         console.error('Error procesando batch de analytics (async):', error)
       }
@@ -149,28 +152,49 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Usar vista unificada para obtener todos los eventos
+    // Usar tabla optimizada directamente (vista unificada eliminada)
     let query = supabase
-      .from('analytics_events_unified')
-      .select('*', { count: 'exact' })
+      .from('analytics_events_optimized')
+      .select(`
+        id,
+        event_type,
+        category_id,
+        action_id,
+        label,
+        value,
+        user_id,
+        session_hash,
+        page_id,
+        browser_id,
+        created_at,
+        analytics_event_types(name),
+        analytics_categories(name),
+        analytics_actions(name),
+        analytics_pages(path),
+        analytics_browsers(name, version)
+      `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range((page - 1) * limit, page * limit - 1)
 
     // Aplicar filtros
     if (startDate) {
-      query = query.gte('created_at', startDate)
+      const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000)
+      query = query.gte('created_at', startTimestamp)
     }
 
     if (endDate) {
-      query = query.lte('created_at', endDate)
+      const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000)
+      query = query.lte('created_at', endTimestamp)
     }
 
     if (eventType) {
-      query = query.eq('event_name', eventType)
+      // Necesitamos hacer JOIN con analytics_event_types para filtrar por nombre
+      query = query.eq('analytics_event_types.name', eventType)
     }
 
     if (category) {
-      query = query.eq('category', category)
+      // Necesitamos hacer JOIN con analytics_categories para filtrar por nombre
+      query = query.eq('analytics_categories.name', category)
     }
 
     const { data, error, count } = await query

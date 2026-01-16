@@ -2,13 +2,26 @@
 export const runtime = 'nodejs'
 
 /**
- * API Route para recibir eventos de analytics
- * Optimizado para procesamiento asíncrono y cache
+ * API Route alternativa para recibir eventos de analytics
+ * Endpoint sin "analytics" en la URL para evitar bloqueadores
+ * Usa la tabla optimizada directamente
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseClient } from '@/lib/integrations/supabase'
-import { metricsCache } from '@/lib/analytics/metrics-cache'
+import { getSupabaseClient } from '@/lib/integrations/supabase/index'
+
+interface TrackEvent {
+  event: string
+  category: string
+  action: string
+  label?: string
+  value?: number
+  userId?: string
+  sessionId: string
+  page: string
+  userAgent?: string
+  metadata?: Record<string, any>
+}
 
 // Cache simple en memoria para eventos recientes (evita duplicados)
 const eventCache = new Map<string, number>()
@@ -16,10 +29,10 @@ const CACHE_TTL = 5000 // 5 segundos
 
 export async function POST(request: NextRequest) {
   try {
-    const event = await request.json()
+    const event: TrackEvent = await request.json()
 
     // Validación rápida y simple
-    if (!event.event || !event.category || !event.action) {
+    if (!event.event || !event.category || !event.action || !event.sessionId) {
       return NextResponse.json(
         { error: 'Evento inválido: faltan campos requeridos' },
         { status: 400 }
@@ -75,9 +88,6 @@ export async function POST(request: NextRequest) {
 
         if (rpcError) {
           console.error('Error insertando evento analytics (RPC):', rpcError)
-        } else {
-          // Invalidar cache de métricas al insertar nuevo evento
-          await metricsCache.invalidatePattern('analytics:*')
         }
       } catch (error) {
         console.error('Error procesando evento analytics (async):', error)
@@ -97,78 +107,6 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('Error procesando evento:', error)
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const sessionId = searchParams.get('sessionId')
-    const userId = searchParams.get('userId')
-    const startDate = searchParams.get('startDate')
-    const endDate = searchParams.get('endDate')
-    const limit = parseInt(searchParams.get('limit') || '100')
-
-    const supabase = getSupabaseClient()
-    if (!supabase) {
-      return NextResponse.json({ error: 'Servicio de base de datos no disponible' }, { status: 503 })
-    }
-
-    // Usar tabla optimizada directamente (vista unificada eliminada)
-    let query = supabase
-      .from('analytics_events_optimized')
-      .select(`
-        id,
-        event_type,
-        category_id,
-        action_id,
-        label,
-        value,
-        user_id,
-        session_hash,
-        page_id,
-        browser_id,
-        created_at,
-        analytics_event_types(name),
-        analytics_categories(name),
-        analytics_actions(name),
-        analytics_pages(path),
-        analytics_browsers(name, version)
-      `)
-      .order('created_at', { ascending: false })
-      .limit(limit)
-
-    if (sessionId) {
-      // Para session_id, necesitamos hacer hash (simplificado por ahora)
-      // En producción, esto debería usar la misma función de hash que la BD
-      query = query.eq('session_hash', parseInt(sessionId) || 0)
-    }
-
-    if (userId) {
-      query = query.eq('user_id', userId)
-    }
-
-    if (startDate) {
-      const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000)
-      query = query.gte('created_at', startTimestamp)
-    }
-
-    if (endDate) {
-      const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000)
-      query = query.lte('created_at', endTimestamp)
-    }
-
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Error obteniendo eventos:', error)
-      return NextResponse.json({ error: 'Error obteniendo eventos' }, { status: 500 })
-    }
-
-    return NextResponse.json({ events: data })
-  } catch (error) {
-    console.error('Error procesando solicitud:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

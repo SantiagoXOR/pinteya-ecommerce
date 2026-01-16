@@ -14,7 +14,7 @@ import { useCheckout } from '@/hooks/useCheckout'
 import { trackBeginCheckout } from '@/lib/google-analytics'
 import { trackInitiateCheckout } from '@/lib/meta-pixel'
 import { trackGoogleAdsBeginCheckout } from '@/lib/google-ads'
-import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
+import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FormMessage } from '@/components/ui/form'
@@ -57,7 +57,7 @@ const Checkout = () => {
   const router = useRouter()
   const [showExitIntent, setShowExitIntent] = useState(false)
   const [isExpressMode, setIsExpressMode] = useState(true) // ✅ TEMPORAL: Activado por defecto para testing
-  const { trackEvent } = useAnalytics() // Analytics propio
+  const { trackEvent } = useUnifiedAnalytics() // Analytics propio con estrategias anti-bloqueadores
 
   const {
     formData,

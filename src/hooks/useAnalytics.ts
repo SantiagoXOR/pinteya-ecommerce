@@ -1,11 +1,13 @@
 /**
  * Hook personalizado para Analytics en Pinteya E-commerce
  * Proporciona funciones de tracking y métricas fáciles de usar
+ * Usa el nuevo provider unificado con estrategias anti-bloqueadores
  */
 
 import { useEffect, useCallback, useState } from 'react'
 import { useAuth } from './useAuth'
 import { usePathname } from 'next/navigation'
+import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProvider'
 import {
   analytics,
   AnalyticsEvent,
@@ -56,7 +58,8 @@ export interface UseAnalyticsReturn {
 export const useAnalytics = (): UseAnalyticsReturn => {
   const { user } = useAuth()
   const pathname = usePathname()
-  const [isEnabled, setIsEnabled] = useState(true)
+  const unifiedAnalytics = useUnifiedAnalytics()
+  const [isEnabled, setIsEnabled] = useState(unifiedAnalytics.isEnabled)
   const [sessionMetrics, setSessionMetrics] = useState<ConversionMetrics>({
     cartAdditions: 0,
     cartRemovals: 0,
@@ -70,12 +73,17 @@ export const useAnalytics = (): UseAnalyticsReturn => {
     cartAbandonmentRate: 0,
   })
 
+  // Sincronizar estado enabled con provider unificado
+  useEffect(() => {
+    setIsEnabled(unifiedAnalytics.isEnabled)
+  }, [unifiedAnalytics.isEnabled])
+
   // Track page views automáticamente cuando cambia la ruta
   useEffect(() => {
     if (isEnabled) {
-      analytics.trackPageView(pathname)
+      unifiedAnalytics.trackPageView(pathname)
     }
-  }, [pathname, isEnabled])
+  }, [pathname, isEnabled, unifiedAnalytics])
 
   // Actualizar métricas periódicamente
   useEffect(() => {
@@ -117,9 +125,10 @@ export const useAnalytics = (): UseAnalyticsReturn => {
         userEmail: user?.emailAddresses?.[0]?.emailAddress,
       }
 
-      analytics.trackEvent(event, category, action, label, value, enrichedMetadata)
+      // Usar provider unificado con estrategias anti-bloqueadores
+      unifiedAnalytics.trackEvent(event, category, action, label, value, enrichedMetadata)
     },
-    [isEnabled, user]
+    [isEnabled, user, unifiedAnalytics]
   )
 
   const trackEcommerceEvent = useCallback(
@@ -134,9 +143,10 @@ export const useAnalytics = (): UseAnalyticsReturn => {
         userEmail: user?.emailAddresses?.[0]?.emailAddress,
       }
 
-      analytics.trackEcommerceEvent(action, enrichedData)
+      // Usar provider unificado
+      unifiedAnalytics.trackEcommerceEvent(action, enrichedData)
     },
-    [isEnabled, user]
+    [isEnabled, user, unifiedAnalytics]
   )
 
   const trackPageView = useCallback(
@@ -144,9 +154,9 @@ export const useAnalytics = (): UseAnalyticsReturn => {
       if (!isEnabled) {
         return
       }
-      analytics.trackPageView(page)
+      unifiedAnalytics.trackPageView(page)
     },
-    [isEnabled]
+    [isEnabled, unifiedAnalytics]
   )
 
   const trackConversion = useCallback(
@@ -160,63 +170,59 @@ export const useAnalytics = (): UseAnalyticsReturn => {
         userId: user?.id,
       }
 
-      analytics.trackConversion(type, value, enrichedMetadata)
+      unifiedAnalytics.trackConversion(type, enrichedMetadata)
     },
-    [isEnabled, user]
+    [isEnabled, user, unifiedAnalytics]
   )
 
-  // Funciones específicas para e-commerce
+  // Funciones específicas para e-commerce - usar provider unificado
   const trackProductView = useCallback(
     (productId: string, productName: string, category: string, price: number) => {
-      trackEcommerceEvent('view_item', {
-        item_id: productId,
-        item_name: productName,
-        item_category: category,
-        price: price,
+      unifiedAnalytics.trackProductView(productId, productName, {
+        category,
+        price,
         currency: 'ARS',
       })
     },
-    [trackEcommerceEvent]
+    [unifiedAnalytics]
   )
 
   const trackAddToCart = useCallback(
     (productId: string, productName: string, price: number, quantity: number) => {
-      trackEcommerceEvent('add_to_cart', {
-        item_id: productId,
-        item_name: productName,
-        price: price,
-        quantity: quantity,
+      unifiedAnalytics.trackCartAction('add', productId, {
+        productName,
+        price,
+        quantity,
         currency: 'ARS',
         value: price * quantity,
       })
     },
-    [trackEcommerceEvent]
+    [unifiedAnalytics]
   )
 
   const trackRemoveFromCart = useCallback(
     (productId: string, productName: string) => {
-      trackEcommerceEvent('remove_from_cart', {
-        item_id: productId,
-        item_name: productName,
+      unifiedAnalytics.trackCartAction('remove', productId, {
+        productName,
       })
     },
-    [trackEcommerceEvent]
+    [unifiedAnalytics]
   )
 
   const trackCheckoutStart = useCallback(
     (cartValue: number, itemCount: number) => {
-      trackEcommerceEvent('begin_checkout', {
+      unifiedAnalytics.trackEcommerceEvent('begin_checkout', {
         value: cartValue,
         currency: 'ARS',
         num_items: itemCount,
       })
     },
-    [trackEcommerceEvent]
+    [unifiedAnalytics]
   )
 
   const trackPurchase = useCallback(
     (orderId: string, value: number, items: any[]) => {
-      trackEcommerceEvent('purchase', {
+      unifiedAnalytics.trackEcommerceEvent('purchase', {
         transaction_id: orderId,
         value: value,
         currency: 'ARS',
@@ -224,22 +230,20 @@ export const useAnalytics = (): UseAnalyticsReturn => {
       })
 
       // También trackear como conversión
-      trackConversion('purchase', value, {
+      unifiedAnalytics.trackConversion('purchase', {
         orderId,
         itemCount: items.length,
+        value,
       })
     },
-    [trackEcommerceEvent, trackConversion]
+    [unifiedAnalytics]
   )
 
   const trackSearch = useCallback(
     (query: string, resultsCount: number) => {
-      trackEcommerceEvent('search', {
-        search_term: query,
-        results_count: resultsCount,
-      })
+      unifiedAnalytics.trackSearch(query, resultsCount)
     },
-    [trackEcommerceEvent]
+    [unifiedAnalytics]
   )
 
   const getEvents = useCallback(() => {
@@ -262,9 +266,13 @@ export const useAnalytics = (): UseAnalyticsReturn => {
     setSessionMetrics(analytics.getConversionMetrics())
   }, [])
 
-  const setEnabled = useCallback((enabled: boolean) => {
-    setIsEnabled(enabled)
-  }, [])
+  const setEnabled = useCallback(
+    (enabled: boolean) => {
+      setIsEnabled(enabled)
+      unifiedAnalytics.setEnabled(enabled)
+    },
+    [unifiedAnalytics]
+  )
 
   return {
     // Tracking functions
@@ -326,7 +334,7 @@ export const useRealTimeMetrics = (refreshInterval: number = 5000) => {
 
 // Hook para tracking automático de componentes
 export const useComponentTracking = (componentName: string, trackMount: boolean = true) => {
-  const { trackEvent } = useOptimizedAnalytics()
+  const { trackEvent } = useUnifiedAnalytics()
 
   useEffect(() => {
     if (trackMount) {

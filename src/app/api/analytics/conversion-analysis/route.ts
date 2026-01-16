@@ -33,26 +33,48 @@ export async function GET(request: NextRequest) {
       searchParams.get('startDate') || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     const endDate = searchParams.get('endDate') || new Date().toISOString()
 
-    // Obtener eventos de analytics
+    // Obtener eventos de analytics desde tabla optimizada
+    const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000)
+    const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000)
+    
     const { data: events, error: eventsError } = await supabase
-      .from('analytics_events_unified')
-      .select('*')
-      .gte('created_at', startDate)
-      .lte('created_at', endDate)
+      .from('analytics_events_optimized')
+      .select(`
+        id,
+        event_type,
+        category_id,
+        action_id,
+        label,
+        value,
+        created_at,
+        analytics_event_types(name),
+        analytics_categories(name),
+        analytics_actions(name)
+      `)
+      .gte('created_at', startTimestamp)
+      .lte('created_at', endTimestamp)
 
     if (eventsError) {
       console.error('Error obteniendo eventos:', eventsError)
       return NextResponse.json({ error: 'Error obteniendo eventos' }, { status: 500 })
     }
 
+    // Normalizar eventos para trabajar con formato optimizado
+    const normalizedEvents = (events || []).map((e: any) => ({
+      action: e.analytics_actions?.name || e.action || 'unknown',
+      category: e.analytics_categories?.name || e.category || 'unknown',
+      event_name: e.analytics_event_types?.name || e.event_name || 'unknown',
+      page: e.page || '',
+    }))
+
     // Calcular métricas básicas
     const productViews =
-      events?.filter(
-        e => e.action === 'view_item' || e.page?.includes('/product/') || e.page?.includes('/buy/')
+      normalizedEvents.filter(
+        e => e.action === 'view_item' || e.event_name === 'product_view'
       ).length || 0
-    const cartAdditions = events?.filter(e => e.action === 'add_to_cart' || e.action === 'add').length || 0
-    const checkoutStarts = events?.filter(e => e.action === 'begin_checkout').length || 0
-    const checkoutCompletions = events?.filter(e => e.action === 'purchase').length || 0
+    const cartAdditions = normalizedEvents.filter(e => e.action === 'add_to_cart' || e.action === 'add').length || 0
+    const checkoutStarts = normalizedEvents.filter(e => e.action === 'begin_checkout').length || 0
+    const checkoutCompletions = normalizedEvents.filter(e => e.action === 'purchase').length || 0
 
     // Calcular tasas de conversión
     const productToCartRate = productViews > 0 ? (cartAdditions / productViews) * 100 : 0

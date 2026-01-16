@@ -40,8 +40,9 @@ const ModalProvider = dynamic(() => import('@/contexts/ModalContext').then(m => 
 })
 
 // ⚡ PERFORMANCE: Providers no críticos (lazy load -0.4s FCP)
+// Usar provider unificado con estrategias anti-bloqueadores
 const AnalyticsProvider = dynamic(
-  () => import('@/components/Analytics/SimpleAnalyticsProvider').then(m => ({ default: m.SimpleAnalyticsProvider })),
+  () => import('@/components/Analytics/UnifiedAnalyticsProvider').then(m => ({ default: m.UnifiedAnalyticsProvider })),
   { ssr: false }
 )
 const NetworkErrorProvider = dynamic(

@@ -8,7 +8,7 @@ import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShippi
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
-import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
+import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProvider'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 import { toast } from 'react-hot-toast'

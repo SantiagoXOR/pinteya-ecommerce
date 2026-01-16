@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from 'react-hot-toast'
 import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
-import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
+import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProvider'
 import { Ruler } from '@/lib/optimized-imports'
 // import { useShopDetailsReducer } from '@/hooks/optimization/useShopDetailsReducer' // No se usa actualmente
 import { useRouter } from 'next/navigation'
@@ -90,7 +90,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   })
   
   const router = useRouter()
-  const { trackCartAction } = useAnalytics()
+  const { trackCartAction } = useUnifiedAnalytics()
   
   // Usar hooks personalizados
   const state = useShopDetailState()

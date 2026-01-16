@@ -3,23 +3,19 @@ export const runtime = 'nodejs'
 
 /**
  * API Route para métricas de analytics
- * Calcula y devuelve métricas de conversión y comportamiento
+ * Usa servicio centralizado de cálculos con cache
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { metricsCalculator } from '@/lib/analytics/metrics-calculator'
+import { metricsCache } from '@/lib/analytics/metrics-cache'
+import { MetricsQueryParams } from '@/lib/analytics/types'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-interface MetricsQuery {
-  startDate?: string
-  endDate?: string
-  userId?: string
-  sessionId?: string
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,65 +25,94 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate') || new Date().toISOString()
     const userId = searchParams.get('userId')
     const sessionId = searchParams.get('sessionId')
+    const includeAdvanced = searchParams.get('advanced') === 'true'
 
-    // Construir query base usando vista unificada
-    let baseQuery = supabase
-      .from('analytics_events_unified')
-      .select('*')
-      .gte('created_at', startDate)
-      .lte('created_at', endDate)
-
-    if (userId) {
-      baseQuery = baseQuery.eq('user_id', userId)
+    const params: MetricsQueryParams = {
+      startDate,
+      endDate,
+      userId: userId || undefined,
+      sessionId: sessionId || undefined,
     }
 
-    if (sessionId) {
-      baseQuery = baseQuery.eq('session_id', sessionId)
+    // Determinar tipo de cache según rango de fechas
+    const daysDiff = (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+    let cacheType: 'realtime' | 'daily' | 'weekly' | 'monthly' = 'daily'
+    if (daysDiff <= 1) {
+      cacheType = 'realtime'
+    } else if (daysDiff <= 7) {
+      cacheType = 'daily'
+    } else if (daysDiff <= 30) {
+      cacheType = 'weekly'
+    } else {
+      cacheType = 'monthly'
     }
 
-    const { data: events, error } = await baseQuery
+    // Intentar obtener desde cache
+    const cacheKey = metricsCache.generateKey(params, cacheType)
+    const cached = await metricsCache.get(cacheKey)
 
-    if (error) {
-      console.error('Error obteniendo eventos:', error)
-      return NextResponse.json({ error: 'Error obteniendo eventos' }, { status: 500 })
+    if (cached) {
+      return NextResponse.json({
+        ...cached,
+        period: {
+          startDate,
+          endDate,
+        },
+        cached: true,
+      })
     }
 
-    // Calcular métricas
-    const metrics = calculateMetrics(events || [])
+    // Calcular métricas usando servicio centralizado
+    const metrics = includeAdvanced
+      ? await metricsCalculator.calculateAdvancedMetrics(params)
+      : await metricsCalculator.calculateMetrics(params)
 
-    // Obtener métricas adicionales
+    // Obtener métricas adicionales de órdenes
     const additionalMetrics = await getAdditionalMetrics(startDate, endDate, userId || undefined)
 
-    // Calcular tendencias comparativas (comparar con período anterior)
+    // Calcular comparación con período anterior
     const periodDuration = new Date(endDate).getTime() - new Date(startDate).getTime()
     const previousStartDate = new Date(new Date(startDate).getTime() - periodDuration).toISOString()
     const previousEndDate = startDate
 
-    const previousMetrics = await getPreviousPeriodMetrics(previousStartDate, previousEndDate, userId || undefined)
+    const previousParams: MetricsQueryParams = {
+      startDate: previousStartDate,
+      endDate: previousEndDate,
+      userId: userId || undefined,
+      sessionId: sessionId || undefined,
+    }
 
-    // Calcular análisis avanzado
-    const advancedAnalysis = calculateAdvancedAnalysis(events || [], metrics, previousMetrics)
+    const previousMetrics = includeAdvanced
+      ? await metricsCalculator.calculateAdvancedMetrics(previousParams)
+      : await metricsCalculator.calculateMetrics(previousParams)
 
-    return NextResponse.json({
+    const comparison = calculateChanges(metrics, previousMetrics)
+
+    const result = {
       ...metrics,
       ...additionalMetrics,
-      ...advancedAnalysis,
       period: {
         startDate,
         endDate,
       },
       comparison: {
         previousPeriod: previousMetrics,
-        changes: calculateChanges(metrics, previousMetrics),
+        changes: comparison,
       },
-      totalEvents: events?.length || 0,
-    })
+    }
+
+    // Almacenar en cache
+    const ttl = metricsCache.getTTL(cacheType)
+    await metricsCache.set(cacheKey, metrics, ttl)
+
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Error calculando métricas:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
 
+// Funciones helper mantenidas para compatibilidad (deprecated - usar metricsCalculator)
 function calculateMetrics(events: any[]) {
   const ecommerceEvents = events.filter(e => e.category === 'shop')
   const navigationEvents = events.filter(e => e.category === 'navigation')
@@ -289,18 +314,13 @@ async function getAdditionalMetrics(startDate: string, endDate: string, userId?:
 
 async function getPreviousPeriodMetrics(startDate: string, endDate: string, userId?: string) {
   try {
-    let baseQuery = supabase
-      .from('analytics_events_unified')
-      .select('*')
-      .gte('created_at', startDate)
-      .lte('created_at', endDate)
-
-    if (userId) {
-      baseQuery = baseQuery.eq('user_id', userId)
+    const params: MetricsQueryParams = {
+      startDate,
+      endDate,
+      userId: userId || undefined,
     }
 
-    const { data: events } = await baseQuery
-    const metrics = calculateMetrics(events || [])
+    const metrics = await metricsCalculator.calculateMetrics(params)
     const additionalMetrics = await getAdditionalMetrics(startDate, endDate, userId)
 
     return {
@@ -325,45 +345,36 @@ function calculateChanges(current: any, previous: any) {
 
   return {
     ecommerce: {
-      productViews: calculateChange(current.ecommerce.productViews, previous.ecommerce.productViews),
-      cartAdditions: calculateChange(current.ecommerce.cartAdditions, previous.ecommerce.cartAdditions),
-      checkoutStarts: calculateChange(current.ecommerce.checkoutStarts, previous.ecommerce.checkoutStarts),
+      productViews: calculateChange(current.ecommerce?.productViews || 0, previous.ecommerce?.productViews || 0),
+      cartAdditions: calculateChange(current.ecommerce?.cartAdditions || 0, previous.ecommerce?.cartAdditions || 0),
+      checkoutStarts: calculateChange(current.ecommerce?.checkoutStarts || 0, previous.ecommerce?.checkoutStarts || 0),
       checkoutCompletions: calculateChange(
-        current.ecommerce.checkoutCompletions,
-        previous.ecommerce.checkoutCompletions
+        current.ecommerce?.checkoutCompletions || 0,
+        previous.ecommerce?.checkoutCompletions || 0
       ),
-      conversionRate: calculateChange(current.ecommerce.conversionRate, previous.ecommerce.conversionRate),
+      conversionRate: calculateChange(current.ecommerce?.conversionRate || 0, previous.ecommerce?.conversionRate || 0),
       totalRevenue: calculateChange(current.orders?.totalRevenue || 0, previous.orders?.totalRevenue || 0),
     },
     engagement: {
-      uniqueSessions: calculateChange(current.engagement.uniqueSessions, previous.engagement.uniqueSessions),
-      uniqueUsers: calculateChange(current.engagement.uniqueUsers, previous.engagement.uniqueUsers),
+      uniqueSessions: calculateChange(current.engagement?.uniqueSessions || 0, previous.engagement?.uniqueSessions || 0),
+      uniqueUsers: calculateChange(current.engagement?.uniqueUsers || 0, previous.engagement?.uniqueUsers || 0),
       averageSessionDuration: calculateChange(
-        current.engagement.averageSessionDuration,
-        previous.engagement.averageSessionDuration
+        current.engagement?.averageSessionDuration || 0,
+        previous.engagement?.averageSessionDuration || 0
       ),
     },
   }
 }
 
+// Función deprecated - ahora se usa calculateAdvancedMetrics del servicio
 function calculateAdvancedAnalysis(events: any[], currentMetrics: any, previousMetrics: any) {
-  // Análisis de dispositivos
-  const deviceAnalysis = analyzeDevices(events)
-
-  // Análisis de categorías
-  const categoryAnalysis = analyzeCategories(events)
-
-  // Análisis de comportamiento
-  const behaviorAnalysis = analyzeBehavior(events, currentMetrics)
-
-  // Análisis de retención
-  const retentionAnalysis = analyzeRetention(events)
-
+  // Esta función se mantiene solo para compatibilidad
+  // El análisis avanzado ahora se hace en metricsCalculator.calculateAdvancedMetrics
   return {
-    devices: deviceAnalysis,
-    categories: categoryAnalysis,
-    behavior: behaviorAnalysis,
-    retention: retentionAnalysis,
+    devices: currentMetrics.devices || {},
+    categories: currentMetrics.categories || {},
+    behavior: currentMetrics.behavior || {},
+    retention: currentMetrics.retention || {},
   }
 }
 

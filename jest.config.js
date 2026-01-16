@@ -19,7 +19,11 @@ const customJestConfig = {
   cacheDirectory: process.env.CI ? false : '<rootDir>/.jest-cache',
 
   // Setup files
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', '<rootDir>/__tests__/setup/auth-setup.js'],
+  setupFilesAfterEnv: [
+    '<rootDir>/jest.setup.js',
+    '<rootDir>/__tests__/setup/auth-setup.js',
+    '<rootDir>/__tests__/setup/indexeddb-setup.ts',
+  ],
 
   // Module name mapping para absolute imports - Optimizado
   moduleNameMapper: {

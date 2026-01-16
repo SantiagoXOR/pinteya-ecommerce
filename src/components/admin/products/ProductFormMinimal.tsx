@@ -578,8 +578,20 @@ export function ProductFormMinimal({
         mode === 'create' ? 'Creando producto...' : 'Actualizando producto...'
       )
       
+      // ✅ CORREGIDO: Asegurar que is_active siempre esté presente en los datos
+      const dataToSubmit = {
+        ...data,
+        is_active: data.is_active !== undefined ? Boolean(data.is_active) : true,
+      }
+      
+      console.log('📤 [ProductFormMinimal] Enviando datos:', {
+        ...dataToSubmit,
+        is_active: dataToSubmit.is_active,
+        is_activeType: typeof dataToSubmit.is_active,
+      })
+      
       // Primero guardar/actualizar el producto
-      const result = await onSubmit(data)
+      const result = await onSubmit(dataToSubmit)
       
       // ✅ MEJORADO: Obtener productId del resultado de múltiples formas posibles
       let finalProductId: number | string | null = null

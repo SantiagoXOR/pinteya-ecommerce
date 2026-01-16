@@ -19,9 +19,10 @@ const customJestConfig = {
   // Tests incluidos
   testMatch: [
     '<rootDir>/src/__tests__/utils/*.test.{js,jsx,ts,tsx}',
-    '<rootDir>/src/__tests__/lib/*.test.{js,jsx,ts,tsx}',
+    '<rootDir>/src/__tests__/lib/**/*.test.{js,jsx,ts,tsx}',
     '<rootDir>/src/__tests__/components/**/*.test.{js,jsx,ts,tsx}',
     '<rootDir>/src/__tests__/hooks/*.test.{js,jsx,ts,tsx}',
+    '<rootDir>/src/__tests__/api/**/*.test.{js,jsx,ts,tsx}',
   ],
   
   // Mapeos básicos
