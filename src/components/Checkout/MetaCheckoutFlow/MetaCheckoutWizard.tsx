@@ -31,6 +31,9 @@ import {
 import { cn } from '@/lib/utils'
 import { trackCustomEvent } from '@/lib/meta-pixel'
 import { trackEvent } from '@/lib/google-analytics'
+import { useAnalytics } from '@/hooks/useAnalytics'
+import { trackBeginCheckout, trackInitiateCheckout } from '@/lib/google-analytics'
+import { trackGoogleAdsBeginCheckout } from '@/lib/google-ads'
 import Image from 'next/image'
 import { validateDNI, formatCurrency } from '@/lib/utils/consolidated-utils'
 import { AddressMapSelectorAdvanced } from '@/components/ui/AddressMapSelectorAdvanced'
@@ -47,6 +50,7 @@ const STEP_ORDER: MetaCheckoutStep[] = ['summary', 'contact', 'shipping', 'payme
 
 export const MetaCheckoutWizard: React.FC = () => {
   const router = useRouter()
+  const { trackEvent: trackAnalyticsEvent } = useAnalytics()
   // ✅ AGREGAR: Estado para controlar la pantalla de loading durante redirección
   const [isRedirecting, setIsRedirecting] = useState(false)
   
@@ -105,6 +109,52 @@ export const MetaCheckoutWizard: React.FC = () => {
       }
     }
   }
+
+  // 📊 ANALYTICS: Track begin_checkout cuando se carga el checkout (solo una vez)
+  useEffect(() => {
+    if (cartItems.length > 0 && state.currentStep === 'summary' && totalPrice > 0) {
+      try {
+        // Preparar items para tracking
+        const items = cartItems.map((item: any) => ({
+          item_id: String(item.id),
+          item_name: item.name || item.title || 'Producto',
+          item_category: item.brand || item.category || 'Producto',
+          price: item.discounted_price || item.price || 0,
+          quantity: item.quantity || 1,
+        }))
+
+        // Preparar items para Meta Pixel (formato diferente)
+        const metaContents = cartItems.map((item: any) => ({
+          id: String(item.id),
+          quantity: item.quantity || 1,
+          item_price: item.discounted_price || item.price || 0,
+        }))
+
+        // Google Analytics
+        trackBeginCheckout(items, totalPrice, 'ARS')
+
+        // Meta Pixel
+        trackInitiateCheckout(metaContents, totalPrice, 'ARS', cartItems.length)
+
+        // Google Ads
+        trackGoogleAdsBeginCheckout(totalPrice, 'ARS', items)
+
+        // 📊 Analytics propio - Trackear begin_checkout
+        trackAnalyticsEvent('begin_checkout', 'ecommerce', 'begin_checkout', undefined, totalPrice, {
+          itemCount: cartItems.length,
+          currency: 'ARS',
+          items: items,
+        })
+
+        console.debug('[Analytics] Begin checkout tracked:', {
+          itemsCount: cartItems.length,
+          totalPrice,
+        })
+      } catch (error) {
+        console.error('[Analytics] Error tracking begin_checkout:', error)
+      }
+    }
+  }, [cartItems.length, state.currentStep, totalPrice]) // Solo cuando cambian estos valores
 
   // Trackear progreso del checkout
   useEffect(() => {

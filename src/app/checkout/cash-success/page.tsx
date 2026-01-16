@@ -6,12 +6,16 @@ import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock } from '@/lib/
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useAnalytics } from '@/hooks/useAnalytics'
+import { trackGA4Purchase, trackMetaPurchase, trackGoogleAdsPurchase } from '@/lib/google-analytics'
 import { Separator } from '@/components/ui/separator'
 
 export default function CashSuccessPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { trackEvent, trackConversion } = useAnalytics()
   const [countdown, setCountdown] = useState(10)
+  const [purchaseTracked, setPurchaseTracked] = useState(false)
 
   // Extraer datos de la URL
   const orderId = searchParams.get('orderId')
@@ -148,12 +152,95 @@ export default function CashSuccessPage() {
         setWhatsappMessage(foundMessage)
       }
 
-      // 📊 Google Ads Conversion Event
-      if (orderId && typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'conversion', {
-          'send_to': 'AW-17767977006/pWuOCOrskMkbEK6gt5hC',
-          'transaction_id': orderId
-        })
+      // 📊 ANALYTICS: Track purchase (solo una vez)
+      if (orderId && effectiveTotal > 0 && !purchaseTracked) {
+        try {
+          // Obtener datos del carrito del localStorage o sessionStorage
+          const checkoutData = sessionStorage.getItem('checkout-data') || localStorage.getItem('cashOrderData')
+          let items: any[] = []
+          let totalValue = effectiveTotal
+          let shippingCost = 0
+
+          if (checkoutData) {
+            try {
+              const parsed = JSON.parse(checkoutData)
+              items = parsed.items || parsed.order?.items || []
+              totalValue = parsed.total || parsed.order?.total || effectiveTotal
+              shippingCost = parsed.shipping || parsed.order?.shipping_cost || 0
+            } catch (e) {
+              console.warn('Error parsing checkout data:', e)
+            }
+          }
+
+          // Si no hay items, intentar obtener desde orderItems state
+          if (items.length === 0 && orderItems.length > 0) {
+            items = orderItems
+          }
+
+          // Trackear purchase en analytics interno
+          trackEvent('purchase', 'ecommerce', 'purchase', orderId, totalValue, {
+            transaction_id: orderId,
+            value: totalValue,
+            currency: 'ARS',
+            items: items.map((item: any) => ({
+              item_id: String(item.id || item.product_id),
+              item_name: item.name || item.product_name || 'Producto',
+              item_category: item.category || item.brand || 'Producto',
+              price: item.price || item.unit_price || 0,
+              quantity: item.quantity || 1,
+            })),
+            shipping: shippingCost,
+          })
+
+          // Trackear conversión
+          trackConversion('purchase', {
+            transaction_id: orderId,
+            value: totalValue,
+            currency: 'ARS',
+          })
+
+          // Google Analytics 4
+          if (items.length > 0) {
+            const ga4Items = items.map((item: any) => ({
+              item_id: String(item.id || item.product_id),
+              item_name: item.name || item.product_name || 'Producto',
+              item_category: item.category || item.brand || 'Producto',
+              price: item.price || item.unit_price || 0,
+              quantity: item.quantity || 1,
+            }))
+
+            trackGA4Purchase(orderId, ga4Items, totalValue, 'ARS', shippingCost, 0)
+
+            // Meta Pixel
+            const metaContents = items.map((item: any) => ({
+              id: String(item.id || item.product_id),
+              quantity: item.quantity || 1,
+              item_price: item.price || item.unit_price || 0,
+            }))
+
+            trackMetaPurchase(totalValue, 'ARS', metaContents, items.length, orderId)
+          }
+
+          // Google Ads Conversion Event
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'conversion', {
+              'send_to': 'AW-17767977006/pWuOCOrskMkbEK6gt5hC',
+              'transaction_id': orderId
+            })
+          }
+
+          // Trackear también begin_checkout si no se trackeó antes
+          trackEvent('begin_checkout', 'ecommerce', 'begin_checkout', orderId, totalValue, {
+            currency: 'ARS',
+            value: totalValue,
+            items_count: items.length,
+          })
+
+          setPurchaseTracked(true)
+          console.log('[Analytics] Purchase tracked for cash order:', { orderId, totalValue, itemsCount: items.length })
+        } catch (error) {
+          console.error('[Analytics] Error tracking purchase:', error)
+        }
       }
     } catch (e) {
       // Si hay algún error de parseo, mantenemos valores por defecto
