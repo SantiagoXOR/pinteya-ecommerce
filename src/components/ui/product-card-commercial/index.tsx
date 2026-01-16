@@ -265,8 +265,20 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       return stock
     }, [variantSelection.currentVariant, stock])
 
-    // Calcular si mostrar envío gratis
-    const autoFreeShipping = price ? dsShouldShowFreeShipping(price, config) : false
+    // Calcular si mostrar envío gratis - Usar precio final (con descuento si aplica)
+    // ✅ FIX: Siempre usar el precio final (de variante si existe, sino precio base) para determinar envío gratis
+    // El precio de la variante seleccionada se calcula en variantSelection.displayPrice
+    // Si hay variante seleccionada, usar su precio; sino usar el precio base
+    const currentPrice = React.useMemo(() => {
+      if (variantSelection.currentVariant) {
+        // Si hay variante, usar price_sale (precio con descuento) o price_list (precio original)
+        return variantSelection.currentVariant.price_sale || variantSelection.currentVariant.price_list || price || 0
+      }
+      // Si no hay variante, usar el precio base (ya viene con descuento si aplica)
+      return price || 0
+    }, [variantSelection.currentVariant, price])
+    
+    const autoFreeShipping = currentPrice >= config.ecommerce.shippingInfo.freeShippingThreshold
     const shouldShowFreeShipping = Boolean(freeShipping || autoFreeShipping)
 
     // Handler para agregar al carrito

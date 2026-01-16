@@ -80,8 +80,9 @@ const SingleGridItem = React.memo(({ item }: { item: ExtendedProduct }) => {
   const config = useDesignSystemConfig()
 
   // Configuración de envío gratis - Memoizada
+  // ✅ FIX: Siempre mostrar envío gratis si el precio final es >= $50.000
   const shippingConfig = React.useMemo(() => {
-    const autoFree = dsShouldShowFreeShipping(features.currentPrice, config)
+    const autoFree = features.currentPrice >= config.ecommerce.shippingInfo.freeShippingThreshold
     const free = Boolean(features.freeShipping) || autoFree
     return {
       freeShipping: free,

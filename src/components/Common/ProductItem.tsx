@@ -72,7 +72,8 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
   // Unificar lógica de "Nuevo" y envío gratis con Products
   const isNew = Boolean(productData.isNew)
   const config = useDesignSystemConfig()
-  const autoFree = dsShouldShowFreeShipping(finalPrice, config)
+  // ✅ FIX: Siempre mostrar envío gratis si el precio final es >= $50.000
+  const autoFree = finalPrice >= config.ecommerce.shippingInfo.freeShippingThreshold
   const freeShipping = Boolean((productData as any)?.freeShipping) || autoFree
 
   // Resolver imagen usando image-resolver.ts unificado

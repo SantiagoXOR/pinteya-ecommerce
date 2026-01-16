@@ -99,9 +99,10 @@ const SingleListItem: React.FC<SingleListItemProps> = ({ product }) => {
           : undefined
       }
       // Envío gratis según Design System (umbral global)
+      // ✅ FIX: Siempre mostrar envío gratis si el precio final es >= $50.000
       {...(() => {
         const config = useDesignSystemConfig()
-        const autoFree = dsShouldShowFreeShipping(features.currentPrice, config)
+        const autoFree = features.currentPrice >= config.ecommerce.shippingInfo.freeShippingThreshold
         const free = Boolean(features.freeShipping) || autoFree
         return {
           freeShipping: free,
