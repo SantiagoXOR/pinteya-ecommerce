@@ -178,9 +178,44 @@ export function useProductVariantSelection({
     return extractUniqueColors(variants, color, { title })
   }, [variants, color, title])
 
-  // Extraer medidas únicas
+  // Extraer medidas únicas y ordenarlas poniendo primero las que tienen envío gratis
   const uniqueMeasures = React.useMemo(() => {
-    return extractUniqueMeasuresWithStock(variants, medida)
+    const measures = extractUniqueMeasuresWithStock(variants, medida)
+    
+    // ✅ FIX: Ordenar medidas poniendo primero las que tienen envío gratis (precio >= $50.000)
+    if (measures.length > 0 && variants && variants.length > 0) {
+      const FREE_SHIPPING_THRESHOLD = 50000
+      
+      // Calcular precio de cada medida (usar el precio más bajo de las variantes de esa medida)
+      const measurePrices = measures.map(measure => {
+        const measureVariants = variants.filter(v => v.measure === measure && (v.stock ?? 0) > 0)
+        if (measureVariants.length === 0) return { measure, price: Infinity, hasFreeShipping: false }
+        
+        // Usar el precio más bajo de las variantes de esta medida
+        const prices = measureVariants.map(v => v.price_sale || v.price_list || Infinity)
+        const minPrice = Math.min(...prices.filter(p => p !== Infinity))
+        
+        return {
+          measure,
+          price: minPrice !== Infinity ? minPrice : Infinity,
+          hasFreeShipping: minPrice !== Infinity && minPrice >= FREE_SHIPPING_THRESHOLD
+        }
+      })
+      
+      // Ordenar: primero las que tienen envío gratis, luego las demás
+      const sortedMeasures = measurePrices.sort((a, b) => {
+        // Si ambas tienen envío gratis o ninguna, mantener orden original
+        if (a.hasFreeShipping === b.hasFreeShipping) {
+          return 0
+        }
+        // Las que tienen envío gratis van primero
+        return a.hasFreeShipping ? -1 : 1
+      })
+      
+      return sortedMeasures.map(m => m.measure)
+    }
+    
+    return measures
   }, [variants, medida])
 
   // Extraer finishes únicos
@@ -220,16 +255,37 @@ export function useProductVariantSelection({
     }
   }, [availableFinishesForColor, selectedFinish])
 
-  // Establecer medida por defecto
+  // Establecer medida por defecto - Seleccionar la primera que tenga envío gratis
   React.useEffect(() => {
     if (uniqueMeasures.length > 0) {
       if (!selectedMeasure || !uniqueMeasures.includes(selectedMeasure)) {
-        setSelectedMeasure(uniqueMeasures[0])
+        // ✅ FIX: Buscar la primera medida que tenga envío gratis
+        const FREE_SHIPPING_THRESHOLD = 50000
+        let defaultMeasure = uniqueMeasures[0] // Fallback a la primera
+        
+        if (variants && variants.length > 0) {
+          // Buscar la primera medida con envío gratis
+          for (const measure of uniqueMeasures) {
+            const measureVariants = variants.filter(v => v.measure === measure && (v.stock ?? 0) > 0)
+            if (measureVariants.length > 0) {
+              // Calcular precio mínimo de esta medida
+              const prices = measureVariants.map(v => v.price_sale || v.price_list || Infinity)
+              const minPrice = Math.min(...prices.filter(p => p !== Infinity))
+              
+              if (minPrice !== Infinity && minPrice >= FREE_SHIPPING_THRESHOLD) {
+                defaultMeasure = measure
+                break // Usar la primera que tenga envío gratis
+              }
+            }
+          }
+        }
+        
+        setSelectedMeasure(defaultMeasure)
       }
     } else if (selectedMeasure) {
       setSelectedMeasure(undefined)
     }
-  }, [selectedMeasure, uniqueMeasures])
+  }, [selectedMeasure, uniqueMeasures, variants])
 
   // Calcular variante activa
   const currentVariant = React.useMemo(() => {
