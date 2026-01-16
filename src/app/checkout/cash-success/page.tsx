@@ -14,8 +14,8 @@ export default function CashSuccessPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { trackEvent, trackConversion } = useAnalytics()
-  const [countdown, setCountdown] = useState(10)
   const [purchaseTracked, setPurchaseTracked] = useState(false)
+  const [hasRedirected, setHasRedirected] = useState(false)
 
   // Extraer datos de la URL
   const orderId = searchParams.get('orderId')
@@ -67,6 +67,34 @@ export default function CashSuccessPage() {
     return `https://api.whatsapp.com/send?phone=${phone}&text=${encodedText}`
   }
 
+  // Función para generar mensaje de WhatsApp localmente
+  const generateLocalWhatsAppMessage = (data: {
+    orderId: string
+    customerName: string
+    total: number
+    phone: string
+  }) => {
+    const lines = [
+      `¡Hola! He realizado un pedido con pago contra entrega`,
+      '',
+      `🧾 *Orden #${data.orderId}*`,
+      `• Cliente: ${data.customerName}`,
+      `• Teléfono: 📞 ${data.phone || 'No disponible'}`,
+      '',
+      `🛍️ *Productos:*`,
+      `• Producto Pinteya x1 - $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+      '',
+      `💸 *Total: $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}*`,
+      '',
+      `💳 *Método de pago:* Pago contra entrega`,
+      `📅 *Fecha del pedido:* ${new Date().toLocaleDateString('es-AR')}`,
+      '',
+      `✅ Gracias por tu compra. Nuestro equipo te contactará en las próximas horas.`
+    ]
+    
+    return lines.join('\n')
+  }
+
   useEffect(() => {
     try {
       const totalFromParam = totalParam ? Number(totalParam) : 0
@@ -106,7 +134,8 @@ export default function CashSuccessPage() {
 
       // Fallback a número de negocio conocido
       const fallbackPhone = '5493513411796'
-      setPhoneNumber(extractedPhone || fallbackPhone)
+      const phoneToUse = extractedPhone || fallbackPhone
+      setPhoneNumber(phoneToUse)
 
       // Intentar obtener el mensaje de WhatsApp desde localStorage primero
       let foundMessage = ''
@@ -139,17 +168,31 @@ export default function CashSuccessPage() {
       }
 
       // Si no hay mensaje guardado, generar uno localmente
-      if (!foundMessage && orderId && customerName && effectiveTotal > 0) {
+      if (!foundMessage && orderId && customerName && nextTotal > 0) {
         foundMessage = generateLocalWhatsAppMessage({
           orderId,
           customerName,
-          total: effectiveTotal,
+          total: nextTotal,
           phone: phone || ''
         })
       }
 
       if (foundMessage) {
         setWhatsappMessage(foundMessage)
+      }
+      
+      // Redirección inmediata a WhatsApp cuando todo esté listo
+      if (nextWhatsapp && foundMessage && !hasRedirected && typeof window !== 'undefined') {
+        const finalLink = resolveWhatsAppLink(
+          nextWhatsapp,
+          foundMessage,
+          phoneToUse
+        )
+        // Usar setTimeout mínimo para asegurar que el estado se actualizó
+        setTimeout(() => {
+          window.open(finalLink, '_blank')
+          setHasRedirected(true)
+        }, 100)
       }
 
       // 📊 ANALYTICS: Track purchase (solo una vez)
@@ -247,30 +290,7 @@ export default function CashSuccessPage() {
       setEffectiveTotal(totalParam ? Number(totalParam) || 0 : 0)
       setEffectiveWhatsappUrl(whatsappUrlParam || null)
     }
-  }, [orderId, totalParam, whatsappUrlParam, customerName, phone])
-
-  // Countdown para redirección automática
-  useEffect(() => {
-    if (!effectiveWhatsappUrl) return
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          const finalLink = resolveWhatsAppLink(
-            effectiveWhatsappUrl,
-            whatsappMessage || defaultMessage,
-            phoneNumber
-          )
-          window.open(finalLink, '_blank')
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [effectiveWhatsappUrl])
+  }, [orderId, totalParam, whatsappUrlParam, customerName, phone, hasRedirected])
 
   const handleWhatsAppRedirect = () => {
     if (effectiveWhatsappUrl) {
@@ -281,34 +301,6 @@ export default function CashSuccessPage() {
       )
       window.open(finalLink, '_blank')
     }
-  }
-
-  // Función para generar mensaje de WhatsApp localmente
-  const generateLocalWhatsAppMessage = (data: {
-    orderId: string
-    customerName: string
-    total: number
-    phone: string
-  }) => {
-    const lines = [
-      `¡Hola! He realizado un pedido con pago contra entrega`,
-      '',
-      `🧾 *Orden #${data.orderId}*`,
-      `• Cliente: ${data.customerName}`,
-      `• Teléfono: 📞 ${data.phone || 'No disponible'}`,
-      '',
-      `🛍️ *Productos:*`,
-      `• Producto Pinteya x1 - $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-      '',
-      `💸 *Total: $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}*`,
-      '',
-      `💳 *Método de pago:* Pago contra entrega`,
-      `📅 *Fecha del pedido:* ${new Date().toLocaleDateString('es-AR')}`,
-      '',
-      `✅ Gracias por tu compra. Nuestro equipo te contactará en las próximas horas.`
-    ]
-    
-    return lines.join('\n')
   }
 
   const defaultMessage = `Hola${customerName ? ` ${customerName}` : ''}, confirmo mi pedido${orderId ? ` #${orderId}` : ''} por un total de $${effectiveTotal.toLocaleString('es-AR')}.` 
@@ -333,7 +325,7 @@ export default function CashSuccessPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 px-4">
+    <div className="fixed inset-0 min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 px-4 overflow-y-auto" style={{ backgroundColor: '#f0fdf4' }}>
       <div className="max-w-2xl mx-auto">
         {/* Header de éxito */}
         <div className="text-center mb-8">
@@ -419,17 +411,9 @@ export default function CashSuccessPage() {
                   Confirma tu pedido por WhatsApp
                 </h3>
                 <p className="text-green-700 mb-4">
-                  Te redirigiremos automáticamente a WhatsApp para que confirmes 
+                  Ya te redirigimos automáticamente a WhatsApp para que confirmes 
                   los detalles de tu pedido con nuestro equipo.
                 </p>
-                
-                {countdown > 0 && (
-                  <div className="bg-white rounded-lg p-3 mb-4 border border-green-200">
-                    <p className="text-sm text-green-600">
-                      Redirección automática en <span className="font-bold text-lg">{countdown}</span> segundos
-                    </p>
-                  </div>
-                )}
 
                 <Button 
                   onClick={handleWhatsAppRedirect}
@@ -447,9 +431,9 @@ export default function CashSuccessPage() {
         {/* Acciones adicionales */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Button
-            variant="outline"
+            variant="default"
             onClick={handleContinueShopping}
-            className="flex items-center justify-center gap-2 py-3"
+            className="flex items-center justify-center gap-2 py-3 bg-gray-800 hover:bg-gray-900 text-white border-0"
           >
             <ShoppingBag className="w-4 h-4" />
             Seguir Comprando
@@ -457,9 +441,9 @@ export default function CashSuccessPage() {
 
           {orderId && (
             <Button
-              variant="outline"
+              variant="default"
               onClick={handleViewOrder}
-              className="flex items-center justify-center gap-2 py-3"
+              className="flex items-center justify-center gap-2 py-3 bg-gray-800 hover:bg-gray-900 text-white border-0"
             >
               <FileText className="w-4 h-4" />
               Ver Detalles del Pedido
@@ -471,9 +455,6 @@ export default function CashSuccessPage() {
         {/* Información adicional */}
         <div className="mt-8 text-center text-sm text-gray-500">
           <p>
-            Recibirás un email de confirmación con todos los detalles de tu pedido.
-          </p>
-          <p className="mt-1">
             Si tienes alguna pregunta, no dudes en contactarnos.
           </p>
         </div>
