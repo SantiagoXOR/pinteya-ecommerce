@@ -50,7 +50,14 @@ const UpdateVariantSchema = z.object({
     },
     z.string().nullable().optional()
   ),
-  aikon_id: z.string().optional(),
+  aikon_id: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === '') return undefined
+      const num = typeof val === 'string' ? parseInt(val, 10) : val
+      return isNaN(num) ? undefined : num
+    },
+    z.number().int().min(0).max(999999).optional()
+  ),
 })
 
 /**

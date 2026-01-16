@@ -13,7 +13,7 @@ import { requireAdminAuth } from '@/lib/auth/admin-auth'
 interface ProductVariant {
   id: number
   product_id: number
-  aikon_id: string
+  aikon_id: number
   variant_slug: string
   color_name?: string
   color_hex?: string
@@ -204,11 +204,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         )
       }
 
-      if (!body.aikon_id || typeof body.aikon_id !== 'string' || body.aikon_id.trim() === '') {
+      // Convertir a number si viene como string (caso edge desde frontend)
+      const aikonId = typeof body.aikon_id === 'string' ? parseInt(body.aikon_id, 10) : body.aikon_id
+      
+      if (!aikonId || typeof aikonId !== 'number' || aikonId <= 0 || aikonId > 999999) {
         return NextResponse.json(
           {
             success: false,
-            error: 'Campo requerido: aikon_id debe ser un string no vacío',
+            error: 'Campo requerido: aikon_id debe ser un número entre 1 y 999999',
             data: null,
           },
           { status: 400 }
@@ -301,7 +304,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       // ✅ Preparar datos de inserción con validación de tipos
       const insertData: any = {
         product_id: parseInt(String(body.product_id), 10),
-        aikon_id: String(body.aikon_id).trim(),
+        aikon_id: aikonId,
         variant_slug: variantSlug,
         color_name: body.color_name && typeof body.color_name === 'string' && body.color_name.trim() !== '' ? body.color_name.trim() : null,
         color_hex: body.color_hex && typeof body.color_hex === 'string' && body.color_hex.trim() !== '' ? body.color_hex.trim() : null,

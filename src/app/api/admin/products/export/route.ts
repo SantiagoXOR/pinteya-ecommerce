@@ -144,7 +144,7 @@ async function generateExcel(rows: ExportRow[], aikonRows: Record<string, any>[]
     rows.filter((row: any) => !row.category_id).map((row: any) => row.product_id)
   )
   const variantsWithoutAikon = rows.filter(
-    (row: any) => !row.variant_aikon_id || String(row.variant_aikon_id || '').trim() === ''
+    (row: any) => !row.variant_aikon_id || row.variant_aikon_id <= 0
   ).length
 
   summarySheet.addRows([
@@ -199,7 +199,7 @@ type ExportRow = {
   product_discounted_price: number | null
   product_total_stock: number
   variant_id: number | null
-  variant_aikon_id: string
+  variant_aikon_id: number | null
   variant_slug: string
   variant_color: string
   variant_color_hex: string
@@ -223,7 +223,7 @@ function buildExportRow(
   variant?: any | null
 ): ExportRow {
   const hasVariant = Boolean(variant)
-  const variantAikonId = hasVariant ? variant.aikon_id || '' : product.aikon_id || ''
+  const variantAikonId = hasVariant ? (variant.aikon_id ?? null) : (product.aikon_id ?? null)
 
   return {
     product_id: product.id,
@@ -322,7 +322,7 @@ function mapRowToAikon(row: ExportRow): Record<string, any> {
     priceList !== null && priceSale !== null ? Math.max(0, Number(priceList) - Number(priceSale)) : 0
 
   return {
-    Código: row.variant_aikon_id || '',
+    Código: row.variant_aikon_id ? String(row.variant_aikon_id) : '',
     Descripción: buildAikonDescription(row),
     Familia: row.category_id ?? '',
     'Nombre Familia': row.category_name || 'Sin categoría',

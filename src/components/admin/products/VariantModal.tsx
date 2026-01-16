@@ -18,7 +18,7 @@ export interface ProductVariant {
   price_list: number
   price_sale: number | null
   stock: number
-  aikon_id: string
+  aikon_id: number | null
   image_url?: string | null
   is_active?: boolean
   is_default?: boolean
@@ -50,7 +50,7 @@ export function VariantModal({
       price_list: 0,
       price_sale: 0,
       stock: 0,
-      aikon_id: '',
+      aikon_id: null,
       image_url: '',
       is_active: true,
       is_default: false,
@@ -281,8 +281,15 @@ export function VariantModal({
                   {/* Código Aikon */}
                   <Input
                     label='Código Aikon (SKU)'
-                    value={formData.aikon_id}
-                    onChange={(e) => updateField('aikon_id', e.target.value)}
+                    type='number'
+                    min={0}
+                    max={999999}
+                    value={formData.aikon_id || ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      const numValue = value === '' ? null : parseInt(value, 10)
+                      updateField('aikon_id', isNaN(numValue as number) ? null : numValue)
+                    }}
                     placeholder='Ej: 49'
                     icon={Hash}
                   />

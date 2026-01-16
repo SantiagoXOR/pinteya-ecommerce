@@ -12,7 +12,7 @@ import { createSecurityLogger } from '@/lib/logging/security-logger'
 interface ProductVariant {
   id: number
   product_id: number
-  aikon_id: string
+  aikon_id: number
   variant_slug: string
   color_name?: string
   color_hex?: string

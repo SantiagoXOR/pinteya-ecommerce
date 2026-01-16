@@ -9,7 +9,7 @@ import { safeApiResponseJson } from '@/lib/json-utils'
 export interface ProductVariant {
   id: number
   product_id: number
-  aikon_id: string
+  aikon_id: number
   variant_slug: string
   color_name: string | null
   color_hex: string | null

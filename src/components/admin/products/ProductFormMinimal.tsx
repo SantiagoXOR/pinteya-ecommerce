@@ -107,7 +107,7 @@ interface ProductVariant {
   price_list: number
   price_sale: number
   stock: number
-  aikon_id: string
+  aikon_id: number | null
   image_url?: string
   is_active?: boolean
   is_default?: boolean
@@ -157,7 +157,7 @@ export function ProductFormMinimal({
       price_list: watchedData.price || 0,
       price_sale: watchedData.discounted_price || undefined,
       stock: watchedData.stock || 0,
-      aikon_id: '',
+      aikon_id: null,
       is_active: true,
       is_default: false,
     })
@@ -626,8 +626,7 @@ export function ProductFormMinimal({
         for (const variant of newVariants) {
           try {
             // ✅ VALIDACIÓN: Verificar que la variante tenga los campos requeridos
-            const aikonIdStr = String(variant.aikon_id || '').trim()
-            if (!aikonIdStr) {
+            if (!variant.aikon_id || variant.aikon_id <= 0) {
               console.warn('⚠️ [ProductFormMinimal] Variante sin aikon_id, saltando:', variant)
               failedVariants.push({ variant, error: 'Código Aikon requerido' })
               continue
@@ -660,7 +659,7 @@ export function ProductFormMinimal({
               credentials: 'include', // ✅ Incluir cookies de autenticación
               body: JSON.stringify({
                 product_id: parseInt(String(finalProductId)),
-                aikon_id: String(variant.aikon_id || '').trim(),
+                aikon_id: variant.aikon_id || null,
                 color_name: variant.color_name && variant.color_name.trim() !== '' ? variant.color_name.trim() : null,
                 color_hex: variant.color_hex && variant.color_hex.trim() !== '' ? variant.color_hex.trim() : null,
                 measure: variant.measure.trim(),
@@ -765,7 +764,7 @@ export function ProductFormMinimal({
       price_list: 0,
       price_sale: 0,
       stock: 0,
-      aikon_id: '',
+      aikon_id: null,
       image_url: '',
       is_active: true,
       is_default: false,
@@ -1438,7 +1437,7 @@ export function ProductFormMinimal({
                   price_list: variant.price_list || 0,
                   price_sale: variant.price_sale || undefined,
                   stock: variant.stock || 0,
-                  aikon_id: variant.aikon_id || '',
+                  aikon_id: variant.aikon_id || null,
                   image_url: variant.image_url || undefined,
                   is_active: variant.is_active !== false,
                   is_default: variant.is_default || false,
@@ -1521,10 +1520,10 @@ interface VariantModalProps {
 }
 
 function VariantModal({ variant, productId, productData, onSave, onCancel }: VariantModalProps) {
-  // ✅ CORREGIDO: Asegurar que aikon_id siempre sea string al inicializar
+  // ✅ CORREGIDO: Asegurar que aikon_id siempre sea number | null al inicializar
   const [formData, setFormData] = useState({
     ...variant,
-    aikon_id: variant.aikon_id != null ? String(variant.aikon_id) : ''
+    aikon_id: variant.aikon_id ?? null
   })
   const [imagePreview, setImagePreview] = useState<string | null>(variant.image_url || null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -1534,8 +1533,7 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
     
     // Color y medida son opcionales ahora
     
-    const aikonIdStr = String(formData.aikon_id || '').trim()
-    if (!aikonIdStr) {
+    if (!formData.aikon_id || formData.aikon_id <= 0) {
       newErrors.aikon_id = 'El código Aikon es requerido'
     }
     
@@ -1565,7 +1563,7 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
           : null,
         measure: formData.measure?.trim() || undefined,
         finish: formData.finish || undefined,
-        aikon_id: String(formData.aikon_id || '').trim() || undefined,
+        aikon_id: formData.aikon_id || undefined,
         // Asegurar que price_list sea número
         price_list: typeof formData.price_list === 'number' 
           ? formData.price_list 
@@ -1825,9 +1823,14 @@ function VariantModal({ variant, productId, productData, onSave, onCancel }: Var
                   Código Aikon (SKU) *
                 </label>
                 <input
+                  type='number'
+                  min={0}
+                  max={999999}
                   value={formData.aikon_id || ''}
                   onChange={(e) => {
-                    setFormData({ ...formData, aikon_id: e.target.value })
+                    const value = e.target.value
+                    const numValue = value === '' ? null : parseInt(value, 10)
+                    setFormData({ ...formData, aikon_id: isNaN(numValue as number) ? null : numValue })
                     if (errors.aikon_id) setErrors({ ...errors, aikon_id: '' })
                   }}
                   className={cn(

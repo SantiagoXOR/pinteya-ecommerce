@@ -40,7 +40,7 @@ const UpdateVariantSchema = z.object({
   is_active: z.boolean().optional(),
   is_default: z.boolean().optional(),
   image_url: z.string().optional().nullable(),
-  aikon_id: z.string().optional(),
+  aikon_id: z.number().int().min(0).max(999999).optional().nullable(),
 })
 
 describe('Product Schemas - Validación Zod', () => {

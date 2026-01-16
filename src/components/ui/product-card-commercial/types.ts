@@ -8,6 +8,7 @@ import type { TextureType } from '@/lib/textures'
 // Interfaces para variantes de productos
 export interface ProductVariant {
   id?: string | number
+  aikon_id?: number
   measure?: string
   color_name?: string
   color_hex?: string

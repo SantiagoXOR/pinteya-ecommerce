@@ -11,7 +11,7 @@ import { createSecurityLogger } from '@/lib/logging/security-logger'
 interface ProductVariant {
   id: number
   product_id: number
-  aikon_id: string
+  aikon_id: number
   variant_slug: string
   color_name?: string
   color_hex?: string
@@ -81,12 +81,18 @@ export async function POST(
         )
       }
 
-      // Generar nuevo aikon_id único
-      let newAikonId = `${originalVariant.aikon_id}-COPIA`
+      // Generar nuevo aikon_id único (número)
+      // Usar el aikon_id original + un número aleatorio para asegurar unicidad
+      let newAikonId = originalVariant.aikon_id + Math.floor(Math.random() * 1000) + 1
+      // Asegurar que no exceda el rango válido
+      if (newAikonId > 999999) {
+        newAikonId = originalVariant.aikon_id + 1
+      }
       let counter = 1
       let isUnique = false
+      const maxAttempts = 1000
 
-      while (!isUnique) {
+      while (!isUnique && counter < maxAttempts) {
         const { data: existingVariant } = await supabase
           .from('product_variants')
           .select('id')
@@ -97,8 +103,24 @@ export async function POST(
           isUnique = true
         } else {
           counter++
-          newAikonId = `${originalVariant.aikon_id}-COPIA-${counter}`
+          // Intentar con el siguiente número disponible
+          newAikonId = originalVariant.aikon_id + counter
+          if (newAikonId > 999999) {
+            // Si excede el rango, usar un número aleatorio en el rango válido
+            newAikonId = Math.floor(Math.random() * 999999) + 1
+          }
         }
+      }
+
+      if (!isUnique) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'No se pudo generar un aikon_id único después de múltiples intentos',
+            data: null,
+          },
+          { status: 500 }
+        )
       }
 
       // Generar nuevo variant_slug único

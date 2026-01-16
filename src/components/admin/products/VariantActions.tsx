@@ -9,7 +9,7 @@ import { useProductNotifications } from '@/hooks/admin/useProductNotifications'
 interface ProductVariant {
   id: number
   product_id: number
-  aikon_id: string
+  aikon_id: number
   color_name?: string
   measure?: string
   finish?: string

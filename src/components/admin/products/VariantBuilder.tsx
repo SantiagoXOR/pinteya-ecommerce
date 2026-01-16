@@ -10,7 +10,7 @@ export interface VariantFormData {
   id?: number
   color_name: string
   color_hex?: string
-  aikon_id: string
+  aikon_id: number | null
   measure: string
   finish: string
   price_list: number
@@ -42,7 +42,7 @@ export function VariantBuilder({
   const [formData, setFormData] = useState<VariantFormData>({
     color_name: '',
     color_hex: undefined,
-    aikon_id: '',
+    aikon_id: null,
     measure: '',
     finish: 'Mate',
     price_list: 0,
@@ -95,7 +95,7 @@ export function VariantBuilder({
     setFormData({
       color_name: '',
       color_hex: undefined,
-      aikon_id: '',
+      aikon_id: null,
       measure: '',
       finish: 'Mate',
       price_list: 0,
