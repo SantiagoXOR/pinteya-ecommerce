@@ -162,8 +162,16 @@ export default function EditProductPage() {
   }, [product]) // ✅ Agregar product como dependencia para actualizar cuando se cargan los datos
 
   const handleSave = () => {
+    console.log('🔵 [EditProductPage] handleSave llamado', {
+      hasSubmitFormRef: !!submitFormRef.current,
+      isPending: updateProductMutation.isPending,
+      isLoading
+    })
     if (submitFormRef.current) {
+      console.log('✅ [EditProductPage] Ejecutando submitForm')
       submitFormRef.current()
+    } else {
+      console.warn('⚠️ [EditProductPage] submitFormRef.current es null')
     }
   }
 

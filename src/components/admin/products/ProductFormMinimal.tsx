@@ -533,8 +533,16 @@ export function ProductFormMinimal({
   useEffect(() => {
     if (onFormReady) {
       const submitForm = () => {
+        console.log('🔵 [ProductFormMinimal] submitForm llamado', {
+          hasFormRef: !!formRef.current,
+          formErrors: Object.keys(errors).length,
+          isDirty: isDirtyRef.current
+        })
         if (formRef.current) {
+          console.log('✅ [ProductFormMinimal] Ejecutando formRef.requestSubmit()')
           formRef.current.requestSubmit()
+        } else {
+          console.warn('⚠️ [ProductFormMinimal] formRef.current es null')
         }
       }
       const checkDirty = () => isDirtyRef.current
@@ -554,8 +562,10 @@ export function ProductFormMinimal({
 
   const handleFormSubmit = async (data: ProductFormData) => {
     try {
-      // ✅ VALIDACIÓN: Si no hay variantes, precio y stock son requeridos
-      if (newVariants.length === 0) {
+      // ✅ VALIDACIÓN: Si no hay variantes (existentes o nuevas), precio y stock son requeridos
+      const hasVariants = variants.length > 0 || newVariants.length > 0
+      
+      if (!hasVariants) {
         if (!data.price || data.price <= 0) {
           form.setError('price', {
             type: 'manual',
@@ -573,6 +583,15 @@ export function ProductFormMinimal({
           return
         }
       }
+      
+      console.log('📋 [ProductFormMinimal] Validación de guardado:', {
+        hasVariants,
+        variantsCount: variants.length,
+        newVariantsCount: newVariants.length,
+        price: data.price,
+        stock: data.stock,
+        errors: Object.keys(errors).length
+      })
       
       notifications.showProcessingInfo(
         mode === 'create' ? 'Creando producto...' : 'Actualizando producto...'
