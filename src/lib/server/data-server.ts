@@ -4,7 +4,7 @@ import 'server-only'
 import { cache } from 'react'
 import { createPublicClient } from '@/lib/integrations/supabase/server'
 import { BESTSELLER_PRODUCTS_SLUGS, PRODUCT_LIMITS } from '@/lib/products/constants'
-import { adaptApiProductToComponent } from '@/lib/adapters/product-adapter'
+import { adaptApiProductToComponent, adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
 import { normalizeProductTitle } from '@/lib/core/utils'
 import type { Product } from '@/types/product'
 import type { CategoryBase } from '@/lib/categories/types'
@@ -307,8 +307,34 @@ export const getBestSellerProductsServer = cache(
           }
         })
 
-        // Adaptar productos enriquecidos al formato esperado por componentes
-        return (enrichedProducts.map(adaptProductForServer) || []) as Product[]
+        // ✅ FIX: Usar adaptApiProductsToComponents igual que NewArrivals
+        // Convertir productos enriquecidos al formato ProductWithCategory primero
+        const apiProducts: ProductWithCategory[] = enrichedProducts.map(product => ({
+          id: product.id,
+          name: normalizeProductTitle(product.name || ''),
+          description: product.description || '',
+          price: product.price || 0,
+          discounted_price: product.discounted_price || product.price || 0,
+          original_price: product.price || 0,
+          stock: product.stock || 0,
+          slug: product.slug || `product-${product.id}`,
+          image_url: product.image_url || null,
+          images: product.images || null,
+          brand: product.brand || null,
+          category_id: product.category_id || null,
+          is_active: product.is_active ?? true,
+          created_at: product.created_at || new Date().toISOString(),
+          updated_at: product.updated_at || new Date().toISOString(),
+          category: product.category || null,
+          variants: product.variants || [],
+          default_variant: product.default_variant || null,
+          color: product.color || undefined,
+          medida: product.medida || undefined,
+          aikon_id: product.aikon_id || undefined,
+        }))
+
+        // Usar adaptApiProductsToComponents igual que NewArrivals
+        return adaptApiProductsToComponents(apiProducts)
       } else {
         // Sin categoría: obtener 17 productos (10 específicos + 7 adicionales populares)
         // 1. Obtener productos específicos por slug
@@ -519,8 +545,34 @@ export const getBestSellerProductsServer = cache(
           }
         })
 
-        // Adaptar productos enriquecidos al formato esperado por componentes
-        const adaptedProducts = enrichedProducts.map(adaptProductForServer) as Product[]
+        // ✅ FIX: Usar adaptApiProductsToComponents igual que NewArrivals
+        // Convertir productos enriquecidos al formato ProductWithCategory primero
+        const apiProducts: ProductWithCategory[] = enrichedProducts.map(product => ({
+          id: product.id,
+          name: normalizeProductTitle(product.name || ''),
+          description: product.description || '',
+          price: product.price || 0,
+          discounted_price: product.discounted_price || product.price || 0,
+          original_price: product.price || 0,
+          stock: product.stock || 0,
+          slug: product.slug || `product-${product.id}`,
+          image_url: product.image_url || null,
+          images: product.images || null,
+          brand: product.brand || null,
+          category_id: product.category_id || null,
+          is_active: product.is_active ?? true,
+          created_at: product.created_at || new Date().toISOString(),
+          updated_at: product.updated_at || new Date().toISOString(),
+          category: product.category || null,
+          variants: product.variants || [],
+          default_variant: product.default_variant || null,
+          color: product.color || undefined,
+          medida: product.medida || undefined,
+          aikon_id: product.aikon_id || undefined,
+        }))
+
+        // Usar adaptApiProductsToComponents igual que NewArrivals
+        const adaptedProducts = adaptApiProductsToComponents(apiProducts)
 
         // ✅ FIX: Asegurar exactamente 17 productos (para mostrar 17 productos + 3 cards = 20 items)
         // Si tenemos menos de 17, loguear para debug
