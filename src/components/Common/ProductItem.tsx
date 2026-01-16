@@ -20,9 +20,20 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
   // Usar product o item, con validación
   const productData = product || item
 
-  // Early return si no hay datos del producto
+  // ✅ FIX: Validación mejorada - verificar que el producto tenga datos mínimos
   if (!productData) {
-    console.warn('ProductItem: No product data provided')
+    console.warn('ProductItem: No product data provided', { product, item })
+    return null
+  }
+
+  // Validar que el producto tenga al menos id y slug
+  if (!productData.id) {
+    console.warn('ProductItem: Product missing id', { productId: productData.id, slug: productData.slug })
+    return null
+  }
+
+  if (!productData.slug) {
+    console.warn('ProductItem: Product missing slug', { productId: productData.id })
     return null
   }
 

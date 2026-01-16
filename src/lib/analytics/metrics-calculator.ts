@@ -18,6 +18,7 @@ import {
   FunnelAnalysis,
   InteractionMetrics,
   SearchAnalytics,
+  CategoryPerformance,
 } from './types'
 
 const supabase = createClient(
@@ -118,7 +119,7 @@ class MetricsCalculator {
   /**
    * Obtener eventos desde la base de datos
    */
-  private async fetchEvents(params: MetricsQueryParams): Promise<RawEvent[]> {
+  async fetchEvents(params: MetricsQueryParams): Promise<RawEvent[]> {
     try {
       // Usar tabla optimizada directamente
       let query = supabase
@@ -799,24 +800,51 @@ class MetricsCalculator {
   calculateFunnelAnalysis(events: RawEvent[]): FunnelAnalysis {
     const normalized = events.map(e => this.normalizeEvent(e))
     
-    // Identificar pasos del embudo
-    const productViews = normalized.filter(
-      e => e.action === 'view_item' || e.page?.includes('/product/') || e.page?.includes('/buy/')
-    ).length
+    // Identificar pasos del embudo usando sesiones únicas
+    // Product View: event_name === 'product_view' O eventos con product_id no nulo
+    const productViewSessions = new Set<string>()
+    const productViewEvents = normalized.filter(
+      e => 
+        e.eventName === 'product_view' || 
+        e.action === 'view_item' || 
+        e.page?.includes('/product/') || 
+        e.page?.includes('/buy/') ||
+        (e.metadata?.productId != null && e.metadata.productId !== '')
+    )
+    productViewEvents.forEach(e => {
+      if (e.sessionId) productViewSessions.add(e.sessionId)
+    })
+    const productViews = productViewSessions.size
 
-    const cartAdditions = normalized.filter(
+    // Cart Additions: sesiones únicas
+    const cartAdditionSessions = new Set<string>()
+    const cartAdditionEvents = normalized.filter(
       e => e.action === 'add_to_cart' || e.action === 'add'
-    ).length
+    )
+    cartAdditionEvents.forEach(e => {
+      if (e.sessionId) cartAdditionSessions.add(e.sessionId)
+    })
+    const cartAdditions = cartAdditionSessions.size
 
-    // Contar begin_checkout: priorizar action sobre eventName para mayor flexibilidad
-    // Aceptar eventos con eventName === 'begin_checkout' aunque tengan action incorrecta (compatibilidad con eventos mal guardados)
-    const checkoutStarts = normalized.filter(
+    // Checkout Starts: sesiones únicas
+    const checkoutStartSessions = new Set<string>()
+    const checkoutStartEvents = normalized.filter(
       e => e.action === 'begin_checkout' || e.eventName === 'begin_checkout'
-    ).length
-    // Solo contar eventos reales de purchase, no page_view con action purchase
-    const purchases = normalized.filter(
+    )
+    checkoutStartEvents.forEach(e => {
+      if (e.sessionId) checkoutStartSessions.add(e.sessionId)
+    })
+    const checkoutStarts = checkoutStartSessions.size
+
+    // Purchases: sesiones únicas
+    const purchaseSessions = new Set<string>()
+    const purchaseEvents = normalized.filter(
       e => e.action === 'purchase' && e.eventName === 'purchase'
-    ).length
+    )
+    purchaseEvents.forEach(e => {
+      if (e.sessionId) purchaseSessions.add(e.sessionId)
+    })
+    const purchases = purchaseSessions.size
 
     // Calcular tiempos promedio entre pasos
     const sessionSteps: Record<string, Array<{ step: string; time: number }>> = {}
@@ -827,7 +855,14 @@ class MetricsCalculator {
       }
 
       let step = ''
-      if (event.action === 'view_item' || event.page?.includes('/product/')) {
+      // Product View: priorizar eventName sobre action
+      if (
+        event.eventName === 'product_view' ||
+        event.action === 'view_item' || 
+        event.page?.includes('/product/') ||
+        event.page?.includes('/buy/') ||
+        (event.metadata?.productId != null && event.metadata.productId !== '')
+      ) {
         step = 'product_view'
       } else if (event.action === 'add_to_cart' || event.action === 'add') {
         step = 'add_to_cart'
@@ -861,35 +896,57 @@ class MetricsCalculator {
       }
     })
 
+    // Calcular conversión y abandono con validaciones
+    const calcConversionRate = (current: number, previous: number): number => {
+      if (previous === 0) return 0
+      const rate = (current / previous) * 100
+      return Math.min(100, Math.max(0, rate))
+    }
+
+    const calcDropOffRate = (current: number, previous: number): number => {
+      if (previous === 0) return 0
+      const rate = ((previous - current) / previous) * 100
+      return Math.min(100, Math.max(0, rate))
+    }
+
+    const calcDropOffCount = (current: number, previous: number): number => {
+      return Math.max(0, previous - current)
+    }
+
+    const productViewToCartRate = calcConversionRate(cartAdditions, productViews)
+    const cartToCheckoutRate = calcConversionRate(checkoutStarts, cartAdditions)
+    const checkoutToPurchaseRate = calcConversionRate(purchases, checkoutStarts)
+    const totalConversionRate = calcConversionRate(purchases, productViews)
+
     const steps: FunnelAnalysis['steps'] = [
       {
         step: 'product_view',
         count: productViews,
-        conversionRate: productViews > 0 ? (cartAdditions / productViews) * 100 : 0,
+        conversionRate: productViewToCartRate,
         averageTime: 0,
-        dropOffRate: productViews > 0 ? ((productViews - cartAdditions) / productViews) * 100 : 0,
+        dropOffRate: calcDropOffRate(cartAdditions, productViews),
       },
       {
         step: 'add_to_cart',
         count: cartAdditions,
-        conversionRate: cartAdditions > 0 ? (checkoutStarts / cartAdditions) * 100 : 0,
+        conversionRate: cartToCheckoutRate,
         averageTime: stepTimes['product_view_add_to_cart']
           ? stepTimes['product_view_add_to_cart'].reduce((a, b) => a + b, 0) /
             stepTimes['product_view_add_to_cart'].length /
             1000
           : 0,
-        dropOffRate: cartAdditions > 0 ? ((cartAdditions - checkoutStarts) / cartAdditions) * 100 : 0,
+        dropOffRate: calcDropOffRate(checkoutStarts, cartAdditions),
       },
       {
         step: 'begin_checkout',
         count: checkoutStarts,
-        conversionRate: checkoutStarts > 0 ? (purchases / checkoutStarts) * 100 : 0,
+        conversionRate: checkoutToPurchaseRate,
         averageTime: stepTimes['add_to_cart_begin_checkout']
           ? stepTimes['add_to_cart_begin_checkout'].reduce((a, b) => a + b, 0) /
             stepTimes['add_to_cart_begin_checkout'].length /
             1000
           : 0,
-        dropOffRate: checkoutStarts > 0 ? ((checkoutStarts - purchases) / checkoutStarts) * 100 : 0,
+        dropOffRate: calcDropOffRate(purchases, checkoutStarts),
       },
       {
         step: 'purchase',
@@ -908,27 +965,27 @@ class MetricsCalculator {
       {
         fromStep: 'product_view',
         toStep: 'add_to_cart',
-        dropOffCount: productViews - cartAdditions,
-        dropOffRate: productViews > 0 ? ((productViews - cartAdditions) / productViews) * 100 : 0,
+        dropOffCount: calcDropOffCount(cartAdditions, productViews),
+        dropOffRate: calcDropOffRate(cartAdditions, productViews),
       },
       {
         fromStep: 'add_to_cart',
         toStep: 'begin_checkout',
-        dropOffCount: cartAdditions - checkoutStarts,
-        dropOffRate: cartAdditions > 0 ? ((cartAdditions - checkoutStarts) / cartAdditions) * 100 : 0,
+        dropOffCount: calcDropOffCount(checkoutStarts, cartAdditions),
+        dropOffRate: calcDropOffRate(checkoutStarts, cartAdditions),
       },
       {
         fromStep: 'begin_checkout',
         toStep: 'purchase',
-        dropOffCount: checkoutStarts - purchases,
-        dropOffRate: checkoutStarts > 0 ? ((checkoutStarts - purchases) / checkoutStarts) * 100 : 0,
+        dropOffCount: calcDropOffCount(purchases, checkoutStarts),
+        dropOffRate: calcDropOffRate(purchases, checkoutStarts),
       },
     ]
 
     return {
       steps,
       dropOffPoints,
-      totalConversionRate: productViews > 0 ? (purchases / productViews) * 100 : 0,
+      totalConversionRate,
     }
   }
 
@@ -1130,6 +1187,97 @@ class MetricsCalculator {
       noResults,
       conversionRate,
     }
+  }
+
+  /**
+   * Calcular performance de categorías de productos
+   */
+  calculateCategoryPerformance(events: RawEvent[]): CategoryPerformance[] {
+    const normalized = events.map(e => this.normalizeEvent(e))
+    
+    // Filtrar eventos con product_id y category_name (categorías de productos, no categorías de eventos)
+    const productEvents = normalized.filter(
+      e => e.metadata?.productId != null && e.metadata?.category != null && e.metadata.category !== ''
+    )
+
+    // Agrupar por categoría
+    const categoryMap = new Map<string, {
+      category: string
+      totalEvents: number
+      sessions: Set<string>
+      users: Set<string>
+      views: number
+      cartAdditions: number
+      purchases: number
+      revenue: number
+    }>()
+
+    productEvents.forEach(event => {
+      const category = event.metadata?.category || 'unknown'
+      
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, {
+          category,
+          totalEvents: 0,
+          sessions: new Set<string>(),
+          users: new Set<string>(),
+          views: 0,
+          cartAdditions: 0,
+          purchases: 0,
+          revenue: 0,
+        })
+      }
+
+      const catData = categoryMap.get(category)!
+      catData.totalEvents++
+
+      if (event.sessionId) {
+        catData.sessions.add(event.sessionId)
+      }
+
+      if (event.userId) {
+        catData.users.add(event.userId)
+      }
+
+      // Contar vistas (product_view, view_item, o eventos con product_id)
+      if (
+        event.eventName === 'product_view' ||
+        event.action === 'view_item' ||
+        (event.metadata?.productId != null && (event.action === 'view' || event.eventName === 'page_view'))
+      ) {
+        catData.views++
+      }
+
+      // Contar agregados al carrito
+      if (event.action === 'add_to_cart' || event.action === 'add') {
+        catData.cartAdditions++
+      }
+
+      // Contar compras y revenue
+      if (event.action === 'purchase' && event.eventName === 'purchase') {
+        catData.purchases++
+        const price = event.metadata?.price || event.value || 0
+        const quantity = event.metadata?.quantity || 1
+        catData.revenue += price * quantity
+      }
+    })
+
+    // Convertir a array y calcular tasas de conversión
+    const categoryPerformance = Array.from(categoryMap.values())
+      .map(cat => ({
+        category: cat.category,
+        totalEvents: cat.totalEvents,
+        uniqueSessions: cat.sessions.size,
+        uniqueUsers: cat.users.size,
+        views: cat.views,
+        cartAdditions: cat.cartAdditions,
+        purchases: cat.purchases,
+        totalRevenue: cat.revenue,
+        conversionRate: cat.views > 0 ? (cat.purchases / cat.views) * 100 : 0,
+      }))
+      .sort((a, b) => b.totalEvents - a.totalEvents)
+
+    return categoryPerformance
   }
 }
 

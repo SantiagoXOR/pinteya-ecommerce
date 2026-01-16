@@ -73,6 +73,13 @@ export default async function HomePage() {
     productQueryKeys.categoryListWithFilters({}),
     categories
   )
+  
+  // ✅ FIX: Pre-popular el cache de React Query con productos bestseller
+  // Esto evita que useBestSellerProducts tenga que hacer fetch inicial
+  queryClient.setQueryData(
+    productQueryKeys.bestseller(null),
+    bestSellerProducts
+  )
 
   return (
     <Hydrate state={dehydrate(queryClient)}>

@@ -30,6 +30,7 @@ const FunnelAnalysis = lazy(() => import('./FunnelAnalysis'))
 const SearchAnalytics = lazy(() => import('./SearchAnalytics'))
 const RouteVisualizer = lazy(() => import('./RouteVisualizer'))
 const PageInteractions = lazy(() => import('./PageInteractions'))
+const CategoryAnalytics = lazy(() => import('./CategoryAnalytics'))
 
 interface MetricsData {
   ecommerce: {
@@ -186,7 +187,7 @@ const AnalyticsDashboard: React.FC = () => {
   const [metricsData, setMetricsData] = useState<MetricsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('7d')
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'funnel' | 'search' | 'interactions' | 'visualizer'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'funnel' | 'search' | 'interactions' | 'visualizer' | 'categories'>('overview')
   const [realTimeMetrics, setRealTimeMetrics] = useState({
     productViews: 0,
     cartAdditions: 0,
@@ -293,6 +294,7 @@ const AnalyticsDashboard: React.FC = () => {
             { id: 'products', label: 'Productos' },
             { id: 'funnel', label: 'Embudo' },
             { id: 'search', label: 'Búsquedas' },
+            { id: 'categories', label: 'Categorías' },
             { id: 'interactions', label: 'Interacciones' },
             { id: 'visualizer', label: 'Visualizador' },
           ].map(tab => (
@@ -715,6 +717,12 @@ const AnalyticsDashboard: React.FC = () => {
       {activeTab === 'visualizer' && (
         <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
           <RouteVisualizer startDate={startDate} endDate={endDate} />
+        </Suspense>
+      )}
+
+      {activeTab === 'categories' && (
+        <Suspense fallback={<div className='h-64 bg-gray-100 rounded-xl animate-pulse' />}>
+          <CategoryAnalytics startDate={startDate} endDate={endDate} />
         </Suspense>
       )}
     </div>

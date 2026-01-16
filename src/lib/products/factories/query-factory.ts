@@ -15,6 +15,7 @@ interface QueryFactoryOptions {
   enabled?: boolean
   staleTime?: number
   gcTime?: number
+  initialData?: Product[]
 }
 
 /**
@@ -33,10 +34,12 @@ export function createProductQueryOptions(
     enabled = true,
     staleTime = DEFAULT_PRODUCT_QUERY_CONFIG.staleTime,
     gcTime = DEFAULT_PRODUCT_QUERY_CONFIG.gcTime,
+    initialData,
   } = options
 
   return {
     queryKey,
+    initialData,
     queryFn: async (): Promise<Product[]> => {
       try {
         // Obtener filtros de la estrategia

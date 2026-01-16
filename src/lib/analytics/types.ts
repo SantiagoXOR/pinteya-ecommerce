@@ -114,6 +114,18 @@ export interface FunnelAnalysis {
   totalConversionRate: number
 }
 
+export interface CategoryPerformance {
+  category: string
+  totalEvents: number
+  uniqueSessions: number
+  uniqueUsers: number
+  totalRevenue: number
+  conversionRate: number
+  views: number
+  cartAdditions: number
+  purchases: number
+}
+
 export interface InteractionMetrics {
   topInteractions: Array<{
     type: string

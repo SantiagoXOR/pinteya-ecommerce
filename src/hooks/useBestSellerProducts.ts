@@ -16,6 +16,7 @@ import { createProductQueryOptions } from '@/lib/products/factories/query-factor
 interface UseBestSellerProductsOptions {
   categorySlug: string | null
   enableCache?: boolean
+  initialData?: Product[]
 }
 
 interface UseBestSellerProductsReturn {
@@ -28,6 +29,7 @@ interface UseBestSellerProductsReturn {
 export const useBestSellerProducts = ({
   categorySlug,
   enableCache = true,
+  initialData,
 }: UseBestSellerProductsOptions): UseBestSellerProductsReturn => {
   
   // Crear estrategia de bestseller con límites apropiados
@@ -49,6 +51,7 @@ export const useBestSellerProducts = ({
     strategy,
     queryKey,
     enabled: enableCache,
+    initialData,
   })
   
   // Usar useQuery con las opciones generadas por el factory

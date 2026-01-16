@@ -18,6 +18,7 @@ import {
 } from '@/lib/products/transformers'
 import { PRODUCT_LIMITS } from '@/lib/products/constants'
 import type { Product } from '@/types/product'
+import { ProductGridSkeleton } from '@/components/ui/skeletons'
 
 interface BestSellerClientProps {
   initialProducts: Product[]
@@ -34,10 +35,15 @@ export const BestSellerClient: React.FC<BestSellerClientProps> = React.memo(({ i
   // Fetch productos según categoría seleccionada (puede cambiar dinámicamente)
   const { products, isLoading, error } = useBestSellerProducts({
     categorySlug: selectedCategory,
+    initialData: !selectedCategory ? initialProducts : undefined,
   })
 
-  // Usar productos del servidor si no hay categoría seleccionada, sino usar los de React Query
-  const currentProducts = selectedCategory ? products : (products.length > 0 ? products : initialProducts)
+  // ✅ FIX: Priorizar initialProducts cuando no hay categoría (datos del servidor)
+  // Si hay categoría seleccionada, usar productos de React Query
+  // Si no hay categoría, usar initialProducts del servidor como fallback
+  const currentProducts = selectedCategory 
+    ? products 
+    : (initialProducts.length > 0 ? initialProducts : products)
 
   // Preparar productos según rendimiento del dispositivo
   const bestSellerProducts = useMemo(() => {
@@ -52,11 +58,16 @@ export const BestSellerClient: React.FC<BestSellerClientProps> = React.memo(({ i
   // Calcular si hay espacios vacíos
   const shouldShowHelpCard = shouldShowHelpCards(bestSellerProducts.length)
   
+  // ✅ FIX: Mostrar skeletons solo durante carga inicial si no hay initialProducts
+  const showSkeletons = isLoading && initialProducts.length === 0 && bestSellerProducts.length === 0
+
   return (
     <section className='overflow-hidden py-1 sm:py-1.5 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8'>
         <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
-          {bestSellerProducts.length > 0 ? (
+          {showSkeletons ? (
+            <ProductGridSkeleton count={8} />
+          ) : bestSellerProducts.length > 0 ? (
             <>
               {bestSellerProducts.map((item, index) => (
                 <ProductItem key={`${item.id}-${index}`} product={item} />
@@ -69,6 +80,35 @@ export const BestSellerClient: React.FC<BestSellerClientProps> = React.memo(({ i
                 </>
               )}
             </>
+          ) : error ? (
+            // ✅ FIX: Mostrar error si hay error y no hay productos
+            <div className='col-span-full'>
+              <Card variant='outlined' className='border-red-200 bg-red-50'>
+                <CardContent className='p-8 text-center'>
+                  <div className='flex flex-col items-center gap-3'>
+                    <div className='w-12 h-12 rounded-full bg-red-100 flex items-center justify-center'>
+                      <span className='text-red-600 text-xl'>⚠️</span>
+                    </div>
+                    <div>
+                      <h3 className='font-semibold text-red-900 mb-1'>
+                        Error al cargar productos
+                      </h3>
+                      <p className='text-red-700 text-sm mb-4'>
+                        {error}
+                      </p>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        onClick={() => window.location.reload()}
+                        className='border-red-300 text-red-700 hover:bg-red-100'
+                      >
+                        Reintentar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           ) : (
             !isLoading && bestSellerProducts.length === 0 && !error && (
               <div className='col-span-full'>
