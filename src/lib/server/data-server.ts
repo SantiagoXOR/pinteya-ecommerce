@@ -181,33 +181,54 @@ export const getBestSellerProductsServer = cache(
         // Adaptar productos enriquecidos al formato esperado por componentes
         return (enrichedProducts.map(adaptProductForServer) || []) as Product[]
       } else {
-        // Sin categoría: obtener productos específicos por slug
-        const { data: products, error } = await supabase
+        // Sin categoría: obtener 17 productos (10 específicos + 7 adicionales populares)
+        // 1. Obtener productos específicos por slug
+        const { data: specificProducts, error: specificError } = await supabase
           .from('products')
           .select('*')
           .in('slug', BESTSELLER_PRODUCTS_SLUGS)
           .eq('is_active', true)
 
-        if (error) {
-          console.error('Error fetching bestseller products:', error)
+        if (specificError) {
+          console.error('Error fetching bestseller products:', specificError)
           return []
         }
 
-        if (!products || products.length === 0) {
-          return []
-        }
-
-        // Ordenar productos según la prioridad de BESTSELLER_PRODUCTS_SLUGS
-        const orderedProducts = BESTSELLER_PRODUCTS_SLUGS.map(slug =>
-          products?.find(p => p.slug === slug)
+        // Ordenar productos específicos según la prioridad de BESTSELLER_PRODUCTS_SLUGS
+        const orderedSpecificProducts = BESTSELLER_PRODUCTS_SLUGS.map(slug =>
+          specificProducts?.find(p => p.slug === slug)
         ).filter(Boolean)
 
-        if (orderedProducts.length === 0) {
+        if (orderedSpecificProducts.length === 0) {
           return []
         }
 
+        // 2. Obtener 7 productos adicionales populares (excluyendo los ya obtenidos)
+        const specificProductIds = orderedSpecificProducts.map(p => p.id)
+        const { data: additionalProductsRaw, error: additionalError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(20) // Obtener más para asegurar que tengamos suficientes después de filtrar
+
+        // Filtrar productos adicionales excluyendo los ya obtenidos
+        const additionalProducts = (additionalProductsRaw || []).filter(
+          p => !specificProductIds.includes(p.id)
+        ).slice(0, 7)
+
+        if (additionalError) {
+          console.warn('Error fetching additional products:', additionalError)
+        }
+
+        // Combinar productos: primero los específicos, luego los adicionales
+        const allProducts = [
+          ...orderedSpecificProducts,
+          ...(additionalProducts || [])
+        ]
+
         // ✅ FIX: Obtener variantes e imágenes para enriquecer productos
-        const productIds = orderedProducts.map(p => p.id)
+        const productIds = allProducts.map(p => p.id)
         
         // Obtener variantes
         const { data: variants, error: variantsError } = await supabase
@@ -250,7 +271,7 @@ export const getBestSellerProductsServer = cache(
         })
 
         // Enriquecer productos con variantes e imágenes
-        const enrichedProducts = orderedProducts.map(product => {
+        const enrichedProducts = allProducts.map(product => {
           const productVariants = variantsByProduct[product.id] || []
           const defaultVariant = productVariants.find((v: any) => v.is_default) || productVariants[0] || null
           
@@ -271,8 +292,8 @@ export const getBestSellerProductsServer = cache(
         // Adaptar productos enriquecidos al formato esperado por componentes
         const adaptedProducts = enrichedProducts.map(adaptProductForServer) as Product[]
 
-        // Limitar a 10 productos
-        return adaptedProducts.slice(0, PRODUCT_LIMITS.BESTSELLER)
+        // Limitar a 17 productos (para mostrar 17 productos + 3 cards = 20 items)
+        return adaptedProducts.slice(0, 17)
       }
     } catch (error) {
       console.error('Error in getBestSellerProductsServer:', error)

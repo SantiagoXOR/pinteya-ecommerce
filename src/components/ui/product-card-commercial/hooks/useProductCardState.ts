@@ -70,21 +70,28 @@ export const useProductCardState = ({
   // Ref para ignorar clics justo después de cerrar el modal
   const ignoreClicksUntilRef = React.useRef<number>(0)
 
+  // Ref para rastrear el valor anterior de la imagen y evitar actualizaciones innecesarias
+  const prevImageSrcRef = React.useRef<string>(currentImageSrc)
+
   // Actualizar imagen cuando cambie la prop o la imagen resuelta dinámicamente
   // Prioridad: resolvedImage > image > placeholder
+  // ✅ FIX: Removido currentImageSrc y title de las dependencias para evitar loop infinito
+  // Solo reaccionamos a cambios en las props externas (image, resolvedImage)
   React.useEffect(() => {
     const newImageSrc = resolvedImage || image || '/images/products/placeholder.svg'
     
-    if (newImageSrc && newImageSrc !== currentImageSrc) {
+    // Solo actualizar si el nuevo valor es diferente al valor anterior
+    if (newImageSrc && newImageSrc !== prevImageSrcRef.current) {
       logger.debug(`[ProductCardState] Actualizando imagen para ${title}`, {
-        from: currentImageSrc,
+        from: prevImageSrcRef.current,
         to: newImageSrc,
         source: resolvedImage ? 'resolvedImage' : 'image'
       })
       setCurrentImageSrc(newImageSrc)
+      prevImageSrcRef.current = newImageSrc
       setImageError(false)
     }
-  }, [image, resolvedImage, currentImageSrc, title])
+  }, [image, resolvedImage, title])
 
   // Handler para abrir el modal
   const handleOpenModal = React.useCallback(() => {
@@ -106,7 +113,10 @@ export const useProductCardState = ({
     if (!imageError) {
       logger.warn(`[ProductCardState] Error de imagen: ${currentImageSrc}`)
       setImageError(true)
-      setCurrentImageSrc('/images/products/placeholder.svg')
+      const placeholder = '/images/products/placeholder.svg'
+      setCurrentImageSrc(placeholder)
+      // Sincronizar el ref para mantener consistencia
+      prevImageSrcRef.current = placeholder
     }
   }, [currentImageSrc, imageError])
 

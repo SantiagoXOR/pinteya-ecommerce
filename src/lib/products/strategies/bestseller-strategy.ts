@@ -16,7 +16,7 @@ import { BESTSELLER_PRODUCTS_SLUGS, PRODUCT_LIMITS } from '../constants'
 /**
  * Estrategia específica para productos bestseller
  * Maneja dos modos:
- * - Sin categoría: Filtra 10 productos específicos hardcodeados
+ * - Sin categoría: Filtra 17 productos (10 específicos + 7 adicionales populares)
  * - Con categoría: Todos los productos de la categoría
  */
 export class BestsellerStrategy extends BaseProductStrategy {

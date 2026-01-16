@@ -46,17 +46,25 @@ export const BestSellerClient: React.FC<BestSellerClientProps> = React.memo(({ i
     : (initialProducts.length > 0 ? initialProducts : products)
 
   // Preparar productos según rendimiento del dispositivo
+  // ✅ FIX: Cuando no hay categoría, mostrar 17 productos + 3 cards = 20 items
   const bestSellerProducts = useMemo(() => {
     const adaptedProducts = Array.isArray(currentProducts) ? currentProducts : []
+    
+    // Si no hay categoría seleccionada, limitar a 17 productos para dejar espacio a los 3 cards
+    if (!selectedCategory) {
+      return adaptedProducts.slice(0, 17)
+    }
+    
+    // Si hay categoría, aplicar límite según rendimiento
     const limit = isLowPerformance 
       ? PRODUCT_LIMITS.LOW_PERFORMANCE 
       : PRODUCT_LIMITS.STANDARD
     
     return limitByPerformance(adaptedProducts, isLowPerformance, limit)
-  }, [currentProducts, isLowPerformance])
+  }, [currentProducts, isLowPerformance, selectedCategory])
 
-  // Calcular si hay espacios vacíos
-  const shouldShowHelpCard = shouldShowHelpCards(bestSellerProducts.length)
+  // ✅ FIX: Mostrar cards siempre cuando no hay categoría, o cuando hay espacios vacíos con categoría
+  const shouldShowHelpCard = !selectedCategory || shouldShowHelpCards(bestSellerProducts.length)
   
   // ✅ FIX: Mostrar skeletons solo durante carga inicial si no hay initialProducts
   const showSkeletons = isLoading && initialProducts.length === 0 && bestSellerProducts.length === 0
