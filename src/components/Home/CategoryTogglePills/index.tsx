@@ -261,10 +261,16 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   }, [rawCategories])
 
   // ⚡ OPTIMIZACIÓN CRÍTICA: Ignorar cambios en loading si las categorías ya están cargadas
+  // ✅ FIX: Asegurar que loading sea correcto cuando se navega desde otra página
   const loading = useMemo(() => {
     // Si las categorías ya están cargadas, siempre retornar false para evitar re-renders
     if (categories.length > 0) {
       return false
+    }
+    // ✅ FIX: Si no hay categorías y rawLoading es true, mantener loading como true
+    // Esto asegura que el componente se renderice correctamente después de navegar
+    if (rawLoading && categories.length === 0) {
+      return true
     }
     // Solo actualizar si realmente cambió
     if (rawLoading !== prevLoadingRef.current) {

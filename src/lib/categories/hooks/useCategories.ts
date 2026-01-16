@@ -122,10 +122,11 @@ export function useCategories(
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus,
-    refetchOnMount,
+    // ✅ FIX: Refetch cuando no hay datos en cache después de navegar
+    refetchOnMount: refetchOnMount || (!cachedData && autoFetch),
     refetchOnReconnect: false,
     enabled: autoFetch,
-    notifyOnChangeProps: ['data', 'error'],
+    notifyOnChangeProps: ['data', 'error', 'isLoading'],
     initialData: cachedData,
     placeholderData: (previousData) => previousData || cachedData,
     structuralSharing: true,
