@@ -581,11 +581,16 @@ export function ProductList({
       sortable: true,
       defaultWidth: 100,
       render: (medida: string, product: Product) => {
-        // ✅ NUEVO: Obtener todas las medidas del array 'medidas' o usar la medida individual
+        // ✅ CORREGIDO: Si el producto tiene variantes, no mostrar medida del producto principal
+        if (product.has_variants) {
+          return <span className='text-sm text-gray-400'>-</span>
+        }
+        
+        // ✅ Obtener todas las medidas del array 'medidas' o usar la medida individual
         const medidas = (product as any).medidas || (medida ? [medida] : [])
         
         if (medidas.length === 0) {
-          return <span className='text-sm text-gray-500'>Sin medidas</span>
+          return <span className='text-sm text-gray-400'>-</span>
         }
 
         return (
