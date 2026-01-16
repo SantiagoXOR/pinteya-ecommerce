@@ -19,6 +19,18 @@
 BEGIN;
 
 -- ===================================
+-- 0. MODIFICAR CONSTRAINT DE PRICE PARA PERMITIR 0
+-- ===================================
+-- El constraint actual requiere price > 0, pero necesitamos permitir price = 0
+-- para productos con variantes (donde el precio se maneja en las variantes)
+
+-- Eliminar el constraint existente
+ALTER TABLE products DROP CONSTRAINT IF EXISTS products_price_check;
+
+-- Crear nuevo constraint que permite price >= 0
+ALTER TABLE products ADD CONSTRAINT products_price_check CHECK (price >= 0);
+
+-- ===================================
 -- 1. REGISTRAR ESTADÍSTICAS ANTES DE LA LIMPIEZA
 -- ===================================
 
@@ -89,9 +101,10 @@ END $$;
 -- ===================================
 
 -- Limpiar price: productos con variantes no deben tener precio en el producto principal
+-- NOTA: price tiene restricción NOT NULL, así que establecemos a 0 (el valor mínimo permitido)
 UPDATE products p
 SET 
-  price = NULL,
+  price = 0,
   updated_at = NOW()
 WHERE EXISTS (
   SELECT 1 
@@ -192,11 +205,11 @@ DECLARE
   v_remaining_terminaciones INTEGER;
 BEGIN
   -- Verificar que no queden inconsistencias
+  -- NOTA: Como price tiene NOT NULL, verificamos que sea 0 en lugar de NULL
   SELECT COUNT(DISTINCT p.id) INTO v_remaining_price
   FROM products p
   INNER JOIN product_variants pv ON pv.product_id = p.id AND pv.is_active = true
   WHERE p.is_active = true
-    AND p.price IS NOT NULL
     AND p.price > 0;
 
   SELECT COUNT(DISTINCT p.id) INTO v_remaining_discounted_price

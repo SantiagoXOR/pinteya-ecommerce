@@ -626,9 +626,10 @@ export function ProductFormMinimal({
       )
       
       // ✅ CORREGIDO: Asegurar que is_active siempre esté presente en los datos
+      // Usar cleanedData en lugar de data para incluir los campos limpiados
       const dataToSubmit = {
-        ...data,
-        is_active: data.is_active !== undefined ? Boolean(data.is_active) : true,
+        ...cleanedData,
+        is_active: cleanedData.is_active !== undefined ? Boolean(cleanedData.is_active) : true,
       }
       
       console.log('📤 [ProductFormMinimal] Enviando datos:', {
