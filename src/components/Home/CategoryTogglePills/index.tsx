@@ -578,7 +578,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
 
   return (
     <section className='bg-transparent sticky top-[92px] lg:top-[105px] z-40 py-0 w-full overflow-hidden'>
-      <div className='relative w-full'>
+      <div className='relative w-full max-w-7xl mx-auto'>
         {/* Contenedor para los botones que se extiende hasta los bordes */}
         <div className='absolute inset-0 pointer-events-none z-20'>
           {/* Flecha izquierda - Centrada verticalmente con los iconos de categorías */}
@@ -604,7 +604,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         {/* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll fluido a 60fps */}
         <div
           ref={carouselRef}
-          className='flex items-center gap-4 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full'
+          className='flex items-center gap-4 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full md:justify-center'
           style={{
             willChange: 'scroll-position',
             transform: 'translateZ(0)', // GPU acceleration
