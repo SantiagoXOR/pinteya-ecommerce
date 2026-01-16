@@ -4,7 +4,28 @@ import React from 'react'
 import Image from 'next/image'
 import { AlertCircle } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
+import { getValidImageUrl } from '@/lib/adapters/product-adapter'
 import type { ProductCardImageProps } from '../types'
+
+/**
+ * Valida si una URL es válida para Next.js Image
+ * Verifica que sea una URL absoluta válida o una ruta relativa
+ */
+function isValidImageUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') return false
+  
+  // Rutas relativas siempre son válidas
+  if (url.startsWith('/')) return true
+  
+  // Verificar que sea una URL absoluta válida
+  try {
+    const parsedUrl = new URL(url)
+    // Verificar que tenga protocolo http/https
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
 
 /**
  * Componente de imagen del ProductCard
@@ -18,16 +39,57 @@ export const ProductCardImage = React.memo(function ProductCardImage({
   imageError = false,
   currentImageSrc
 }: ProductCardImageProps) {
-  const displaySrc = currentImageSrc || image || '/images/products/placeholder.svg'
+  // ✅ FIX: Validar y corregir URL antes de pasarla a Next.js Image
+  const rawSrc = currentImageSrc || image || '/images/products/placeholder.svg'
+  const displaySrc = React.useMemo(() => {
+    // Validar URL usando la función de validación existente
+    const validated = getValidImageUrl(rawSrc, '/images/products/placeholder.svg')
+    
+    // Verificar que la URL validada sea válida para Next.js Image
+    if (!isValidImageUrl(validated)) {
+      console.warn('[ProductCardImage] URL inválida detectada, usando placeholder', {
+        original: rawSrc,
+        validated,
+        productId
+      })
+      return '/images/products/placeholder.svg'
+    }
+    
+    return validated
+  }, [rawSrc, productId])
 
   const handleLoad = React.useCallback(() => {
     // Imagen cargada exitosamente - no requiere logging
   }, [])
 
+  // ✅ FIX: Manejar errores de carga de imagen de forma más robusta
+  const [hasImageError, setHasImageError] = React.useState(imageError)
+  
+  const handleImageError = React.useCallback((e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    setHasImageError(true)
+    // Llamar al callback de error si existe
+    if (onImageError) {
+      onImageError(e)
+    }
+    // Log para debugging en desarrollo
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[ProductCardImage] Error cargando imagen:', {
+        src: displaySrc,
+        productId,
+        title
+      })
+    }
+  }, [displaySrc, productId, title, onImageError])
+
+  // Resetear error si cambia la imagen
+  React.useEffect(() => {
+    setHasImageError(false)
+  }, [displaySrc])
+
   return (
     <div className='relative w-full h-full flex justify-center items-center'>
       <div className='relative w-full h-full flex items-center justify-center p-0.5 sm:p-1.5 md:p-5 card-image-depth'>
-        {displaySrc && !imageError ? (
+        {displaySrc && !hasImageError && displaySrc !== '/images/products/placeholder.svg' ? (
           <Image
             src={displaySrc}
             alt={title || 'Producto'}
@@ -45,8 +107,11 @@ export const ProductCardImage = React.memo(function ProductCardImage({
             loading="lazy"
             decoding="async" // ⚡ OPTIMIZACIÓN: Decodificar imagen de forma asíncrona para no bloquear render
             quality={65} // ⚡ FASE 14: Optimizado para thumbnails (ahorro adicional de ~5-10% tamaño)
-            onError={onImageError}
+            onError={handleImageError}
             onLoad={handleLoad}
+            // ✅ FIX: Usar unoptimized para URLs que pueden causar problemas con Next.js Image
+            // Esto evita errores 400 cuando Next.js intenta optimizar imágenes remotas problemáticas
+            unoptimized={displaySrc.startsWith('http') && !displaySrc.includes('supabase.co') && !displaySrc.includes('pinteya.com')}
             style={{ objectFit: 'contain', maxHeight: '100%', maxWidth: '100%', aspectRatio: '1/1' }}
           />
         ) : (

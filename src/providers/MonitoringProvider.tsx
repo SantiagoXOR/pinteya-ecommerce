@@ -198,6 +198,25 @@ export function MonitoringProvider({
           return // No reportar como error
         }
 
+        // ✅ FIX: Filtrar errores de imágenes que ya tienen fallback
+        // Next.js Image maneja errores internamente y muestra placeholders
+        // No necesitamos reportar estos errores como críticos
+        if (tagName === 'img') {
+          // Verificar si es una imagen de producto (tiene fallback)
+          const isProductImage = src.includes('supabase.co') || 
+                                src.includes('_next/image') ||
+                                src.includes('/images/products/')
+          
+          if (isProductImage) {
+            // Solo loguear en desarrollo, no reportar como error crítico
+            // Los componentes de imagen ya manejan estos errores con placeholders
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`⚠️ Product image failed to load (has fallback): ${src}`)
+            }
+            return // No reportar como error crítico
+          }
+        }
+
         try {
           await proactiveMonitoring.reportError(
             new Error(`Resource loading failed: ${tagName} - ${src}`),
