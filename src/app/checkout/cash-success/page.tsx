@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useAnalytics } from '@/hooks/useAnalytics'
-import { trackGA4Purchase, trackMetaPurchase, trackGoogleAdsPurchase } from '@/lib/google-analytics'
+import { trackPurchase as trackGA4Purchase } from '@/lib/google-analytics'
+import { trackPurchase as trackMetaPurchase } from '@/lib/meta-pixel'
+import { trackGoogleAdsPurchase } from '@/lib/google-ads'
 import { Separator } from '@/components/ui/separator'
 
 export default function CashSuccessPage() {
