@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo, useCallback, useRef, startTransition } from 'react'
+import { useSearchParams } from 'next/navigation'
 import CategoryTogglePills from './CategoryTogglePills'
 import { useProductFilters } from '@/hooks/useProductFilters'
 
@@ -64,14 +65,23 @@ const CategoryTogglePillsWithSearchBase = () => {
   const updateCategoriesRef = useRef(updateCategories)
   updateCategoriesRef.current = updateCategories
 
-  // ⚡ OPTIMIZACIÓN CRÍTICA: Inicializar searchTerm directamente en useState para evitar re-render
-  const [currentSearchTerm] = useState(() => {
+  // ✅ FIX: Sincronizar searchTerm con la URL actual para detectar cambios de navegación
+  // Usar useSearchParams para detectar cambios en la URL
+  const searchParams = useSearchParams()
+  const currentSearchTerm = useMemo(() => {
+    // ✅ FIX: Si estamos en la home (/), no pasar searchTerm
+    // Solo pasar searchTerm si estamos en una página de búsqueda
     if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search)
-      return urlParams.get('q') || urlParams.get('search') || ''
+      const pathname = window.location.pathname
+      // Si estamos en /search, obtener el término de búsqueda
+      if (pathname === '/search') {
+        return searchParams?.get('q') || searchParams?.get('search') || ''
+      }
+      // Si estamos en home (/), no pasar searchTerm para cargar todas las categorías
+      return ''
     }
     return ''
-  })
+  }, [searchParams])
 
   // ⚡ OPTIMIZACIÓN CRÍTICA: Estabilizar filters.categories con useRef para evitar cambios innecesarios
   const prevCategoriesRef = useRef<string[]>([])

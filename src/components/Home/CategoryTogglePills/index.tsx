@@ -216,11 +216,14 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   const toggleCategory = useDynamicCarousel && context ? context.toggleCategory : undefined
 
   // ⚡ OPTIMIZACIÓN: Estabilizar baseFilters comparando contenido, no solo referencia
+  // ✅ FIX: Asegurar que baseFilters sea vacío cuando no hay searchTerm (home page)
   const prevBaseFiltersRef = useRef<any>({})
   const baseFilters = useMemo(() => {
     const filters: any = {}
-    if (searchTerm) {
-      filters.search = searchTerm
+    // ✅ FIX: Solo agregar search si searchTerm existe y no está vacío
+    // Esto asegura que cuando estás en home (/), no se filtren las categorías
+    if (searchTerm && searchTerm.trim() !== '') {
+      filters.search = searchTerm.trim()
     }
     // Solo incluir otherFilters si tiene propiedades
     if (otherFilters && Object.keys(otherFilters).length > 0) {
