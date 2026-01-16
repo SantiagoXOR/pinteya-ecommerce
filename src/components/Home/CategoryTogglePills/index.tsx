@@ -604,7 +604,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         {/* ⚡ OPTIMIZACIÓN: GPU acceleration para scroll fluido a 60fps */}
         <div
           ref={carouselRef}
-          className='flex items-center gap-4 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full md:justify-center'
+          className='flex items-center gap-4 overflow-x-auto py-1 px-4 md:px-6 cursor-grab select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full'
           style={{
             willChange: 'scroll-position',
             transform: 'translateZ(0)', // GPU acceleration
