@@ -67,6 +67,9 @@ function adaptProductForServer(dbProduct: any): Product {
     created_at: dbProduct.created_at || new Date().toISOString(),
     updated_at: dbProduct.updated_at || new Date().toISOString(),
     category: dbProduct.category || null,
+    // ✅ FIX: Incluir variantes y default_variant para productos con variantes
+    variants: dbProduct.variants || [],
+    default_variant: dbProduct.default_variant || null,
   }
 
   // Usar el adaptador existente
@@ -109,8 +112,74 @@ export const getBestSellerProductsServer = cache(
           return []
         }
 
-        // Adaptar productos al formato esperado por componentes
-        return (products?.map(adaptProductForServer) || []) as Product[]
+        if (!products || products.length === 0) {
+          return []
+        }
+
+        // ✅ FIX: Obtener variantes e imágenes para enriquecer productos
+        const productIds = products.map(p => p.id)
+        
+        // Obtener variantes
+        const { data: variants, error: variantsError } = await supabase
+          .from('product_variants')
+          .select('id, product_id, aikon_id, variant_slug, color_name, color_hex, measure, finish, price_list, price_sale, stock, is_active, is_default, image_url')
+          .in('product_id', productIds)
+          .eq('is_active', true)
+          .order('is_default', { ascending: false })
+
+        if (variantsError) {
+          console.warn('Error fetching variants:', variantsError)
+        }
+
+        // Obtener imágenes desde product_images
+        const { data: productImages, error: imagesError } = await supabase
+          .from('product_images')
+          .select('product_id, url, is_primary')
+          .in('product_id', productIds)
+          .order('is_primary', { ascending: false })
+          .order('display_order', { ascending: true })
+
+        if (imagesError) {
+          console.warn('Error fetching product images:', imagesError)
+        }
+
+        // Agrupar variantes e imágenes por producto
+        const variantsByProduct = (variants || []).reduce((acc, variant) => {
+          if (!acc[variant.product_id]) {
+            acc[variant.product_id] = []
+          }
+          acc[variant.product_id].push(variant)
+          return acc
+        }, {} as Record<number, any[]>)
+
+        const productImagesByProduct: Record<number, string | null> = {}
+        productImages?.forEach((img: any) => {
+          if (!productImagesByProduct[img.product_id]) {
+            productImagesByProduct[img.product_id] = img.url
+          }
+        })
+
+        // Enriquecer productos con variantes e imágenes
+        const enrichedProducts = products.map(product => {
+          const productVariants = variantsByProduct[product.id] || []
+          const defaultVariant = productVariants.find((v: any) => v.is_default) || productVariants[0] || null
+          
+          // Calcular stock efectivo si tiene variantes
+          const effectiveStock = productVariants.length > 0
+            ? productVariants.reduce((sum: number, v: any) => sum + (Number(v.stock) || 0), 0)
+            : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
+
+          return {
+            ...product,
+            variants: productVariants,
+            default_variant: defaultVariant,
+            image_url: productImagesByProduct[product.id] || product.image_url || null,
+            stock: effectiveStock,
+          }
+        })
+
+        // Adaptar productos enriquecidos al formato esperado por componentes
+        return (enrichedProducts.map(adaptProductForServer) || []) as Product[]
       } else {
         // Sin categoría: obtener productos específicos por slug
         const { data: products, error } = await supabase
@@ -124,13 +193,83 @@ export const getBestSellerProductsServer = cache(
           return []
         }
 
+        if (!products || products.length === 0) {
+          return []
+        }
+
         // Ordenar productos según la prioridad de BESTSELLER_PRODUCTS_SLUGS
         const orderedProducts = BESTSELLER_PRODUCTS_SLUGS.map(slug =>
           products?.find(p => p.slug === slug)
         ).filter(Boolean)
 
-        // Adaptar productos al formato esperado por componentes
-        const adaptedProducts = orderedProducts.map(adaptProductForServer) as Product[]
+        if (orderedProducts.length === 0) {
+          return []
+        }
+
+        // ✅ FIX: Obtener variantes e imágenes para enriquecer productos
+        const productIds = orderedProducts.map(p => p.id)
+        
+        // Obtener variantes
+        const { data: variants, error: variantsError } = await supabase
+          .from('product_variants')
+          .select('id, product_id, aikon_id, variant_slug, color_name, color_hex, measure, finish, price_list, price_sale, stock, is_active, is_default, image_url')
+          .in('product_id', productIds)
+          .eq('is_active', true)
+          .order('is_default', { ascending: false })
+
+        if (variantsError) {
+          console.warn('Error fetching variants:', variantsError)
+        }
+
+        // Obtener imágenes desde product_images
+        const { data: productImages, error: imagesError } = await supabase
+          .from('product_images')
+          .select('product_id, url, is_primary')
+          .in('product_id', productIds)
+          .order('is_primary', { ascending: false })
+          .order('display_order', { ascending: true })
+
+        if (imagesError) {
+          console.warn('Error fetching product images:', imagesError)
+        }
+
+        // Agrupar variantes e imágenes por producto
+        const variantsByProduct = (variants || []).reduce((acc, variant) => {
+          if (!acc[variant.product_id]) {
+            acc[variant.product_id] = []
+          }
+          acc[variant.product_id].push(variant)
+          return acc
+        }, {} as Record<number, any[]>)
+
+        const productImagesByProduct: Record<number, string | null> = {}
+        productImages?.forEach((img: any) => {
+          if (!productImagesByProduct[img.product_id]) {
+            productImagesByProduct[img.product_id] = img.url
+          }
+        })
+
+        // Enriquecer productos con variantes e imágenes
+        const enrichedProducts = orderedProducts.map(product => {
+          const productVariants = variantsByProduct[product.id] || []
+          const defaultVariant = productVariants.find((v: any) => v.is_default) || productVariants[0] || null
+          
+          // Calcular stock efectivo si tiene variantes
+          const effectiveStock = productVariants.length > 0
+            ? productVariants.reduce((sum: number, v: any) => sum + (Number(v.stock) || 0), 0)
+            : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
+
+          return {
+            ...product,
+            variants: productVariants,
+            default_variant: defaultVariant,
+            image_url: productImagesByProduct[product.id] || product.image_url || null,
+            stock: effectiveStock,
+          }
+        })
+
+        // Adaptar productos enriquecidos al formato esperado por componentes
+        const adaptedProducts = enrichedProducts.map(adaptProductForServer) as Product[]
 
         // Limitar a 10 productos
         return adaptedProducts.slice(0, PRODUCT_LIMITS.BESTSELLER)
