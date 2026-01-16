@@ -9,6 +9,7 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase/index'
+import { withTimeout, API_TIMEOUTS } from '@/lib/config/api-timeouts'
 
 interface TrackEvent {
   event: string
@@ -93,7 +94,8 @@ export async function POST(request: NextRequest) {
     // Usar Promise para asegurar que se ejecute incluso si setImmediate falla
     Promise.resolve().then(async () => {
       try {
-        const supabase = getSupabaseClient()
+        // Usar cliente admin para operaciones del servidor (más confiable en Vercel)
+        const supabase = getSupabaseClient(true)
         if (!supabase) {
           console.error('[API /api/track/events] ❌ Supabase client no disponible')
           return
@@ -148,8 +150,8 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        // Usar función RPC optimizada para insertar en tabla optimizada
-        const { error: rpcError, data: rpcData } = await supabase.rpc('insert_analytics_event_optimized', {
+        // Preparar parámetros RPC
+        const rpcParams = {
           p_event_name: event.event,
           p_category: event.category,
           p_action: event.action,
@@ -174,37 +176,108 @@ export async function POST(request: NextRequest) {
           p_device_type: deviceType || null,
           // Metadata adicional (se comprimirá)
           p_metadata: Object.keys(additionalMetadata).length > 0 ? additionalMetadata : null,
-        })
-
-        if (rpcError) {
-          console.error('[API /api/track/events] ❌ Error insertando evento analytics (RPC):', {
-            error: rpcError,
-            code: rpcError.code,
-            message: rpcError.message,
-            details: rpcError.details,
-            hint: rpcError.hint,
-            event: event.event,
-            category: event.category,
-            action: event.action,
-          })
-        } else {
-          console.log('[API /api/track/events] ✅ Evento insertado exitosamente:', {
-            eventId: rpcData,
-            event: event.event,
-            category: event.category,
-            action: event.action,
-          })
-          // Invalidar cache de métricas (fire-and-forget para no bloquear)
-          // No importa si falla, el evento ya está insertado
         }
+
+        // Función para intentar insertar el evento con reintentos
+        const insertEventWithRetry = async (maxRetries = 3): Promise<void> => {
+          let lastError: any = null
+          
+          for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+              // Usar timeout específico para operaciones de escritura en Supabase
+              const { error: rpcError, data: rpcData } = await withTimeout(
+                () => supabase.rpc('insert_analytics_event_optimized', rpcParams),
+                API_TIMEOUTS.supabase.write
+              )
+
+              if (rpcError) {
+                // Si es un error de red, intentar de nuevo
+                if (
+                  rpcError.message?.includes('fetch failed') ||
+                  rpcError.message?.includes('network') ||
+                  rpcError.message?.includes('ECONNREFUSED') ||
+                  rpcError.message?.includes('ETIMEDOUT') ||
+                  rpcError.message?.includes('ENOTFOUND')
+                ) {
+                  lastError = rpcError
+                  if (attempt < maxRetries) {
+                    const delay = Math.min(1000 * attempt, 3000) // Backoff exponencial, max 3s
+                    await new Promise(resolve => setTimeout(resolve, delay))
+                    continue
+                  }
+                }
+                
+                // Error que no es de red, no reintentar
+                console.error('[API /api/track/events] ❌ Error insertando evento analytics (RPC):', {
+                  error: rpcError,
+                  code: rpcError.code,
+                  message: rpcError.message,
+                  details: rpcError.details,
+                  hint: rpcError.hint,
+                  event: event.event,
+                  category: event.category,
+                  action: event.action,
+                  attempt,
+                })
+                return
+              }
+
+              // Éxito
+              if (process.env.NODE_ENV === 'development' || attempt > 1) {
+                console.log('[API /api/track/events] ✅ Evento insertado exitosamente:', {
+                  eventId: rpcData,
+                  event: event.event,
+                  category: event.category,
+                  action: event.action,
+                  attempt,
+                })
+              }
+              return
+            } catch (error: any) {
+              lastError = error
+              
+              // Verificar si es un error de red que justifica reintento
+              const isNetworkError = 
+                error?.message?.includes('fetch failed') ||
+                error?.message?.includes('TypeError: fetch failed') ||
+                error?.name === 'TypeError' ||
+                error?.code === 'ECONNREFUSED' ||
+                error?.code === 'ETIMEDOUT' ||
+                error?.code === 'ENOTFOUND'
+
+              if (isNetworkError && attempt < maxRetries) {
+                const delay = Math.min(1000 * attempt, 3000) // Backoff exponencial, max 3s
+                await new Promise(resolve => setTimeout(resolve, delay))
+                continue
+              }
+              
+              // No es un error de red o se agotaron los reintentos
+              throw error
+            }
+          }
+          
+          // Si llegamos aquí, todos los reintentos fallaron
+          throw lastError
+        }
+
+        // Intentar insertar con reintentos
+        await insertEventWithRetry()
       } catch (error: any) {
-        console.error('[API /api/track/events] ❌ Error procesando evento analytics (async):', {
-          error: error?.message || error,
+        // Log detallado del error para debugging
+        const errorDetails = {
+          error: error?.message || String(error),
           stack: error?.stack,
+          name: error?.name,
+          code: error?.code,
           event: event.event,
           category: event.category,
           action: event.action,
-        })
+        }
+        
+        // Solo loguear errores críticos en producción para no saturar logs
+        if (process.env.NODE_ENV === 'development' || error?.message?.includes('fetch failed')) {
+          console.error('[API /api/track/events] ❌ Error procesando evento analytics (async):', errorDetails)
+        }
       }
     }).catch(error => {
       console.error('[API /api/track/events] ❌ Error crítico en Promise:', error)
