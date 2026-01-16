@@ -16,14 +16,16 @@ import { BESTSELLER_PRODUCTS_SLUGS, PRODUCT_LIMITS } from '../constants'
 /**
  * Estrategia específica para productos bestseller
  * Maneja dos modos:
- * - Sin categoría: Filtra 17 productos (10 específicos + 7 adicionales populares)
+ * - Sin categoría: Filtra 17 productos hardcodeados de marcas Petrilac, Plavicon y Sinteplast
  * - Con categoría: Todos los productos de la categoría
  */
 export class BestsellerStrategy extends BaseProductStrategy {
   private categorySlug: string | null
   
   constructor(categorySlug: string | null = null, maxProducts: number = PRODUCT_LIMITS.BESTSELLER) {
-    super(maxProducts)
+    // ✅ FIX: Sin categoría, no limitar (el servidor ya retorna exactamente 17)
+    // Con categoría, usar el límite estándar
+    super(categorySlug ? maxProducts : 1000) // 1000 es un número alto para no limitar cuando no hay categoría
     this.categorySlug = categorySlug
   }
   

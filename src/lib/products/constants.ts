@@ -4,19 +4,32 @@
 
 /**
  * Lista de productos bestseller específicos (orden prioritario)
+ * 17 productos hardcodeados de marcas Petrilac, Plavicon y Sinteplast
  * Extraído de useBestSellerProducts.ts para centralización
  */
 export const BESTSELLER_PRODUCTS_SLUGS = [
-  'latex-impulso-generico',                    // 1. Latex Impulso 20L
-  'plavipint-fibrado-plavicon',                // 2. Plavicon Fibrado 20L
-  'membrana-performa-20l-plavicon',            // 3. Membrana Performa Plavicon 20L
-  'plavipint-techos-poliuretanico',            // 4. Recuplast Techos 20L
-  'recuplast-interior',                         // 5. Recuplast Interior 20L
-  'techos-poliuretanico',                       // 6. Plavicon Interior 20L
-  'latex-muros',                                // 7. Plavicon Muros 20L
-  'hidroesmalte-4l',                            // 8. Hidroesmalte 4L
-  'piscinas-solvente-plavipint-plavicon',      // 9. Pintura Piscinas Plavicon
-  'cielorrasos',                                // 10. Cielorraso Plavicon 20L
+  // Petrilac (6 productos)
+  'sintetico-converlux',                        // 1. Petrilac - Sintético Converlux
+  'impregnante-danzke-1l-brillante-petrilac',   // 2. Petrilac - Impregnante Danzke Brillante
+  'barniz-campbell',                           // 3. Petrilac - Barniz Campbell
+  'esmalte-sintetico-petrilac',                // 4. Petrilac - Esmalte Sintético
+  'latex-interior-petrilac',                    // 5. Petrilac - Látex Interior
+  'hidroesmalte-petrilac',                      // 6. Petrilac - Hidroesmalte
+  
+  // Plavicon (6 productos)
+  'plavipint-fibrado-plavicon',                // 7. Plavicon - Plavipint Fibrado
+  'membrana-performa-20l-plavicon',            // 8. Plavicon - Membrana Performa
+  'plavipint-techos-poliuretanico',            // 9. Plavicon - Plavipint Techos
+  'latex-frentes',                              // 10. Plavicon - Látex Frentes
+  'latex-interior',                             // 11. Plavicon - Látex Interior
+  'latex-muros',                                // 12. Plavicon - Látex Muros
+  
+  // Sinteplast (5 productos)
+  'recuplast-interior',                         // 13. Sinteplast - Recuplast Interior
+  'recuplast-bano-cocina',                      // 14. Sinteplast - Recuplast Baño y Cocina
+  'recuplast-techos',                           // 15. Sinteplast - Recuplast Techos
+  'membrana-cauchogoma-sinteplast',            // 16. Sinteplast - Membrana Cauchogoma
+  'latex-eco-painting',                         // 17. Sinteplast - Látex Eco Painting
 ] as const
 
 /**
@@ -36,7 +49,7 @@ export const DEFAULT_PRODUCT_QUERY_CONFIG = {
  * Límites de productos por tipo de sección
  */
 export const PRODUCT_LIMITS = {
-  BESTSELLER: 10,
+  BESTSELLER: 17, // ✅ FIX: Actualizado a 17 productos + 3 cards = 20 items
   FREE_SHIPPING: 30,
   NEW_ARRIVALS: 8,
   CATEGORY: 20,

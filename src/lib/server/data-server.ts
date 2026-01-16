@@ -336,8 +336,8 @@ export const getBestSellerProductsServer = cache(
         // Usar adaptApiProductsToComponents igual que NewArrivals
         return adaptApiProductsToComponents(apiProducts)
       } else {
-        // Sin categoría: obtener 17 productos (10 específicos + 7 adicionales populares)
-        // 1. Obtener productos específicos por slug
+        // Sin categoría: obtener exactamente 17 productos hardcodeados de marcas Petrilac, Plavicon y Sinteplast
+        // 1. Obtener productos específicos por slug (ordenados según BESTSELLER_PRODUCTS_SLUGS)
         const { data: specificProducts, error: specificError } = await supabase
           .from('products')
           .select('*')
@@ -352,110 +352,48 @@ export const getBestSellerProductsServer = cache(
         // Ordenar productos específicos según la prioridad de BESTSELLER_PRODUCTS_SLUGS
         const orderedSpecificProducts = BESTSELLER_PRODUCTS_SLUGS.map(slug =>
           specificProducts?.find(p => p.slug === slug)
-        ).filter(Boolean)
+        ).filter(Boolean) as any[]
 
         if (orderedSpecificProducts.length === 0) {
+          console.warn('[getBestSellerProductsServer] No se encontraron productos con los slugs especificados')
           return []
         }
 
-        // 2. Obtener 7 productos adicionales populares según analytics (excluyendo los ya obtenidos)
-        const specificProductIds = orderedSpecificProducts.map(p => p.id)
+        // ✅ FIX: Si tenemos menos de 17 productos, completar con productos de las mismas marcas
+        let allProducts = [...orderedSpecificProducts]
         
-        // Intentar obtener productos más vistos desde analytics
-        const mostViewedIds = await getMostViewedProductIds(supabase, specificProductIds, 7)
-        
-        let additionalProducts: any[] = []
-        
-        if (mostViewedIds.length > 0) {
-          // Obtener productos más vistos desde analytics
-          const { data: analyticsProducts, error: analyticsError } = await supabase
-            .from('products')
-            .select('*')
-            .in('id', mostViewedIds)
-            .eq('is_active', true)
-
-          if (!analyticsError && analyticsProducts) {
-            // Ordenar según el orden de mostViewedIds para mantener prioridad
-            const productsMap = new Map(analyticsProducts.map(p => [p.id, p]))
-            additionalProducts = mostViewedIds
-              .map(id => productsMap.get(id))
-              .filter(Boolean) as any[]
-          }
-
-          // Si no hay suficientes productos desde analytics, completar con created_at
-          if (additionalProducts.length < 7) {
-            const needed = 7 - additionalProducts.length
-            const additionalIds = [...specificProductIds, ...mostViewedIds]
-            
-            const { data: fallbackProducts, error: fallbackError } = await supabase
-              .from('products')
-              .select('*')
-              .eq('is_active', true)
-              .order('created_at', { ascending: false })
-              .limit(needed * 3) // Obtener más para asegurar que tengamos suficientes después de filtrar
-
-            if (!fallbackError && fallbackProducts) {
-              // Filtrar en JavaScript para excluir IDs ya obtenidos
-              const filtered = fallbackProducts.filter(
-                p => !additionalIds.includes(p.id)
-              ).slice(0, needed)
-              
-              additionalProducts = [
-                ...additionalProducts,
-                ...filtered
-              ]
-            }
-          }
-        } else {
-          // Fallback: si no hay datos de analytics, usar created_at
-          const { data: fallbackProducts, error: fallbackError } = await supabase
-            .from('products')
-            .select('*')
-            .eq('is_active', true)
-            .order('created_at', { ascending: false })
-            .limit(30) // Obtener más para asegurar que tengamos suficientes después de filtrar
-
-          if (fallbackError) {
-            console.warn('Error fetching additional products (fallback):', fallbackError)
-          } else if (fallbackProducts) {
-            // Filtrar en JavaScript para excluir IDs ya obtenidos
-            additionalProducts = fallbackProducts.filter(
-              p => !specificProductIds.includes(p.id)
-            ).slice(0, 7)
-          }
-        }
-
-        // Combinar productos: primero los específicos, luego los adicionales
-        // Asegurar que additionalProducts tenga máximo 7 productos
-        const limitedAdditionalProducts = (additionalProducts || []).slice(0, 7)
-        let allProducts = [
-          ...orderedSpecificProducts,
-          ...limitedAdditionalProducts
-        ]
-        
-        // ✅ FIX: Asegurar exactamente 17 productos
-        // Si tenemos menos de 17, intentar completar con más productos
         if (allProducts.length < 17) {
           const needed = 17 - allProducts.length
           const existingIds = allProducts.map(p => p.id)
+          const existingSlugs = allProducts.map(p => p.slug)
           
-          const { data: extraProducts, error: extraError } = await supabase
+          // Buscar productos adicionales de las marcas Petrilac, Plavicon y Sinteplast
+          const { data: additionalProducts, error: additionalError } = await supabase
             .from('products')
             .select('*')
+            .in('brand', ['Petrilac', 'Plavicon', 'Sinteplast'])
             .eq('is_active', true)
             .order('created_at', { ascending: false })
             .limit(needed * 3) // Obtener más para asegurar que tengamos suficientes después de filtrar
           
-          if (!extraError && extraProducts) {
-            // Filtrar en JavaScript para excluir IDs ya obtenidos
-            const filtered = extraProducts.filter(p => !existingIds.includes(p.id)).slice(0, needed)
+          if (!additionalError && additionalProducts) {
+            // Filtrar en JavaScript para excluir IDs y slugs ya obtenidos, y limitar a needed
+            const filtered = additionalProducts
+              .filter(p => !existingIds.includes(p.id) && !existingSlugs.includes(p.slug))
+              .slice(0, needed)
+            
             allProducts = [...allProducts, ...filtered]
           }
         }
         
-        // Limitar a exactamente 17 productos
+        // ✅ FIX: Limitar a exactamente 17 productos
         if (allProducts.length > 17) {
           allProducts = allProducts.slice(0, 17)
+        }
+        
+        // Si aún tenemos menos de 17, loguear para debug
+        if (allProducts.length < 17) {
+          console.warn(`[getBestSellerProductsServer] Solo se obtuvieron ${allProducts.length} productos en vez de 17`)
         }
 
         // ✅ FIX: Obtener variantes e imágenes para enriquecer productos
