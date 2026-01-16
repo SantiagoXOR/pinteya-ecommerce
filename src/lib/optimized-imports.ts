@@ -175,6 +175,8 @@ import {
   IconDeviceDesktopAnalytics,
   // IconBrandTabler no existe, usar IconBrandTabler o alternativa
   IconSend,
+  IconLayoutGrid,
+  IconArrowsVertical,
 } from '@tabler/icons-react'
 
 // Re-exportar con nombres compatibles (aliases para facilitar migración)
@@ -335,6 +337,8 @@ export {
   IconDeviceDesktopAnalytics as HardDrive,
   IconDatabase as MemoryStick, // BrandTabler no existe, usar Database como alternativa
   IconSend as Send,
+  IconLayoutGrid as Grid,
+  IconArrowsVertical as Scroll,
 }
 
 // ===================================
