@@ -108,7 +108,20 @@ export async function POST(request: NextRequest) {
         }
 
         // Extraer metadata de productos del metadata o campos directos
-        const productId = event.productId || event.metadata?.productId || event.metadata?.item_id
+        // Intentar obtener productId de múltiples fuentes, incluyendo label
+        let productId = event.productId || event.metadata?.productId || event.metadata?.item_id
+        
+        // Si no hay productId pero hay label con formato de ID, intentar extraerlo
+        if (!productId && event.label) {
+          // Intentar extraer número del label (ej: "product-123" -> 123)
+          const labelMatch = event.label.match(/(\d+)/)
+          if (labelMatch) {
+            productId = labelMatch[1]
+          } else if (!isNaN(Number(event.label))) {
+            productId = event.label
+          }
+        }
+        
         const productName = event.productName || event.metadata?.productName || event.metadata?.item_name
         const categoryName = event.category_name || event.category || event.metadata?.category || event.metadata?.category_name
         const price = event.price || event.metadata?.price || event.value
@@ -147,11 +160,11 @@ export async function POST(request: NextRequest) {
           p_page: event.page || null,
           p_user_agent: event.userAgent || null,
           // Metadata de productos
-          p_product_id: productId ? parseInt(String(productId)) : null,
+          p_product_id: productId && !isNaN(Number(productId)) ? parseInt(String(productId), 10) : null,
           p_product_name: productName || null,
           p_category_name: categoryName || null,
-          p_price: price ? parseFloat(String(price)) : null,
-          p_quantity: quantity ? parseInt(String(quantity)) : null,
+          p_price: price && !isNaN(Number(price)) ? parseFloat(String(price)) : null,
+          p_quantity: quantity && !isNaN(Number(quantity)) ? parseInt(String(quantity), 10) : null,
           // Metadata de elementos
           p_element_selector: elementSelector || null,
           p_element_x: elementX ? parseInt(String(elementX)) : null,

@@ -42,14 +42,25 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate') || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     const endDate = searchParams.get('endDate') || new Date().toISOString()
 
+    // #region agent log
+    console.log('[DEBUG] /api/analytics/elements called', { route, device, startDate, endDate })
+    // #endregion
+
     // Obtener page_id para la ruta
-    const { data: pageData } = await supabase
+    const { data: pageData, error: pageError } = await supabase
       .from('analytics_pages')
       .select('id')
       .eq('path', route)
       .single()
 
+    // #region agent log
+    console.log('[DEBUG] pageData query result', { pageData, pageError, route })
+    // #endregion
+
     if (!pageData) {
+      // #region agent log
+      console.log('[DEBUG] Route not found, returning 404', { route })
+      // #endregion
       return NextResponse.json({ error: 'Route not found' }, { status: 404 })
     }
 
@@ -81,6 +92,19 @@ export async function GET(request: NextRequest) {
 
     const { data: events, error } = await query
 
+    // #region agent log
+    console.log('[DEBUG] events query result', { 
+      eventsCount: events?.length || 0, 
+      error,
+      pageId: pageData.id,
+      route,
+      device,
+      startDate,
+      endDate,
+      sampleEvent: events?.[0] || null
+    })
+    // #endregion
+
     if (error) {
       console.error('Error obteniendo eventos de elementos:', error)
       return NextResponse.json({ error: 'Error obteniendo datos' }, { status: 500 })
@@ -102,9 +126,25 @@ export async function GET(request: NextRequest) {
       }
     }>()
 
+    // #region agent log
+    console.log('[DEBUG] processing events', { 
+      totalEvents: events?.length || 0,
+      eventsWithSelector: events?.filter((e: any) => e.element_selector)?.length || 0
+    })
+    // #endregion
+
     events?.forEach((event: any) => {
       const selector = event.element_selector
-      if (!selector) return
+      if (!selector) {
+        // #region agent log
+        console.log('[DEBUG] event without selector skipped', { 
+          eventId: event.id,
+          hasSelector: !!event.element_selector,
+          action: event.analytics_actions?.name
+        })
+        // #endregion
+        return
+      }
 
       if (!elementMap.has(selector)) {
         elementMap.set(selector, {
@@ -151,6 +191,10 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // #region agent log
+    console.log('[DEBUG] elementMap size', { elementMapSize: elementMap.size })
+    // #endregion
+
     // Convertir a formato de respuesta
     const elements: ElementMetrics[] = Array.from(elementMap.values())
       .map(element => {
@@ -188,6 +232,10 @@ export async function GET(request: NextRequest) {
 
     const mostInteracted = elements[0] || null
     const conversionElements = elements.filter(e => e.interactions.conversions > 0)
+
+    // #region agent log
+    console.log('[DEBUG] returning response', { elementsCount: elements.length, route, device })
+    // #endregion
 
     return NextResponse.json({
       route,

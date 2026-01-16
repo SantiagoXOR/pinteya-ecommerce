@@ -20,7 +20,7 @@ interface SearchQuery {
   conversionRate: number
 }
 
-export const SearchAnalytics: React.FC<SearchAnalyticsProps> = ({ startDate, endDate }) => {
+export const SearchAnalytics: React.FC<SearchAnalyticsProps> = React.memo(({ startDate, endDate }) => {
   const [topQueries, setTopQueries] = useState<SearchQuery[]>([])
   const [noResults, setNoResults] = useState<Array<{ query: string; count: number }>>([])
   const [conversionRate, setConversionRate] = useState(0)
@@ -28,6 +28,7 @@ export const SearchAnalytics: React.FC<SearchAnalyticsProps> = ({ startDate, end
 
   useEffect(() => {
     fetchSearchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDate, endDate])
 
   const fetchSearchData = async () => {
@@ -158,5 +159,7 @@ export const SearchAnalytics: React.FC<SearchAnalyticsProps> = ({ startDate, end
     </div>
   )
 }
+
+SearchAnalytics.displayName = 'SearchAnalytics'
 
 export default SearchAnalytics

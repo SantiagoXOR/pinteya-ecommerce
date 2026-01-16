@@ -24,7 +24,7 @@ interface ProductAnalyticsProps {
   endDate: string
 }
 
-export const ProductAnalytics: React.FC<ProductAnalyticsProps> = ({ startDate, endDate }) => {
+export const ProductAnalytics: React.FC<ProductAnalyticsProps> = React.memo(({ startDate, endDate }) => {
   const [topProducts, setTopProducts] = useState<ProductData[]>([])
   const [topViewed, setTopViewed] = useState<ProductData[]>([])
   const [productsByCategory, setProductsByCategory] = useState<Array<{
@@ -37,6 +37,7 @@ export const ProductAnalytics: React.FC<ProductAnalyticsProps> = ({ startDate, e
 
   useEffect(() => {
     fetchProductData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startDate, endDate, sortBy])
 
   const fetchProductData = async () => {
@@ -227,5 +228,7 @@ export const ProductAnalytics: React.FC<ProductAnalyticsProps> = ({ startDate, e
     </div>
   )
 }
+
+ProductAnalytics.displayName = 'ProductAnalytics'
 
 export default ProductAnalytics

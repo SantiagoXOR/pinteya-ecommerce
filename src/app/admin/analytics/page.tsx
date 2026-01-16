@@ -46,9 +46,49 @@ const AnalyticsPage: React.FC = () => {
   const [interactions, setInteractions] = useState<UserInteraction[]>([])
   const [loadingAnalysis, setLoadingAnalysis] = useState(false)
   const [loadingInteractions, setLoadingInteractions] = useState(false)
+  
+  // ✅ BYPASS: Verificar inmediatamente si NEXT_PUBLIC_BYPASS_AUTH está activo (disponible en cliente)
+  const bypassAuthEnv = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true'
+  const [bypassAuth, setBypassAuth] = useState<boolean | null>(bypassAuthEnv ? true : null)
+
+  // Verificar si el bypass está activo desde el servidor (como respaldo, solo si no tenemos NEXT_PUBLIC_BYPASS_AUTH)
+  useEffect(() => {
+    // Si ya tenemos NEXT_PUBLIC_BYPASS_AUTH activo, no necesitamos verificar el servidor
+    if (bypassAuthEnv) {
+      setBypassAuth(true)
+      return
+    }
+    const checkBypass = async () => {
+      try {
+        const response = await fetch('/api/dev/check-bypass')
+        if (response.ok) {
+          const data = await response.json()
+          setBypassAuth(data.bypassEnabled)
+        } else {
+          setBypassAuth(false)
+        }
+      } catch (error) {
+        console.error('[Analytics Page] Error verificando bypass:', error)
+        setBypassAuth(false)
+      }
+    }
+    checkBypass()
+  }, [])
 
   // Verificar permisos de administrador - Usar rol de la sesión de NextAuth
   useEffect(() => {
+    // ✅ BYPASS: Si BYPASS_AUTH está activo, permitir acceso sin verificar sesión
+    const isBypassActive = bypassAuth === true || bypassAuthEnv
+    if (isBypassActive) {
+      console.log('[Analytics Page] ✅ BYPASS_AUTH activo, permitiendo acceso sin autenticación')
+      return
+    }
+
+    // Si el bypass aún no se ha verificado y no tenemos NEXT_PUBLIC_BYPASS_AUTH, esperar
+    if (bypassAuth === null && !bypassAuthEnv) {
+      return
+    }
+
     // Esperar a que todo esté cargado
     if (!isLoaded) {
       return
@@ -71,7 +111,7 @@ const AnalyticsPage: React.FC = () => {
     }
 
     console.log('[Analytics Page] Acceso permitido. Rol:', userRole || 'cargando...')
-  }, [user, isLoaded, router])
+  }, [user, isLoaded, router, bypassAuth, bypassAuthEnv])
 
   useEffect(() => {
     loadConversionData()
@@ -237,8 +277,11 @@ const AnalyticsPage: React.FC = () => {
     }
   }
 
-  // Mostrar pantalla de carga solo mientras se carga la sesión
-  if (!isLoaded) {
+  // ✅ BYPASS: Si BYPASS_AUTH está activo, permitir acceso sin verificar sesión
+  const isBypassActive = bypassAuth === true || bypassAuthEnv
+  
+  // Mostrar pantalla de carga mientras se verifica el bypass o se carga la sesión
+  if (bypassAuth === null || (!isBypassActive && !isLoaded)) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <div className='text-center'>
@@ -249,11 +292,11 @@ const AnalyticsPage: React.FC = () => {
     )
   }
 
-  // Verificar si el usuario tiene permisos - Usar rol de la sesión directamente
+  // Verificar si el usuario tiene permisos - Usar rol de la sesión directamente (solo si no hay bypass)
   const userRole = user ? (user as any)?.role : null
   
-  // Si no hay usuario, redirigir (ya se maneja en useEffect, pero por si acaso)
-  if (!user) {
+  // Si no hay usuario y no hay bypass, redirigir (ya se maneja en useEffect, pero por si acaso)
+  if (!isBypassActive && !user) {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <div className='text-center'>
@@ -264,8 +307,8 @@ const AnalyticsPage: React.FC = () => {
     )
   }
   
-  // Si el usuario tiene un rol y no es admin, mostrar acceso denegado
-  if (userRole && userRole !== 'admin') {
+  // Si el usuario tiene un rol y no es admin y no hay bypass, mostrar acceso denegado
+  if (!isBypassActive && userRole && userRole !== 'admin') {
     return (
       <div className='min-h-screen flex items-center justify-center bg-gray-50'>
         <div className='text-center'>

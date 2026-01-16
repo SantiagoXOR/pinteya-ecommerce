@@ -619,8 +619,37 @@ class MetricsCalculator {
 
     cartAdditions.forEach(event => {
       // Priorizar campos directos de la BD sobre metadata
-      const productId = event.product_id?.toString() || event.label || event.metadata?.productId || event.metadata?.item_id || 'unknown'
-      const productName = event.product_name || event.metadata?.productName || event.metadata?.item_name || 'Unknown Product'
+      let productId = event.product_id?.toString() || event.metadata?.productId || event.metadata?.item_id
+      
+      // Si no hay productId pero hay label, intentar extraerlo
+      if (!productId && event.label) {
+        const labelMatch = event.label.match(/(\d+)/)
+        if (labelMatch) {
+          productId = labelMatch[1]
+        } else if (!isNaN(Number(event.label))) {
+          productId = event.label
+        } else {
+          productId = event.label // Usar label completo como fallback
+        }
+      }
+      
+      if (!productId) productId = 'unknown'
+      
+      // Obtener productName - priorizar BD, luego metadata, luego intentar buscar por ID
+      let productName = event.product_name || event.metadata?.productName || event.metadata?.item_name
+      
+      // Si no hay productName pero tenemos productId, usar formato descriptivo
+      if (!productName && productId && productId !== 'unknown') {
+        // Si productId es numérico, intentar buscar en tabla products
+        if (!isNaN(Number(productId))) {
+          productName = `Producto #${productId}` // Formato temporal hasta que se busque en BD
+        } else {
+          productName = productId // Usar el ID como nombre si no es numérico
+        }
+      }
+      
+      if (!productName) productName = 'Unknown Product'
+      
       const category = event.category_name || event.metadata?.category || event.metadata?.category_name || 'Unknown'
       const price = event.price || event.value || event.metadata?.price || 0
       const quantity = event.quantity || event.metadata?.quantity || 1
@@ -671,9 +700,38 @@ class MetricsCalculator {
     }>()
 
     productViews.forEach(event => {
-      const productId = event.label || event.metadata?.productId || 'unknown'
-      const productName = event.metadata?.productName || 'Unknown Product'
-      const category = event.metadata?.category || event.metadata?.category_name || 'Unknown'
+      // Priorizar campos directos de la BD sobre metadata
+      let productId = event.product_id?.toString() || event.metadata?.productId || event.metadata?.item_id
+      
+      // Si no hay productId pero hay label, intentar extraerlo
+      if (!productId && event.label) {
+        const labelMatch = event.label.match(/(\d+)/)
+        if (labelMatch) {
+          productId = labelMatch[1]
+        } else if (!isNaN(Number(event.label))) {
+          productId = event.label
+        } else {
+          productId = event.label // Usar label completo como fallback
+        }
+      }
+      
+      if (!productId) productId = 'unknown'
+      
+      // Obtener productName - priorizar BD, luego metadata
+      let productName = event.product_name || event.metadata?.productName || event.metadata?.item_name
+      
+      // Si no hay productName pero tenemos productId, usar formato descriptivo
+      if (!productName && productId && productId !== 'unknown') {
+        if (!isNaN(Number(productId))) {
+          productName = `Producto #${productId}`
+        } else {
+          productName = productId
+        }
+      }
+      
+      if (!productName) productName = 'Unknown Product'
+      
+      const category = event.category_name || event.metadata?.category || event.metadata?.category_name || 'Unknown'
       const key = `${productId}:${productName}`
 
       if (!productViewsMap.has(key)) {

@@ -22,16 +22,12 @@ interface PageInteraction {
   averageTime: number
 }
 
-export const PageInteractions: React.FC<PageInteractionsProps> = ({ startDate, endDate }) => {
+export const PageInteractions: React.FC<PageInteractionsProps> = React.memo(({ startDate, endDate }) => {
   const [pageInteractions, setPageInteractions] = useState<PageInteraction[]>([])
   const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'total' | 'clicks' | 'time'>('total')
 
-  useEffect(() => {
-    fetchPageInteractions()
-  }, [startDate, endDate])
-
-  const fetchPageInteractions = async () => {
+  const fetchPageInteractions = React.useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(
@@ -58,11 +54,11 @@ export const PageInteractions: React.FC<PageInteractionsProps> = ({ startDate, e
     } finally {
       setLoading(false)
     }
-  }
+  }, [startDate, endDate, sortBy])
 
   useEffect(() => {
     fetchPageInteractions()
-  }, [sortBy])
+  }, [fetchPageInteractions])
 
   if (loading) {
     return (
@@ -179,5 +175,7 @@ export const PageInteractions: React.FC<PageInteractionsProps> = ({ startDate, e
     </motion.div>
   )
 }
+
+PageInteractions.displayName = 'PageInteractions'
 
 export default PageInteractions
