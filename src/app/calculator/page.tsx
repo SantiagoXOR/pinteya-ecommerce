@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Calculator, Paintbrush, Home, Ruler, CheckCircle, Sparkles, ShoppingCart, Wrench } from '@/lib/optimized-imports'
 import { useFilteredProducts } from '@/hooks/useFilteredProducts'
 import { getMainImage } from '@/lib/adapters/product-adapter'
-import Image from 'next/image'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { toast } from 'react-hot-toast'
+import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 
 // Configuración de rendimiento por tipo de pintura (m²/L)
 const PAINT_COVERAGE: Record<string, number> = {
@@ -390,45 +390,37 @@ export default function CalculatorPage() {
                           </div>
                           <div className='space-y-3'>
                             {paintProducts.slice(0, 3).map((product) => {
-                              const currentPrice = product.discounted_price || product.price
-                              const hasDiscount = product.discounted_price && product.discounted_price < product.price
                               const productImage = getMainImage(product)
+                              const discount = product.discounted_price && product.discounted_price < product.price
+                                ? Math.round(((product.price - product.discounted_price) / product.price) * 100)
+                                : undefined
 
                               return (
                                 <div
                                   key={product.id}
-                                  className='flex items-center gap-3 p-4 border-2 border-[#eb6313]/30 bg-black/20 rounded-2xl hover:shadow-lg hover:border-[#eb6313]/50 transition-all duration-200'
+                                  className='bg-black/20 rounded-2xl border-2 border-[#eb6313]/30 overflow-hidden [&>div]:bg-black/20 [&>div]:border-[#eb6313]/30'
                                 >
-                                  <div className='w-16 h-16 bg-gradient-to-br from-[#eb6313]/20 to-[#bd4811]/20 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 border border-[#eb6313]/30'>
-                                    <Image
-                                      src={productImage}
-                                      alt={product.name}
-                                      width={64}
-                                      height={64}
-                                      className='w-full h-full object-cover'
-                                    />
-                                  </div>
-                                  <div className='flex-1 min-w-0'>
-                                    <h4 className='font-bold text-white line-clamp-1'>{product.name}</h4>
-                                    <p className='text-xs text-gray-300'>{product.brand || 'Sin marca'}</p>
-                                    <div className='flex items-center gap-2'>
-                                      <p className='text-[#eb6313] font-bold text-lg'>
-                                        ${currentPrice.toLocaleString()}
-                                      </p>
-                                      {hasDiscount && (
-                                        <span className='text-xs text-gray-400 line-through'>
-                                          ${product.price.toLocaleString()}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <Button
-                                    size='sm'
-                                    onClick={() => handleAddToCart(product)}
-                                    className='bg-[#eb6313] hover:bg-[#bd4811] text-white shadow-md flex-shrink-0'
-                                  >
-                                    <ShoppingCart className='w-4 h-4' />
-                                  </Button>
+                                  <CommercialProductCard
+                                    slug={product.slug || `product-${product.id}`}
+                                    image={productImage}
+                                    title={product.name}
+                                    brand={product.brand}
+                                    price={product.price || 0}
+                                    originalPrice={product.discounted_price && product.discounted_price < product.price ? product.price : undefined}
+                                    discount={discount ? `${discount}%` : undefined}
+                                    stock={product.stock || 0}
+                                    productId={product.id}
+                                    variants={product.variants || []}
+                                    medida={product.medida}
+                                    color={product.color}
+                                    onAddToCart={() => {
+                                      toast.success(`${product.name} agregado al carrito`)
+                                    }}
+                                    showCartAnimation={true}
+                                    freeShipping={product.freeShipping || false}
+                                    className='bg-transparent border-0 shadow-none [&_*]:text-white [&_h3]:text-white [&_p]:text-gray-200'
+                                    style={{ backgroundColor: 'transparent' }}
+                                  />
                                 </div>
                               )
                             })}
@@ -445,45 +437,37 @@ export default function CalculatorPage() {
                           </div>
                           <div className='space-y-3'>
                             {accessoryProducts.slice(0, 3).map((product) => {
-                              const currentPrice = product.discounted_price || product.price
-                              const hasDiscount = product.discounted_price && product.discounted_price < product.price
                               const productImage = getMainImage(product)
+                              const discount = product.discounted_price && product.discounted_price < product.price
+                                ? Math.round(((product.price - product.discounted_price) / product.price) * 100)
+                                : undefined
 
                               return (
                                 <div
                                   key={product.id}
-                                  className='flex items-center gap-3 p-4 border-2 border-[#eb6313]/30 bg-black/20 rounded-2xl hover:shadow-lg hover:border-[#eb6313]/50 transition-all duration-200'
+                                  className='bg-black/20 rounded-2xl border-2 border-[#eb6313]/30 overflow-hidden [&>div]:bg-black/20 [&>div]:border-[#eb6313]/30'
                                 >
-                                  <div className='w-16 h-16 bg-gradient-to-br from-[#eb6313]/20 to-[#bd4811]/20 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 border border-[#eb6313]/30'>
-                                    <Image
-                                      src={productImage}
-                                      alt={product.name}
-                                      width={64}
-                                      height={64}
-                                      className='w-full h-full object-cover'
-                                    />
-                                  </div>
-                                  <div className='flex-1 min-w-0'>
-                                    <h4 className='font-bold text-white line-clamp-1'>{product.name}</h4>
-                                    <p className='text-xs text-gray-300'>{product.brand || 'Sin marca'}</p>
-                                    <div className='flex items-center gap-2'>
-                                      <p className='text-[#eb6313] font-bold text-lg'>
-                                        ${currentPrice.toLocaleString()}
-                                      </p>
-                                      {hasDiscount && (
-                                        <span className='text-xs text-gray-400 line-through'>
-                                          ${product.price.toLocaleString()}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <Button
-                                    size='sm'
-                                    onClick={() => handleAddToCart(product)}
-                                    className='bg-[#eb6313] hover:bg-[#bd4811] text-white shadow-md flex-shrink-0'
-                                  >
-                                    <ShoppingCart className='w-4 h-4' />
-                                  </Button>
+                                  <CommercialProductCard
+                                    slug={product.slug || `product-${product.id}`}
+                                    image={productImage}
+                                    title={product.name}
+                                    brand={product.brand}
+                                    price={product.price || 0}
+                                    originalPrice={product.discounted_price && product.discounted_price < product.price ? product.price : undefined}
+                                    discount={discount ? `${discount}%` : undefined}
+                                    stock={product.stock || 0}
+                                    productId={product.id}
+                                    variants={product.variants || []}
+                                    medida={product.medida}
+                                    color={product.color}
+                                    onAddToCart={() => {
+                                      toast.success(`${product.name} agregado al carrito`)
+                                    }}
+                                    showCartAnimation={true}
+                                    freeShipping={product.freeShipping || false}
+                                    className='bg-transparent border-0 shadow-none [&_*]:text-white [&_h3]:text-white [&_p]:text-gray-200'
+                                    style={{ backgroundColor: 'transparent' }}
+                                  />
                                 </div>
                               )
                             })}
