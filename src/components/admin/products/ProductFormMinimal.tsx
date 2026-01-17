@@ -49,7 +49,11 @@ const ProductSchema = z.object({
       z.null(),
     ]).optional().nullable()
   ),
-  color: z.string().max(100).optional(),
+  // ✅ CORREGIDO: Permitir null para productos con variantes (color se define en variantes)
+  color: z.union([
+    z.string().max(100),
+    z.null(),
+  ]).optional().nullable(),
   medida: z.array(z.string()).optional(),
   terminaciones: z.array(z.string()).optional(),
   
