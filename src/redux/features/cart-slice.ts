@@ -24,6 +24,37 @@ export type CartItem = {
   }
 }
 
+/**
+ * Compara dos items del carrito para determinar si son iguales
+ * Dos items son iguales si tienen el mismo id Y los mismos attributes (color, medida, finish)
+ */
+function areItemsEqual(item1: CartItem, item2: CartItem): boolean {
+  // Primero comparar id
+  if (item1.id !== item2.id) {
+    return false
+  }
+
+  // Normalizar attributes para comparación
+  const normalizeAttr = (value?: string) => {
+    if (!value) return ''
+    return value.trim().toLowerCase()
+  }
+
+  const attrs1 = item1.attributes || {}
+  const attrs2 = item2.attributes || {}
+
+  // Comparar cada atributo normalizado
+  const color1 = normalizeAttr(attrs1.color)
+  const color2 = normalizeAttr(attrs2.color)
+  const medida1 = normalizeAttr(attrs1.medida)
+  const medida2 = normalizeAttr(attrs2.medida)
+  const finish1 = normalizeAttr(attrs1.finish)
+  const finish2 = normalizeAttr(attrs2.finish)
+
+  // Dos items son iguales si tienen el mismo id y los mismos attributes
+  return color1 === color2 && medida1 === medida2 && finish1 === finish2
+}
+
 // Función para obtener el estado inicial con persistencia
 const getInitialState = (): InitialState => {
   // En el servidor, siempre retornar estado vacío
@@ -48,21 +79,16 @@ export const cart = createSlice({
   initialState,
   reducers: {
     addItemToCart: (state, action: PayloadAction<CartItem>) => {
-      const { id, title, price, quantity, discountedPrice, imgs, attributes } = action.payload
-      const existingItem = state.items.find(item => item.id === id)
+      const newItem = action.payload
+      // Buscar item existente usando comparación por id + attributes (variantes)
+      const existingItem = state.items.find(item => areItemsEqual(item, newItem))
 
       if (existingItem) {
-        existingItem.quantity += quantity
+        // Si el item ya existe con las mismas variantes, sumar cantidad
+        existingItem.quantity += newItem.quantity
       } else {
-        state.items.push({
-          id,
-          title,
-          price,
-          quantity,
-          discountedPrice,
-          imgs,
-          attributes,
-        })
+        // Si no existe o tiene variantes diferentes, agregar como nuevo item
+        state.items.push(newItem)
       }
     },
     removeItemFromCart: (state, action: PayloadAction<number>) => {
