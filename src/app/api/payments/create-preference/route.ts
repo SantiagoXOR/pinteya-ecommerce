@@ -584,13 +584,46 @@ export async function POST(request: NextRequest) {
     for (const item of orderData.items) {
       const product = typedProducts.find(p => p.id === parseInt(item.id));
       if (product) {
-        const finalPrice = getFinalPrice(product);
+        // 🔧 CORREGIDO: Si el item tiene variant_id, usar precio de la variante
+        let finalPrice: number
+        if (item.variant_id && product.product_variants) {
+          const variantId = parseInt(item.variant_id)
+          const variant = product.product_variants.find((v: any) => v.id === variantId)
+          if (variant) {
+            // Priorizar price_sale si existe y es mayor a 0, sino usar price_list
+            finalPrice = variant.price_sale && variant.price_sale > 0 ? variant.price_sale : (variant.price_list || 0)
+          } else {
+            finalPrice = getFinalPrice(product)
+          }
+        } else {
+          finalPrice = getFinalPrice(product)
+        }
+        
+        // Validar que finalPrice sea válido
+        if (!finalPrice || finalPrice <= 0) {
+          finalPrice = product.discounted_price && product.discounted_price > 0 
+            ? product.discounted_price 
+            : (product.price || 0)
+        }
+        
         const lineTotal = finalPrice * item.quantity;
         
         let productLine = `${bullet} ${product.name}`;
         
-        // Agregar detalles del producto si están disponibles
+        // Agregar detalles del producto y variante si están disponibles
         const details = [];
+        
+        // 🔧 Agregar información de variante si está disponible
+        if (item.variant_id && product.product_variants) {
+          const variantId = parseInt(item.variant_id)
+          const variant = product.product_variants.find((v: any) => v.id === variantId)
+          if (variant) {
+            if (variant.color_name) details.push(`Color: ${variant.color_name}`)
+            if (variant.finish) details.push(`Terminación: ${variant.finish}`)
+            if (variant.measure) details.push(`Medida: ${variant.measure}`)
+          }
+        }
+        
         if (product.category?.name) details.push(`Categoría: ${product.category.name}`);
         if (product.brand) details.push(`Marca: ${product.brand}`);
         
@@ -772,21 +805,63 @@ export async function POST(request: NextRequest) {
         throw new Error(`Order item not found for product ${product.id}`)
       }
 
-      // Usar precio con descuento si existe, sino precio normal
-      const finalPrice = getFinalPrice(product)
+      // 🔧 CORREGIDO: Si el item tiene variant_id, usar precio de la variante
+      let finalPrice: number
+      let variantDetails: string[] = []
+      
+      if (orderItem.variant_id && product.product_variants) {
+        const variantId = parseInt(orderItem.variant_id)
+        const variant = product.product_variants.find((v: any) => v.id === variantId)
+        if (variant) {
+          // Priorizar price_sale si existe y es mayor a 0, sino usar price_list
+          finalPrice = variant.price_sale && variant.price_sale > 0 ? variant.price_sale : (variant.price_list || 0)
+          // Agregar detalles de variante
+          if (variant.color_name) variantDetails.push(`Color: ${variant.color_name}`)
+          if (variant.finish) variantDetails.push(`Terminación: ${variant.finish}`)
+          if (variant.measure) variantDetails.push(`Medida: ${variant.measure}`)
+        } else {
+          finalPrice = getFinalPrice(product)
+        }
+      } else {
+        finalPrice = getFinalPrice(product)
+      }
+
+      // Validar que finalPrice sea válido
+      if (!finalPrice || finalPrice <= 0) {
+        console.error(`⚠️ Precio inválido para producto ${product.name} en MercadoPago items:`, {
+          finalPrice,
+          variant_id: orderItem.variant_id,
+          product_id: product.id
+        })
+        finalPrice = product.discounted_price && product.discounted_price > 0 
+          ? product.discounted_price 
+          : (product.price || 0)
+      }
+
       const itemSubtotal = finalPrice * orderItem.quantity
       
       // Calcular porción del envío que corresponde a este producto
       const shippingPortion = itemsTotal > 0 ? (itemSubtotal / itemsTotal) * shippingCost : 0
       const adjustedPrice = finalPrice + (shippingPortion / orderItem.quantity)
 
+      // 🔧 Construir título y descripción con información de variante
+      let productTitle = product.name
+      let productDescription = `Pinteya - ${product.name}`
+      
+      if (variantDetails.length > 0) {
+        productTitle += ` (${variantDetails.join(', ')})`
+        productDescription += ` - ${variantDetails.join(', ')}`
+      }
+      
+      if (product.category?.name) productDescription += ` (${product.category.name})`
+      if (product.brand) productDescription += ` - Marca: ${product.brand}`
+      productDescription += ` - Cantidad: ${orderItem.quantity}`
+
       return {
         id: product.id.toString(),
-        title: product.name,
-        // ✅ MEJORAR: Descripción más descriptiva que incluya cantidad y categoría
-        // Nota: Mercado Pago solo muestra el título del primer producto en la UI,
-        // pero la descripción ayuda a identificar cada producto en el backend
-        description: `Pinteya - ${product.name}${product.category?.name ? ` (${product.category.name})` : ''} - Cantidad: ${orderItem.quantity}`,
+        title: productTitle,
+        // ✅ MEJORAR: Descripción más descriptiva que incluya variante, cantidad y categoría
+        description: productDescription,
         picture_url: product.images?.previews?.[0] || '',
         category_id: product.category?.slug || 'general',
         quantity: orderItem.quantity,
