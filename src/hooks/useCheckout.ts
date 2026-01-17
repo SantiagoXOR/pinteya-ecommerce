@@ -471,7 +471,8 @@ export const useCheckout = () => {
           quantity: item.quantity,
           image: item.imgs?.previews?.[0] || '',
           // 🔧 AGREGAR: Información de la variante para el mensaje de WhatsApp
-          variant_id: item.variant_id,
+          // 🔧 CORREGIDO: Convertir variant_id a string si existe (el esquema espera string)
+          variant_id: item.variant_id ? item.variant_id.toString() : undefined,
           variant_color: item.variant_color,
         })),
         payer: {
@@ -601,7 +602,8 @@ export const useCheckout = () => {
           quantity: item.quantity,
           image: item.imgs?.previews?.[0] || '',
           // 🔧 AGREGAR: Información de la variante para el mensaje de WhatsApp
-          variant_id: item.variant_id,
+          // 🔧 CORREGIDO: Convertir variant_id a string si existe (el esquema espera string)
+          variant_id: item.variant_id ? item.variant_id.toString() : undefined,
           variant_color: item.variant_color,
         })),
         payer: {
