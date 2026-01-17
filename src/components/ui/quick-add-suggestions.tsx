@@ -11,6 +11,36 @@ import { resolveProductImage } from '@/components/ui/product-card-commercial/uti
 import type { ProductVariant } from '@/components/ui/product-card-commercial/types'
 import Image from 'next/image'
 import { useCartUnified } from '@/hooks/useCartUnified'
+import { getVariantEffectivePrice } from '@/lib/products/utils/variant-utils'
+
+/**
+ * Calcula el precio efectivo de un producto considerando variantes
+ * Prioriza el precio de la variante por defecto sobre el precio del producto base
+ */
+function getEffectiveProductPrice(product: ProductWithCategory): number {
+  // Prioridad 1: Precio de variante por defecto
+  if (product.default_variant) {
+    return getVariantEffectivePrice(product.default_variant)
+  }
+  // Prioridad 2: Precio del producto base
+  return product.discounted_price || product.price || 0
+}
+
+/**
+ * Calcula el precio original de un producto para mostrar descuentos
+ * Retorna null si no hay precio original (sin descuento)
+ */
+function getOriginalProductPrice(product: ProductWithCategory): number | null {
+  // Si tiene variante con descuento, usar price_list como original
+  if (product.default_variant?.price_list && product.default_variant?.price_sale) {
+    return Number(product.default_variant.price_list)
+  }
+  // Si no tiene variantes pero tiene descuento, usar price como original
+  if (!product.default_variant && product.discounted_price && product.price && product.discounted_price < product.price) {
+    return product.price
+  }
+  return null
+}
 
 interface QuickAddSuggestionsProps {
   onAddToCart?: (productId: string) => void
@@ -36,11 +66,11 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
         setLoading(true)
         setError(null)
 
-        // Obtener productos con descuento (populares) limitados a 3
+        // Obtener más productos para filtrar por envío gratis
         const response = await getProducts(
           {
-            limit: 3,
-            sortBy: 'created_at',
+            limit: 30, // Obtener más para filtrar después
+            sortBy: 'price',
             sortOrder: 'desc',
           },
           abortController.signal
@@ -52,15 +82,31 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
         }
 
         if (response.success && response.data) {
-          setProducts(response.data)
+          // Filtrar productos con envío gratis (precio >= $50,000)
+          const FREE_SHIPPING_THRESHOLD = 50000
+          const freeShippingProducts = response.data.filter(product => {
+            // Si tiene variantes, verificar si alguna califica
+            if (product.variants && product.variants.length > 0) {
+              return product.variants.some((v: any) => {
+                const variantPrice = Number(v.price_sale) || Number(v.price_list) || 0
+                return variantPrice >= FREE_SHIPPING_THRESHOLD
+              })
+            }
+            // Si no tiene variantes, verificar precio del producto
+            const effectivePrice = getEffectiveProductPrice(product)
+            return effectivePrice >= FREE_SHIPPING_THRESHOLD
+          })
+          
+          // Limitar a 6 productos para que sean visibles sin scroll
+          setProducts(freeShippingProducts.slice(0, 6))
         } else {
           setError('No se pudieron cargar los productos')
         }
       } catch (err) {
         // Solo mostrar error si no fue cancelado y no es AbortError
         if (!abortController.signal.aborted && err instanceof Error && err.name !== 'AbortError') {
-          console.error('Error fetching popular products:', err)
-          setError('Error al cargar productos populares')
+          console.error('Error fetching free shipping products:', err)
+          setError('Error al cargar productos con envío gratis')
         }
         // No loggear AbortError ya que es comportamiento esperado durante cleanup
       } finally {
@@ -87,13 +133,19 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
       // Obtener la imagen principal del producto
       const mainImage = getMainImage(product)
       
+      // Calcular precios efectivos considerando variantes
+      const effectivePrice = getEffectiveProductPrice(product)
+      const originalPrice = getOriginalProductPrice(product)
+      // Si hay precio original mayor al efectivo, significa que hay descuento
+      const discountedPrice = originalPrice && originalPrice > effectivePrice ? effectivePrice : effectivePrice
+      
       // Servicio unificado: normaliza y agrega
       addProduct(
         {
           id: product.id,
           name: product.name,
-          price: product.price,
-          discounted_price: product.discounted_price || product.price,
+          price: originalPrice || effectivePrice, // Usar precio original si existe, sino el efectivo
+          discounted_price: discountedPrice, // Precio con descuento si aplica
           images: product.images || [],
           brand: product.brand,
         },
@@ -115,8 +167,8 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
       {/* Header */}
       <div className='flex items-center justify-between mb-4'>
         <div>
-          <h4 className='font-bold text-gray-900 text-sm'>Productos Populares</h4>
-          <p className='text-xs text-gray-600'>Agrega rápidamente a tu carrito</p>
+          <h4 className='font-bold text-gray-900 text-sm'>Productos con Envío Gratis</h4>
+          <p className='text-xs text-gray-600'>Agrega productos de $50.000+ para envío gratis</p>
         </div>
       </div>
 
@@ -139,9 +191,9 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
           </div>
         ) : (
           products.map(product => {
-            const currentPrice = product.discounted_price || product.price
-            const originalPrice = product.discounted_price ? product.price : null
-            const hasDiscount = originalPrice && currentPrice < originalPrice
+            const currentPrice = getEffectiveProductPrice(product)
+            const originalPrice = getOriginalProductPrice(product)
+            const hasDiscount = originalPrice !== null && currentPrice < originalPrice
 
             return (
               <div
@@ -171,6 +223,27 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
                     {product.name}
                   </h5>
                   <p className='text-2xs text-gray-500 mb-1'>{product.brand || 'Sin marca'}</p>
+
+                  {/* Información de variante */}
+                  {product.default_variant && (
+                    <div className='flex flex-wrap items-center gap-1.5 mb-1'>
+                      {product.default_variant.color_name && (
+                        <span className='text-2xs text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded'>
+                          Color: {product.default_variant.color_name}
+                        </span>
+                      )}
+                      {product.default_variant.measure && (
+                        <span className='text-2xs text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded'>
+                          {product.default_variant.measure}
+                        </span>
+                      )}
+                      {product.default_variant.finish && (
+                        <span className='text-2xs text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded'>
+                          {product.default_variant.finish}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   <div className='flex items-center gap-2'>
                     <span className='font-bold text-sm' style={{ color: '#c2410b' }}>

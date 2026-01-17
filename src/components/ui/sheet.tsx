@@ -252,8 +252,11 @@ const SheetContent = React.forwardRef<
           if (isBottom) {
             // ⚡ FASE 5: Agrupar lecturas de geometría en requestAnimationFrame
             requestAnimationFrame(() => {
-              // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
-// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+              const target = e.target as HTMLElement;
+              const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+              const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
+              const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
+              
               // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
               // Permitir que el evento pase al bottom bar
               if (isBottomNavArea || isInsideBottomNav) {
@@ -267,8 +270,11 @@ const SheetContent = React.forwardRef<
         }}
         onClick={(e) => {
           if (isBottom) {
-            // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
-// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
+            const target = e.target as HTMLElement;
+            const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
+            const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
+            const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
+            
             // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
             if (isBottomNavArea || isInsideBottomNav) {
               e.stopPropagation();

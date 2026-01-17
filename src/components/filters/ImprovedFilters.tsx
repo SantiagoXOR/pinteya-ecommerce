@@ -1,19 +1,23 @@
 "use client"
 
 import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Checkbox } from '@/components/ui/checkbox'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { X, Filter } from '@/lib/optimized-imports'
-import { cn } from '@/lib/core/utils'
 import CategoryTogglePills from '@/components/Home/CategoryTogglePills'
+import {
+  SizeFilterPills,
+  ColorFilterPills,
+  BrandFilterPills,
+  PriceRangeFilterPills,
+  FreeShippingPill,
+} from './pills'
 
 export interface ImprovedFiltersProps {
   variant?: 'horizontal' | 'sidebar'
@@ -45,8 +49,9 @@ export interface ImprovedFiltersProps {
 
 /**
  * Agrupa medidas por tipo (litros, kilogramos, números, granos, etc.)
+ * Retorna un objeto con claves de nombres de grupos y arrays de medidas
  */
-const groupMeasures = (measures: string[]) => {
+const groupMeasures = (measures: string[]): Record<string, string[]> => {
   const litros = measures.filter(m => /^\d+(\.\d+)?L$/i.test(m)).sort((a, b) => parseFloat(a) - parseFloat(b))
   const kilos = measures.filter(m => /^\d+(\.\d+)?KG$/i.test(m)).sort((a, b) => parseFloat(a) - parseFloat(b))
   const numeros = measures.filter(m => /^N°?\d+/i.test(m)).sort((a, b) => {
@@ -66,15 +71,23 @@ const groupMeasures = (measures: string[]) => {
     !granos.includes(m) && !gramos.includes(m) && !dimensiones.includes(m)
   )
   
-  return { litros, kilos, numeros, granos, gramos, dimensiones, otros }
+  const grouped: Record<string, string[]> = {}
+  if (litros.length > 0) grouped['Litros'] = litros
+  if (kilos.length > 0) grouped['Kilogramos'] = kilos
+  if (gramos.length > 0) grouped['Gramos'] = gramos
+  if (numeros.length > 0) grouped['Números/Tamaños'] = numeros
+  if (granos.length > 0) grouped['Granos (Lijas)'] = granos
+  if (dimensiones.length > 0) grouped['Dimensiones'] = dimensiones
+  if (otros.length > 0) grouped['Otros'] = otros
+  
+  return grouped
 }
 
 /**
- * Componente de filtros mejorado usando shadcn/ui
- * - Accordion para secciones colapsables
- * - Checkboxes para multi-select
- * - Solo nombres de marcas (sin logos)
- * - Mejor UX móvil y desktop
+ * Componente de filtros mejorado con pills mobile-first
+ * - Pills horizontales con scroll para cada sección
+ * - Diseño mobile-first con touch targets de 44px
+ * - Sin accordions, todas las secciones visibles
  */
 export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
   variant = 'horizontal',
@@ -107,18 +120,28 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
     (selectedPriceRanges?.length || 0) +
     (freeShippingOnly ? 1 : 0)
 
-  // Handler para toggle de checkbox
-  const handleToggle = (value: string, selected: string[], onChange: (values: string[]) => void) => {
-    const isSelected = selected.includes(value)
-    const next = isSelected ? selected.filter(s => s !== value) : [...selected, value]
-    onChange(next)
-  }
+  // Agrupar medidas para mostrar por tipo
+  const groupedMeasures = React.useMemo(() => {
+    if (sizeOptions.length === 0) return {}
+    return groupMeasures(sizeOptions)
+  }, [sizeOptions])
+
+  // Determinar qué secciones deben estar abiertas por defecto (si tienen filtros activos)
+  const defaultOpenSections = React.useMemo(() => {
+    const open: string[] = []
+    if (selectedSizes.length > 0) open.push('medidas')
+    if (selectedColors.length > 0) open.push('colores')
+    if (selectedBrands.length > 0) open.push('marcas')
+    if (selectedPriceRanges && selectedPriceRanges.length > 0) open.push('precio')
+    if (freeShippingOnly) open.push('envio')
+    return open
+  }, [selectedSizes.length, selectedColors.length, selectedBrands.length, selectedPriceRanges?.length, freeShippingOnly])
 
   if (isHorizontal) {
     // ✅ FIX: Layout mobile-first - vertical en mobile, horizontal en desktop
     // Fondo transparente/semi-transparente para tema oscuro
     return (
-      <div className='bg-white/10 backdrop-blur-sm rounded-lg shadow-sm px-3 py-3 sm:px-4 md:px-4 mb-4 sm:mb-6 border border-white/20'>
+      <div className='bg-white/10 backdrop-blur-sm rounded-lg shadow-sm px-3 py-2 sm:px-4 md:px-4 mb-4 sm:mb-6 border border-white/20'>
         <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 sm:mb-3'>
           <div className='flex items-center gap-2'>
             <Filter className='h-5 w-5 sm:h-4 sm:w-4 text-white' />
@@ -137,7 +160,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           )}
         </div>
 
-        {/* Categorías (mantener estilo actual) */}
+        {/* Categorías */}
         <div className='mb-3'>
           <CategoryTogglePills
             selectedCategories={selectedCategories}
@@ -146,193 +169,23 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           />
         </div>
 
-        {/* Accordion para otros filtros */}
-        <Accordion type='multiple' className='w-full'>
+        {/* Secciones de filtros con pills - Layout colapsable compacto */}
+        <Accordion type='multiple' defaultValue={defaultOpenSections} className='w-full'>
           {/* Medidas */}
-          {sizeOptions.length > 0 && (() => {
-            const grouped = groupMeasures(sizeOptions)
-            return (
-              <AccordionItem value='medidas' className='border-none'>
-                <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
-                  Medidas {selectedSizes.length > 0 && `(${selectedSizes.length})`}
-                </AccordionTrigger>
-                <AccordionContent className='pt-2'>
-                  <ScrollArea className='h-[250px] sm:h-[300px] pr-2 sm:pr-4'>
-                    <div className='space-y-4'>
-                      {grouped.litros.length > 0 && (
-                        <div>
-                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Litros</p>
-                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
-                            {grouped.litros.map(size => (
-                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                                <Checkbox
-                                  id={`size-${size}`}
-                                  checked={selectedSizes.includes(size)}
-                                  onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
-                                  className='w-5 h-5 sm:w-4 sm:h-4'
-                                />
-                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
-                                  {size}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {grouped.kilos.length > 0 && (
-                        <div>
-                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Kilogramos</p>
-                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
-                            {grouped.kilos.map(size => (
-                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                                <Checkbox
-                                  id={`size-${size}`}
-                                  checked={selectedSizes.includes(size)}
-                                  onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
-                                  className='w-5 h-5 sm:w-4 sm:h-4'
-                                />
-                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
-                                  {size}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {grouped.gramos.length > 0 && (
-                        <div>
-                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Gramos</p>
-                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
-                            {grouped.gramos.map(size => (
-                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                                <Checkbox
-                                  id={`size-${size}`}
-                                  checked={selectedSizes.includes(size)}
-                                  onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
-                                  className='w-5 h-5 sm:w-4 sm:h-4'
-                                />
-                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
-                                  {size}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {grouped.numeros.length > 0 && (
-                        <div>
-                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Números/Tamaños</p>
-                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
-                            {grouped.numeros.map(size => (
-                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                                <Checkbox
-                                  id={`size-${size}`}
-                                  checked={selectedSizes.includes(size)}
-                                  onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
-                                  className='w-5 h-5 sm:w-4 sm:h-4'
-                                />
-                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
-                                  {size}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {grouped.granos.length > 0 && (
-                        <div>
-                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Granos (Lijas)</p>
-                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
-                            {grouped.granos.map(size => (
-                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                                <Checkbox
-                                  id={`size-${size}`}
-                                  checked={selectedSizes.includes(size)}
-                                  onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
-                                  className='w-5 h-5 sm:w-4 sm:h-4'
-                                />
-                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
-                                  {size}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {grouped.dimensiones.length > 0 && (
-                        <div>
-                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Dimensiones</p>
-                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
-                            {grouped.dimensiones.map(size => (
-                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                                <Checkbox
-                                  id={`size-${size}`}
-                                  checked={selectedSizes.includes(size)}
-                                  onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
-                                  className='w-5 h-5 sm:w-4 sm:h-4'
-                                />
-                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
-                                  {size}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {grouped.otros.length > 0 && (
-                        <div>
-                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Otros</p>
-                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
-                            {grouped.otros.map(size => (
-                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                                <Checkbox
-                                  id={`size-${size}`}
-                                  checked={selectedSizes.includes(size)}
-                                  onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
-                                  className='w-5 h-5 sm:w-4 sm:h-4'
-                                />
-                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
-                                  {size}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </AccordionContent>
-              </AccordionItem>
-            )
-          })()}
-
-          {/* Marcas */}
-          {brands.length > 0 && (
-            <AccordionItem value='marcas' className='border-none'>
-              <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
-                Marcas {selectedBrands.length > 0 && `(${selectedBrands.length})`}
+          {sizeOptions.length > 0 && (
+            <AccordionItem value='medidas' className='border-none'>
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+                Medidas {selectedSizes.length > 0 && <span className='text-white/70 ml-1'>({selectedSizes.length})</span>}
               </AccordionTrigger>
-              <AccordionContent className='pt-2'>
-                <ScrollArea className='h-[200px] sm:h-[200px] pr-2 sm:pr-4'>
-                  <div className='space-y-3 sm:space-y-2'>
-                    {brands.map(brand => (
-                      <div key={brand.slug} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                        <Checkbox
-                          id={`brand-${brand.slug}`}
-                          checked={selectedBrands.includes(brand.slug)}
-                          onCheckedChange={() => handleToggle(brand.slug, selectedBrands, onBrandsChange)}
-                          className='w-5 h-5 sm:w-4 sm:h-4'
-                        />
-                        <label
-                          htmlFor={`brand-${brand.slug}`}
-                          className='text-base sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white flex-1'
-                        >
-                          {brand.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
+              <AccordionContent className='pt-1 pb-2'>
+                <div className='max-h-[200px] overflow-y-auto pr-2'>
+                  <SizeFilterPills
+                    options={sizeOptions}
+                    selected={selectedSizes}
+                    onChange={onSizesChange}
+                    groupedBy={Object.keys(groupedMeasures).length > 0 ? groupedMeasures : undefined}
+                  />
+                </div>
               </AccordionContent>
             </AccordionItem>
           )}
@@ -340,34 +193,35 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Colores */}
           {colorOptions && colorOptions.length > 0 && (
             <AccordionItem value='colores' className='border-none'>
-              <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
-                Colores {selectedColors.length > 0 && `(${selectedColors.length})`}
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+                Colores {selectedColors.length > 0 && <span className='text-white/70 ml-1'>({selectedColors.length})</span>}
               </AccordionTrigger>
-              <AccordionContent className='pt-2'>
-                <ScrollArea className='h-[200px] sm:h-[200px] pr-2 sm:pr-4'>
-                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-2'>
-                    {colorOptions.map(color => (
-                      <div key={color.name} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                        <Checkbox
-                          id={`color-${color.name}`}
-                          checked={selectedColors.includes(color.name)}
-                          onCheckedChange={() => handleToggle(color.name, selectedColors, onColorsChange)}
-                          className='w-5 h-5 sm:w-4 sm:h-4'
-                        />
-                        <label
-                          htmlFor={`color-${color.name}`}
-                          className='text-base sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-3 sm:gap-2 flex-1'
-                        >
-                          <span
-                            className='w-5 h-5 sm:w-4 sm:h-4 rounded-full border border-gray-300 flex-shrink-0'
-                            style={{ backgroundColor: color.hex }}
-                          />
-                          {color.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
+              <AccordionContent className='pt-1 pb-2'>
+                <div className='max-h-[150px] overflow-y-auto pr-2'>
+                  <ColorFilterPills
+                    options={colorOptions}
+                    selected={selectedColors}
+                    onChange={onColorsChange}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+
+          {/* Marcas */}
+          {brands.length > 0 && (
+            <AccordionItem value='marcas' className='border-none'>
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+                Marcas {selectedBrands.length > 0 && <span className='text-white/70 ml-1'>({selectedBrands.length})</span>}
+              </AccordionTrigger>
+              <AccordionContent className='pt-1 pb-2'>
+                <div className='max-h-[150px] overflow-y-auto pr-2'>
+                  <BrandFilterPills
+                    options={brands}
+                    selected={selectedBrands}
+                    onChange={onBrandsChange}
+                  />
+                </div>
               </AccordionContent>
             </AccordionItem>
           )}
@@ -375,28 +229,15 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Precio */}
           {onPriceRangesChange && priceRanges.length > 0 && (
             <AccordionItem value='precio' className='border-none'>
-              <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
-                Precio {selectedPriceRanges && selectedPriceRanges.length > 0 && `(${selectedPriceRanges.length})`}
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+                Precio {selectedPriceRanges && selectedPriceRanges.length > 0 && <span className='text-white/70 ml-1'>({selectedPriceRanges.length})</span>}
               </AccordionTrigger>
-              <AccordionContent className='pt-2'>
-                <div className='space-y-3 sm:space-y-2 pr-2 sm:pr-4'>
-                  {priceRanges.map((range, idx) => (
-                    <div key={`price-${idx}`} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
-                      <Checkbox
-                        id={`price-${idx}`}
-                        checked={selectedPriceRanges?.includes(range) || false}
-                        onCheckedChange={() => handleToggle(range, selectedPriceRanges || [], onPriceRangesChange)}
-                        className='w-5 h-5 sm:w-4 sm:h-4'
-                      />
-                        <label
-                          htmlFor={`price-${idx}`}
-                          className='text-base sm:text-sm font-medium leading-none cursor-pointer text-white flex-1'
-                        >
-                        {range}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+              <AccordionContent className='pt-1 pb-2'>
+                <PriceRangeFilterPills
+                  options={priceRanges}
+                  selected={selectedPriceRanges || []}
+                  onChange={onPriceRangesChange}
+                />
               </AccordionContent>
             </AccordionItem>
           )}
@@ -404,24 +245,14 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Envío Gratis */}
           {onFreeShippingChange && (
             <AccordionItem value='envio' className='border-none'>
-              <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
                 Envío
               </AccordionTrigger>
-              <AccordionContent className='pt-2'>
-                <div className='flex items-center space-x-3 sm:space-x-2 pr-2 sm:pr-4 min-h-[44px]'>
-                  <Checkbox
-                    id='envio-gratis'
-                    checked={freeShippingOnly}
-                    onCheckedChange={(checked) => onFreeShippingChange(checked as boolean)}
-                    className='w-5 h-5 sm:w-4 sm:h-4'
-                  />
-                  <label
-                    htmlFor='envio-gratis'
-                    className='text-base sm:text-sm font-medium leading-none cursor-pointer text-white flex-1'
-                  >
-                    Solo productos con envío gratis
-                  </label>
-                </div>
+              <AccordionContent className='pt-1 pb-2'>
+                <FreeShippingPill
+                  enabled={freeShippingOnly}
+                  onChange={onFreeShippingChange}
+                />
               </AccordionContent>
             </AccordionItem>
           )}
@@ -430,7 +261,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
     )
   }
 
-  // Layout sidebar (vertical)
+  // Layout sidebar (vertical) - mismo diseño que horizontal pero en sidebar
   return (
     <div className='bg-white/10 backdrop-blur-sm rounded-lg shadow-sm p-4 space-y-4 border border-white/20'>
       <div className='flex items-center justify-between'>
@@ -450,111 +281,99 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
         )}
       </div>
 
-      <Accordion type='multiple' defaultValue={['categorias', 'medidas', 'marcas']} className='w-full'>
-        {/* Categorías */}
-        <AccordionItem value='categorias'>
-          <AccordionTrigger className='text-sm'>
-            Categorías {selectedCategories.length > 0 && `(${selectedCategories.length})`}
-          </AccordionTrigger>
-          <AccordionContent>
-            <CategoryTogglePills
-              selectedCategories={selectedCategories}
-              onCategoryChange={onCategoryChange}
-              variant='default'
-            />
-          </AccordionContent>
-        </AccordionItem>
+      {/* Categorías */}
+      <div className='mb-3'>
+        <CategoryTogglePills
+          selectedCategories={selectedCategories}
+          onCategoryChange={onCategoryChange}
+          variant='default'
+        />
+      </div>
 
+      {/* Secciones de filtros con pills - Layout colapsable compacto */}
+      <Accordion type='multiple' defaultValue={defaultOpenSections} className='w-full'>
         {/* Medidas */}
         {sizeOptions.length > 0 && (
-          <AccordionItem value='medidas'>
-            <AccordionTrigger className='text-sm'>
-              Medidas {selectedSizes.length > 0 && `(${selectedSizes.length})`}
+          <AccordionItem value='medidas' className='border-none'>
+            <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              Medidas {selectedSizes.length > 0 && <span className='text-white/70 ml-1'>({selectedSizes.length})</span>}
             </AccordionTrigger>
-            <AccordionContent>
-              <ScrollArea className='h-[250px]'>
-                <div className='grid grid-cols-2 gap-2 pr-4'>
-                  {sizeOptions.map(size => (
-                    <div key={size} className='flex items-center space-x-2'>
-                      <Checkbox
-                        id={`sidebar-size-${size}`}
-                        checked={selectedSizes.includes(size)}
-                        onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
-                      />
-                      <label
-                        htmlFor={`sidebar-size-${size}`}
-                        className='text-sm font-medium leading-none cursor-pointer'
-                      >
-                        {size}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-        {/* Marcas */}
-        {brands.length > 0 && (
-          <AccordionItem value='marcas'>
-            <AccordionTrigger className='text-sm'>
-              Marcas {selectedBrands.length > 0 && `(${selectedBrands.length})`}
-            </AccordionTrigger>
-            <AccordionContent>
-              <ScrollArea className='h-[250px]'>
-                <div className='space-y-2 pr-4'>
-                  {brands.map(brand => (
-                    <div key={brand.slug} className='flex items-center space-x-2'>
-                      <Checkbox
-                        id={`sidebar-brand-${brand.slug}`}
-                        checked={selectedBrands.includes(brand.slug)}
-                        onCheckedChange={() => handleToggle(brand.slug, selectedBrands, onBrandsChange)}
-                      />
-                      <label
-                        htmlFor={`sidebar-brand-${brand.slug}`}
-                        className='text-sm font-medium leading-none cursor-pointer flex-1'
-                      >
-                        {brand.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+            <AccordionContent className='pt-1 pb-2'>
+              <div className='max-h-[200px] overflow-y-auto pr-2'>
+                <SizeFilterPills
+                  options={sizeOptions}
+                  selected={selectedSizes}
+                  onChange={onSizesChange}
+                  groupedBy={Object.keys(groupedMeasures).length > 0 ? groupedMeasures : undefined}
+                />
+              </div>
             </AccordionContent>
           </AccordionItem>
         )}
 
         {/* Colores */}
         {colorOptions && colorOptions.length > 0 && (
-          <AccordionItem value='colores'>
-            <AccordionTrigger className='text-sm'>
-              Colores {selectedColors.length > 0 && `(${selectedColors.length})`}
+          <AccordionItem value='colores' className='border-none'>
+            <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              Colores {selectedColors.length > 0 && <span className='text-white/70 ml-1'>({selectedColors.length})</span>}
             </AccordionTrigger>
-            <AccordionContent>
-              <ScrollArea className='h-[250px]'>
-                <div className='grid grid-cols-1 gap-2 pr-4'>
-                  {colorOptions.map(color => (
-                    <div key={color.name} className='flex items-center space-x-2'>
-                      <Checkbox
-                        id={`sidebar-color-${color.name}`}
-                        checked={selectedColors.includes(color.name)}
-                        onCheckedChange={() => handleToggle(color.name, selectedColors, onColorsChange)}
-                      />
-                      <label
-                        htmlFor={`sidebar-color-${color.name}`}
-                        className='text-sm font-medium leading-none cursor-pointer flex items-center gap-2 flex-1'
-                      >
-                        <span
-                          className='w-5 h-5 rounded-full border-2 border-gray-300'
-                          style={{ backgroundColor: color.hex }}
-                        />
-                        {color.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+            <AccordionContent className='pt-1 pb-2'>
+              <div className='max-h-[150px] overflow-y-auto pr-2'>
+                <ColorFilterPills
+                  options={colorOptions}
+                  selected={selectedColors}
+                  onChange={onColorsChange}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {/* Marcas */}
+        {brands.length > 0 && (
+          <AccordionItem value='marcas' className='border-none'>
+            <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              Marcas {selectedBrands.length > 0 && <span className='text-white/70 ml-1'>({selectedBrands.length})</span>}
+            </AccordionTrigger>
+            <AccordionContent className='pt-1 pb-2'>
+              <div className='max-h-[150px] overflow-y-auto pr-2'>
+                <BrandFilterPills
+                  options={brands}
+                  selected={selectedBrands}
+                  onChange={onBrandsChange}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {/* Precio */}
+        {onPriceRangesChange && priceRanges.length > 0 && (
+          <AccordionItem value='precio' className='border-none'>
+            <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              Precio {selectedPriceRanges && selectedPriceRanges.length > 0 && <span className='text-white/70 ml-1'>({selectedPriceRanges.length})</span>}
+            </AccordionTrigger>
+            <AccordionContent className='pt-1 pb-2'>
+              <PriceRangeFilterPills
+                options={priceRanges}
+                selected={selectedPriceRanges || []}
+                onChange={onPriceRangesChange}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {/* Envío Gratis */}
+        {onFreeShippingChange && (
+          <AccordionItem value='envio' className='border-none'>
+            <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              Envío
+            </AccordionTrigger>
+            <AccordionContent className='pt-1 pb-2'>
+              <FreeShippingPill
+                enabled={freeShippingOnly}
+                onChange={onFreeShippingChange}
+              />
             </AccordionContent>
           </AccordionItem>
         )}

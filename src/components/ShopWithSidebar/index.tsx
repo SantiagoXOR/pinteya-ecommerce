@@ -189,29 +189,42 @@ const ShopWithSidebar = () => {
   }, [products])
 
   // ✅ FIX: Función helper para convertir rangos de precio a priceMin/priceMax
+  // Mejora: Maneja múltiples rangos correctamente usando el mínimo de todos los mínimos y el máximo de todos los máximos
   const parsePriceRanges = useCallback((ranges: string[]) => {
     if (ranges.length === 0) {
       return { priceMin: undefined, priceMax: undefined }
     }
 
-    // Si hay múltiples rangos, usar el mínimo y máximo de todos
+    // Si hay múltiples rangos, usar el mínimo de todos los mínimos y el máximo de todos los máximos
     let minPrice: number | undefined = undefined
     let maxPrice: number | undefined = undefined
 
     ranges.forEach(range => {
       if (range === 'Menos de $10.000') {
-        maxPrice = maxPrice === undefined ? 10000 : Math.min(maxPrice, 10000)
+        // Este rango solo tiene máximo
+        const rangeMax = 10000
+        maxPrice = maxPrice === undefined ? rangeMax : Math.min(maxPrice, rangeMax)
+        // No establecer mínimo para este rango
       } else if (range === '$10.000 - $25.000') {
-        minPrice = minPrice === undefined ? 10000 : Math.min(minPrice, 10000)
-        maxPrice = maxPrice === undefined ? 25000 : Math.max(maxPrice, 25000)
+        const rangeMin = 10000
+        const rangeMax = 25000
+        minPrice = minPrice === undefined ? rangeMin : Math.min(minPrice, rangeMin)
+        maxPrice = maxPrice === undefined ? rangeMax : Math.max(maxPrice, rangeMax)
       } else if (range === '$25.000 - $50.000') {
-        minPrice = minPrice === undefined ? 25000 : Math.min(minPrice, 25000)
-        maxPrice = maxPrice === undefined ? 50000 : Math.max(maxPrice, 50000)
+        const rangeMin = 25000
+        const rangeMax = 50000
+        minPrice = minPrice === undefined ? rangeMin : Math.min(minPrice, rangeMin)
+        maxPrice = maxPrice === undefined ? rangeMax : Math.max(maxPrice, rangeMax)
       } else if (range === '$50.000 - $100.000') {
-        minPrice = minPrice === undefined ? 50000 : Math.min(minPrice, 50000)
-        maxPrice = maxPrice === undefined ? 100000 : Math.max(maxPrice, 100000)
+        const rangeMin = 50000
+        const rangeMax = 100000
+        minPrice = minPrice === undefined ? rangeMin : Math.min(minPrice, rangeMin)
+        maxPrice = maxPrice === undefined ? rangeMax : Math.max(maxPrice, rangeMax)
       } else if (range === 'Más de $100.000') {
-        minPrice = minPrice === undefined ? 100000 : Math.max(minPrice, 100000)
+        // Este rango solo tiene mínimo
+        const rangeMin = 100000
+        minPrice = minPrice === undefined ? rangeMin : Math.max(minPrice, rangeMin)
+        // No establecer máximo para este rango
       }
     })
 
@@ -276,8 +289,30 @@ const ShopWithSidebar = () => {
       })
     }
 
+    // ✅ FIX: Filtrar por brands client-side (los slugs se convierten a nombres para comparar)
+    if (selectedBrands && selectedBrands.length > 0) {
+      result = result.filter(product => {
+        const productBrand = (product.brand || '').trim()
+        if (!productBrand) return false
+        
+        return selectedBrands.some(brandSlug => {
+          // Buscar el nombre de la marca correspondiente al slug
+          const brand = brandsList.find(b => b.slug === brandSlug)
+          const brandName = brand ? brand.name : brandSlug
+          
+          // Normalizar comparación (case-insensitive)
+          const normalizedProductBrand = productBrand.toUpperCase()
+          const normalizedBrandName = brandName.trim().toUpperCase()
+          
+          return normalizedProductBrand === normalizedBrandName || 
+                 normalizedProductBrand.includes(normalizedBrandName) ||
+                 normalizedBrandName.includes(normalizedProductBrand)
+        })
+      })
+    }
+
     return result
-  }, [products, selectedSizes, selectedColors])
+  }, [products, selectedSizes, selectedColors, selectedBrands, brandsList])
 
   // UI de filtros unificada (reutilizable en sidebar y barra móvil)
 
@@ -360,9 +395,15 @@ const ShopWithSidebar = () => {
                   }}
                   brands={brandsList}
                   selectedBrands={selectedBrands}
-                  onBrandsChange={(brands) => {
-                    setSelectedBrands(brands)
-                    updateFilters({ brands })
+                  onBrandsChange={(brandSlugs) => {
+                    setSelectedBrands(brandSlugs)
+                    // ✅ FIX: Convertir slugs a nombres de marca para el servidor
+                    // La API espera nombres de marca, no slugs
+                    const brandNames = brandSlugs.map(slug => {
+                      const brand = brandsList.find(b => b.slug === slug)
+                      return brand ? brand.name : slug
+                    })
+                    updateFilters({ brands: brandNames, page: 1 })
                   }}
                   selectedPriceRanges={selectedPriceRanges}
                   onPriceRangesChange={(ranges) => {
@@ -374,11 +415,20 @@ const ShopWithSidebar = () => {
                   freeShippingOnly={freeShippingOnly}
                   onFreeShippingChange={(enabled) => {
                     setFreeShippingOnly(enabled)
-                    // ✅ FIX: Filtrar productos con precio >= $50.000 para envío gratis
+                    // ✅ FIX: Combinar filtro de envío gratis con filtros de precio existentes
                     if (enabled) {
-                      filterByPriceRange(50000, undefined)
+                      // Si hay filtros de precio existentes, combinarlos con el mínimo de $50.000
+                      if (selectedPriceRanges.length > 0) {
+                        const { priceMin, priceMax } = parsePriceRanges(selectedPriceRanges)
+                        // Usar el máximo entre el mínimo de precio existente y $50.000
+                        const combinedMin = Math.max(50000, priceMin || 0)
+                        filterByPriceRange(combinedMin, priceMax)
+                      } else {
+                        // Si no hay filtros de precio, solo aplicar el mínimo de $50.000
+                        filterByPriceRange(50000, undefined)
+                      }
                     } else {
-                      // Si se desactiva, restaurar filtros de precio si existen
+                      // Si se desactiva, restaurar solo los filtros de precio que existían antes
                       if (selectedPriceRanges.length > 0) {
                         const { priceMin, priceMax } = parsePriceRanges(selectedPriceRanges)
                         filterByPriceRange(priceMin, priceMax)
