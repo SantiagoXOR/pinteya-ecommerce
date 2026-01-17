@@ -847,7 +847,8 @@ export const useCheckout = () => {
           quantity: item.quantity,
           // Usar 'unit_price' para cumplir con CreateCashOrderSchema
           unit_price: item.discountedPrice || item.price,
-          // 🔧 Incluir información de variante (color, terminación, etc.)
+          // 🔧 Incluir información de variante (variant_id, color, terminación, etc.)
+          variant_id: item.variant_id ? item.variant_id.toString() : undefined,
           variant_color: item.attributes?.color,
           variant_finish: item.attributes?.finish,
         })),

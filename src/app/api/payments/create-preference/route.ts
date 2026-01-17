@@ -35,6 +35,8 @@ const CreatePreferenceSchema = z.object({
           .number()
           .min(1, 'Cantidad debe ser mayor a 0')
           .max(99, 'Cantidad máxima excedida'),
+        variant_id: z.string().optional(),
+        variant_color: z.string().optional(),
       })
     )
     .min(1, 'Al menos un producto es requerido'),
@@ -352,6 +354,15 @@ export async function POST(request: NextRequest) {
         category:categories (
           name,
           slug
+        ),
+        product_variants (
+          id,
+          stock,
+          price_sale,
+          price_list,
+          color_name,
+          measure,
+          finish
         )
       `
       )
@@ -367,7 +378,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 500 })
     }
 
-    // Definir tipo para productos con categoría (como viene de Supabase)
+    // Definir tipo para productos con categoría y variantes (como viene de Supabase)
     type SupabaseProduct = {
       id: number
       name: string
@@ -381,6 +392,15 @@ export async function POST(request: NextRequest) {
             slug: string
           }[]
         | null
+      product_variants?: Array<{
+        id: number
+        stock: number
+        price_sale: number | null
+        price_list: number
+        color_name: string | null
+        measure: string | null
+        finish: string | null
+      }> | null
     }
 
     // Convertir productos para tener categoría como objeto
@@ -401,13 +421,38 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(errorResponse, { status: 400 })
       }
 
-      if (product.stock < item.quantity) {
-        const errorResponse: ApiResponse<null> = {
-          data: null,
-          success: false,
-          error: `Stock insuficiente para ${product.name}. Disponible: ${product.stock}, solicitado: ${item.quantity}`,
+      // Si el item tiene variant_id, validar stock de la variante
+      if (item.variant_id) {
+        const variantId = parseInt(item.variant_id)
+        const variant = product.product_variants?.find(v => v.id === variantId)
+        
+        if (!variant) {
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: `Variante ${item.variant_id} no encontrada para producto ${product.name}`,
+          }
+          return NextResponse.json(errorResponse, { status: 400 })
         }
-        return NextResponse.json(errorResponse, { status: 400 })
+
+        if (variant.stock < item.quantity) {
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: `Stock insuficiente para ${product.name}. Disponible: ${variant.stock}, solicitado: ${item.quantity}`,
+          }
+          return NextResponse.json(errorResponse, { status: 400 })
+        }
+      } else {
+        // Si no tiene variant_id, validar stock del producto padre
+        if (product.stock < item.quantity) {
+          const errorResponse: ApiResponse<null> = {
+            data: null,
+            success: false,
+            error: `Stock insuficiente para ${product.name}. Disponible: ${product.stock}, solicitado: ${item.quantity}`,
+          }
+          return NextResponse.json(errorResponse, { status: 400 })
+        }
       }
     }
 

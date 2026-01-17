@@ -30,6 +30,7 @@ interface ProductFromDB {
     price_sale: number;
     price_list: number;
     finish?: string | null;
+    stock: number;
   }>;
 }
 
@@ -227,7 +228,7 @@ export async function POST(request: NextRequest) {
       .select(`
         id, name, price, discounted_price, stock, color, medida, brand, description, aikon_id,
         product_variants (
-          id, color_name, measure, price_sale, price_list, finish
+          id, color_name, measure, price_sale, price_list, finish, stock
         )
       `)
       .in('id', productIds) as { data: ProductFromDB[] | null; error: any };
@@ -251,8 +252,27 @@ export async function POST(request: NextRequest) {
         console.log(`❌ Producto ${item.id} no encontrado en:`, products.map(p => ({ id: p.id, type: typeof p.id })));
         throw new Error(`Producto ${item.id} no encontrado`);
       }
-      if (product.stock < item.quantity) {
-        throw new Error(`Stock insuficiente para ${product.name}`);
+
+      // Si el item tiene variant_id, validar stock de la variante
+      if (item.variant_id) {
+        const variantId = item.variant_id.toString();
+        const variant = product.product_variants?.find(v => v.id.toString() === variantId);
+        
+        if (!variant) {
+          console.log(`❌ Variante ${item.variant_id} no encontrada para producto ${product.name}`);
+          throw new Error(`Variante ${item.variant_id} no encontrada para ${product.name}`);
+        }
+
+        if (variant.stock < item.quantity) {
+          console.log(`❌ Stock insuficiente para variante ${item.variant_id} de ${product.name}. Disponible: ${variant.stock}, solicitado: ${item.quantity}`);
+          throw new Error(`Stock insuficiente para ${product.name}. Disponible: ${variant.stock}, solicitado: ${item.quantity}`);
+        }
+      } else {
+        // Si no tiene variant_id, validar stock del producto padre
+        if (product.stock < item.quantity) {
+          console.log(`❌ Stock insuficiente para producto ${product.name}. Disponible: ${product.stock}, solicitado: ${item.quantity}`);
+          throw new Error(`Stock insuficiente para ${product.name}. Disponible: ${product.stock}, solicitado: ${item.quantity}`);
+        }
       }
     }
 
