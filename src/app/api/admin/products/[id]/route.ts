@@ -895,6 +895,13 @@ export async function GET(
       }
     }
     
+    // ✅ CORREGIDO: Normalizar color cuando hay variantes (consistente con GET de lista)
+    // Si tiene variantes, color debe ser undefined (no null ni empty string) para evitar problemas de validación
+    const hasVariants = variants && variants.length > 0
+    const normalizedColor = hasVariants 
+      ? undefined  // Cuando hay variantes, color debe ser undefined (no null ni "")
+      : (data.color && data.color.trim() !== '' ? data.color : undefined)  // Si no hay variantes, usar el color del producto (o undefined si está vacío/null)
+    
     // Transform ALL fields para compatibilidad con frontend
     const transformedData = {
       ...data,
@@ -906,6 +913,8 @@ export async function GET(
       product_categories: Array.isArray(data.product_categories) ? data.product_categories : [],
       // ✅ CORREGIDO: Parsear medida correctamente
       medida: parsedMedida,
+      // ✅ CORREGIDO: Normalizar color cuando hay variantes
+      color: normalizedColor,
       // Incluir variantes (asegurar que siempre sea un array)
       variants: Array.isArray(variants) ? variants : [],
       variant_count: variants?.length || 0,
