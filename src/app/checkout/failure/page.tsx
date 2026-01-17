@@ -76,15 +76,35 @@ function CheckoutFailureContent() {
     const status = searchParams.get('status')
     const status_detail = searchParams.get('status_detail')
     const external_reference = searchParams.get('external_reference')
+    const order_id = searchParams.get('order_id')
 
-    setPaymentError({
-      payment_id,
-      status,
-      status_detail,
-      external_reference,
-    })
+    // 🔧 Si external_reference es null o "null" pero tenemos order_id, intentar obtenerlo de la API
+    let finalExternalReference = external_reference && external_reference !== 'null' ? external_reference : null
+    
+    const fetchOrderDetails = async () => {
+      if ((!finalExternalReference || finalExternalReference === 'null') && order_id) {
+        try {
+          const response = await fetch(`/api/orders/${order_id}`)
+          const result = await response.json()
+          if (result.success && result.data?.external_reference) {
+            finalExternalReference = result.data.external_reference
+          }
+        } catch (error) {
+          console.warn('Error obteniendo detalles de orden:', error)
+        }
+      }
+      
+      setPaymentError({
+        payment_id: payment_id && payment_id !== 'null' ? payment_id : undefined,
+        status: status && status !== 'null' ? status : undefined,
+        status_detail,
+        external_reference: finalExternalReference,
+      })
 
-    setIsLoading(false)
+      setIsLoading(false)
+    }
+
+    fetchOrderDetails()
 
     // Log para debugging
     console.log('❌ Pago fallido:', {
@@ -92,6 +112,8 @@ function CheckoutFailureContent() {
       status,
       status_detail,
       external_reference,
+      order_id,
+      finalExternalReference,
     })
   }, [searchParams])
 
@@ -154,19 +176,30 @@ function CheckoutFailureContent() {
             </div>
 
             {/* Detalles técnicos */}
-            {paymentError.payment_id && (
+            {(paymentError.payment_id || paymentError.external_reference) && (
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <div className='p-4 bg-gray-50 rounded-lg'>
-                  <h4 className='font-medium text-gray-700 mb-1'>ID de Pago</h4>
-                  <p className='text-gray-900 font-mono text-sm'>{paymentError.payment_id}</p>
-                </div>
+                {paymentError.external_reference && (
+                  <div className='p-4 bg-gray-50 rounded-lg'>
+                    <h4 className='font-medium text-gray-700 mb-1'>Número de Orden</h4>
+                    <p className='text-gray-900 font-mono text-sm'>{paymentError.external_reference}</p>
+                  </div>
+                )}
+                
+                {paymentError.payment_id && (
+                  <div className='p-4 bg-gray-50 rounded-lg'>
+                    <h4 className='font-medium text-gray-700 mb-1'>ID de Pago</h4>
+                    <p className='text-gray-900 font-mono text-sm'>{paymentError.payment_id}</p>
+                  </div>
+                )}
 
-                <div className='p-4 bg-gray-50 rounded-lg'>
-                  <h4 className='font-medium text-gray-700 mb-1'>Estado</h4>
-                  <Badge variant='destructive' className='text-sm'>
-                    {paymentError.status || 'rejected'}
-                  </Badge>
-                </div>
+                {paymentError.status && (
+                  <div className='p-4 bg-gray-50 rounded-lg'>
+                    <h4 className='font-medium text-gray-700 mb-1'>Estado</h4>
+                    <Badge variant='destructive' className='text-sm'>
+                      {paymentError.status}
+                    </Badge>
+                  </div>
+                )}
               </div>
             )}
 

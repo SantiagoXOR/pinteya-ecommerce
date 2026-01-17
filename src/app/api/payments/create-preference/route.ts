@@ -944,7 +944,7 @@ export async function POST(request: NextRequest) {
           : undefined,
       },
       back_urls: backUrls,
-      external_reference: order.id.toString(),
+      external_reference: order.external_reference || orderNumber || order.id.toString(),
       // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
       // shipments: undefined // Comentado intencionalmente
     })
