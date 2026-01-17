@@ -457,7 +457,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ===================================
-    // CALCULAR TOTALES CON PRECIOS CORRECTOS
+    // CALCULAR TOTALES CON PRECIOS CORRECTOS (INCLUYENDO VARIANTES)
     // ===================================
     const itemsTotal = orderData.items.reduce((total, item) => {
       const product = typedProducts.find(p => p.id === parseInt(item.id))
@@ -465,8 +465,38 @@ export async function POST(request: NextRequest) {
         return total
       }
 
-      // Usar precio con descuento si existe, sino precio normal
-      const finalPrice = getFinalPrice(product)
+      // 🔧 CORREGIDO: Si el item tiene variant_id, usar precio de la variante
+      let finalPrice: number
+      if (item.variant_id && product.product_variants) {
+        const variantId = parseInt(item.variant_id)
+        const variant = product.product_variants.find((v: any) => v.id === variantId)
+        if (variant) {
+          // Priorizar price_sale si existe y es mayor a 0, sino usar price_list
+          finalPrice = variant.price_sale && variant.price_sale > 0 ? variant.price_sale : (variant.price_list || 0)
+        } else {
+          // Fallback al precio del producto si no se encuentra la variante
+          finalPrice = getFinalPrice(product)
+        }
+      } else {
+        // Si no tiene variant_id, usar precio del producto padre
+        finalPrice = getFinalPrice(product)
+      }
+
+      // Validar que finalPrice sea válido
+      if (!finalPrice || finalPrice <= 0) {
+        console.error(`⚠️ Precio inválido para producto ${product.name}:`, {
+          finalPrice,
+          variant_id: item.variant_id,
+          product_id: product.id,
+          product_price: product.price,
+          product_discounted_price: product.discounted_price
+        })
+        // Usar precio del producto como último recurso
+        finalPrice = product.discounted_price && product.discounted_price > 0 
+          ? product.discounted_price 
+          : (product.price || 0)
+      }
+
       return total + finalPrice * item.quantity
     }, 0)
 
