@@ -639,7 +639,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ===================================
-    // CREAR ITEMS DE LA ORDEN CON PRECIOS CORRECTOS
+    // CREAR ITEMS DE LA ORDEN CON PRECIOS CORRECTOS (INCLUYENDO VARIANTES)
     // ===================================
     const orderItems = orderData.items.map(item => {
       const product = typedProducts.find(p => p.id === parseInt(item.id))
@@ -647,17 +647,59 @@ export async function POST(request: NextRequest) {
         throw new Error(`Producto ${item.id} no encontrado`)
       }
 
-      // Usar precio con descuento si existe, sino precio normal
-      const finalPrice = getFinalPrice(product)
+      // 🔧 CORREGIDO: Si el item tiene variant_id, usar precio de la variante
+      let finalPrice: number
+      if (item.variant_id && product.product_variants) {
+        const variantId = parseInt(item.variant_id)
+        const variant = product.product_variants.find((v: any) => v.id === variantId)
+        if (variant) {
+          // Priorizar price_sale si existe y es mayor a 0, sino usar price_list
+          finalPrice = variant.price_sale && variant.price_sale > 0 ? variant.price_sale : (variant.price_list || 0)
+        } else {
+          // Fallback al precio del producto si no se encuentra la variante
+          finalPrice = getFinalPrice(product)
+        }
+      } else {
+        // Si no tiene variant_id, usar precio del producto padre
+        finalPrice = getFinalPrice(product)
+      }
+
+      // Validar que finalPrice sea válido
+      if (!finalPrice || finalPrice <= 0) {
+        console.error(`⚠️ Precio inválido para producto ${product.name} en order_items:`, {
+          finalPrice,
+          variant_id: item.variant_id,
+          product_id: product.id,
+          product_price: product.price,
+          product_discounted_price: product.discounted_price
+        })
+        // Usar precio del producto como último recurso
+        finalPrice = product.discounted_price && product.discounted_price > 0 
+          ? product.discounted_price 
+          : (product.price || 0)
+      }
+
       const itemTotal = finalPrice * item.quantity
 
-      // Preparar product_snapshot con información del producto
-      const productSnapshot = {
+      // 🔧 Preparar product_snapshot con información de variante
+      const productSnapshot: any = {
         name: product.name,
         price: finalPrice,
         category: product.category?.name || null,
         image: product.images?.previews?.[0] || null,
       }
+
+      // Incluir información de variante si está disponible
+      if (item.variant_id && product.product_variants) {
+        const variantId = parseInt(item.variant_id)
+        const variant = product.product_variants.find((v: any) => v.id === variantId)
+        if (variant) {
+          if (variant.color_name) productSnapshot.color = variant.color_name
+          if (variant.finish) productSnapshot.finish = variant.finish
+          if (variant.measure) productSnapshot.medida = variant.measure
+        }
+      }
+      if (product.brand) productSnapshot.brand = product.brand
 
       return {
         order_id: order.id,
@@ -671,6 +713,18 @@ export async function POST(request: NextRequest) {
         product_snapshot: productSnapshot
       }
     })
+
+    // Validar que ningún item tenga precio 0
+    const invalidItems = orderItems.filter(item => !item.price || item.price <= 0 || !item.unit_price || item.unit_price <= 0 || !item.total_price || item.total_price <= 0)
+    if (invalidItems.length > 0) {
+      console.error('[ORDER_ITEMS] Items con precios inválidos detectados:', invalidItems)
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: `Error: ${invalidItems.length} item(s) con precio inválido (0 o menor). Verifique que los productos tengan precio o que las variantes seleccionadas tengan precio válido.`,
+      }
+      return NextResponse.json(errorResponse, { status: 400 })
+    }
 
     // Log detallado de los items a insertar
     console.log('[ORDER_ITEMS] Preparando inserción:', {
