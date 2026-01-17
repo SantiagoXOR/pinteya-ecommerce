@@ -220,6 +220,65 @@ const ShopWithSidebar = () => {
 
   // Se eliminan rangos dinámicos de precio
 
+  // ✅ FIX: Filtrar productos por sizes y colors client-side (la API no soporta estos filtros)
+  const filteredProducts = useMemo(() => {
+    if (!products || products.length === 0) return []
+
+    let result = [...products]
+
+    // Filtrar por sizes (medidas) - buscar en variantes o campo directo
+    if (selectedSizes && selectedSizes.length > 0) {
+      result = result.filter(product => {
+        // Si el producto tiene variantes, buscar en ellas
+        if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+          return product.variants.some((variant: any) => {
+            const variantMeasure = variant.measure || variant.medida || ''
+            return selectedSizes.some(size => {
+              // Normalizar comparación: "4 L" vs "4L", "10 L" vs "10L", etc.
+              const normalizedSize = size.replace(/\s+/g, '').toUpperCase()
+              const normalizedMeasure = variantMeasure.replace(/\s+/g, '').toUpperCase()
+              return normalizedMeasure === normalizedSize || normalizedMeasure.includes(normalizedSize) || normalizedSize.includes(normalizedMeasure)
+            })
+          })
+        }
+        // Si no tiene variantes, buscar en el campo directo del producto
+        const productMeasure = product.medida || product.measure || ''
+        return selectedSizes.some(size => {
+          const normalizedSize = size.replace(/\s+/g, '').toUpperCase()
+          const normalizedMeasure = productMeasure.replace(/\s+/g, '').toUpperCase()
+          return normalizedMeasure === normalizedSize || normalizedMeasure.includes(normalizedSize) || normalizedSize.includes(normalizedMeasure)
+        })
+      })
+    }
+
+    // Filtrar por colors - buscar en variantes o campo directo
+    if (selectedColors && selectedColors.length > 0) {
+      result = result.filter(product => {
+        // Si el producto tiene variantes, buscar en ellas
+        if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+          return product.variants.some((variant: any) => {
+            const variantColor = variant.color_name || variant.color || ''
+            return selectedColors.some(color => {
+              // Normalizar comparación (case-insensitive)
+              const normalizedColor = color.trim().toUpperCase()
+              const normalizedVariantColor = variantColor.trim().toUpperCase()
+              return normalizedVariantColor === normalizedColor || normalizedVariantColor.includes(normalizedColor)
+            })
+          })
+        }
+        // Si no tiene variantes, buscar en el campo directo del producto
+        const productColor = product.color || ''
+        return selectedColors.some(color => {
+          const normalizedColor = color.trim().toUpperCase()
+          const normalizedProductColor = productColor.trim().toUpperCase()
+          return normalizedProductColor === normalizedColor || normalizedProductColor.includes(normalizedColor)
+        })
+      })
+    }
+
+    return result
+  }, [products, selectedSizes, selectedColors])
+
   // UI de filtros unificada (reutilizable en sidebar y barra móvil)
 
   return (
@@ -291,13 +350,13 @@ const ShopWithSidebar = () => {
                   selectedSizes={selectedSizes}
                   onSizesChange={(sizes) => {
                     setSelectedSizes(sizes)
-                    updateFilters({ sizes })
+                    updateFilters({ page: 1 })
                   }}
                   colorOptions={derivedColorObjects.length > 0 ? derivedColorObjects.slice(0, 20) : []}
                   selectedColors={selectedColors}
                   onColorsChange={(colors) => {
                     setSelectedColors(colors)
-                    updateFilters({ colors })
+                    updateFilters({ page: 1 })
                   }}
                   brands={brandsList}
                   selectedBrands={selectedBrands}
@@ -448,13 +507,13 @@ const ShopWithSidebar = () => {
                     </button>
                   </div>
                 </div>
-              ) : products.length === 0 ? (
+              ) : filteredProducts.length === 0 ? (
                 <div className='flex items-center justify-center py-20'>
-                  <p className='text-gray-600'>No se encontraron productos.</p>
+                  <p className='text-white'>No se encontraron productos con los filtros seleccionados.</p>
                 </div>
               ) : (
                 <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9'>
-                  {products.map((item, key) => (
+                  {filteredProducts.map((item, key) => (
                     <SingleGridItem item={item} key={key} />
                   ))}
                 </div>
@@ -466,8 +525,8 @@ const ShopWithSidebar = () => {
                 <div className='flex flex-col items-center gap-3 mt-15'>
                   <p className='text-sm'>
                     Mostrando{' '}
-                    <span className='text-dark'>
-                      {loading ? '...' : `${products.length} de ${pagination.total}`}
+                    <span className='text-white'>
+                      {loading ? '...' : `${filteredProducts.length} de ${pagination.total}`}
                     </span>{' '}
                     Productos
                   </p>

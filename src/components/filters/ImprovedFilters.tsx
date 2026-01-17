@@ -115,14 +115,14 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
   }
 
   if (isHorizontal) {
-    // Layout horizontal (actual) pero mejorado
-    // ✅ FIX: Fondo transparente/semi-transparente para tema oscuro
+    // ✅ FIX: Layout mobile-first - vertical en mobile, horizontal en desktop
+    // Fondo transparente/semi-transparente para tema oscuro
     return (
-      <div className='bg-white/10 backdrop-blur-sm rounded-lg shadow-sm px-4 py-3 mb-6 border border-white/20'>
-        <div className='flex items-center justify-between mb-3'>
+      <div className='bg-white/10 backdrop-blur-sm rounded-lg shadow-sm px-3 py-3 sm:px-4 md:px-4 mb-4 sm:mb-6 border border-white/20'>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3 sm:mb-3'>
           <div className='flex items-center gap-2'>
-            <Filter className='h-4 w-4 text-white' />
-            <span className='font-medium text-sm text-white'>Filtros</span>
+            <Filter className='h-5 w-5 sm:h-4 sm:w-4 text-white' />
+            <span className='font-medium text-base sm:text-sm text-white'>Filtros</span>
             {activeFiltersCount > 0 && (
               <Badge variant='secondary' className='ml-1'>
                 {activeFiltersCount}
@@ -130,9 +130,9 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
             )}
           </div>
           {onClearAll && activeFiltersCount > 0 && (
-            <Button variant='ghost' size='sm' onClick={onClearAll} className='h-8 text-xs'>
-              <X className='h-3 w-3 mr-1' />
-              Limpiar
+            <Button variant='ghost' size='sm' onClick={onClearAll} className='h-10 sm:h-8 text-sm sm:text-xs w-full sm:w-auto'>
+              <X className='h-4 w-4 sm:h-3 sm:w-3 mr-2 sm:mr-1' />
+              Limpiar filtros
             </Button>
           )}
         </div>
@@ -153,24 +153,25 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
             const grouped = groupMeasures(sizeOptions)
             return (
               <AccordionItem value='medidas' className='border-none'>
-                <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+                <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
                   Medidas {selectedSizes.length > 0 && `(${selectedSizes.length})`}
                 </AccordionTrigger>
-                <AccordionContent>
-                  <ScrollArea className='h-[300px] pr-4'>
+                <AccordionContent className='pt-2'>
+                  <ScrollArea className='h-[250px] sm:h-[300px] pr-2 sm:pr-4'>
                     <div className='space-y-4'>
                       {grouped.litros.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-white/70 mb-2'>Litros</p>
-                          <div className='grid grid-cols-3 gap-2'>
+                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Litros</p>
+                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
                             {grouped.litros.map(size => (
-                              <div key={size} className='flex items-center space-x-2'>
+                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                                 <Checkbox
                                   id={`size-${size}`}
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
+                                  className='w-5 h-5 sm:w-4 sm:h-4'
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
+                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
                                   {size}
                                 </label>
                               </div>
@@ -180,16 +181,17 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.kilos.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-white/70 mb-2'>Kilogramos</p>
-                          <div className='grid grid-cols-3 gap-2'>
+                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Kilogramos</p>
+                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
                             {grouped.kilos.map(size => (
-                              <div key={size} className='flex items-center space-x-2'>
+                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                                 <Checkbox
                                   id={`size-${size}`}
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
+                                  className='w-5 h-5 sm:w-4 sm:h-4'
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
+                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
                                   {size}
                                 </label>
                               </div>
@@ -199,16 +201,17 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.gramos.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-white/70 mb-2'>Gramos</p>
-                          <div className='grid grid-cols-3 gap-2'>
+                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Gramos</p>
+                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
                             {grouped.gramos.map(size => (
-                              <div key={size} className='flex items-center space-x-2'>
+                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                                 <Checkbox
                                   id={`size-${size}`}
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
+                                  className='w-5 h-5 sm:w-4 sm:h-4'
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
+                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
                                   {size}
                                 </label>
                               </div>
@@ -218,16 +221,17 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.numeros.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-white/70 mb-2'>Números/Tamaños</p>
-                          <div className='grid grid-cols-3 gap-2'>
+                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Números/Tamaños</p>
+                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
                             {grouped.numeros.map(size => (
-                              <div key={size} className='flex items-center space-x-2'>
+                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                                 <Checkbox
                                   id={`size-${size}`}
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
+                                  className='w-5 h-5 sm:w-4 sm:h-4'
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
+                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
                                   {size}
                                 </label>
                               </div>
@@ -237,16 +241,17 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.granos.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-white/70 mb-2'>Granos (Lijas)</p>
-                          <div className='grid grid-cols-3 gap-2'>
+                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Granos (Lijas)</p>
+                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
                             {grouped.granos.map(size => (
-                              <div key={size} className='flex items-center space-x-2'>
+                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                                 <Checkbox
                                   id={`size-${size}`}
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
+                                  className='w-5 h-5 sm:w-4 sm:h-4'
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
+                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
                                   {size}
                                 </label>
                               </div>
@@ -256,16 +261,17 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.dimensiones.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-white/70 mb-2'>Dimensiones</p>
-                          <div className='grid grid-cols-3 gap-2'>
+                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Dimensiones</p>
+                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
                             {grouped.dimensiones.map(size => (
-                              <div key={size} className='flex items-center space-x-2'>
+                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                                 <Checkbox
                                   id={`size-${size}`}
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
+                                  className='w-5 h-5 sm:w-4 sm:h-4'
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
+                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
                                   {size}
                                 </label>
                               </div>
@@ -275,16 +281,17 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.otros.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-white/70 mb-2'>Otros</p>
-                          <div className='grid grid-cols-3 gap-2'>
+                          <p className='text-xs sm:text-xs font-semibold text-white/70 mb-2'>Otros</p>
+                          <div className='grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-2'>
                             {grouped.otros.map(size => (
-                              <div key={size} className='flex items-center space-x-2'>
+                              <div key={size} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                                 <Checkbox
                                   id={`size-${size}`}
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
+                                  className='w-5 h-5 sm:w-4 sm:h-4'
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
+                                <label htmlFor={`size-${size}`} className='text-base sm:text-sm cursor-pointer text-white flex-1'>
                                   {size}
                                 </label>
                               </div>
@@ -302,22 +309,23 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Marcas */}
           {brands.length > 0 && (
             <AccordionItem value='marcas' className='border-none'>
-              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
                 Marcas {selectedBrands.length > 0 && `(${selectedBrands.length})`}
               </AccordionTrigger>
-              <AccordionContent>
-                <ScrollArea className='h-[200px] pr-4'>
-                  <div className='space-y-2'>
+              <AccordionContent className='pt-2'>
+                <ScrollArea className='h-[200px] sm:h-[200px] pr-2 sm:pr-4'>
+                  <div className='space-y-3 sm:space-y-2'>
                     {brands.map(brand => (
-                      <div key={brand.slug} className='flex items-center space-x-2'>
+                      <div key={brand.slug} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                         <Checkbox
                           id={`brand-${brand.slug}`}
                           checked={selectedBrands.includes(brand.slug)}
                           onCheckedChange={() => handleToggle(brand.slug, selectedBrands, onBrandsChange)}
+                          className='w-5 h-5 sm:w-4 sm:h-4'
                         />
                         <label
                           htmlFor={`brand-${brand.slug}`}
-                          className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white'
+                          className='text-base sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white flex-1'
                         >
                           {brand.name}
                         </label>
@@ -332,25 +340,26 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Colores */}
           {colorOptions && colorOptions.length > 0 && (
             <AccordionItem value='colores' className='border-none'>
-              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
                 Colores {selectedColors.length > 0 && `(${selectedColors.length})`}
               </AccordionTrigger>
-              <AccordionContent>
-                <ScrollArea className='h-[200px] pr-4'>
-                  <div className='grid grid-cols-2 gap-2'>
+              <AccordionContent className='pt-2'>
+                <ScrollArea className='h-[200px] sm:h-[200px] pr-2 sm:pr-4'>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-2'>
                     {colorOptions.map(color => (
-                      <div key={color.name} className='flex items-center space-x-2'>
+                      <div key={color.name} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                         <Checkbox
                           id={`color-${color.name}`}
                           checked={selectedColors.includes(color.name)}
                           onCheckedChange={() => handleToggle(color.name, selectedColors, onColorsChange)}
+                          className='w-5 h-5 sm:w-4 sm:h-4'
                         />
                         <label
                           htmlFor={`color-${color.name}`}
-                          className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-2'
+                          className='text-base sm:text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center gap-3 sm:gap-2 flex-1'
                         >
                           <span
-                            className='w-4 h-4 rounded-full border border-gray-300'
+                            className='w-5 h-5 sm:w-4 sm:h-4 rounded-full border border-gray-300 flex-shrink-0'
                             style={{ backgroundColor: color.hex }}
                           />
                           {color.name}
@@ -366,21 +375,22 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Precio */}
           {onPriceRangesChange && priceRanges.length > 0 && (
             <AccordionItem value='precio' className='border-none'>
-              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
                 Precio {selectedPriceRanges && selectedPriceRanges.length > 0 && `(${selectedPriceRanges.length})`}
               </AccordionTrigger>
-              <AccordionContent>
-                <div className='space-y-2 pr-4'>
+              <AccordionContent className='pt-2'>
+                <div className='space-y-3 sm:space-y-2 pr-2 sm:pr-4'>
                   {priceRanges.map((range, idx) => (
-                    <div key={`price-${idx}`} className='flex items-center space-x-2'>
+                    <div key={`price-${idx}`} className='flex items-center space-x-3 sm:space-x-2 min-h-[44px]'>
                       <Checkbox
                         id={`price-${idx}`}
                         checked={selectedPriceRanges?.includes(range) || false}
                         onCheckedChange={() => handleToggle(range, selectedPriceRanges || [], onPriceRangesChange)}
+                        className='w-5 h-5 sm:w-4 sm:h-4'
                       />
                         <label
                           htmlFor={`price-${idx}`}
-                          className='text-sm font-medium leading-none cursor-pointer text-white'
+                          className='text-base sm:text-sm font-medium leading-none cursor-pointer text-white flex-1'
                         >
                         {range}
                       </label>
@@ -394,19 +404,20 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Envío Gratis */}
           {onFreeShippingChange && (
             <AccordionItem value='envio' className='border-none'>
-              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
+              <AccordionTrigger className='py-3 sm:py-2 text-base sm:text-sm font-medium hover:no-underline text-white min-h-[44px]'>
                 Envío
               </AccordionTrigger>
-              <AccordionContent>
-                <div className='flex items-center space-x-2 pr-4'>
+              <AccordionContent className='pt-2'>
+                <div className='flex items-center space-x-3 sm:space-x-2 pr-2 sm:pr-4 min-h-[44px]'>
                   <Checkbox
                     id='envio-gratis'
                     checked={freeShippingOnly}
                     onCheckedChange={(checked) => onFreeShippingChange(checked as boolean)}
+                    className='w-5 h-5 sm:w-4 sm:h-4'
                   />
                   <label
                     htmlFor='envio-gratis'
-                    className='text-sm font-medium leading-none cursor-pointer text-white'
+                    className='text-base sm:text-sm font-medium leading-none cursor-pointer text-white flex-1'
                   >
                     Solo productos con envío gratis
                   </label>
