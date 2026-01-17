@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 // Importaciones de componentes legacy de filtros eliminadas en favor de UnifiedFilters
 // import CategoryTogglePills from '@/components/Home/CategoryTogglePills'
 // import { SizeTogglePills } from './SizeTogglePills'
