@@ -442,9 +442,11 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   // Mapear solo campos válidos de la BD (usar cleanedData en lugar de validatedData)
   if (cleanedData.name !== undefined) updateData.name = cleanedData.name
   if (cleanedData.description !== undefined) updateData.description = cleanedData.description
-  if (cleanedData.price !== undefined) updateData.price = cleanedData.price
-  if (cleanedData.discounted_price !== undefined) updateData.discounted_price = cleanedData.discounted_price
-  if (cleanedData.stock !== undefined) updateData.stock = cleanedData.stock
+  // ✅ CORREGIDO: No incluir price, discounted_price, stock si son null (evitar violar NOT NULL constraint)
+  // Si el producto tiene variantes, estos campos deben ser null pero NO se actualizan en la BD
+  if (cleanedData.price !== undefined && cleanedData.price !== null) updateData.price = cleanedData.price
+  if (cleanedData.discounted_price !== undefined && cleanedData.discounted_price !== null) updateData.discounted_price = cleanedData.discounted_price
+  if (cleanedData.stock !== undefined && cleanedData.stock !== null) updateData.stock = cleanedData.stock
   if (cleanedData.category_id !== undefined) updateData.category_id = cleanedData.category_id
   if (cleanedData.brand !== undefined) updateData.brand = cleanedData.brand
   if (cleanedData.images !== undefined) updateData.images = cleanedData.images
@@ -601,6 +603,23 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
 
   console.log('🔍 updateData preparado:', JSON.stringify(updateData, null, 2))
   console.log('📦 Stock en updateData:', updateData.stock, '(tipo:', typeof updateData.stock, ')')
+  console.log('💰 Price en updateData:', updateData.price, '(tipo:', typeof updateData.price, ')')
+  console.log('💵 Discounted_price en updateData:', updateData.discounted_price, '(tipo:', typeof updateData.discounted_price, ')')
+  
+  // ✅ VALIDACIÓN: Verificar que no se intente actualizar price/stock a null si la BD tiene NOT NULL constraint
+  // Si estos campos están en updateData y son null, eliminarlos para evitar error de constraint
+  if ('price' in updateData && updateData.price === null) {
+    console.log('⚠️ Price es null, eliminando de updateData para evitar NOT NULL constraint')
+    delete updateData.price
+  }
+  if ('discounted_price' in updateData && updateData.discounted_price === null) {
+    console.log('⚠️ Discounted_price es null, eliminando de updateData para evitar NOT NULL constraint')
+    delete updateData.discounted_price
+  }
+  if ('stock' in updateData && updateData.stock === null) {
+    console.log('⚠️ Stock es null, eliminando de updateData para evitar NOT NULL constraint')
+    delete updateData.stock
+  }
   
   // Actualizar producto
   const { data: updatedProduct, error } = await supabaseAdmin
