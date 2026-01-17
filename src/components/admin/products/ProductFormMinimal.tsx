@@ -561,9 +561,23 @@ export function ProductFormMinimal({
   }, [isDirty, onFormReady])
 
   const handleFormSubmit = async (data: ProductFormData) => {
+    console.log('🚀 [ProductFormMinimal] handleFormSubmit INICIADO', {
+      productId,
+      mode,
+      hasInitialData: !!initialData,
+      formErrors: Object.keys(errors).length > 0 ? errors : null,
+      dataKeys: Object.keys(data),
+    })
+    
     try {
       // ✅ VALIDACIÓN: Si no hay variantes (existentes o nuevas), precio y stock son requeridos
       const hasVariants = variants.length > 0 || newVariants.length > 0
+      
+      console.log('🔍 [ProductFormMinimal] Verificando variantes:', {
+        hasVariants,
+        variantsCount: variants.length,
+        newVariantsCount: newVariants.length,
+      })
       
       // ✅ NUEVO: Limpiar campos inconsistentes si el producto tiene variantes
       // Cuando un producto tiene variantes, estos campos deben ser null en el producto principal
@@ -655,7 +669,18 @@ export function ProductFormMinimal({
       })
       
       // Primero guardar/actualizar el producto
+      console.log('📞 [ProductFormMinimal] Llamando onSubmit con dataToSubmit', {
+        productId,
+        category_ids: dataToSubmit.category_ids,
+        category_idsLength: Array.isArray(dataToSubmit.category_ids) ? dataToSubmit.category_ids.length : 0,
+        price: dataToSubmit.price,
+        stock: dataToSubmit.stock,
+        hasVariants,
+      })
+      
       const result = await onSubmit(dataToSubmit)
+      
+      console.log('✅ [ProductFormMinimal] onSubmit completado', { result })
       
       // ✅ MEJORADO: Obtener productId del resultado de múltiples formas posibles
       let finalProductId: number | string | null = null
@@ -804,13 +829,25 @@ export function ProductFormMinimal({
         notifications.showProductUpdated({ productName: data.name })
       }
     } catch (error) {
-      console.error('Error submitting form:', error)
+      console.error('❌ [ProductFormMinimal] Error submitting form:', error)
+      console.error('❌ [ProductFormMinimal] Error stack:', error instanceof Error ? error.stack : 'No stack available')
+      console.error('❌ [ProductFormMinimal] Error message:', error instanceof Error ? error.message : String(error))
+      console.error('❌ [ProductFormMinimal] Error details:', {
+        productId,
+        mode,
+        hasVariants: variants.length > 0 || newVariants.length > 0,
+        formErrors: Object.keys(errors).length > 0 ? errors : null,
+      })
+      
       const errorMessage = error instanceof Error ? error.message : 'Error al guardar el producto'
       if (mode === 'create') {
         notifications.showProductCreationError(errorMessage)
       } else {
         notifications.showProductUpdateError(errorMessage, data.name)
       }
+      
+      // Re-lanzar el error para que pueda ser manejado por el formulario si es necesario
+      throw error
     }
   }
 

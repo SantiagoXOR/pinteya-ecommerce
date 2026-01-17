@@ -132,7 +132,20 @@ export default function EditProductPage() {
   })
 
   const handleSubmit = async (data: ProductFormData) => {
-    await updateProductMutation.mutateAsync(data)
+    console.log('🔵 [EditProductPage] handleSubmit llamado', {
+      productId,
+      dataKeys: Object.keys(data),
+      category_ids: data.category_ids,
+      price: data.price,
+      stock: data.stock,
+    })
+    
+    try {
+      await updateProductMutation.mutateAsync(data)
+    } catch (error) {
+      console.error('❌ [EditProductPage] Error en handleSubmit:', error)
+      throw error
+    }
   }
 
   const handleCancel = () => {
