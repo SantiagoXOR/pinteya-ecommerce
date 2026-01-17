@@ -513,8 +513,8 @@ const ShopWithSidebar = () => {
                 </div>
               ) : (
                 <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-x-7.5 md:gap-y-9'>
-                  {filteredProducts.map((item, key) => (
-                    <SingleGridItem item={item} key={key} />
+                  {filteredProducts.map((item) => (
+                    <SingleGridItem item={item} key={item.id || item.slug || `product-${item.id}-${item.slug}`} />
                   ))}
                 </div>
               )}
