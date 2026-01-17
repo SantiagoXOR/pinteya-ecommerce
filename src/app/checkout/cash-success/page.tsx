@@ -314,15 +314,9 @@ export default function CashSuccessPage() {
 
   const handleViewOrder = () => {
     if (orderId) {
-      // Pasar el mensaje de WhatsApp como parámetro para mostrarlo en la página de detalles
-      const params = new URLSearchParams()
-      if (whatsappMessage) {
-        params.set('message', whatsappMessage)
-      }
-      params.set('customerName', customerName || '')
-      params.set('total', effectiveTotal.toString())
-      
-      router.push(`/mis-ordenes/${orderId}?${params.toString()}`)
+      // Redirigir solo con el orderId - la página de detalle obtiene todos los datos desde la API
+      // No pasar mensaje en URL por seguridad y privacidad
+      router.push(`/mis-ordenes/${orderId}`)
     }
   }
 

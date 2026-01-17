@@ -68,10 +68,20 @@ export default function OrderDetailPage() {
 
           // Construir dirección completa
           let fullAddress = ''
-          if (shippingAddress.street_name && shippingAddress.street_number) {
-            fullAddress = `${shippingAddress.street_name} ${shippingAddress.street_number}`
-            if (shippingAddress.apartment) {
-              fullAddress += `, ${shippingAddress.apartment}`
+          // Si street_name tiene contenido, usarlo aunque street_number esté vacío
+          if (shippingAddress.street_name) {
+            // Verificar si street_number existe y no está vacío
+            if (shippingAddress.street_number && shippingAddress.street_number.trim()) {
+              fullAddress = `${shippingAddress.street_name} ${shippingAddress.street_number}`
+              if (shippingAddress.apartment) {
+                fullAddress += `, ${shippingAddress.apartment}`
+              }
+            } else {
+              // Usar street_name directamente si contiene toda la dirección
+              fullAddress = shippingAddress.street_name
+              if (shippingAddress.apartment) {
+                fullAddress += `, ${shippingAddress.apartment}`
+              }
             }
           } else if (shippingAddress.address) {
             fullAddress = shippingAddress.address
@@ -344,9 +354,16 @@ export default function OrderDetailPage() {
                     if (typeof orderData.total === 'number') {
                       totalNum = orderData.total
                     } else {
-                      // Reemplazar puntos de miles y comas decimales
-                      const cleaned = orderData.total.replace(/\./g, '').replace(',', '.')
-                      totalNum = parseFloat(cleaned) || 0
+                      // Verificar si el string ya es un número válido con punto decimal (ej: "64050.00")
+                      const isNumericWithDecimal = /^\d+\.\d+$/.test(orderData.total)
+                      if (isNumericWithDecimal) {
+                        // Parsear directamente sin eliminar puntos
+                        totalNum = parseFloat(orderData.total) || 0
+                      } else {
+                        // Formato español con miles (ej: "64.050,00") - eliminar puntos y reemplazar coma
+                        const cleaned = orderData.total.replace(/\./g, '').replace(',', '.')
+                        totalNum = parseFloat(cleaned) || 0
+                      }
                     }
                     return totalNum.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                   })()}
@@ -452,9 +469,16 @@ export default function OrderDetailPage() {
                             if (typeof product.price === 'number') {
                               priceNum = product.price
                             } else {
-                              // Reemplazar comas por puntos para parseFloat, luego convertir
-                              const cleaned = product.price.replace(/\./g, '').replace(',', '.')
-                              priceNum = parseFloat(cleaned) || 0
+                              // Verificar si el string ya es un número válido con punto decimal (ej: "64050.00")
+                              const isNumericWithDecimal = /^\d+\.\d+$/.test(product.price)
+                              if (isNumericWithDecimal) {
+                                // Parsear directamente sin eliminar puntos
+                                priceNum = parseFloat(product.price) || 0
+                              } else {
+                                // Formato español con miles (ej: "64.050,00") - eliminar puntos y reemplazar coma
+                                const cleaned = product.price.replace(/\./g, '').replace(',', '.')
+                                priceNum = parseFloat(cleaned) || 0
+                              }
                             }
                             return priceNum.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                           })()}
@@ -477,8 +501,16 @@ export default function OrderDetailPage() {
                         if (typeof orderData.total === 'number') {
                           totalNum = orderData.total
                         } else {
-                          const cleaned = orderData.total.replace(/\./g, '').replace(',', '.')
-                          totalNum = parseFloat(cleaned) || 0
+                          // Verificar si el string ya es un número válido con punto decimal (ej: "64050.00")
+                          const isNumericWithDecimal = /^\d+\.\d+$/.test(orderData.total)
+                          if (isNumericWithDecimal) {
+                            // Parsear directamente sin eliminar puntos
+                            totalNum = parseFloat(orderData.total) || 0
+                          } else {
+                            // Formato español con miles (ej: "64.050,00") - eliminar puntos y reemplazar coma
+                            const cleaned = orderData.total.replace(/\./g, '').replace(',', '.')
+                            totalNum = parseFloat(cleaned) || 0
+                          }
                         }
                         return totalNum.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                       })()}

@@ -627,8 +627,22 @@ export function ProductFormMinimal({
       
       // ✅ CORREGIDO: Asegurar que is_active siempre esté presente en los datos
       // Usar cleanedData en lugar de data para incluir los campos limpiados
+      // ✅ NUEVO: Normalizar category_ids para asegurar que todos sean números enteros positivos
+      const normalizedCategoryIds = cleanedData.category_ids && Array.isArray(cleanedData.category_ids)
+        ? cleanedData.category_ids
+            .map((id: any) => {
+              if (typeof id === 'string') {
+                const num = parseInt(id, 10)
+                return isNaN(num) ? null : num
+              }
+              return typeof id === 'number' && Number.isInteger(id) && id > 0 ? id : null
+            })
+            .filter((id: any) => id !== null && id > 0)
+        : []
+
       const dataToSubmit = {
         ...cleanedData,
+        category_ids: normalizedCategoryIds.length > 0 ? normalizedCategoryIds : undefined,
         is_active: cleanedData.is_active !== undefined ? Boolean(cleanedData.is_active) : true,
       }
       
@@ -636,6 +650,8 @@ export function ProductFormMinimal({
         ...dataToSubmit,
         is_active: dataToSubmit.is_active,
         is_activeType: typeof dataToSubmit.is_active,
+        category_ids: dataToSubmit.category_ids,
+        category_idsType: Array.isArray(dataToSubmit.category_ids) ? 'array' : typeof dataToSubmit.category_ids,
       })
       
       // Primero guardar/actualizar el producto

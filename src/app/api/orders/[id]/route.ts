@@ -106,11 +106,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         }, {})
 
         // Agregar image_url a cada order_item
+        // Prioridad: product_images > product_snapshot.image > null
         order.order_items = order.order_items.map((item: any) => {
           const images = imagesByProductId[item.product_id] || []
+          const imageFromProductImages = images[0]?.url || null
+          const imageFromSnapshot = item.product_snapshot?.image || null
+          
           return {
             ...item,
-            image_url: images[0]?.url || null
+            image_url: imageFromProductImages || imageFromSnapshot || null
           }
         })
       }

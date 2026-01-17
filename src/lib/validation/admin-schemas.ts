@@ -124,9 +124,40 @@ export function withValidation<T extends z.ZodSchema>(schema: T) {
           data = await request.json()
         }
 
+        // ✅ NUEVO: Log de depuración - datos recibidos antes de validación
+        console.log('🔍 [Validation Middleware] Datos recibidos para validación:', {
+          method: request.method,
+          path: request.url,
+          dataKeys: Object.keys(data || {}),
+          category_ids: (data as any)?.category_ids,
+          category_idsType: typeof (data as any)?.category_ids,
+          category_idsIsArray: Array.isArray((data as any)?.category_ids),
+          price: (data as any)?.price,
+          priceType: typeof (data as any)?.price,
+          stock: (data as any)?.stock,
+          stockType: typeof (data as any)?.stock,
+        })
+
         const validationResult = schema.safeParse(data)
 
         if (!validationResult.success) {
+          // ✅ NUEVO: Log detallado de errores de validación
+          console.error('❌ [Validation Middleware] Error de validación:', {
+            path: request.url,
+            method: request.method,
+            errors: validationResult.error.errors.map(err => ({
+              field: err.path.join('.'),
+              message: err.message,
+              code: err.code,
+              received: err.path.reduce((obj: any, key) => obj?.[key], data),
+            })),
+            receivedData: {
+              category_ids: (data as any)?.category_ids,
+              price: (data as any)?.price,
+              stock: (data as any)?.stock,
+            },
+          })
+
           const response: ValidationResponse = {
             success: false,
             error: 'Datos de entrada inválidos',
@@ -143,6 +174,16 @@ export function withValidation<T extends z.ZodSchema>(schema: T) {
 
           return NextResponse.json(response, { status: 422 })
         }
+
+        // ✅ NUEVO: Log de datos validados exitosamente
+        console.log('✅ [Validation Middleware] Validación exitosa:', {
+          path: request.url,
+          method: request.method,
+          validatedKeys: Object.keys(validationResult.data || {}),
+          category_ids: (validationResult.data as any)?.category_ids,
+          price: (validationResult.data as any)?.price,
+          stock: (validationResult.data as any)?.stock,
+        })
 
         const requestWithValidation = request as NextRequest & { validatedData: z.infer<T> }
         requestWithValidation.validatedData = validationResult.data

@@ -26,11 +26,24 @@ const UpdateProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(255, 'Máximo 255 caracteres').optional(),
   description: z.string().optional(),
   short_description: z.string().max(500, 'Máximo 500 caracteres').optional(),
-  price: z.number().min(0, 'El precio debe ser mayor a 0').optional(),
-  discounted_price: z.number().min(0).optional(),
-  stock: z.number().min(0, 'El stock debe ser mayor o igual a 0').optional(),
+  // ✅ CORREGIDO: Permitir null para productos con variantes (price se define en variantes)
+  price: z.union([
+    z.number().min(0, 'El precio debe ser mayor o igual a 0'),
+    z.null()
+  ]).optional(),
+  // ✅ CORREGIDO: Permitir null para productos con variantes
+  discounted_price: z.union([
+    z.number().min(0, 'El precio con descuento debe ser mayor o igual a 0'),
+    z.null()
+  ]).optional(),
+  // ✅ CORREGIDO: Permitir null para productos con variantes (stock se define en variantes)
+  stock: z.union([
+    z.number().int().min(0, 'El stock debe ser mayor o igual a 0'),
+    z.null()
+  ]).optional(),
   low_stock_threshold: z.number().min(0).optional(),
   category_id: z.number().int().positive('ID de categoría inválido').optional(),
+  // ✅ CORREGIDO: Aceptar arrays vacíos y asegurar que todos los elementos sean números enteros positivos
   category_ids: z.array(z.number().int().positive('ID de categoría inválido')).optional(), // ✅ NUEVO: Array de categorías
   brand: z.string().optional(),
   images: z
@@ -380,6 +393,32 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   // LOG: Datos recibidos del frontend
   console.log('📥 validatedData recibido del frontend:', JSON.stringify(validatedData, null, 2))
   console.log('📦 Stock recibido:', validatedData.stock, '(tipo:', typeof validatedData.stock, ')')
+  console.log('📋 category_ids recibido:', (validatedData as any).category_ids, '(tipo:', typeof (validatedData as any).category_ids, ')')
+
+  // ✅ NUEVO: Normalizar category_ids antes de procesar (asegurar que sea array de números)
+  if ((validatedData as any).category_ids !== undefined) {
+    const categoryIds = (validatedData as any).category_ids
+    if (Array.isArray(categoryIds)) {
+      // Normalizar: convertir strings a números y filtrar inválidos
+      (validatedData as any).category_ids = categoryIds
+        .map((id: any) => {
+          if (typeof id === 'string') {
+            const num = parseInt(id, 10)
+            return isNaN(num) ? null : num
+          }
+          return typeof id === 'number' ? id : null
+        })
+        .filter((id: any) => id !== null && id > 0)
+    } else if (categoryIds !== null && categoryIds !== undefined) {
+      // Si no es array pero tiene valor, convertir a array
+      const singleId = typeof categoryIds === 'string' ? parseInt(categoryIds, 10) : categoryIds
+      (validatedData as any).category_ids = !isNaN(singleId) && singleId > 0 ? [singleId] : []
+    } else {
+      // Si es null o undefined, establecer como array vacío para evitar errores
+      (validatedData as any).category_ids = []
+    }
+    console.log('✅ category_ids normalizado:', (validatedData as any).category_ids)
+  }
 
   // ✅ NUEVO: Limpiar campos inconsistentes si el producto tiene variantes activas
   // Cuando un producto tiene variantes, price, stock, color, medida, terminaciones

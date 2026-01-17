@@ -288,17 +288,11 @@ export default function MercadoPagoSuccessPage() {
 
   const handleViewOrder = () => {
     if (orderId) {
-      // Pasar el mensaje de WhatsApp como parámetro para mostrarlo en la página de detalles
-      const params = new URLSearchParams()
-      if (whatsappMessage) {
-        params.set('message', whatsappMessage)  // Next.js lo codificará automáticamente
-      }
-      params.set('customerName', customerName || orderData?.customer_name || 'Cliente')
-      params.set('total', effectiveTotal.toString())
-      
+      // Redirigir solo con el orderId - la página de detalle obtiene todos los datos desde la API
+      // No pasar mensaje en URL por seguridad y privacidad
       // Usar order_number si existe, sino usar orderId
       const displayOrderId = orderData?.order_number || orderId
-      router.push(`/mis-ordenes/${displayOrderId}?${params.toString()}`)
+      router.push(`/mis-ordenes/${displayOrderId}`)
     }
   }
 
