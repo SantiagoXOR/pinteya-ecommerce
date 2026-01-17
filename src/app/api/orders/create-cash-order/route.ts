@@ -280,7 +280,23 @@ export async function POST(request: NextRequest) {
     let itemsSubtotal = 0;
     const orderItems = validatedData.items.map(item => {
       const product = products.find(p => p.id.toString() === item.id.toString())!;
-      const finalPrice = calculateFinalPrice(product);
+      
+      // Si el item tiene variant_id, usar precio de la variante
+      let finalPrice: number;
+      if (item.variant_id && product.product_variants) {
+        const variant = product.product_variants.find((v: any) => v.id.toString() === item.variant_id?.toString());
+        if (variant) {
+          // Priorizar price_sale si existe, sino usar price_list
+          finalPrice = variant.price_sale && variant.price_sale > 0 ? variant.price_sale : variant.price_list;
+        } else {
+          // Fallback al precio del producto si no se encuentra la variante
+          finalPrice = calculateFinalPrice(product);
+        }
+      } else {
+        // Si no tiene variant_id, usar precio del producto padre
+        finalPrice = calculateFinalPrice(product);
+      }
+      
       const itemTotal = finalPrice * item.quantity;
       itemsSubtotal += itemTotal;
 
@@ -331,12 +347,23 @@ export async function POST(request: NextRequest) {
     const shippingCost = typeof validatedData.shipments.cost === 'number' ? validatedData.shipments.cost : 0;
     const totalAmount = itemsSubtotal + shippingCost;
 
+    // Validar que el total sea mayor a 0 (requisito de la restricción orders_total_check)
+    if (totalAmount <= 0) {
+      logger.error(LogCategory.API, 'Total inválido en create-cash-order', {
+        itemsSubtotal,
+        shippingCost,
+        totalAmount,
+        items: validatedData.items.map(i => ({ id: i.id, quantity: i.quantity, unit_price: i.unit_price }))
+      });
+      throw new Error(`Total inválido: ${totalAmount}. El total debe ser mayor a 0.`);
+    }
+
     // Preparar datos para insertar en orders
     const orderNumber = `ORD-${Math.floor(Date.now() / 1000)}-${crypto.randomBytes(4).toString('hex')}`;
     const orderData = {
       user_id: userId,
       order_number: orderNumber,
-      total: totalAmount,
+      total: totalAmount, // Columna total (NOT NULL) - único campo de total en la tabla
       status: 'pending',
       payment_status: 'cash_on_delivery',
       // ✅ AGREGADO: payment_method ahora existe en la tabla (migración aplicada)
@@ -435,7 +462,47 @@ export async function POST(request: NextRequest) {
     for (const item of validatedData.items) {
       const product = products.find(p => p.id.toString() === item.id.toString());
       if (product) {
-        const lineTotal = calculateFinalPrice(product) * item.quantity;
+        // 🔧 CORREGIDO: Calcular precio usando la misma lógica que en orderItems
+        // Si el item tiene variant_id, usar precio de la variante
+        let itemPrice: number;
+        if (item.variant_id && product.product_variants) {
+          const variant = product.product_variants.find((v: any) => v.id.toString() === item.variant_id?.toString());
+          if (variant) {
+            // Priorizar price_sale si existe y es mayor a 0, sino usar price_list
+            itemPrice = variant.price_sale && variant.price_sale > 0 ? variant.price_sale : (variant.price_list || 0);
+          } else {
+            // Fallback al precio del producto si no se encuentra la variante
+            itemPrice = calculateFinalPrice(product);
+          }
+        } else {
+          // Si no tiene variant_id, usar precio del producto padre
+          itemPrice = calculateFinalPrice(product);
+        }
+        
+        // Validar que itemPrice sea válido
+        if (!itemPrice || itemPrice <= 0) {
+          console.error(`⚠️ Precio inválido para producto ${product.name}:`, {
+            itemPrice,
+            variant_id: item.variant_id,
+            product_id: product.id,
+            variant: item.variant_id ? product.product_variants?.find((v: any) => v.id.toString() === item.variant_id?.toString()) : null
+          });
+          // Usar precio del producto como último recurso
+          itemPrice = product.discounted_price && product.discounted_price > 0 
+            ? product.discounted_price 
+            : (product.price || 0);
+        }
+        
+        const lineTotal = itemPrice * item.quantity;
+        
+        // Log de debug para verificar valores
+        console.log(`💰 Precio calculado para ${product.name}:`, {
+          itemPrice,
+          quantity: item.quantity,
+          lineTotal,
+          variant_id: item.variant_id,
+          hasVariants: !!product.product_variants?.length
+        });
         
         // Construir línea detallada del producto
         let productLine = `${bullet} ${product.name}`;

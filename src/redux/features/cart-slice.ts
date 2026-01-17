@@ -22,6 +22,8 @@ export type CartItem = {
     medida?: string
     finish?: string
   }
+  // ID de la variante seleccionada (para validación de stock)
+  variant_id?: number | string
 }
 
 /**

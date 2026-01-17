@@ -19,6 +19,12 @@ export interface CartItem {
     thumbnails: string[]
     previews: string[]
   }
+  attributes?: {
+    color?: string
+    medida?: string
+    finish?: string
+  }
+  variant_id?: number | string
 }
 
 // Tipos para el estado persistido

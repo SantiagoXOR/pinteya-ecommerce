@@ -34,8 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       searchValue = orderId
     }
 
-    // Obtener orden SIN order_items (no los necesitamos, el whatsapp_message tiene todo)
-    // Esto evita el error 400 de Supabase con la relación order_items → products
+    // Obtener orden CON order_items para mostrar datos correctos
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select(
@@ -46,13 +45,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         total,
         status,
         payment_status,
+        payment_method,
         payer_info,
         shipping_address,
         created_at,
         updated_at,
         whatsapp_notification_link,
         whatsapp_message,
-        whatsapp_generated_at
+        whatsapp_generated_at,
+        order_items (
+          id,
+          product_id,
+          product_name,
+          product_sku,
+          quantity,
+          price,
+          unit_price,
+          total_price,
+          product_snapshot
+        )
       `
       )
       .eq(searchField, searchValue)
@@ -69,6 +80,40 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!order) {
       return NextResponse.json({ success: false, error: 'Orden no encontrada' }, { status: 404 })
+    }
+
+    // Obtener imágenes de productos desde product_images
+    if (order.order_items && order.order_items.length > 0) {
+      const productIds = order.order_items
+        .map((item: any) => item.product_id)
+        .filter((id: any) => id != null)
+      
+      if (productIds.length > 0) {
+        const { data: productImages } = await supabase
+          .from('product_images')
+          .select('product_id, url, is_primary')
+          .in('product_id', productIds)
+          .order('is_primary', { ascending: false })
+          .order('display_order', { ascending: true })
+        
+        // Agrupar imágenes por product_id
+        const imagesByProductId = (productImages || []).reduce((acc: any, img: any) => {
+          if (!acc[img.product_id]) {
+            acc[img.product_id] = []
+          }
+          acc[img.product_id].push(img)
+          return acc
+        }, {})
+
+        // Agregar image_url a cada order_item
+        order.order_items = order.order_items.map((item: any) => {
+          const images = imagesByProductId[item.product_id] || []
+          return {
+            ...item,
+            image_url: images[0]?.url || null
+          }
+        })
+      }
     }
 
     return NextResponse.json({

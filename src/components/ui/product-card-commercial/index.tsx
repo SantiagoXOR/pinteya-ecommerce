@@ -312,6 +312,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
             images: image ? [image] : [],
             variants: variants || [],
             quantity: 1,
+            currentVariant: variantSelection.currentVariant, // Para que pickVariantId pueda obtener el id
           }
 
           const attributes = {

@@ -16,6 +16,7 @@ export interface ParsedOrderData {
     name: string
     quantity: number
     price: string
+    imageUrl?: string
   }>
   paymentMethod?: string
   status?: string

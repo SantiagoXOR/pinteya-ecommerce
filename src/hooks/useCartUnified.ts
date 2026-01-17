@@ -19,6 +19,7 @@ export interface AddProductOptions {
   quantity?: number
   attributes?: Attributes
   image?: string
+  variant_id?: number | string
 }
 
 // Helpers de conversión seguros
@@ -93,6 +94,16 @@ const pickAttributes = (input: any, opts?: AddProductOptions): Attributes | unde
   return normalizeAttributes({ color, medida, finish })
 }
 
+const pickVariantId = (input: any, opts?: AddProductOptions): number | string | undefined => {
+  // Prioridad: opts -> input.variant_id -> input.currentVariant?.id -> input.selectedVariant?.id -> input.variant?.id
+  if (opts?.variant_id !== undefined) return opts.variant_id
+  if (input?.variant_id !== undefined) return input.variant_id
+  if (input?.currentVariant?.id !== undefined) return input.currentVariant.id
+  if (input?.selectedVariant?.id !== undefined) return input.selectedVariant.id
+  if (input?.variant?.id !== undefined) return input.variant.id
+  return undefined
+}
+
 export const normalizeToCartItem = (
   input: any,
   opts?: AddProductOptions
@@ -103,6 +114,7 @@ export const normalizeToCartItem = (
   const quantity = pickQuantity(input, opts)
   const imgs = pickImages(input, opts)
   const attributes = pickAttributes(input, opts)
+  const variant_id = pickVariantId(input, opts)
 
   const normalized: CartItem = {
     id,
@@ -112,6 +124,7 @@ export const normalizeToCartItem = (
     quantity,
     ...(imgs ? { imgs } : {}),
     ...(attributes ? { attributes } : {}),
+    ...(variant_id !== undefined ? { variant_id } : {}),
   }
 
   return normalized
