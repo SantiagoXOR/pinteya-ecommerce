@@ -536,8 +536,19 @@ export function ProductFormMinimal({
         console.log('🔵 [ProductFormMinimal] submitForm llamado', {
           hasFormRef: !!formRef.current,
           formErrors: Object.keys(errors).length,
-          isDirty: isDirtyRef.current
+          isDirty: isDirtyRef.current,
+          formStateErrors: errors,
+          formValues: watchedData,
         })
+        
+        // ✅ NUEVO: Verificar errores de validación antes de hacer submit
+        const hasErrors = Object.keys(errors).length > 0
+        if (hasErrors) {
+          console.error('❌ [ProductFormMinimal] Hay errores de validación, no se puede enviar:', errors)
+          notifications.showErrorMessage('Error de validación', 'Por favor, corrige los errores marcados en rojo antes de guardar')
+          return
+        }
+        
         if (formRef.current) {
           console.log('✅ [ProductFormMinimal] Ejecutando formRef.requestSubmit()')
           formRef.current.requestSubmit()
@@ -890,7 +901,22 @@ export function ProductFormMinimal({
       <form 
         id='product-form-minimal' 
         ref={formRef}
-        onSubmit={handleSubmit(handleFormSubmit)} 
+        onSubmit={handleSubmit(
+          handleFormSubmit,
+          (validationErrors) => {
+            console.error('❌ [ProductFormMinimal] Errores de validación del formulario:', validationErrors)
+            console.error('❌ [ProductFormMinimal] Detalles de errores:', {
+              errorsCount: Object.keys(validationErrors).length,
+              errors: validationErrors,
+              formValues: watchedData,
+            })
+            
+            // Mostrar notificación de error
+            const firstError = Object.values(validationErrors)[0]
+            const errorMessage = firstError?.message || 'Por favor, revisa los campos marcados en rojo'
+            notifications.showErrorMessage('Error de validación', errorMessage)
+          }
+        )} 
         className='space-y-6'
       >
         {/* Información Básica */}
