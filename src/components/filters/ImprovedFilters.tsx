@@ -116,12 +116,13 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
 
   if (isHorizontal) {
     // Layout horizontal (actual) pero mejorado
+    // ✅ FIX: Fondo transparente/semi-transparente para tema oscuro
     return (
-      <div className='bg-white rounded-lg shadow-sm px-4 py-3 mb-6'>
+      <div className='bg-white/10 backdrop-blur-sm rounded-lg shadow-sm px-4 py-3 mb-6 border border-white/20'>
         <div className='flex items-center justify-between mb-3'>
           <div className='flex items-center gap-2'>
-            <Filter className='h-4 w-4 text-gray-600' />
-            <span className='font-medium text-sm'>Filtros</span>
+            <Filter className='h-4 w-4 text-white' />
+            <span className='font-medium text-sm text-white'>Filtros</span>
             {activeFiltersCount > 0 && (
               <Badge variant='secondary' className='ml-1'>
                 {activeFiltersCount}
@@ -152,7 +153,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
             const grouped = groupMeasures(sizeOptions)
             return (
               <AccordionItem value='medidas' className='border-none'>
-                <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline'>
+                <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
                   Medidas {selectedSizes.length > 0 && `(${selectedSizes.length})`}
                 </AccordionTrigger>
                 <AccordionContent>
@@ -160,7 +161,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                     <div className='space-y-4'>
                       {grouped.litros.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-gray-500 mb-2'>Litros</p>
+                          <p className='text-xs font-semibold text-white/70 mb-2'>Litros</p>
                           <div className='grid grid-cols-3 gap-2'>
                             {grouped.litros.map(size => (
                               <div key={size} className='flex items-center space-x-2'>
@@ -169,7 +170,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer'>
+                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
                                   {size}
                                 </label>
                               </div>
@@ -179,7 +180,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.kilos.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-gray-500 mb-2'>Kilogramos</p>
+                          <p className='text-xs font-semibold text-white/70 mb-2'>Kilogramos</p>
                           <div className='grid grid-cols-3 gap-2'>
                             {grouped.kilos.map(size => (
                               <div key={size} className='flex items-center space-x-2'>
@@ -188,7 +189,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer'>
+                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
                                   {size}
                                 </label>
                               </div>
@@ -198,7 +199,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.gramos.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-gray-500 mb-2'>Gramos</p>
+                          <p className='text-xs font-semibold text-white/70 mb-2'>Gramos</p>
                           <div className='grid grid-cols-3 gap-2'>
                             {grouped.gramos.map(size => (
                               <div key={size} className='flex items-center space-x-2'>
@@ -207,7 +208,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer'>
+                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
                                   {size}
                                 </label>
                               </div>
@@ -217,7 +218,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.numeros.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-gray-500 mb-2'>Números/Tamaños</p>
+                          <p className='text-xs font-semibold text-white/70 mb-2'>Números/Tamaños</p>
                           <div className='grid grid-cols-3 gap-2'>
                             {grouped.numeros.map(size => (
                               <div key={size} className='flex items-center space-x-2'>
@@ -226,7 +227,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer'>
+                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
                                   {size}
                                 </label>
                               </div>
@@ -236,7 +237,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.granos.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-gray-500 mb-2'>Granos (Lijas)</p>
+                          <p className='text-xs font-semibold text-white/70 mb-2'>Granos (Lijas)</p>
                           <div className='grid grid-cols-3 gap-2'>
                             {grouped.granos.map(size => (
                               <div key={size} className='flex items-center space-x-2'>
@@ -245,7 +246,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer'>
+                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
                                   {size}
                                 </label>
                               </div>
@@ -255,7 +256,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.dimensiones.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-gray-500 mb-2'>Dimensiones</p>
+                          <p className='text-xs font-semibold text-white/70 mb-2'>Dimensiones</p>
                           <div className='grid grid-cols-3 gap-2'>
                             {grouped.dimensiones.map(size => (
                               <div key={size} className='flex items-center space-x-2'>
@@ -264,7 +265,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer'>
+                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
                                   {size}
                                 </label>
                               </div>
@@ -274,7 +275,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                       )}
                       {grouped.otros.length > 0 && (
                         <div>
-                          <p className='text-xs font-semibold text-gray-500 mb-2'>Otros</p>
+                          <p className='text-xs font-semibold text-white/70 mb-2'>Otros</p>
                           <div className='grid grid-cols-3 gap-2'>
                             {grouped.otros.map(size => (
                               <div key={size} className='flex items-center space-x-2'>
@@ -283,7 +284,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                                   checked={selectedSizes.includes(size)}
                                   onCheckedChange={() => handleToggle(size, selectedSizes, onSizesChange)}
                                 />
-                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer'>
+                                <label htmlFor={`size-${size}`} className='text-sm cursor-pointer text-white'>
                                   {size}
                                 </label>
                               </div>
@@ -301,7 +302,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Marcas */}
           {brands.length > 0 && (
             <AccordionItem value='marcas' className='border-none'>
-              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline'>
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
                 Marcas {selectedBrands.length > 0 && `(${selectedBrands.length})`}
               </AccordionTrigger>
               <AccordionContent>
@@ -316,7 +317,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                         />
                         <label
                           htmlFor={`brand-${brand.slug}`}
-                          className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer'
+                          className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white'
                         >
                           {brand.name}
                         </label>
@@ -331,7 +332,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Colores */}
           {colorOptions && colorOptions.length > 0 && (
             <AccordionItem value='colores' className='border-none'>
-              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline'>
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
                 Colores {selectedColors.length > 0 && `(${selectedColors.length})`}
               </AccordionTrigger>
               <AccordionContent>
@@ -365,7 +366,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Precio */}
           {onPriceRangesChange && priceRanges.length > 0 && (
             <AccordionItem value='precio' className='border-none'>
-              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline'>
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
                 Precio {selectedPriceRanges && selectedPriceRanges.length > 0 && `(${selectedPriceRanges.length})`}
               </AccordionTrigger>
               <AccordionContent>
@@ -377,10 +378,10 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                         checked={selectedPriceRanges?.includes(range) || false}
                         onCheckedChange={() => handleToggle(range, selectedPriceRanges || [], onPriceRangesChange)}
                       />
-                      <label
-                        htmlFor={`price-${idx}`}
-                        className='text-sm font-medium leading-none cursor-pointer'
-                      >
+                        <label
+                          htmlFor={`price-${idx}`}
+                          className='text-sm font-medium leading-none cursor-pointer text-white'
+                        >
                         {range}
                       </label>
                     </div>
@@ -393,7 +394,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
           {/* Envío Gratis */}
           {onFreeShippingChange && (
             <AccordionItem value='envio' className='border-none'>
-              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline'>
+              <AccordionTrigger className='py-2 text-sm font-medium hover:no-underline text-white'>
                 Envío
               </AccordionTrigger>
               <AccordionContent>
@@ -405,7 +406,7 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
                   />
                   <label
                     htmlFor='envio-gratis'
-                    className='text-sm font-medium leading-none cursor-pointer'
+                    className='text-sm font-medium leading-none cursor-pointer text-white'
                   >
                     Solo productos con envío gratis
                   </label>
@@ -420,11 +421,11 @@ export const ImprovedFilters: React.FC<ImprovedFiltersProps> = ({
 
   // Layout sidebar (vertical)
   return (
-    <div className='bg-white rounded-lg shadow-sm p-4 space-y-4'>
+    <div className='bg-white/10 backdrop-blur-sm rounded-lg shadow-sm p-4 space-y-4 border border-white/20'>
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-2'>
-          <Filter className='h-4 w-4' />
-          <h3 className='font-semibold text-sm'>Filtros</h3>
+          <Filter className='h-4 w-4 text-white' />
+          <h3 className='font-semibold text-sm text-white'>Filtros</h3>
           {activeFiltersCount > 0 && (
             <Badge variant='secondary' className='ml-1'>
               {activeFiltersCount}

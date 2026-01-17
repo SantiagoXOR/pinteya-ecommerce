@@ -38,6 +38,7 @@ const ShopWithSidebar = () => {
     updateFilters,
     filterByCategories,
     filterByBrands,
+    filterByPriceRange,
   } = useProducts({
     initialFilters: {
       limit: SHOP_CONSTANTS.PRODUCTS_PER_PAGE_SIDEBAR,
@@ -112,8 +113,9 @@ const ShopWithSidebar = () => {
     setVolumeMax(undefined)
     setColorsExpanded(false)
     filterByCategories([])
-    // Reiniciar filtros y asegurar orden por precio descendente
-    updateFilters({ sizes: [], colors: [], brands: [], sortBy: 'price', sortOrder: 'desc', page: 1 })
+    // ✅ FIX: Reiniciar filtros incluyendo priceMin, priceMax y asegurar orden por precio descendente
+    filterByPriceRange(undefined, undefined)
+    updateFilters({ sizes: [], colors: [], brands: [], priceMin: undefined, priceMax: undefined, sortBy: 'price', sortOrder: 'desc', page: 1 })
   }
 
   // Derivar medidas (capacidad/medida) desde productos y variantes usando lógica de badges
@@ -186,13 +188,43 @@ const ShopWithSidebar = () => {
     }))
   }, [products])
 
+  // ✅ FIX: Función helper para convertir rangos de precio a priceMin/priceMax
+  const parsePriceRanges = useCallback((ranges: string[]) => {
+    if (ranges.length === 0) {
+      return { priceMin: undefined, priceMax: undefined }
+    }
+
+    // Si hay múltiples rangos, usar el mínimo y máximo de todos
+    let minPrice: number | undefined = undefined
+    let maxPrice: number | undefined = undefined
+
+    ranges.forEach(range => {
+      if (range === 'Menos de $10.000') {
+        maxPrice = maxPrice === undefined ? 10000 : Math.min(maxPrice, 10000)
+      } else if (range === '$10.000 - $25.000') {
+        minPrice = minPrice === undefined ? 10000 : Math.min(minPrice, 10000)
+        maxPrice = maxPrice === undefined ? 25000 : Math.max(maxPrice, 25000)
+      } else if (range === '$25.000 - $50.000') {
+        minPrice = minPrice === undefined ? 25000 : Math.min(minPrice, 25000)
+        maxPrice = maxPrice === undefined ? 50000 : Math.max(maxPrice, 50000)
+      } else if (range === '$50.000 - $100.000') {
+        minPrice = minPrice === undefined ? 50000 : Math.min(minPrice, 50000)
+        maxPrice = maxPrice === undefined ? 100000 : Math.max(maxPrice, 100000)
+      } else if (range === 'Más de $100.000') {
+        minPrice = minPrice === undefined ? 100000 : Math.max(minPrice, 100000)
+      }
+    })
+
+    return { priceMin: minPrice, priceMax: maxPrice }
+  }, [])
+
   // Se eliminan rangos dinámicos de precio
 
   // UI de filtros unificada (reutilizable en sidebar y barra móvil)
 
   return (
     <>
-      <section className='overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#FFFEF0]'>
+      <section className='overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28'>
         <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
           <div className='flex gap-7.5'>
             {/* <!-- Sidebar oculto: mostramos filtros arriba como en mobile --> */}
@@ -222,13 +254,25 @@ const ShopWithSidebar = () => {
                 selectedPriceRanges={selectedPriceRanges}
                 onPriceRangesChange={(ranges) => {
                   setSelectedPriceRanges(ranges)
-                  // Convertir rangos a priceMin/priceMax para la API
-                  // Por ahora solo guardamos el estado, la lógica de filtrado se implementa en el hook
+                  // ✅ FIX: Convertir rangos a priceMin/priceMax y aplicar filtro
+                  const { priceMin, priceMax } = parsePriceRanges(ranges)
+                  filterByPriceRange(priceMin, priceMax)
                 }}
                 freeShippingOnly={freeShippingOnly}
                 onFreeShippingChange={(enabled) => {
                   setFreeShippingOnly(enabled)
-                  // La lógica de filtrado se implementa en el hook
+                  // ✅ FIX: Filtrar productos con precio >= $50.000 para envío gratis
+                  if (enabled) {
+                    filterByPriceRange(50000, undefined)
+                  } else {
+                    // Si se desactiva, restaurar filtros de precio si existen
+                    if (selectedPriceRanges.length > 0) {
+                      const { priceMin, priceMax } = parsePriceRanges(selectedPriceRanges)
+                      filterByPriceRange(priceMin, priceMax)
+                    } else {
+                      filterByPriceRange(undefined, undefined)
+                    }
+                  }
                 }}
                 onClearAll={clearAll}
               />
@@ -264,12 +308,25 @@ const ShopWithSidebar = () => {
                   selectedPriceRanges={selectedPriceRanges}
                   onPriceRangesChange={(ranges) => {
                     setSelectedPriceRanges(ranges)
-                    // Convertir rangos a priceMin/priceMax para la API
+                    // ✅ FIX: Convertir rangos a priceMin/priceMax y aplicar filtro
+                    const { priceMin, priceMax } = parsePriceRanges(ranges)
+                    filterByPriceRange(priceMin, priceMax)
                   }}
                   freeShippingOnly={freeShippingOnly}
                   onFreeShippingChange={(enabled) => {
                     setFreeShippingOnly(enabled)
-                    // La lógica de filtrado se implementa en el hook
+                    // ✅ FIX: Filtrar productos con precio >= $50.000 para envío gratis
+                    if (enabled) {
+                      filterByPriceRange(50000, undefined)
+                    } else {
+                      // Si se desactiva, restaurar filtros de precio si existen
+                      if (selectedPriceRanges.length > 0) {
+                        const { priceMin, priceMax } = parsePriceRanges(selectedPriceRanges)
+                        filterByPriceRange(priceMin, priceMax)
+                      } else {
+                        filterByPriceRange(undefined, undefined)
+                      }
+                    }
                   }}
                   onClearAll={clearAll}
                 />
