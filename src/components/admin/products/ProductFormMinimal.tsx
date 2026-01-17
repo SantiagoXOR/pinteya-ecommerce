@@ -545,7 +545,7 @@ export function ProductFormMinimal({
         const hasErrors = Object.keys(errors).length > 0
         if (hasErrors) {
           console.error('❌ [ProductFormMinimal] Hay errores de validación, no se puede enviar:', errors)
-          notifications.showErrorMessage('Error de validación', 'Por favor, corrige los errores marcados en rojo antes de guardar')
+          notifications.showValidationWarning('Por favor, corrige los errores marcados en rojo antes de guardar')
           return
         }
         
@@ -623,7 +623,7 @@ export function ProductFormMinimal({
             type: 'manual',
             message: 'El precio es requerido cuando el producto no tiene variantes',
           })
-          notifications.showErrorMessage('El precio es requerido cuando el producto no tiene variantes')
+          notifications.showValidationWarning('El precio es requerido cuando el producto no tiene variantes')
           return
         }
         if (cleanedData.stock === null || cleanedData.stock === undefined || cleanedData.stock < 0) {
@@ -631,7 +631,7 @@ export function ProductFormMinimal({
             type: 'manual',
             message: 'El stock es requerido cuando el producto no tiene variantes',
           })
-          notifications.showErrorMessage('El stock es requerido cuando el producto no tiene variantes')
+          notifications.showValidationWarning('El stock es requerido cuando el producto no tiene variantes')
           return
         }
       }
@@ -904,17 +904,30 @@ export function ProductFormMinimal({
         onSubmit={handleSubmit(
           handleFormSubmit,
           (validationErrors) => {
+            const errorsCount = Object.keys(validationErrors).length
+            
             console.error('❌ [ProductFormMinimal] Errores de validación del formulario:', validationErrors)
             console.error('❌ [ProductFormMinimal] Detalles de errores:', {
-              errorsCount: Object.keys(validationErrors).length,
+              errorsCount,
               errors: validationErrors,
               formValues: watchedData,
+              formStateErrors: errors, // Errores del formState también
             })
             
-            // Mostrar notificación de error
-            const firstError = Object.values(validationErrors)[0]
-            const errorMessage = firstError?.message || 'Por favor, revisa los campos marcados en rojo'
-            notifications.showErrorMessage('Error de validación', errorMessage)
+            // ✅ CORREGIDO: Usar showValidationWarning en lugar de showErrorMessage
+            if (errorsCount > 0) {
+              const firstError = Object.values(validationErrors)[0]
+              const errorMessage = firstError?.message || 'Por favor, revisa los campos marcados en rojo'
+              notifications.showValidationWarning(errorMessage)
+            } else if (Object.keys(errors).length > 0) {
+              // Si hay errores en formState pero no en validationErrors, usar formState
+              const firstFormError = Object.values(errors)[0]
+              const errorMessage = firstFormError?.message || 'Por favor, revisa los campos marcados en rojo'
+              notifications.showValidationWarning(errorMessage)
+            } else {
+              // Si no hay errores pero se ejecutó el callback, es raro - solo loguear
+              console.warn('⚠️ [ProductFormMinimal] Callback de errores ejecutado pero no hay errores de validación. Esto puede indicar un problema con el schema de validación.')
+            }
           }
         )} 
         className='space-y-6'
@@ -1531,7 +1544,7 @@ export function ProductFormMinimal({
                   notifications.showInfoMessage('Ficha técnica eliminada', 'La ficha técnica fue eliminada')
                 }}
                 onError={(error) => {
-                  notifications.showErrorMessage(error)
+                  notifications.showInfoMessage('Error al eliminar ficha técnica', error || 'No se pudo eliminar la ficha técnica')
                 }}
               />
             </div>
