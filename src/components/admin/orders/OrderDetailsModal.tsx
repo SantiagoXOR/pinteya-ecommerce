@@ -595,6 +595,40 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     }
   }
 
+  // Handler para cambiar estado de la orden
+  const handleChangeStatus = async (newStatus: string) => {
+    if (!order) return
+
+    const statusMessages: Record<string, { loading: string; success: string }> = {
+      processing: { loading: 'Marcando como en proceso...', success: 'Orden marcada como en proceso' },
+      shipped: { loading: 'Marcando como enviada...', success: 'Orden marcada como enviada' },
+      delivered: { loading: 'Marcando como entregada...', success: 'Orden marcada como entregada' },
+    }
+
+    const messages = statusMessages[newStatus] || { loading: 'Actualizando...', success: 'Estado actualizado' }
+    const loadingToast = toast.loading(messages.loading)
+
+    try {
+      const response = await fetch(`/api/admin/orders/${order.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (response.ok) {
+        toast.success(messages.success, { id: loadingToast })
+        loadOrderDetails()
+        onOrderUpdated?.()
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        toast.error(errorData.error || 'Error al actualizar estado', { id: loadingToast })
+      }
+    } catch (error) {
+      console.error('Error changing status:', error)
+      toast.error('Error al actualizar estado', { id: loadingToast })
+    }
+  }
+
   if (!order && !isLoading) {
     return null
   }
@@ -973,6 +1007,48 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                               </div>
                             </div>
                           </div>
+
+                          {/* Botones de acción de estado */}
+                          {order.status !== 'delivered' && order.status !== 'cancelled' && (
+                            <div className='mt-4 pt-3 border-t space-y-2'>
+                              <p className='text-xs font-medium text-gray-500 mb-2'>Cambiar Estado:</p>
+                              <div className='flex flex-wrap gap-2'>
+                                {order.status === 'pending' && (
+                                  <Button
+                                    size='sm'
+                                    variant='outline'
+                                    className='text-blue-600 border-blue-200 hover:bg-blue-50'
+                                    onClick={() => handleChangeStatus('processing')}
+                                  >
+                                    <Package className='h-3 w-3 mr-1' />
+                                    Preparando
+                                  </Button>
+                                )}
+                                {(order.status === 'pending' || order.status === 'processing') && (
+                                  <Button
+                                    size='sm'
+                                    variant='outline'
+                                    className='text-purple-600 border-purple-200 hover:bg-purple-50'
+                                    onClick={() => handleChangeStatus('shipped')}
+                                  >
+                                    <Truck className='h-3 w-3 mr-1' />
+                                    Enviado
+                                  </Button>
+                                )}
+                                {(order.status === 'pending' || order.status === 'processing' || order.status === 'shipped') && (
+                                  <Button
+                                    size='sm'
+                                    variant='outline'
+                                    className='text-green-600 border-green-200 hover:bg-green-50'
+                                    onClick={() => handleChangeStatus('delivered')}
+                                  >
+                                    <CheckCircle className='h-3 w-3 mr-1' />
+                                    Entregado
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>

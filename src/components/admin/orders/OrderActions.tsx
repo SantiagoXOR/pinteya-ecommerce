@@ -97,16 +97,23 @@ export function OrderRowActions({ order, onAction }: OrderRowActionsProps) {
           <DropdownMenuSeparator />
 
           {/* Acciones de cambio de estado */}
-          {order.status !== 'processing' && order.status !== 'cancelled' && order.status !== 'delivered' && (
+          {order.status !== 'processing' && order.status !== 'cancelled' && order.status !== 'delivered' && order.status !== 'shipped' && (
             <DropdownMenuItem onClick={() => onAction('process')}>
               <RefreshCw className='w-4 h-4 mr-2 text-blue-600' />
               Marcar como En Proceso
             </DropdownMenuItem>
           )}
 
+          {order.status !== 'shipped' && order.status !== 'delivered' && order.status !== 'cancelled' && (
+            <DropdownMenuItem onClick={() => onAction('ship')}>
+              <Truck className='w-4 h-4 mr-2 text-purple-600' />
+              Marcar como Enviada
+            </DropdownMenuItem>
+          )}
+
           {order.status !== 'delivered' && order.status !== 'cancelled' && (
             <DropdownMenuItem onClick={() => onAction('deliver')}>
-              <Truck className='w-4 h-4 mr-2 text-green-600' />
+              <CheckCircle className='w-4 h-4 mr-2 text-green-600' />
               Marcar como Entregada
             </DropdownMenuItem>
           )}
