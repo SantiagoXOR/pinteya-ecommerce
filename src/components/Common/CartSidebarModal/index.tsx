@@ -154,13 +154,17 @@ const CartSidebarModal = () => {
       <Sheet open={isCartModalOpen} onOpenChange={closeCartModal}>
         <SheetContent
           side='bottom'
-          className={`${isLargeText ? 'h-[90vh] max-h-[90vh]' : 'h-[85vh] max-h-[85vh]'} rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden`}
+          className='rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden'
           style={{
             transform: isDragging && translateY > 0 ? `translateY(${translateY}px)` : undefined,
             transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             willChange: isDragging ? 'transform' : 'auto',
-            maxHeight: isLargeText ? '90vh' : '85vh',
-            height: isLargeText ? '90vh' : '85vh',
+            maxHeight: isLargeText 
+              ? 'calc(100dvh - env(safe-area-inset-bottom, 0px))' 
+              : 'calc(100dvh - env(safe-area-inset-bottom, 0px))',
+            height: isLargeText 
+              ? 'calc(100dvh - env(safe-area-inset-bottom, 0px))' 
+              : 'calc(100dvh - env(safe-area-inset-bottom, 0px))',
             bottom: 0
           }}
         >
@@ -216,7 +220,14 @@ const CartSidebarModal = () => {
           </div>
 
           {/* Footer - Sticky at bottom */}
-          <div className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0 relative z-0`} style={{ paddingTop: '12px', paddingBottom: '48px', marginBottom: '0px' }}>
+          <div 
+            className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0 relative z-0`} 
+            style={{ 
+              paddingTop: '12px', 
+              paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))', 
+              marginBottom: '0px' 
+            }}
+          >
             {/* Barra de Progreso Envío Gratis */}
             {mounted && effectiveCartItems.length > 0 && (
               <div className={isLargeText ? 'mb-1.5' : 'mb-2'}>
