@@ -384,7 +384,12 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
     }
 
-    const nextResponse = NextResponse.json(response)
+    const nextResponse = NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      }
+    })
     addRateLimitHeaders(nextResponse, rateLimitResult, RATE_LIMIT_CONFIGS.admin)
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Órdenes admin obtenidas exitosamente', {

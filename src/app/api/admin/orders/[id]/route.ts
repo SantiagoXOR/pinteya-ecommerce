@@ -370,7 +370,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       responseTime,
     })
 
-    return NextResponse.json(response)
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      }
+    })
   } catch (error) {
     const responseTime = Date.now() - startTime
     await MetricsCollector.getInstance().recordRequest(
@@ -587,7 +592,12 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       responseTime,
     })
 
-    return NextResponse.json(response)
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      }
+    })
   } catch (error) {
     const responseTime = Date.now() - startTime
     await MetricsCollector.getInstance().recordRequest(

@@ -160,16 +160,23 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
         }
       })
 
-      // Consulta preparada
+      // Consulta preparada - agregar cache buster para evitar cache del navegador
+      params.append('_t', Date.now().toString())
 
-      const response = await fetch(`/api/admin/orders?${params}`)
+      const response = await fetch(`/api/admin/orders?${params}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
       return data
     },
-    staleTime: 30000, // 30 segundos
+    staleTime: 0, // Sin cache - siempre refrescar
+    gcTime: 0, // No guardar en garbage collection cache
     refetchOnWindowFocus: false,
   })
 
