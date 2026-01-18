@@ -234,35 +234,34 @@ const CartSidebarModal = () => {
             transition: !isDragging && translateY === 0 ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
             willChange: isDragging ? 'transform' : 'auto',
             maxHeight: isLargeText 
-              ? 'calc(100dvh - env(safe-area-inset-bottom, 0px))' 
-              : 'calc(100dvh - env(safe-area-inset-bottom, 0px))',
+              ? 'calc(100dvh - 16px - env(safe-area-inset-bottom, 0px))' 
+              : 'calc(100dvh - 16px - env(safe-area-inset-bottom, 0px))',
             height: isLargeText 
-              ? 'calc(100dvh - env(safe-area-inset-bottom, 0px))' 
-              : 'calc(100dvh - env(safe-area-inset-bottom, 0px))',
-            bottom: 0
+              ? 'calc(100dvh - 16px - env(safe-area-inset-bottom, 0px))' 
+              : 'calc(100dvh - 16px - env(safe-area-inset-bottom, 0px))',
+            bottom: 0,
+            marginTop: '16px'
           }}
         >
           {/* Título oculto para accesibilidad */}
           <SheetTitle className='sr-only'>Carrito de Compras</SheetTitle>
 
-          {/* Header fijo con drag handle y botón */}
-          <div className='flex flex-col flex-shrink-0 bg-white rounded-t-3xl'>
-            {/* Drag Handle - Indicador visual estilo Instagram - Área de drag extendida */}
-            <div 
-              className='flex flex-col cursor-grab active:cursor-grabbing touch-none select-none'
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onMouseDown={handleMouseDown}
-            >
-              <div className='flex justify-center pt-1.5 pb-0.5 pointer-events-none'>
-                <div className='w-12 h-1 bg-gray-300 rounded-full' />
-              </div>
+          {/* Header fijo con drag handle y botón - Todo el área es deslizable */}
+          <div 
+            className='flex flex-col flex-shrink-0 bg-white rounded-t-3xl cursor-grab active:cursor-grabbing touch-none select-none'
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+          >
+            {/* Drag Handle - Indicador visual estilo Instagram */}
+            <div className='flex justify-center pt-1.5 pb-0.5 pointer-events-none'>
+              <div className='w-12 h-1 bg-gray-300 rounded-full' />
             </div>
 
-            {/* Información de pago - Mercado Pago */}
+            {/* Información de pago - Mercado Pago - También parte del área deslizable */}
             {mounted && hasItems && (
-              <div className={`px-4 sm:px-7.5 lg:px-11 bg-white`} style={{ paddingTop: '0px', paddingBottom: '0px', marginBottom: '0px' }}>
+              <div className={`px-4 sm:px-7.5 lg:px-11 bg-white pointer-events-none`} style={{ paddingTop: '0px', paddingBottom: '0px', marginBottom: '0px' }}>
                 <div className={`w-full flex items-center justify-center gap-1.5 ${isLargeText ? 'px-1' : 'px-2'} ${isLargeText ? 'text-[9px]' : 'text-[10px]'} text-gray-600`} style={{ paddingTop: '0px', paddingBottom: '4px', marginTop: '0px', marginBottom: '0px' }}>
                   <Image
                     src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
