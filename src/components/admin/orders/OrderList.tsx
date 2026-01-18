@@ -31,6 +31,7 @@ import {
   Wallet,
   Banknote,
   ShoppingBag,
+  MapPin,
 } from '@/lib/optimized-imports'
 import { OrderFilters } from './OrderFilters'
 import { OrderRowActions } from './OrderActions'
@@ -320,6 +321,117 @@ function UnifiedPaymentBadge({
         <span>{config.label}</span>
       </span>
       <span className={cn('text-[10px] font-medium', statusColor)}>{statusLabel}</span>
+    </div>
+  )
+}
+
+// ===================================
+// ADDRESS CELL COMPONENT
+// ===================================
+
+interface ShippingAddress {
+  street_name?: string
+  street_number?: string
+  apartment?: string
+  city_name?: string
+  state_name?: string
+  zip_code?: string
+  observations?: string
+}
+
+function formatShortAddress(address: ShippingAddress | null | undefined): string {
+  if (!address) return '-'
+  
+  const parts: string[] = []
+  
+  // Calle
+  if (address.street_name) {
+    let street = address.street_name
+    if (address.street_number) {
+      street += ` ${address.street_number}`
+    }
+    parts.push(street)
+  }
+  
+  // Ciudad
+  if (address.city_name) {
+    parts.push(address.city_name)
+  }
+  
+  return parts.length > 0 ? parts.join(', ') : '-'
+}
+
+function generateGoogleMapsUrl(address: ShippingAddress | null | undefined): string {
+  if (!address) return ''
+  
+  const parts: string[] = []
+  
+  if (address.street_name) {
+    let street = address.street_name
+    if (address.street_number) {
+      street += ` ${address.street_number}`
+    }
+    parts.push(street)
+  }
+  
+  if (address.city_name) {
+    parts.push(address.city_name)
+  }
+  
+  if (address.state_name) {
+    parts.push(address.state_name)
+  }
+  
+  if (address.zip_code) {
+    parts.push(address.zip_code)
+  }
+  
+  parts.push('Argentina')
+  
+  const query = encodeURIComponent(parts.join(', '))
+  return `https://www.google.com/maps/search/?api=1&query=${query}`
+}
+
+function AddressCell({ address }: { address: ShippingAddress | null | undefined }) {
+  if (!address || !address.street_name) {
+    return <span className='text-sm text-gray-400'>-</span>
+  }
+  
+  const shortAddress = formatShortAddress(address)
+  const mapsUrl = generateGoogleMapsUrl(address)
+  const hasObservations = address.observations && address.observations.trim().length > 0
+  const hasApartment = address.apartment && address.apartment.trim().length > 0
+  
+  return (
+    <div className='flex flex-col gap-1 min-w-0'>
+      <div className='flex items-center gap-1.5'>
+        <span className='text-sm text-gray-700 truncate max-w-[180px]' title={shortAddress}>
+          {shortAddress}
+        </span>
+        <a
+          href={mapsUrl}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='flex-shrink-0 p-1 rounded-full hover:bg-blue-50 transition-colors'
+          title='Ver en Google Maps'
+        >
+          <MapPin className='h-3.5 w-3.5 text-blue-600' />
+        </a>
+      </div>
+      {(hasApartment || hasObservations) && (
+        <div className='flex flex-wrap gap-1 text-[10px] text-gray-500'>
+          {hasApartment && (
+            <span className='bg-gray-100 px-1.5 py-0.5 rounded'>
+              {address.apartment}
+            </span>
+          )}
+          {hasObservations && (
+            <span className='bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded truncate max-w-[120px]' title={address.observations}>
+              {address.observations}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -766,6 +878,7 @@ export function OrderList({
     { key: 'order_number', title: 'Número', sortable: true, sortKey: 'id' },
     { key: 'products', title: 'Productos', sortable: false },
     { key: 'cliente', title: 'Cliente', sortable: false },
+    { key: 'direccion', title: 'Dirección', sortable: false },
     { key: 'fecha', title: 'Fecha', sortable: true, sortKey: 'created_at' },
     { key: 'estado', title: 'Estado', sortable: true, sortKey: 'status' },
     { key: 'pago', title: 'Pago', sortable: false },
@@ -1108,6 +1221,11 @@ export function OrderList({
                                 </div>
                               )}
                             </div>
+                          </TableCell>
+
+                          {/* Dirección con botón a Google Maps */}
+                          <TableCell style={{ width: getColumnWidth('direccion') }}>
+                            <AddressCell address={order.shipping_address} />
                           </TableCell>
 
                           {/* Fecha */}
