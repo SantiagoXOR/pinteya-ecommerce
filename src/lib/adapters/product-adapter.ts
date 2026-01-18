@@ -49,6 +49,24 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
         return null
       })
       .filter(Boolean) as string[]
+  } else if (typeof apiProduct.images === 'string') {
+    // Manejar caso de string JSON escapado
+    try {
+      let parsed = apiProduct.images
+      // Si empieza con comilla, es un string JSON escapado
+      if (parsed.startsWith('"') && parsed.endsWith('"')) {
+        parsed = JSON.parse(parsed)
+      }
+      const imgObj = typeof parsed === 'string' ? JSON.parse(parsed) : parsed
+      if (imgObj?.url) {
+        normalizedImages = [imgObj.url]
+      } else if (imgObj?.image_url) {
+        normalizedImages = [imgObj.image_url]
+      }
+    } catch {
+      // Si no se puede parsear, usar firstImage
+      normalizedImages = [firstImage]
+    }
   } else if (apiProduct.images?.previews && Array.isArray(apiProduct.images.previews)) {
     normalizedImages = apiProduct.images.previews
   } else if (apiProduct.images?.thumbnails && Array.isArray(apiProduct.images.thumbnails)) {
@@ -57,6 +75,9 @@ export const adaptApiProductToComponent = (apiProduct: ProductWithCategory): Pro
     normalizedImages = [apiProduct.images.main]
   } else if (apiProduct.images?.gallery && Array.isArray(apiProduct.images.gallery)) {
     normalizedImages = apiProduct.images.gallery
+  } else if ((apiProduct.images as any)?.url) {
+    // Manejar formato { url, is_primary }
+    normalizedImages = [(apiProduct.images as any).url]
   } else {
     normalizedImages = [firstImage]
   }

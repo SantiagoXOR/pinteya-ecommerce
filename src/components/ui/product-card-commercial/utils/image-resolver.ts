@@ -16,7 +16,10 @@ export interface ProductImageSource {
     previews?: string[]
     thumbnails?: string[]
     gallery?: string[]
-  } | null
+    url?: string
+    image_url?: string
+    is_primary?: boolean
+  } | string | null  // String para soportar JSON escapado desde DB
   imgs?: {
     previews?: string[]
     thumbnails?: string[]
@@ -93,7 +96,10 @@ function resolveFromArray(images: string[] | Array<{ url?: string; image_url?: s
 }
 
 /**
- * Resuelve imagen desde un objeto con estructura { main, previews, thumbnails, gallery }
+ * Resuelve imagen desde un objeto con múltiples formatos posibles:
+ * - { main, previews, thumbnails, gallery }
+ * - { url, is_primary } (formato de productos nuevos)
+ * - String JSON que necesita parsing
  */
 function resolveFromObject(
   images: {
@@ -101,15 +107,51 @@ function resolveFromObject(
     previews?: string[]
     thumbnails?: string[]
     gallery?: string[]
-  }
+    url?: string
+    image_url?: string
+    is_primary?: boolean
+  } | string
 ): string | null {
-  if (!images || typeof images !== 'object') return null
+  if (!images) return null
 
+  // Si es un string, intentar parsearlo como JSON
+  let parsedImages = images
+  if (typeof images === 'string') {
+    try {
+      // Manejar doble escape de JSON (string dentro de string)
+      let jsonString = images.trim()
+      // Si empieza con comilla, es un string JSON escapado
+      if (jsonString.startsWith('"') && jsonString.endsWith('"')) {
+        jsonString = JSON.parse(jsonString) // Primer parse para quitar el escape externo
+      }
+      parsedImages = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString
+    } catch {
+      // Si no se puede parsear, no es un JSON válido
+      return null
+    }
+  }
+
+  if (!parsedImages || typeof parsedImages !== 'object') return null
+
+  // NUEVO: Manejar formato { url, is_primary } de productos nuevos
+  const imagesObj = parsedImages as { url?: string; image_url?: string; main?: string; previews?: string[]; thumbnails?: string[]; gallery?: string[] }
+  
+  if (imagesObj.url && typeof imagesObj.url === 'string') {
+    const sanitized = sanitizeImageUrl(imagesObj.url)
+    if (sanitized) return sanitized
+  }
+
+  if (imagesObj.image_url && typeof imagesObj.image_url === 'string') {
+    const sanitized = sanitizeImageUrl(imagesObj.image_url)
+    if (sanitized) return sanitized
+  }
+
+  // Formato original: { main, previews, thumbnails, gallery }
   const candidates = [
-    images.main,
-    images.previews?.[0],
-    images.thumbnails?.[0],
-    images.gallery?.[0]
+    imagesObj.main,
+    imagesObj.previews?.[0],
+    imagesObj.thumbnails?.[0],
+    imagesObj.gallery?.[0]
   ]
 
   for (const candidate of candidates) {
