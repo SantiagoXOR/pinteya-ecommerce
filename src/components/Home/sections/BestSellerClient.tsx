@@ -71,7 +71,7 @@ export const BestSellerClient: React.FC<BestSellerClientProps> = React.memo(({ i
 
   return (
     <section className='overflow-hidden py-1 sm:py-1.5 bg-transparent'>
-      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8'>
+      <div className='max-w-[1170px] w-full mx-auto px-6 sm:px-8'>
         <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
           {showSkeletons ? (
             <ProductGridSkeleton count={8} />

@@ -329,7 +329,7 @@ const CartSidebarModal = () => {
             className={`flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 ${hasItems ? 'pt-1' : isLargeText ? 'pt-1' : 'pt-2'} bg-gray-50 min-h-0`} 
             style={{ overflowY: 'auto', minHeight: '0' }}
           >
-            <div className={`flex flex-col ${isLargeText ? 'gap-1' : 'gap-1.5'} px-1`}>
+            <div className={`flex flex-col ${isLargeText ? 'gap-1' : 'gap-1.5'} px-2`}>
               {/* cart items */}
               {mounted && effectiveCartItems.length > 0 ? (
                 effectiveCartItems.map((item: any, key: number) => (

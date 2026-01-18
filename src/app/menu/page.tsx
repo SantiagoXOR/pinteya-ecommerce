@@ -119,7 +119,7 @@ export default function MenuPage() {
       <Breadcrumb title='Menú Principal' />
 
       <section className='pb-20 pt-10'>
-        <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0'>
+        <div className='max-w-[1170px] w-full mx-auto px-6 sm:px-8 xl:px-0'>
           {/* Header */}
           <div className='text-center mb-8'>
             <h1 className='text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-200 mb-4'>Menú Principal</h1>
