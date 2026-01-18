@@ -36,7 +36,7 @@ const Footer = () => {
 
   return (
     <footer className='bg-[#eb6313] text-white'>
-      <div className='max-w-6xl mx-auto px-3 sm:px-6 py-10 sm:py-14 pb-24 space-y-8'>
+      <div className='max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 pb-24 space-y-8'>
         <div className='grid gap-4 md:grid-cols-3'>
           <article className='rounded-2xl bg-white/10 p-5 sm:p-6 shadow-lg shadow-black/10 backdrop-blur'>
             <div className='flex items-center justify-between gap-4'>

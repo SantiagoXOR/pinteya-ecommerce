@@ -398,7 +398,7 @@ export const MetaCheckoutWizard: React.FC = () => {
       <div className='min-h-screen'>
         {/* Header con progreso - Fixed arriba */}
         <div className='fixed top-0 left-0 right-0 z-50 shadow-md'>
-          <div className='max-w-4xl mx-auto px-3 pt-3 pb-0'>
+          <div className='max-w-4xl mx-auto px-4 pt-3 pb-0'>
             <div className='bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-gray-200/50'>
               <div className='flex items-center justify-between mb-4'>
                 <Button
@@ -424,7 +424,7 @@ export const MetaCheckoutWizard: React.FC = () => {
         </div>
 
         {/* Contenido scrollable con padding para elementos fixed */}
-        <div className='max-w-4xl mx-auto px-3 pt-20 pb-32 w-full'>
+        <div className='max-w-4xl mx-auto px-4 pt-20 pb-32 w-full'>
 
           {/* Contenido del paso */}
           {state.currentStep === 'summary' ? (
@@ -459,7 +459,7 @@ export const MetaCheckoutWizard: React.FC = () => {
         {/* Botón fixed "Comprar ahora" - Para paso summary - Fijo abajo */}
         {state.currentStep === 'summary' && (
           <div className='fixed bottom-0 left-0 right-0 z-50 shadow-lg'>
-            <div className='max-w-4xl mx-auto px-3 py-4'>
+            <div className='max-w-4xl mx-auto px-4 py-4'>
               <Button
                 size='lg'
                 onClick={handleStepComplete}
@@ -488,7 +488,7 @@ export const MetaCheckoutWizard: React.FC = () => {
         {/* Botón fixed "Continuar" - Para pasos intermedios - Fijo abajo */}
         {state.currentStep !== 'confirmation' && state.currentStep !== 'summary' && (
           <div className='fixed bottom-0 left-0 right-0 z-50 shadow-lg'>
-            <div className='max-w-4xl mx-auto px-3 py-4'>
+            <div className='max-w-4xl mx-auto px-4 py-4'>
               <Button
                 size='lg'
                 onClick={handleStepComplete}
@@ -517,7 +517,7 @@ export const MetaCheckoutWizard: React.FC = () => {
         {/* Botón fixed "Confirmar Pedido" - Solo en etapa de confirmación - Fijo abajo */}
         {state.currentStep === 'confirmation' && (
           <div className='fixed bottom-0 left-0 right-0 z-50 shadow-lg'>
-            <div className='max-w-4xl mx-auto px-3 py-4'>
+            <div className='max-w-4xl mx-auto px-4 py-4'>
               <Button
                 size='lg'
                 onClick={handleStepComplete}

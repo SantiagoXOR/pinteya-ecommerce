@@ -173,17 +173,24 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
     <div className='w-full'>
       <div className='flex items-center justify-between mb-2'>
         {labels && labels.length === totalSteps ? (
-          labels.map((label, index) => (
-            <span
-              key={index}
-              className={cn(
-                'text-xs font-medium',
-                index + 1 <= currentStep ? 'text-green-600' : 'text-gray-400'
-              )}
-            >
-              {label}
+          <>
+            {/* Ocultar labels en móviles <375px para evitar compresión de texto */}
+            {labels.map((label, index) => (
+              <span
+                key={index}
+                className={cn(
+                  'text-xs font-medium hidden xsm:inline',
+                  index + 1 <= currentStep ? 'text-green-600' : 'text-gray-400'
+                )}
+              >
+                {label}
+              </span>
+            ))}
+            {/* Mostrar solo números en móviles pequeños */}
+            <span className='text-xs font-medium text-gray-700 xsm:hidden'>
+              Paso {currentStep} de {totalSteps}
             </span>
-          ))
+          </>
         ) : (
           <span className='text-sm font-medium text-gray-700'>
             Paso {currentStep} de {totalSteps}

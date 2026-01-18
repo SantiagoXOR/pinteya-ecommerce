@@ -244,7 +244,7 @@ const SingleItem = ({ item }: { item: any }) => {
 
   return (
     <div
-      className='bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200'
+      className='bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-200'
       data-testid='cart-item'
     >
       {/* Product Info */}

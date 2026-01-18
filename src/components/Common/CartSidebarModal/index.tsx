@@ -307,7 +307,7 @@ const CartSidebarModal = () => {
 
             {/* Información de pago - Mercado Pago - También parte del área deslizable */}
             {mounted && hasItems && (
-              <div className={`px-3 sm:px-7.5 lg:px-11 bg-white pointer-events-none`} style={{ paddingTop: '0px', paddingBottom: '0px', marginBottom: '0px' }}>
+              <div className={`px-4 sm:px-7.5 lg:px-11 bg-white pointer-events-none`} style={{ paddingTop: '0px', paddingBottom: '0px', marginBottom: '0px' }}>
                 <div className={`w-full flex items-center justify-center gap-1.5 ${isLargeText ? 'px-1' : 'px-2'} ${isLargeText ? 'text-[9px]' : 'text-[10px]'} text-gray-600`} style={{ paddingTop: '0px', paddingBottom: '4px', marginTop: '0px', marginBottom: '0px' }}>
                   <Image
                     src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
@@ -326,7 +326,7 @@ const CartSidebarModal = () => {
           {/* Content Area - Scrollable */}
           <div 
             ref={contentAreaRef}
-            className={`flex-1 overflow-y-auto no-scrollbar px-3 sm:px-7.5 lg:px-11 ${hasItems ? 'pt-1' : isLargeText ? 'pt-1' : 'pt-2'} bg-gray-50 min-h-0`} 
+            className={`flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 ${hasItems ? 'pt-1' : isLargeText ? 'pt-1' : 'pt-2'} bg-gray-50 min-h-0`} 
             style={{ overflowY: 'auto', minHeight: '0' }}
           >
             <div className={`flex flex-col ${isLargeText ? 'gap-1' : 'gap-1.5'} px-1`}>
@@ -343,7 +343,7 @@ const CartSidebarModal = () => {
 
           {/* Footer - Sticky at bottom */}
           <div 
-            className={`border-t border-gray-200 bg-white px-3 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0 relative z-0`} 
+            className={`border-t border-gray-200 bg-white px-4 sm:px-7.5 lg:px-11 mt-auto flex-shrink-0 relative z-0`} 
             style={{ 
               paddingTop: '8px', 
               paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', 

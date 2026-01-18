@@ -87,7 +87,7 @@ export default function SearchPage() {
   if (isLoading) {
     return (
       <div className='min-h-screen py-8'>
-        <div className='max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center py-12'>
             <div className='animate-spin w-8 h-8 border-2 border-blaze-orange-600 border-t-transparent rounded-full mx-auto mb-4'></div>
             <p className='text-white'>Buscando productos...</p>
@@ -101,7 +101,7 @@ export default function SearchPage() {
   if (!query.trim()) {
     return (
       <div className='min-h-screen py-8'>
-        <div className='max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center py-12'>
             <Search className='w-16 h-16 text-gray-400 mx-auto mb-4' />
             <h1 className='text-2xl font-bold text-gray-900 mb-2'>Busca productos de pinturería</h1>
@@ -223,8 +223,8 @@ export default function SearchPage() {
             </div>
           </div>
         ) : (
-          // Resultados de productos - Layout fijo con 2 productos por línea en mobile
-          <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full'>
+          // Resultados de productos - 1 columna en móviles pequeños, 2 en móviles medianos
+          <div className='grid grid-cols-1 xsm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full'>
             {products.map(product => {
               const hasDiscount =
                 typeof product.discounted_price === 'number' &&

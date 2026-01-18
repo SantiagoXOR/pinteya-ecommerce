@@ -339,7 +339,7 @@ export default function BuyProductPage() {
       <div className='h-[146px] md:h-[171px]'></div>
       
       {/* Grid de productos o skeleton inline */}
-      <div className='max-w-7xl mx-auto px-3 pb-6 relative z-0'>
+      <div className='max-w-7xl mx-auto px-4 pb-6 relative z-0'>
         {status === 'ready' && productData ? (
           <ProductGridInfinite
             currentProductId={productData.id}

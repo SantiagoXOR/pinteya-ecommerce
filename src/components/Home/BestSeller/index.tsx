@@ -47,9 +47,9 @@ const BestSeller: React.FC = React.memo(() => {
   
   return (
     <section className='overflow-hidden py-1 sm:py-1.5 bg-transparent'>
-      <div className='max-w-[1170px] w-full mx-auto px-3 sm:px-8'>
-        {/* Grid de productos mejorado - 4 columnas en desktop */}
-        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
+      <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8'>
+        {/* Grid de productos mejorado - 1 columna en móviles pequeños, 2 en móviles medianos, 4 en desktop */}
+        <div className='grid grid-cols-1 xsm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6'>
           {/* ✅ FIX CRÍTICO: Mostrar productos siempre que existan, incluso durante refetch */}
           {/* Con placeholderData, los datos anteriores se mantienen durante actualizaciones en segundo plano */}
           {bestSellerProducts.length > 0 ? (
