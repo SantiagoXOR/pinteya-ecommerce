@@ -608,7 +608,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogChange}>
-      <DialogContent className='max-w-5xl max-h-[90vh] overflow-hidden'>
+      <DialogContent className='max-w-7xl max-h-[90vh] overflow-hidden'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-3'>
             <Package className='h-6 w-6' />

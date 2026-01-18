@@ -256,8 +256,13 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       return response.json()
     },
     onSuccess: () => {
+      // Invalidar y refetch inmediato para actualización rápida
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] })
       queryClient.invalidateQueries({ queryKey: ['admin-orders-stats'] })
+      queryClient.refetchQueries({ queryKey: ['admin-orders'] })
+    },
+    onError: (error) => {
+      console.error('[useOrdersEnterprise] Error updating order status:', error)
     },
   })
 

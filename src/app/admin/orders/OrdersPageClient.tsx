@@ -249,14 +249,19 @@ export function OrdersPageClient() {
               margin-bottom: 30px;
             }
             .logo { 
-              font-size: 28px; 
-              font-weight: bold; 
-              color: #f59e0b;
               display: flex;
               align-items: center;
-              gap: 8px;
+              gap: 12px;
             }
-            .logo span { color: #333; }
+            .logo img {
+              height: 50px;
+              width: auto;
+            }
+            .logo-text { 
+              font-size: 28px; 
+              font-weight: bold; 
+              color: #333;
+            }
             .order-meta {
               text-align: right;
             }
@@ -365,7 +370,8 @@ export function OrdersPageClient() {
         <body>
           <div class="header">
             <div class="logo">
-              <span style="color: #f59e0b;">●</span> <span>Pinteya</span>
+              <img src="${typeof window !== 'undefined' ? window.location.origin : ''}/images/logo/LogoPinteYa.png" alt="Pinteya" onerror="this.style.display='none'" />
+              <span class="logo-text">Pinteya</span>
             </div>
             <div class="order-meta">
               <h2>Orden #${order.order_number || order.id}</h2>

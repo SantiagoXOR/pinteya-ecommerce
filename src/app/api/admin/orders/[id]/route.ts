@@ -86,9 +86,9 @@ async function validateAdminAuth() {
 // ===================================
 
 const stateTransitions: Record<string, string[]> = {
-  pending: ['confirmed', 'cancelled'],
-  confirmed: ['processing', 'cancelled'],
-  processing: ['shipped', 'cancelled'],
+  pending: ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+  confirmed: ['processing', 'shipped', 'delivered', 'cancelled'],
+  processing: ['shipped', 'delivered', 'cancelled'],
   shipped: ['delivered', 'returned'],
   delivered: ['returned'],
   cancelled: [],
@@ -239,6 +239,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           quantity,
           unit_price,
           total_price,
+          product_snapshot,
           products (
             id,
             name,
