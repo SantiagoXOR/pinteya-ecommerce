@@ -186,11 +186,12 @@ export async function POST(
       )
     }
 
-    // Actualizar orden con preference_id
+    // Actualizar orden con preference_id y payment_link
     const { error: updateError } = await supabase
       .from('orders')
       .update({
         payment_preference_id: preferenceResult.data.id,
+        payment_link: preferenceResult.data.init_point,
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderId)
@@ -201,6 +202,13 @@ export async function POST(
         updateError,
       })
     }
+
+    // Log para debug
+    console.log('[PAYMENT-LINK] Link creado:', {
+      orderId,
+      preferenceId: preferenceResult.data.id,
+      initPoint: preferenceResult.data.init_point,
+    })
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Payment link created successfully', {
       orderId,

@@ -33,6 +33,7 @@ import {
   Wallet,
   Banknote,
   Upload,
+  RefreshCw,
 } from '@/lib/optimized-imports'
 import { toast } from 'sonner'
 import { PaymentProofModal } from './PaymentProofModal'
@@ -105,6 +106,8 @@ interface Order {
   tracking_number?: string
   payment_method?: string
   shipping_method?: string
+  payment_link?: string
+  payment_preference_id?: string
 }
 
 interface StatusHistoryItem {
@@ -1228,15 +1231,58 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           {(order.payment_status === 'pending' || order.payment_status === 'cash_on_delivery') && (
                             <>
                               {order.payment_method === 'mercadopago' && (
-                                <Button
-                                  variant='default'
-                                  size='sm'
-                                  className='w-full justify-start'
-                                  onClick={() => handleCreatePaymentLink()}
-                                >
-                                  <CreditCard className='h-4 w-4 mr-2' />
-                                  Crear Link de Pago
-                                </Button>
+                                <>
+                                  {order.payment_link ? (
+                                    <div className='space-y-2'>
+                                      <div className='flex gap-2'>
+                                        <Button
+                                          variant='outline'
+                                          size='sm'
+                                          className='flex-1 justify-start text-blue-600 border-blue-200 hover:bg-blue-50'
+                                          onClick={async () => {
+                                            try {
+                                              await navigator.clipboard.writeText(order.payment_link!)
+                                              toast.success('Link copiado al portapapeles')
+                                            } catch {
+                                              toast.error('No se pudo copiar')
+                                            }
+                                          }}
+                                        >
+                                          <Copy className='h-4 w-4 mr-2' />
+                                          Copiar Link
+                                        </Button>
+                                        <Button
+                                          variant='default'
+                                          size='sm'
+                                          className='flex-1 justify-start'
+                                          onClick={() => window.open(order.payment_link, '_blank')}
+                                        >
+                                          <ExternalLink className='h-4 w-4 mr-2' />
+                                          Abrir
+                                        </Button>
+                                      </div>
+                                      <Button
+                                        variant='ghost'
+                                        size='sm'
+                                        className='w-full justify-start text-xs text-gray-500'
+                                        onClick={() => handleCreatePaymentLink()}
+                                      >
+                                        <RefreshCw className='h-3 w-3 mr-2' />
+                                        Generar nuevo link
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <Button
+                                      variant='default'
+                                      size='sm'
+                                      className='w-full justify-start'
+                                      onClick={() => handleCreatePaymentLink()}
+                                    >
+                                      <CreditCard className='h-4 w-4 mr-2' />
+                                      Crear Link de Pago
+                                    </Button>
+                                  )}
+                                </>
                               )}
                               <Button
                                 variant='outline'

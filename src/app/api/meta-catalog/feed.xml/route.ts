@@ -5,10 +5,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 
-// Función para escapar XML
-function escapeXml(unsafe: string | null | undefined): string {
-  if (!unsafe) return ''
-  return unsafe
+// Función para escapar XML - acepta cualquier tipo y lo convierte a string
+function escapeXml(unsafe: unknown): string {
+  if (unsafe === null || unsafe === undefined) return ''
+  // Convertir a string si no lo es (números, objetos, etc.)
+  const str = typeof unsafe === 'string' ? unsafe : String(unsafe)
+  return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -17,11 +19,12 @@ function escapeXml(unsafe: string | null | undefined): string {
 }
 
 // Función para obtener URL completa de imagen
-function getFullImageUrl(imagePath: string | null | undefined, baseUrl: string): string {
+function getFullImageUrl(imagePath: unknown, baseUrl: string): string {
   if (!imagePath) return ''
-  if (imagePath.startsWith('http')) return imagePath
-  if (imagePath.startsWith('/')) return `${baseUrl}${imagePath}`
-  return `${baseUrl}/${imagePath}`
+  const path = typeof imagePath === 'string' ? imagePath : String(imagePath)
+  if (path.startsWith('http')) return path
+  if (path.startsWith('/')) return `${baseUrl}${path}`
+  return `${baseUrl}/${path}`
 }
 
 // Función para obtener imagen principal del producto
