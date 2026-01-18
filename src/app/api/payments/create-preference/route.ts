@@ -361,6 +361,7 @@ export async function POST(request: NextRequest) {
           price_sale,
           price_list,
           color_name,
+          color_hex,
           measure,
           finish,
           image_url
@@ -416,6 +417,7 @@ export async function POST(request: NextRequest) {
         price_sale: number | null
         price_list: number
         color_name: string | null
+        color_hex: string | null
         measure: string | null
         finish: string | null
         image_url: string | null
@@ -772,6 +774,7 @@ export async function POST(request: NextRequest) {
         const variant = product.product_variants.find((v: any) => v.id === variantId)
         if (variant) {
           if (variant.color_name) productSnapshot.color = variant.color_name
+          if (variant.color_hex) productSnapshot.color_hex = variant.color_hex
           if (variant.finish) productSnapshot.finish = variant.finish
           if (variant.measure) productSnapshot.medida = variant.measure
           // Priorizar imagen de la variante si existe

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from '@/lib/optimized-imports'
-import { cn } from '@/lib/core/utils'
+import { cn, normalizeProductTitle } from '@/lib/core/utils'
 import { 
   Package, 
   AlertCircle, 
@@ -55,6 +55,7 @@ interface OrderItem {
     price?: number
     image?: string
     color?: string
+    color_hex?: string
     finish?: string
     medida?: string
     brand?: string
@@ -327,9 +328,24 @@ function UnifiedPaymentBadge({
 // PRODUCT ATTRIBUTE PILL
 // ===================================
 
-function ProductAttributePill({ label, value }: { label: string; value: string }) {
+function ProductAttributePill({ 
+  label, 
+  value, 
+  colorHex 
+}: { 
+  label: string
+  value: string
+  colorHex?: string 
+}) {
   return (
     <span className='inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200'>
+      {colorHex && (
+        <span
+          className='w-3 h-3 rounded-full mr-1.5 border border-white shadow-sm ring-1 ring-gray-200'
+          style={{ backgroundColor: colorHex }}
+          title={colorHex}
+        />
+      )}
       <span className='text-gray-500 mr-1'>{label}:</span>
       <span className='font-semibold'>{value}</span>
     </span>
@@ -394,12 +410,14 @@ function ExpandableOrderItemsRow({
               </thead>
               <tbody className='bg-white divide-y divide-gray-100'>
                 {orderItems.map((item, index) => {
-                  const productName = item.product_snapshot?.name || item.products?.name || item.product_name || 'Producto'
+                  const rawProductName = item.product_snapshot?.name || item.products?.name || item.product_name || 'Producto'
+                  const productName = normalizeProductTitle(rawProductName)
                   const productId = item.products?.id || item.product_id
                   const productImage = getProductImage(item)
                   const unitPrice = item.product_snapshot?.price || item.price || item.unit_price || 0
                   const totalPrice = unitPrice * item.quantity
                   const hasAttributes = item.product_snapshot?.color || item.product_snapshot?.medida || item.product_snapshot?.finish
+                  const colorHex = item.product_snapshot?.color_hex
 
                   return (
                     <tr
@@ -443,7 +461,11 @@ function ExpandableOrderItemsRow({
                         {hasAttributes ? (
                           <div className='flex flex-wrap items-center gap-1.5'>
                             {item.product_snapshot?.color && (
-                              <ProductAttributePill label="Color" value={item.product_snapshot.color} />
+                              <ProductAttributePill 
+                                label="Color" 
+                                value={item.product_snapshot.color} 
+                                colorHex={colorHex}
+                              />
                             )}
                             {item.product_snapshot?.medida && (
                               <ProductAttributePill label="Medida" value={item.product_snapshot.medida} />

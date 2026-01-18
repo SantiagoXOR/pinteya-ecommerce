@@ -228,7 +228,7 @@ export async function POST(request: NextRequest) {
       .select(`
         id, name, price, discounted_price, stock, color, medida, brand, description, aikon_id, images,
         product_variants (
-          id, color_name, measure, price_sale, price_list, finish, stock, image_url
+          id, color_name, color_hex, measure, price_sale, price_list, finish, stock, image_url
         )
       `)
       .in('id', productIds) as { data: ProductFromDB[] | null; error: any };
@@ -359,6 +359,10 @@ export async function POST(request: NextRequest) {
           // Usar color de la variante
           if (variant.color_name) {
             productSnapshot.color = variant.color_name;
+          }
+          // Usar color_hex de la variante
+          if (variant.color_hex) {
+            productSnapshot.color_hex = variant.color_hex;
           }
           // Usar medida de la variante
           if (variant.measure) {
