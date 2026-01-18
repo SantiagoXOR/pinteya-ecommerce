@@ -5,7 +5,7 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { OrderEnterprise, OrderItemEnterprise } from '@/types/orders-enterprise'

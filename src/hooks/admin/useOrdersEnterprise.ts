@@ -16,10 +16,20 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 export interface OrderItem {
   id: string
   product_id: number
-  product_name: string
+  product_name?: string
   quantity: number
-  unit_price: number
-  total_price: number
+  price: number
+  unit_price?: number
+  total_price?: number
+  product_snapshot?: {
+    name?: string
+    price?: number
+    image?: string
+    color?: string
+    finish?: string
+    medida?: string
+    brand?: string
+  }
   products?: {
     id: number
     name: string
@@ -27,11 +37,14 @@ export interface OrderItem {
   }
 }
 
+export type PaymentMethod = 'mercadopago' | 'cash' | 'transfer' | 'card' | null
+
 export interface Order {
   id: string
   order_number: string
   status: OrderStatus
   payment_status: PaymentStatus
+  payment_method?: PaymentMethod
   total: number
   currency: string
   created_at: string
@@ -43,11 +56,14 @@ export interface Order {
     surname?: string
     email?: string
     phone?: string
+    payment_method?: string
   }
   user_profiles?: {
     id: string
-    name: string
-    email: string
+    first_name?: string
+    last_name?: string
+    email?: string
+    phone?: string
   }
   order_items: OrderItem[]
 }

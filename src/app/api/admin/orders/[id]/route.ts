@@ -104,6 +104,68 @@ function validateStateTransition(currentStatus: string, newStatus: string): bool
 }
 
 // ===================================
+// VALIDACIONES DE TRANSICIÓN DE ESTADO DE PAGO
+// ===================================
+
+const paymentStateTransitions: Record<string, string[]> = {
+  pending: ['paid', 'failed', 'cash_on_delivery'],
+  paid: ['refunded'],
+  failed: ['pending', 'paid'],
+  refunded: [], // Estado final
+  cash_on_delivery: ['paid', 'failed'],
+}
+
+function validatePaymentTransition(currentStatus: string, newStatus: string): boolean {
+  if (currentStatus === newStatus) {
+    return true
+  }
+  return paymentStateTransitions[currentStatus]?.includes(newStatus) || false
+}
+
+// ===================================
+// VALIDACIÓN DE STOCK
+// ===================================
+
+async function validateStockForConfirmation(orderId: string): Promise<{ valid: boolean; error?: string }> {
+  try {
+    // Obtener items de la orden
+    const { data: items, error: itemsError } = await supabaseAdmin
+      .from('order_items')
+      .select('product_id, quantity')
+      .eq('order_id', orderId)
+
+    if (itemsError || !items) {
+      return { valid: false, error: 'Error al obtener items de la orden' }
+    }
+
+    // Verificar stock de cada producto
+    for (const item of items) {
+      const { data: product, error: productError } = await supabaseAdmin
+        .from('products')
+        .select('stock, name')
+        .eq('id', item.product_id)
+        .single()
+
+      if (productError || !product) {
+        return { valid: false, error: `Producto ${item.product_id} no encontrado` }
+      }
+
+      if (product.stock < item.quantity) {
+        return { 
+          valid: false, 
+          error: `Stock insuficiente para ${product.name}. Disponible: ${product.stock}, Requerido: ${item.quantity}` 
+        }
+      }
+    }
+
+    return { valid: true }
+  } catch (error) {
+    console.error('Error validating stock:', error)
+    return { valid: false, error: 'Error al validar stock' }
+  }
+}
+
+// ===================================
 // GET - Obtener orden específica
 // ===================================
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -397,10 +459,68 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       )
     }
 
+    // Validar transición de estado de pago si se está cambiando
+    if (updateData.payment_status && !validatePaymentTransition(currentOrder.payment_status, updateData.payment_status)) {
+      return NextResponse.json(
+        { error: `Transición de pago no permitida: ${currentOrder.payment_status} → ${updateData.payment_status}` },
+        { status: 400 }
+      )
+    }
+
+    // Validar stock antes de confirmar la orden
+    if (updateData.status === 'confirmed' && currentOrder.status === 'pending') {
+      const stockValidation = await validateStockForConfirmation(orderId)
+      if (!stockValidation.valid) {
+        return NextResponse.json(
+          { error: stockValidation.error || 'Error de validación de stock' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Si se va a cambiar a shipped, verificar que exista un shipment o actualizar fulfillment_status
+    if (updateData.status === 'shipped') {
+      // Verificar si existe un shipment asociado
+      const { data: existingShipments } = await supabaseAdmin
+        .from('shipments')
+        .select('id, status')
+        .eq('order_id', orderId)
+        .limit(1)
+
+      if (!existingShipments || existingShipments.length === 0) {
+        // Si no existe shipment, solo marcamos fulfillment_status y continuamos
+        // El admin puede crear el shipment después si lo necesita
+        logger.log(LogLevel.WARN, LogCategory.API, 'Orden marcada como shipped sin shipment asociado', {
+          orderId,
+        })
+      }
+    }
+
     // Preparar datos de actualización
     const updatePayload: any = {
       ...updateData,
       updated_at: new Date().toISOString(),
+    }
+
+    // Actualizar fulfillment_status según el estado de la orden
+    if (updateData.status) {
+      switch (updateData.status) {
+        case 'shipped':
+          updatePayload.fulfillment_status = 'fulfilled'
+          break
+        case 'delivered':
+          updatePayload.fulfillment_status = 'fulfilled'
+          break
+        case 'cancelled':
+        case 'refunded':
+          updatePayload.fulfillment_status = 'returned'
+          break
+        case 'pending':
+        case 'confirmed':
+        case 'processing':
+          updatePayload.fulfillment_status = 'unfulfilled'
+          break
+      }
     }
 
     // Convertir shipping_address a JSON si se proporciona

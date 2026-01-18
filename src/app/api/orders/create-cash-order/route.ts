@@ -2,7 +2,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/integrations/supabase/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/config';
 import { z } from 'zod';
 import { logger, LogCategory } from '@/lib/enterprise/logger';
 import { createRateLimiter } from '@/lib/rate-limiting/rate-limiter';
@@ -608,13 +608,11 @@ export async function POST(request: NextRequest) {
     // Usar \n para mejor compatibilidad con WhatsApp
     const message = sanitizeForWhatsApp(lines.join('\n'));
     
-    // ✅ CORREGIR: Reemplazar \n por %0A directamente (más compatible con WhatsApp Web)
-    // WhatsApp Web necesita %0A explícito para mostrar saltos de línea correctamente
-    // No usar encodeURIComponent porque ya estamos reemplazando \n por %0A
-    const messageWithLineBreaks = message.replace(/\n/g, '%0A');
-    
-    // El mensaje ya tiene %0A, no necesitamos codificar de nuevo
-    const whatsappMessage = messageWithLineBreaks;
+    // ✅ FIX: Usar encodeURIComponent para codificar correctamente TODO el mensaje
+    // encodeURIComponent convierte \n a %0A automáticamente Y codifica todos los
+    // caracteres especiales (espacios, $, *, :, etc.) que son necesarios para URLs válidas.
+    // El error anterior era solo reemplazar \n por %0A sin codificar el resto del mensaje.
+    const whatsappMessage = encodeURIComponent(message);
     // Número de WhatsApp de Pinteya en formato internacional (solo dígitos)
     const rawPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
     const whatsappNumber = normalizeWhatsAppPhoneNumber(rawPhone);

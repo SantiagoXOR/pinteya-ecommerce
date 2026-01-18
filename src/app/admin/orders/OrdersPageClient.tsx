@@ -101,8 +101,217 @@ export function OrdersPageClient() {
     setIsEditModalOpen(true)
   }
 
+  // Handler para ver historial de una orden
+  const handleViewHistory = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}/history`)
+      if (!response.ok) {
+        throw new Error('Error al obtener historial')
+      }
+      const data = await response.json()
+      
+      if (data.data && data.data.length > 0) {
+        // Mostrar el historial en un toast con información
+        const historyItems = data.data.slice(0, 5).map((item: any) => 
+          `${item.previous_status} → ${item.new_status}`
+        ).join('\n')
+        toast.info(`Historial de cambios:\n${historyItems}`, {
+          duration: 5000,
+          description: `Última actualización: ${new Date(data.data[0].created_at).toLocaleDateString('es-AR')}`
+        })
+      } else {
+        toast.info('Esta orden no tiene historial de cambios')
+      }
+    } catch (error) {
+      toast.error('Error al cargar el historial')
+      console.error('Error fetching history:', error)
+    }
+  }
+
+  // Handler para imprimir orden
+  const handlePrintOrder = async (orderId: string) => {
+    try {
+      // Obtener detalles de la orden
+      const response = await fetch(`/api/admin/orders/${orderId}`)
+      if (!response.ok) {
+        throw new Error('Error al obtener datos de la orden')
+      }
+      const data = await response.json()
+      const order = data.data
+
+      if (!order) {
+        toast.error('No se encontraron datos de la orden')
+        return
+      }
+
+      // Crear ventana de impresión
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) {
+        toast.error('El navegador bloqueó la ventana de impresión')
+        return
+      }
+
+      const formatCurrency = (amount: number) => 
+        new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount)
+
+      const formatDate = (dateString: string) =>
+        new Date(dateString).toLocaleDateString('es-AR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+
+      const clientName = order.payer_info?.name && order.payer_info?.surname
+        ? `${order.payer_info.name} ${order.payer_info.surname}`
+        : order.user_profiles?.first_name
+        ? `${order.user_profiles.first_name} ${order.user_profiles.last_name || ''}`
+        : 'Cliente'
+
+      const clientPhone = order.payer_info?.phone || order.user_profiles?.phone || 'No especificado'
+
+      const items = order.order_items?.map((item: any) => {
+        const name = item.product_snapshot?.name || item.products?.name || 'Producto'
+        const price = item.product_snapshot?.price || item.price || 0
+        return `
+          <tr>
+            <td style="padding: 8px; border-bottom: 1px solid #eee;">${name}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(price)}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(price * item.quantity)}</td>
+          </tr>
+        `
+      }).join('') || ''
+
+      const address = order.shipping_address
+        ? `${order.shipping_address.street_name} ${order.shipping_address.street_number}, ${order.shipping_address.city_name}, ${order.shipping_address.state_name}`
+        : 'No especificada'
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Orden ${order.order_number || order.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .order-info { margin-bottom: 20px; }
+            .order-info h2 { color: #333; margin-bottom: 10px; }
+            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+            .info-box { background: #f5f5f5; padding: 15px; border-radius: 8px; }
+            .info-box h3 { margin: 0 0 10px 0; color: #555; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th { background: #4f46e5; color: white; padding: 10px; text-align: left; }
+            th:last-child, th:nth-child(2), th:nth-child(3) { text-align: right; }
+            th:nth-child(2) { text-align: center; }
+            .total { text-align: right; font-size: 18px; font-weight: bold; }
+            @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Orden de Compra</h1>
+            <p style="color: #666;">Número: ${order.order_number || order.id}</p>
+            <p style="color: #666;">Fecha: ${formatDate(order.created_at)}</p>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-box">
+              <h3>DATOS DEL CLIENTE</h3>
+              <p><strong>Nombre:</strong> ${clientName}</p>
+              <p><strong>Teléfono:</strong> ${clientPhone}</p>
+            </div>
+            <div class="info-box">
+              <h3>DIRECCIÓN DE ENVÍO</h3>
+              <p>${address}</p>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items}
+            </tbody>
+          </table>
+
+          <div class="total">
+            <p>Total: ${formatCurrency(order.total)}</p>
+          </div>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+      printWindow.focus()
+      setTimeout(() => {
+        printWindow.print()
+      }, 250)
+
+      toast.success('Preparando impresión...')
+    } catch (error) {
+      toast.error('Error al preparar la impresión')
+      console.error('Error printing order:', error)
+    }
+  }
+
+  // Handler para descargar orden como JSON
+  const handleDownloadOrder = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`)
+      if (!response.ok) {
+        throw new Error('Error al obtener datos de la orden')
+      }
+      const data = await response.json()
+      const order = data.data
+
+      if (!order) {
+        toast.error('No se encontraron datos de la orden')
+        return
+      }
+
+      // Crear archivo JSON para descarga
+      const jsonContent = JSON.stringify(order, null, 2)
+      const blob = new Blob([jsonContent], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `orden-${order.order_number || order.id}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      toast.success('Archivo descargado correctamente')
+    } catch (error) {
+      toast.error('Error al descargar la orden')
+      console.error('Error downloading order:', error)
+    }
+  }
+
   // Handler con feedback visual
   const handleOrderActionWithToast = async (action: string, orderId: string) => {
+    // Manejar acciones especiales primero
+    if (action === 'history') {
+      handleViewHistory(orderId)
+      return
+    }
+    if (action === 'print') {
+      handlePrintOrder(orderId)
+      return
+    }
+    if (action === 'download') {
+      handleDownloadOrder(orderId)
+      return
+    }
+
     // Mapear acciones a mensajes
     const actionMessages: Record<string, { loading: string; success: string }> = {
       process: {
@@ -124,6 +333,10 @@ export function OrdersPageClient() {
       cancel: {
         loading: 'Cancelando orden...',
         success: 'Orden cancelada',
+      },
+      refund: {
+        loading: 'Procesando reembolso...',
+        success: 'Reembolso procesado',
       },
     }
 

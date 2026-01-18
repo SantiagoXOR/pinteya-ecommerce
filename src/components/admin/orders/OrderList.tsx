@@ -12,7 +12,7 @@ import {
   TableRow 
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from '@/lib/optimized-imports'
 import { cn } from '@/lib/core/utils'
 import { 
   Package, 
@@ -25,15 +25,52 @@ import {
   DollarSign,
   CreditCard,
   Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Wallet,
+  Banknote,
+  ShoppingBag,
 } from '@/lib/optimized-imports'
 import { OrderFilters } from './OrderFilters'
 import { OrderRowActions } from './OrderActions'
+import { useResizableColumns } from '@/hooks/admin/useResizableColumns'
+import Image from 'next/image'
+
+// ===================================
+// TYPES
+// ===================================
+
+interface OrderItem {
+  id: string
+  product_id: number
+  product_name?: string
+  quantity: number
+  price: number
+  unit_price?: number
+  total_price?: number
+  product_snapshot?: {
+    name?: string
+    price?: number
+    image?: string
+    color?: string
+    finish?: string
+    medida?: string
+    brand?: string
+  }
+  products?: {
+    id: number
+    name: string
+    images: string[]
+  }
+}
 
 interface Order {
   id: string
   order_number: string
   status: OrderStatus
   payment_status: PaymentStatus
+  payment_method?: string | null
   total: number
   currency: string
   created_at: string
@@ -45,27 +82,16 @@ interface Order {
     surname?: string
     email?: string
     phone?: string
+    payment_method?: string
   }
   user_profiles?: {
     id: string
-    name: string
-    email: string
+    first_name?: string
+    last_name?: string
+    email?: string
+    phone?: string
   }
   order_items: OrderItem[]
-}
-
-interface OrderItem {
-  id: string
-  product_id: number
-  product_name: string
-  quantity: number
-  unit_price: number
-  total_price: number
-  products?: {
-    id: number
-    name: string
-    images: string[]
-  }
 }
 
 type OrderStatus =
@@ -77,7 +103,9 @@ type OrderStatus =
   | 'cancelled'
   | 'refunded'
 
-type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
+type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded' | 'cash_on_delivery'
+
+type SortDirection = 'asc' | 'desc' | null
 
 interface OrderListProps {
   orders: Order[]
@@ -103,7 +131,27 @@ interface OrderListProps {
   className?: string
 }
 
-// Status Badge Component para órdenes
+// ===================================
+// DEFAULT COLUMN WIDTHS
+// ===================================
+
+const DEFAULT_COLUMN_WIDTHS = {
+  select: 50,
+  actions: 80,
+  order_number: 130,
+  products: 140,
+  cliente: 200,
+  fecha: 150,
+  estado: 120,
+  metodo_pago: 140,
+  pago: 120,
+  total: 120,
+}
+
+// ===================================
+// BADGE COMPONENTS
+// ===================================
+
 function OrderStatusBadge({ status }: { status: OrderStatus }) {
   const statusConfig = {
     pending: {
@@ -144,22 +192,21 @@ function OrderStatusBadge({ status }: { status: OrderStatus }) {
   }
 
   const config = statusConfig[status]
-  const Icon = config && config.icon ? config.icon : Package
+  const Icon = config?.icon || Package
 
   return (
     <span
       className={cn(
         'inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border',
-        config && config.className ? config.className : 'bg-gray-100 text-gray-800 border-gray-200'
+        config?.className || 'bg-gray-100 text-gray-800 border-gray-200'
       )}
     >
       <Icon className='w-3 h-3' />
-      <span>{config && config.label ? config.label : 'Estado'}</span>
+      <span>{config?.label || 'Estado'}</span>
     </span>
   )
 }
 
-// Payment Status Badge Component
 function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
   const statusConfig = {
     pending: {
@@ -182,25 +229,165 @@ function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
       icon: DollarSign,
       className: 'bg-gray-100 text-gray-800 border-gray-200',
     },
+    cash_on_delivery: {
+      label: 'Contra Entrega',
+      icon: Banknote,
+      className: 'bg-amber-100 text-amber-800 border-amber-200',
+    },
   }
 
   const config = statusConfig[status]
-  const Icon = config && config.icon ? config.icon : CreditCard
+  const Icon = config?.icon || CreditCard
 
   return (
     <span
       className={cn(
         'inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border',
-        config && config.className ? config.className : 'bg-gray-100 text-gray-800 border-gray-200'
+        config?.className || 'bg-gray-100 text-gray-800 border-gray-200'
       )}
     >
       <Icon className='w-3 h-3' />
-      <span>{config && config.label ? config.label : 'Pago'}</span>
+      <span>{config?.label || 'Pago'}</span>
     </span>
   )
 }
 
-// Función para formatear moneda
+function PaymentMethodBadge({ method, paymentStatus }: { method?: string | null; paymentStatus?: PaymentStatus }) {
+  // Determinar el método de pago basado en el campo payment_method o payment_status
+  let displayMethod: 'mercadopago' | 'cash' | 'pending' = 'pending'
+  
+  if (method === 'mercadopago' || method === 'card' || paymentStatus === 'paid') {
+    displayMethod = 'mercadopago'
+  } else if (method === 'cash' || paymentStatus === 'cash_on_delivery') {
+    displayMethod = 'cash'
+  }
+
+  const methodConfig = {
+    mercadopago: {
+      label: 'MercadoPago',
+      icon: Wallet,
+      className: 'bg-blue-100 text-blue-800 border-blue-200',
+    },
+    cash: {
+      label: 'Pago al Recibir',
+      icon: Banknote,
+      className: 'bg-orange-100 text-orange-800 border-orange-200',
+    },
+    pending: {
+      label: 'Pendiente',
+      icon: Clock,
+      className: 'bg-gray-100 text-gray-600 border-gray-200',
+    },
+  }
+
+  const config = methodConfig[displayMethod]
+  const Icon = config.icon
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border',
+        config.className
+      )}
+    >
+      <Icon className='w-3 h-3' />
+      <span>{config.label}</span>
+    </span>
+  )
+}
+
+// ===================================
+// EXPANDABLE ORDER ITEMS ROW
+// ===================================
+
+function ExpandableOrderItemsRow({ 
+  orderItems, 
+  isExpanded, 
+  colSpan 
+}: { 
+  orderItems: OrderItem[]
+  isExpanded: boolean
+  colSpan: number 
+}) {
+  if (!isExpanded || !orderItems || orderItems.length === 0) return null
+
+  return (
+    <TableRow className='bg-blue-50/50'>
+      <TableCell colSpan={colSpan} className='p-0'>
+        <div className='px-6 py-3'>
+          <div className='text-xs font-medium text-gray-500 uppercase tracking-wider mb-2'>
+            Productos del Pedido
+          </div>
+          <div className='space-y-2'>
+            {orderItems.map((item, index) => {
+              const productName = item.product_snapshot?.name || item.products?.name || item.product_name || 'Producto'
+              const productImage = item.product_snapshot?.image || (item.products?.images?.[0])
+              const unitPrice = item.product_snapshot?.price || item.price || item.unit_price || 0
+              const totalPrice = unitPrice * item.quantity
+
+              return (
+                <div 
+                  key={item.id || index}
+                  className='flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-100'
+                >
+                  {/* Imagen del producto */}
+                  <div className='w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0'>
+                    {productImage ? (
+                      <Image
+                        src={productImage}
+                        alt={productName}
+                        width={48}
+                        height={48}
+                        className='w-full h-full object-cover'
+                      />
+                    ) : (
+                      <div className='w-full h-full flex items-center justify-center'>
+                        <Package className='w-6 h-6 text-gray-400' />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info del producto */}
+                  <div className='flex-1 min-w-0'>
+                    <p className='text-sm font-medium text-gray-900 truncate'>
+                      {productName}
+                    </p>
+                    <div className='flex items-center gap-2 text-xs text-gray-500'>
+                      {item.product_snapshot?.color && (
+                        <span>Color: {item.product_snapshot.color}</span>
+                      )}
+                      {item.product_snapshot?.medida && (
+                        <span>Medida: {item.product_snapshot.medida}</span>
+                      )}
+                      {item.product_snapshot?.finish && (
+                        <span>Terminación: {item.product_snapshot.finish}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Cantidad y precio */}
+                  <div className='text-right flex-shrink-0'>
+                    <p className='text-sm text-gray-600'>
+                      {item.quantity} x {formatCurrency(unitPrice)}
+                    </p>
+                    <p className='text-sm font-semibold text-gray-900'>
+                      {formatCurrency(totalPrice)}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+}
+
+// ===================================
+// UTILITY FUNCTIONS
+// ===================================
+
 function formatCurrency(amount: number, currency: string = 'ARS'): string {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -208,7 +395,6 @@ function formatCurrency(amount: number, currency: string = 'ARS'): string {
   }).format(amount)
 }
 
-// Función para formatear fecha
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
   return date.toLocaleDateString('es-AR', {
@@ -220,8 +406,37 @@ function formatDate(dateString: string): string {
   })
 }
 
+function getClientName(order: Order): string {
+  const payerName = order.payer_info?.name
+  const payerSurname = order.payer_info?.surname
+  const profileFirstName = order.user_profiles?.first_name
+  const profileLastName = order.user_profiles?.last_name
+
+  if (payerName && payerSurname) {
+    return `${payerName} ${payerSurname}`
+  }
+  if (payerName) {
+    return payerName
+  }
+  if (profileFirstName && profileLastName) {
+    return `${profileFirstName} ${profileLastName}`
+  }
+  if (profileFirstName) {
+    return profileFirstName
+  }
+  return 'Cliente'
+}
+
+function getClientPhone(order: Order): string | null {
+  return order.payer_info?.phone || order.user_profiles?.phone || null
+}
+
+// ===================================
+// MAIN COMPONENT
+// ===================================
+
 export function OrderList({
-  orders = [], // Valor por defecto para evitar undefined
+  orders = [],
   isLoading,
   error,
   selectedOrders: externalSelectedOrders,
@@ -235,19 +450,37 @@ export function OrderList({
 }: OrderListProps) {
   const [internalSelectedOrders, setInternalSelectedOrders] = useState<string[]>([])
   const [quickSearchTerm, setQuickSearchTerm] = useState(filters?.search || '')
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [sortColumn, setSortColumn] = useState<string | null>(filters?.sort_by || 'created_at')
+  const [sortDirection, setSortDirection] = useState<SortDirection>(filters?.sort_order || 'desc')
 
-  // Usar estado externo si se proporciona, sino usar estado interno
+  // Resizable columns hook
+  const {
+    columnWidths,
+    isResizing,
+    justFinishedResizing,
+    handleMouseDown,
+    tableRef,
+  } = useResizableColumns({
+    defaultWidths: DEFAULT_COLUMN_WIDTHS,
+    minWidth: 50,
+    maxWidth: 400,
+  })
+
+  // Estado externo o interno para selección
   const selectedOrders = externalSelectedOrders ?? internalSelectedOrders
   const setSelectedOrders = externalSetSelectedOrders ?? setInternalSelectedOrders
+
+  const safeOrders = Array.isArray(orders) ? orders : []
 
   useEffect(() => {
     setQuickSearchTerm(filters?.search || '')
   }, [filters?.search])
 
-  // Asegurar que orders siempre sea un array
-  const safeOrders = Array.isArray(orders) ? orders : []
+  // ===================================
+  // HANDLERS
+  // ===================================
 
-  // Handle row selection
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrders(prev =>
       prev.includes(orderId)
@@ -265,9 +498,7 @@ export function OrderList({
   }
 
   const handleQuickSearch = () => {
-    if (!updateFilters) {
-      return
-    }
+    if (!updateFilters) return
     const nextValue = quickSearchTerm.trim()
     updateFilters({
       search: nextValue || undefined,
@@ -276,12 +507,87 @@ export function OrderList({
   }
 
   const handleClearSearch = () => {
-    if (!updateFilters) {
-      return
-    }
+    if (!updateFilters) return
     setQuickSearchTerm('')
     updateFilters({ search: undefined, page: 1 })
   }
+
+  const handleSort = (columnKey: string) => {
+    if (!updateFilters) return
+    
+    // Evitar ordenar si acabamos de terminar de redimensionar
+    if (justFinishedResizing === columnKey) return
+
+    let newDirection: SortDirection = 'asc'
+    
+    if (sortColumn === columnKey) {
+      if (sortDirection === 'asc') {
+        newDirection = 'desc'
+      } else if (sortDirection === 'desc') {
+        newDirection = null
+      } else {
+        newDirection = 'asc'
+      }
+    }
+
+    setSortColumn(newDirection ? columnKey : null)
+    setSortDirection(newDirection)
+
+    updateFilters({
+      sort_by: newDirection ? columnKey : 'created_at',
+      sort_order: newDirection || 'desc',
+      page: 1,
+    })
+  }
+
+  const toggleExpand = (orderId: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev)
+      if (next.has(orderId)) {
+        next.delete(orderId)
+      } else {
+        next.add(orderId)
+      }
+      return next
+    })
+  }
+
+  const renderSortIcon = (columnKey: string) => {
+    if (sortColumn !== columnKey || !sortDirection) {
+      return <ArrowUpDown className='w-3.5 h-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity' />
+    }
+    if (sortDirection === 'asc') {
+      return <ArrowUp className='w-3.5 h-3.5 text-blue-600' />
+    }
+    return <ArrowDown className='w-3.5 h-3.5 text-blue-600' />
+  }
+
+  const getColumnWidth = (key: string) => {
+    return columnWidths[key] || DEFAULT_COLUMN_WIDTHS[key as keyof typeof DEFAULT_COLUMN_WIDTHS] || 100
+  }
+
+  // ===================================
+  // COLUMN DEFINITIONS
+  // ===================================
+
+  const columns = [
+    { key: 'select', title: '', sortable: false },
+    { key: 'actions', title: '', sortable: false },
+    { key: 'order_number', title: 'Número', sortable: true, sortKey: 'id' },
+    { key: 'products', title: 'Productos', sortable: false },
+    { key: 'cliente', title: 'Cliente', sortable: false },
+    { key: 'fecha', title: 'Fecha', sortable: true, sortKey: 'created_at' },
+    { key: 'estado', title: 'Estado', sortable: true, sortKey: 'status' },
+    { key: 'metodo_pago', title: 'Método Pago', sortable: false },
+    { key: 'pago', title: 'Pago', sortable: false },
+    { key: 'total', title: 'Total', sortable: true, sortKey: 'total' },
+  ]
+
+  const totalColumns = columns.length
+
+  // ===================================
+  // RENDER
+  // ===================================
 
   if (error) {
     return (
@@ -316,7 +622,7 @@ export function OrderList({
                     handleQuickSearch()
                   }
                 }}
-                placeholder='Buscar por número de orden, cliente o email...'
+                placeholder='Buscar por número de orden, cliente o teléfono...'
                 className='pl-9'
                 aria-label='Buscar órdenes'
               />
@@ -324,9 +630,7 @@ export function OrderList({
             <Button
               variant='secondary'
               onClick={handleQuickSearch}
-              disabled={
-                !quickSearchTerm.trim() && !(filters?.search && filters.search.length > 0)
-              }
+              disabled={!quickSearchTerm.trim() && !filters?.search}
             >
               Buscar
             </Button>
@@ -348,7 +652,7 @@ export function OrderList({
         />
       )}
 
-      {/* Listado responsivo */}
+      {/* Listado */}
       {safeOrders.length === 0 ? (
         <div className='border rounded-lg p-8 text-center text-gray-500 bg-white'>
           <Package className='w-16 h-16 mx-auto text-gray-300 mb-4' />
@@ -357,6 +661,7 @@ export function OrderList({
         </div>
       ) : (
         <>
+          {/* Vista móvil */}
           <div className='space-y-4 lg:hidden'>
             {safeOrders.map(order => (
               <div
@@ -369,14 +674,12 @@ export function OrderList({
                     <p className='text-base font-semibold text-gray-900 truncate'>
                       {order.order_number || `#${order.id}`}
                     </p>
-                    <p className='text-sm text-gray-500 truncate'>
-                      {order.payer_info?.name ||
-                        order.user_profiles?.name ||
-                        'Cliente no especificado'}
+                    <p className='text-sm text-gray-700 truncate'>
+                      {getClientName(order)}
                     </p>
-                    {(order.payer_info?.email || order.user_profiles?.email) && (
-                      <p className='text-xs text-gray-400 truncate'>
-                        {order.payer_info?.email || order.user_profiles?.email}
+                    {getClientPhone(order) && (
+                      <p className='text-xs text-gray-500 truncate'>
+                        Tel: {getClientPhone(order)}
                       </p>
                     )}
                   </div>
@@ -388,8 +691,39 @@ export function OrderList({
 
                 <div className='flex flex-wrap items-center gap-2'>
                   <OrderStatusBadge status={order.status} />
+                  <PaymentMethodBadge method={order.payment_method} paymentStatus={order.payment_status} />
                   <PaymentStatusBadge status={order.payment_status} />
                 </div>
+
+                {/* Productos expandibles en móvil */}
+                <button
+                  onClick={() => toggleExpand(order.id)}
+                  className='flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800'
+                >
+                  <ShoppingBag className='w-4 h-4' />
+                  <span>{order.order_items?.length || 0} productos</span>
+                  {expandedRows.has(order.id) ? (
+                    <ChevronUp className='w-4 h-4' />
+                  ) : (
+                    <ChevronDown className='w-4 h-4' />
+                  )}
+                </button>
+                
+                {expandedRows.has(order.id) && order.order_items && (
+                  <div className='space-y-2 mt-2'>
+                    {order.order_items.map((item, idx) => (
+                      <div key={item.id || idx} className='flex items-center gap-2 text-sm bg-gray-50 rounded p-2'>
+                        <span className='font-medium'>{item.quantity}x</span>
+                        <span className='truncate flex-1'>
+                          {item.product_snapshot?.name || item.products?.name || 'Producto'}
+                        </span>
+                        <span className='font-semibold'>
+                          {formatCurrency((item.price || item.unit_price || 0) * item.quantity)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className='space-y-1 text-sm text-gray-600'>
                   <p className='flex justify-between'>
@@ -423,76 +757,200 @@ export function OrderList({
             ))}
           </div>
 
-          <div className='hidden lg:block border rounded-lg overflow-hidden'>
+          {/* Vista desktop con columnas redimensionables */}
+          <div className='hidden lg:block border rounded-lg overflow-hidden bg-white'>
             <div className='overflow-x-auto'>
-              <Table>
+              <Table ref={tableRef} className='w-full' style={{ tableLayout: 'fixed' }}>
                 <TableHeader>
                   <TableRow className='bg-gray-50'>
-                    <TableHead className='w-12'>
-                      <Checkbox
-                        checked={selectedOrders.length === safeOrders.length && safeOrders.length > 0}
-                        onCheckedChange={() => handleSelectAll()}
-                      />
-                    </TableHead>
-                    <TableHead>Número de Orden</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Pago</TableHead>
-                    <TableHead className='text-right'>Total</TableHead>
-                    <TableHead className='text-right'>Acciones</TableHead>
+                    {columns.map((column, index) => {
+                      const width = getColumnWidth(column.key)
+                      const isResizingColumn = isResizing === column.key
+                      const sortKey = column.sortKey || column.key
+
+                      return (
+                        <TableHead
+                          key={`header-${column.key}-${index}`}
+                          className={cn(
+                            'relative border-r border-gray-200 last:border-r-0',
+                            column.sortable && 'cursor-pointer select-none group hover:bg-gray-100/50 transition-colors',
+                            isResizingColumn && 'bg-blue-50'
+                          )}
+                          style={{ 
+                            width: `${width}px`, 
+                            minWidth: `${width}px`, 
+                            maxWidth: `${width}px` 
+                          }}
+                          onClick={(e) => {
+                            if (column.sortable && !isResizing) {
+                              handleSort(sortKey)
+                            }
+                          }}
+                        >
+                          <div className='flex items-center gap-1.5 justify-center px-2'>
+                            {column.key === 'select' ? (
+                              <Checkbox
+                                checked={selectedOrders.length === safeOrders.length && safeOrders.length > 0}
+                                onCheckedChange={() => handleSelectAll()}
+                              />
+                            ) : (
+                              <>
+                                <span className='truncate'>{column.title}</span>
+                                {column.sortable && renderSortIcon(sortKey)}
+                              </>
+                            )}
+                          </div>
+                          
+                          {/* Resize handle */}
+                          {column.key !== 'select' && (
+                            <div
+                              className={cn(
+                                'absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-blue-400 transition-colors z-10',
+                                isResizingColumn && 'bg-blue-500 w-1.5'
+                              )}
+                              onMouseDown={(e) => {
+                                handleMouseDown(e, column.key)
+                              }}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                              }}
+                              title='Arrastra para redimensionar'
+                            />
+                          )}
+                        </TableHead>
+                      )
+                    })}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {safeOrders.map(order => (
-                    <TableRow key={order.id} className='hover:bg-gray-50'>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedOrders.includes(order.id)}
-                          onCheckedChange={() => handleSelectOrder(order.id)}
-                        />
-                      </TableCell>
-                      <TableCell className='font-medium text-gray-900'>
-                        {order.order_number || `#${order.id}`}
-                      </TableCell>
-                      <TableCell>
-                        <div className='min-w-[150px]'>
-                          <div className='font-medium text-gray-900'>
-                            {order.payer_info?.name ||
-                              order.user_profiles?.name ||
-                              'Cliente no especificado'}
-                          </div>
-                          {(order.payer_info?.email || order.user_profiles?.email) && (
-                            <div className='text-sm text-gray-500'>
-                              {order.payer_info?.email || order.user_profiles?.email}
+                  {safeOrders.map(order => {
+                    const isExpanded = expandedRows.has(order.id)
+                    const itemCount = order.order_items?.length || 0
+
+                    return (
+                      <React.Fragment key={order.id}>
+                        <TableRow className={cn('hover:bg-gray-50', isExpanded && 'bg-blue-50/30')}>
+                          {/* Checkbox */}
+                          <TableCell style={{ width: getColumnWidth('select') }}>
+                            <div className='flex justify-center'>
+                              <Checkbox
+                                checked={selectedOrders.includes(order.id)}
+                                onCheckedChange={() => handleSelectOrder(order.id)}
+                              />
                             </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className='text-sm text-gray-600'>
-                        {formatDate(order.created_at)}
-                      </TableCell>
-                      <TableCell>
-                        <OrderStatusBadge status={order.status} />
-                      </TableCell>
-                      <TableCell>
-                        <PaymentStatusBadge status={order.payment_status} />
-                      </TableCell>
-                      <TableCell className='text-right font-semibold text-gray-900'>
-                        {formatCurrency(order.total, order.currency)}
-                      </TableCell>
-                      <TableCell className='text-right'>
-                        <OrderRowActions
-                          order={order}
-                          onAction={(action: string) => {
-                            if (onOrderAction) {
-                              onOrderAction(action, order.id)
-                            }
-                          }}
+                          </TableCell>
+
+                          {/* Actions */}
+                          <TableCell style={{ width: getColumnWidth('actions') }}>
+                            <div className='flex justify-center'>
+                              <OrderRowActions
+                                order={order}
+                                onAction={(action: string) => {
+                                  if (onOrderAction) {
+                                    onOrderAction(action, order.id)
+                                  }
+                                }}
+                              />
+                            </div>
+                          </TableCell>
+
+                          {/* Order Number */}
+                          <TableCell style={{ width: getColumnWidth('order_number') }}>
+                            <span className='font-medium text-gray-900 truncate block'>
+                              {order.order_number || `#${order.id}`}
+                            </span>
+                          </TableCell>
+
+                          {/* Products dropdown */}
+                          <TableCell style={{ width: getColumnWidth('products') }}>
+                            <button
+                              type='button'
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleExpand(order.id)
+                              }}
+                              className='flex items-center space-x-2 hover:bg-blue-50 px-2 py-1 rounded transition-colors w-full justify-center'
+                            >
+                              {itemCount > 0 ? (
+                                <>
+                                  <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
+                                    {itemCount} prod.
+                                  </span>
+                                  {isExpanded ? (
+                                    <ChevronUp className='w-4 h-4 text-blue-600' />
+                                  ) : (
+                                    <ChevronDown className='w-4 h-4 text-gray-400' />
+                                  )}
+                                </>
+                              ) : (
+                                <span className='text-sm text-gray-400'>-</span>
+                              )}
+                            </button>
+                          </TableCell>
+
+                          {/* Cliente - Nombre, Apellido y Teléfono */}
+                          <TableCell style={{ width: getColumnWidth('cliente') }}>
+                            <div className='min-w-0'>
+                              <div className='font-medium text-gray-900 truncate'>
+                                {getClientName(order)}
+                              </div>
+                              {getClientPhone(order) && (
+                                <div className='text-xs text-gray-500 truncate'>
+                                  Tel: {getClientPhone(order)}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+
+                          {/* Fecha */}
+                          <TableCell style={{ width: getColumnWidth('fecha') }}>
+                            <span className='text-sm text-gray-600 truncate block'>
+                              {formatDate(order.created_at)}
+                            </span>
+                          </TableCell>
+
+                          {/* Estado */}
+                          <TableCell style={{ width: getColumnWidth('estado') }}>
+                            <div className='flex justify-center'>
+                              <OrderStatusBadge status={order.status} />
+                            </div>
+                          </TableCell>
+
+                          {/* Método de Pago */}
+                          <TableCell style={{ width: getColumnWidth('metodo_pago') }}>
+                            <div className='flex justify-center'>
+                              <PaymentMethodBadge 
+                                method={order.payment_method || order.payer_info?.payment_method} 
+                                paymentStatus={order.payment_status} 
+                              />
+                            </div>
+                          </TableCell>
+
+                          {/* Estado de Pago */}
+                          <TableCell style={{ width: getColumnWidth('pago') }}>
+                            <div className='flex justify-center'>
+                              <PaymentStatusBadge status={order.payment_status} />
+                            </div>
+                          </TableCell>
+
+                          {/* Total */}
+                          <TableCell style={{ width: getColumnWidth('total') }}>
+                            <span className='font-semibold text-gray-900 block text-right pr-2'>
+                              {formatCurrency(order.total, order.currency)}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Fila expandible de productos */}
+                        <ExpandableOrderItemsRow
+                          orderItems={order.order_items}
+                          isExpanded={isExpanded}
+                          colSpan={totalColumns}
                         />
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                      </React.Fragment>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -504,8 +962,7 @@ export function OrderList({
       {pagination && pagination.totalPages > 1 && (
         <div className='flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between px-4 lg:px-6 py-4 border rounded-lg bg-white'>
           <div className='text-sm text-gray-700'>
-            Mostrando página {pagination.currentPage} de {pagination.totalPages} ({' '}
-            {pagination.totalItems} órdenes en total)
+            Mostrando página {pagination.currentPage} de {pagination.totalPages} ({pagination.totalItems} órdenes en total)
           </div>
           <div className='flex items-center gap-2'>
             {pagination.isTransitioning && (
@@ -535,4 +992,3 @@ export function OrderList({
     </div>
   )
 }
-

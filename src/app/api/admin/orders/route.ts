@@ -251,6 +251,7 @@ export async function GET(request: NextRequest) {
         status,
         total,
         payment_status,
+        payment_method,
         payment_id,
         created_at,
         updated_at,
@@ -262,12 +263,14 @@ export async function GET(request: NextRequest) {
           id,
           first_name,
           last_name,
-          email
+          email,
+          phone
         ),
         order_items (
           id,
           quantity,
           price,
+          product_snapshot,
           products (
             id,
             name,
@@ -483,7 +486,7 @@ export async function POST(request: NextRequest) {
     )
 
     // Crear orden en transacción
-    // Solo usar columnas que existen en la tabla: id, user_id, total, status, payment_id, shipping_address, created_at, updated_at, external_reference, payment_preference_id, payer_info, payment_status
+    // Solo usar columnas que existen en la tabla: id, user_id, total, status, payment_id, shipping_address, created_at, updated_at, external_reference, payment_preference_id, payer_info, payment_status, order_number
     const orderInsertData = {
       user_id: orderData.user_id,
       status: 'pending',
@@ -492,7 +495,8 @@ export async function POST(request: NextRequest) {
       shipping_address: orderData.shipping_address
         ? JSON.stringify(orderData.shipping_address)
         : null,
-      external_reference: orderNumber, // Usar external_reference para almacenar el número de orden
+      order_number: orderNumber, // Usar order_number para almacenar el número de orden
+      external_reference: `admin_order_${Date.now()}`,
     }
 
     console.log('📝 [Orders API] Insertando orden:', JSON.stringify(orderInsertData, null, 2))
