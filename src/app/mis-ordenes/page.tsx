@@ -275,7 +275,7 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div className='min-h-screen py-12'>
-        <div className='max-w-4xl mx-auto px-6 sm:px-6 lg:px-8'>
+        <div className='max-w-4xl mx-auto px-8 sm:px-6 lg:px-8'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blaze-orange-600 mx-auto'></div>
             <p className='mt-4 text-gray-600'>Cargando tus órdenes...</p>
@@ -288,7 +288,7 @@ export default function OrdersPage() {
   if (error) {
     return (
       <div className='min-h-screen py-12'>
-        <div className='max-w-4xl mx-auto px-6 sm:px-6 lg:px-8'>
+        <div className='max-w-4xl mx-auto px-8 sm:px-6 lg:px-8'>
           <div className='text-center'>
             <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded'>
               {error instanceof Error ? error.message : error?.toString() || 'Error desconocido'}
@@ -307,7 +307,7 @@ export default function OrdersPage() {
 
   return (
     <div className='min-h-screen py-12'>
-      <div className='max-w-6xl mx-auto px-6 sm:px-6 lg:px-8'>
+      <div className='max-w-6xl mx-auto px-8 sm:px-6 lg:px-8'>
         {/* Header */}
         <div className='mb-8'>
           <div className='flex items-center justify-between'>

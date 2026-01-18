@@ -31,7 +31,7 @@ const NewArrival: React.FC = () => {
 
   return (
     <section className='overflow-hidden pt-0 pb-6 sm:pb-10 bg-transparent'>
-      <div className='max-w-[1170px] w-full mx-auto px-6 sm:px-8 overflow-hidden'>
+      <div className='max-w-[1170px] w-full mx-auto px-8 sm:px-8 overflow-hidden'>
         {/* Header simplificado - Paleta Pinteya */}
         <div className='mb-4 sm:mb-6 flex items-center gap-3'>
           <div className='w-10 h-10 rounded-full flex items-center justify-center shadow-md' style={{ background: 'linear-gradient(135deg, rgba(235, 99, 19, 0.42) 0%, rgba(242, 122, 29, 1) 100%)' }}>

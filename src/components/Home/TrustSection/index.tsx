@@ -40,7 +40,7 @@ const benefits = [
 const TrustSection = () => {
   return (
     <section className='py-10 sm:py-14 bg-gradient-to-br from-[#fff7ed] via-white to-white'>
-      <div className='max-w-5xl mx-auto px-6 sm:px-6'>
+      <div className='max-w-5xl mx-auto px-8 sm:px-6'>
         <div className='rounded-3xl bg-white shadow-[0_25px_60px_rgba(255,153,0,0.08)] border border-orange-50 overflow-hidden'>
           <div className='px-6 sm:px-10 py-8 text-center space-y-4'>
             <span className='inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-600'>

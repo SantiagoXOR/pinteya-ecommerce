@@ -319,7 +319,7 @@ const ShopWithSidebar = () => {
   return (
     <>
       <section className='overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28'>
-        <div className='max-w-[1170px] w-full mx-auto px-6 sm:px-8 xl:px-0'>
+        <div className='max-w-[1170px] w-full mx-auto px-8 sm:px-8 xl:px-0'>
           <div className='flex gap-7.5'>
             {/* <!-- Sidebar oculto: mostramos filtros arriba como en mobile --> */}
             <div className='hidden'>
