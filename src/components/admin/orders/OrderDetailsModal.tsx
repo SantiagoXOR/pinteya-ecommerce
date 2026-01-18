@@ -503,17 +503,48 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data.payment_url) {
-          // Copiar link al portapapeles y mostrar notificación
-          await navigator.clipboard.writeText(data.data.payment_url)
-          toast.success('Link de pago creado y copiado al portapapeles', { id: loadingToast })
-
-          // Opcional: abrir en nueva ventana
-          window.open(data.data.payment_url, '_blank')
+          const paymentUrl = data.data.payment_url
+          
+          // Copiar link al portapapeles
+          try {
+            await navigator.clipboard.writeText(paymentUrl)
+            toast.success(
+              <div className='flex flex-col gap-1'>
+                <span className='font-medium'>Link de pago creado</span>
+                <span className='text-xs text-gray-500'>Copiado al portapapeles</span>
+                <button 
+                  onClick={() => window.open(paymentUrl, '_blank')}
+                  className='text-xs text-blue-600 hover:underline text-left mt-1'
+                >
+                  Abrir en nueva pestaña →
+                </button>
+              </div>,
+              { id: loadingToast, duration: 5000 }
+            )
+          } catch (clipboardError) {
+            // Si falla el portapapeles, mostrar el link
+            toast.success(
+              <div className='flex flex-col gap-1'>
+                <span className='font-medium'>Link de pago creado</span>
+                <button 
+                  onClick={() => window.open(paymentUrl, '_blank')}
+                  className='text-xs text-blue-600 hover:underline text-left'
+                >
+                  Abrir link de pago →
+                </button>
+              </div>,
+              { id: loadingToast, duration: 5000 }
+            )
+          }
+          
+          // Recargar datos de la orden para mostrar el nuevo link
+          loadOrderDetails()
         } else {
           toast.error('Error al crear link de pago', { id: loadingToast })
         }
       } else {
-        toast.error('Error al crear link de pago', { id: loadingToast })
+        const errorData = await response.json().catch(() => ({}))
+        toast.error(errorData.error || 'Error al crear link de pago', { id: loadingToast })
       }
     } catch (error) {
       console.error('Error creating payment link:', error)

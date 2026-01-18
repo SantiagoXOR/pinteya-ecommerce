@@ -166,6 +166,47 @@ async function validateStockForConfirmation(orderId: string): Promise<{ valid: b
 }
 
 // ===================================
+// DESCUENTO DE STOCK AL PROCESAR
+// ===================================
+
+async function decrementStockForOrder(orderId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Obtener items de la orden
+    const { data: items, error: itemsError } = await supabaseAdmin
+      .from('order_items')
+      .select('product_id, quantity')
+      .eq('order_id', orderId)
+
+    if (itemsError || !items) {
+      console.error('[STOCK] Error obteniendo items de la orden:', itemsError)
+      return { success: false, error: 'Error al obtener items de la orden' }
+    }
+
+    console.log(`[STOCK] Descontando stock para orden ${orderId}, ${items.length} items`)
+
+    // Descontar stock de cada producto usando la función RPC existente
+    for (const item of items) {
+      const { error: stockError } = await supabaseAdmin.rpc('update_product_stock', {
+        product_id: item.product_id,
+        quantity_sold: item.quantity,
+      })
+
+      if (stockError) {
+        console.error(`[STOCK] Error descontando stock para producto ${item.product_id}:`, stockError)
+        // Continuar con los demás productos, no fallar toda la operación
+      } else {
+        console.log(`[STOCK] Stock descontado: producto ${item.product_id}, cantidad ${item.quantity}`)
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('[STOCK] Error en decrementStockForOrder:', error)
+    return { success: false, error: 'Error al descontar stock' }
+  }
+}
+
+// ===================================
 // GET - Obtener orden específica
 // ===================================
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -548,6 +589,26 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         orderId,
       })
       return NextResponse.json({ error: 'Error al actualizar orden' }, { status: 500 })
+    }
+
+    // Descontar stock cuando la orden pasa a "processing" (en preparación)
+    // Solo descontar si el estado anterior no era processing (evitar descuento duplicado)
+    if (
+      updateData.status === 'processing' &&
+      currentOrder &&
+      'status' in currentOrder &&
+      currentOrder.status !== 'processing'
+    ) {
+      console.log(`[STOCK] Orden ${orderId} pasó a processing, descontando stock...`)
+      const stockResult = await decrementStockForOrder(orderId)
+      if (!stockResult.success) {
+        logger.log(LogLevel.WARN, LogCategory.API, 'Error al descontar stock (no bloqueante)', {
+          orderId,
+          error: stockResult.error,
+        })
+      } else {
+        logger.log(LogLevel.INFO, LogCategory.API, 'Stock descontado exitosamente', { orderId })
+      }
     }
 
     // Registrar cambio de estado en historial si cambió el status

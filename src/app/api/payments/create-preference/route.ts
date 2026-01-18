@@ -61,6 +61,8 @@ const CreatePreferenceSchema = z.object({
         zip_code: z.string().min(1, 'Código postal requerido'),
         city_name: z.string().min(1, 'Ciudad requerida'),
         state_name: z.string().min(1, 'Provincia requerida'),
+        apartment: z.string().optional(),
+        observations: z.string().optional(),
       }),
     })
     .optional(),
@@ -535,8 +537,17 @@ export async function POST(request: NextRequest) {
         payment_status: 'pending',
         payment_method: 'mercadopago',
         total: totalAmount,
+        // Guardar shipping_address como objeto JSONB (igual que cash order)
         shipping_address: orderData.shipping?.address
-          ? JSON.stringify(orderData.shipping.address)
+          ? {
+              street_name: orderData.shipping.address.street_name,
+              street_number: orderData.shipping.address.street_number,
+              zip_code: orderData.shipping.address.zip_code,
+              city_name: orderData.shipping.address.city_name,
+              state_name: orderData.shipping.address.state_name,
+              apartment: orderData.shipping.address.apartment,
+              observations: orderData.shipping.address.observations,
+            }
           : null,
         payer_info: {
           name: orderData.payer.name,

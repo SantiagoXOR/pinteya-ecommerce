@@ -31,6 +31,7 @@ import { ErrorBoundary } from '@/components/ui/error-boundary'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminContentWrapper } from '@/components/admin/layout/AdminContentWrapper'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { normalizeProductTitle } from '@/lib/core/utils'
 
 // =====================================================
 // COMPONENTE PRINCIPAL
@@ -175,7 +176,8 @@ export function OrdersPageClient() {
 
       // Construir items con atributos
       const items = order.order_items?.map((item: any) => {
-        const name = item.product_snapshot?.name || item.products?.name || 'Producto'
+        const rawName = item.product_snapshot?.name || item.products?.name || 'Producto'
+        const name = normalizeProductTitle(rawName)
         const price = item.product_snapshot?.price || item.price || item.unit_price || 0
         const color = item.product_snapshot?.color
         const medida = item.product_snapshot?.medida
