@@ -241,6 +241,23 @@ export async function POST(request: NextRequest) {
       throw new Error('Error al obtener información de productos');
     }
 
+    // Obtener imágenes de productos desde product_images
+    const { data: productImages } = await supabase
+      .from('product_images')
+      .select('product_id, url, is_primary')
+      .in('product_id', productIds)
+      .order('is_primary', { ascending: false })
+      .order('display_order', { ascending: true })
+
+    // Agrupar imágenes por product_id
+    const imagesByProductId = (productImages || []).reduce((acc: any, img: any) => {
+      if (!acc[img.product_id]) {
+        acc[img.product_id] = []
+      }
+      acc[img.product_id].push(img)
+      return acc
+    }, {})
+
     // Validar que todos los productos existen y tienen stock suficiente
     for (const item of validatedData.items) {
       console.log(`🔎 Buscando producto ${item.id} (tipo: ${typeof item.id})`);
@@ -301,11 +318,38 @@ export async function POST(request: NextRequest) {
       itemsSubtotal += itemTotal;
 
       // 🔧 Preparar product_snapshot con información de variante
+      // Obtener imagen del producto (desde product_images o product.images JSONB)
+      const productImagesList = imagesByProductId[product.id] || []
+      let productImage: string | null = null
+      
+      // Prioridad 1: Imagen desde product_images
+      if (productImagesList.length > 0) {
+        productImage = productImagesList[0].url || null
+      }
+      
+      // Prioridad 2: Imagen desde campo images JSONB del producto (si existe)
+      if (!productImage && (product as any).images) {
+        const imagesData = (product as any).images
+        if (typeof imagesData === 'string') {
+          try {
+            const parsed = JSON.parse(imagesData)
+            productImage = Array.isArray(parsed) ? parsed[0] : (parsed?.url || parsed?.main || null)
+          } catch {
+            productImage = imagesData
+          }
+        } else if (Array.isArray(imagesData)) {
+          productImage = imagesData[0] || null
+        } else if (typeof imagesData === 'object') {
+          productImage = imagesData.url || imagesData.main || imagesData.previews?.[0] || null
+        }
+      }
+
       const productSnapshot: any = {
         name: product.name,
         price: finalPrice,
         medida: product.medida,
         brand: product.brand,
+        image: productImage, // Agregar imagen al snapshot
       };
 
       // Incluir color y terminación si están disponibles

@@ -44,7 +44,18 @@ interface OrderItem {
   id: number
   quantity: number
   price: string
-  products: {
+  product_id?: number
+  product_name?: string
+  image_url?: string | null
+  product_snapshot?: {
+    name?: string
+    color?: string
+    finish?: string
+    medida?: string
+    brand?: string
+    image?: string
+  }
+  products?: {
     id: number
     name: string
     images: string[]
@@ -103,11 +114,11 @@ export default function OrdersPage() {
     fetchOrders()
   }, [])
 
-  // Filtrar ├│rdenes cuando cambian los filtros
+  // Filtrar órdenes cuando cambian los filtros
   useEffect(() => {
     let filtered = orders
 
-    // Filtrar por t├⌐rmino de b├║squeda
+    // Filtrar por término de búsqueda
     if (searchTerm) {
       filtered = filtered.filter(
         order =>
@@ -115,7 +126,7 @@ export default function OrdersPage() {
           order.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           order.tracking_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           order.order_items.some(item =>
-            item.products.name.toLowerCase().includes(searchTerm.toLowerCase())
+            (item.product_name || item.product_snapshot?.name || item.products?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
           )
       )
     }
@@ -137,10 +148,10 @@ export default function OrdersPage() {
         setOrders(data.data)
         setFilteredOrders(data.data)
       } else {
-        setError(data.error || 'Error al cargar ├│rdenes')
+        setError(data.error || 'Error al cargar órdenes')
       }
     } catch (err) {
-      setError('Error de conexi├│n')
+      setError('Error de conexión')
     } finally {
       setLoading(false)
     }
@@ -153,10 +164,12 @@ export default function OrdersPage() {
   }
 
   // Obtener detalles de orden
-  const fetchOrderDetails = async (orderId: number) => {
+  const fetchOrderDetails = async (orderId: number, orderNumber?: string, externalReference?: string) => {
     setLoadingDetails(true)
     try {
-      const response = await fetch(`/api/orders/${orderId}`)
+      // Usar order_number o external_reference si están disponibles, sino usar orderId
+      const orderIdentifier = orderNumber || externalReference || orderId.toString()
+      const response = await fetch(`/api/orders/${orderIdentifier}`)
       const data = await response.json()
 
       if (response.ok && data.success) {
@@ -164,10 +177,10 @@ export default function OrdersPage() {
         setIsDetailsDialogOpen(true)
       } else {
         console.error('Error al obtener detalles:', data.error)
-        // Aqu├¡ podr├¡as mostrar un toast o notificaci├│n de error
+        // Aquí podrías mostrar un toast o notificación de error
       }
     } catch (error) {
-      console.error('Error de conexi├│n:', error)
+      console.error('Error de conexión:', error)
     } finally {
       setLoadingDetails(false)
     }
@@ -187,7 +200,7 @@ export default function OrdersPage() {
     updated_at: order.updated_at,
   })
 
-  // Obtener estad├¡sticas de ├│rdenes
+  // Obtener estadísticas de órdenes
   const getOrderStats = () => {
     const stats = {
       total: orders.length,
@@ -209,6 +222,26 @@ export default function OrdersPage() {
       hour: '2-digit',
       minute: '2-digit',
     })
+  }
+
+  const getPaymentMethodBadge = (paymentMethod: string | undefined) => {
+    if (!paymentMethod) return null
+
+    // Traducir método de pago a español legible
+    const methodLabels: Record<string, string> = {
+      cash: 'Pago al recibir',
+      mercadopago: 'MercadoPago',
+      credit_card: 'Tarjeta de crédito',
+      debit_card: 'Tarjeta de débito',
+    }
+
+    const label = methodLabels[paymentMethod.toLowerCase()] || paymentMethod
+
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        {label}
+      </span>
+    )
   }
 
   const getStatusBadge = (status: string, type: 'order' | 'payment' = 'order') => {
@@ -245,7 +278,7 @@ export default function OrdersPage() {
         <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blaze-orange-600 mx-auto'></div>
-            <p className='mt-4 text-gray-600'>Cargando tus ├│rdenes...</p>
+            <p className='mt-4 text-gray-600'>Cargando tus órdenes...</p>
           </div>
         </div>
       </div>
@@ -279,7 +312,7 @@ export default function OrdersPage() {
         <div className='mb-8'>
           <div className='flex items-center justify-between'>
             <div>
-              <h1 className='text-3xl font-bold text-gray-900 mb-2'>Mis ├ôrdenes</h1>
+              <h1 className='text-3xl font-bold text-gray-900 mb-2'>Mis Órdenes</h1>
               <p className='text-gray-600'>Historial completo de tus compras</p>
             </div>
             <Button onClick={fetchOrders} variant='outline' disabled={loading}>
@@ -288,7 +321,7 @@ export default function OrdersPage() {
             </Button>
           </div>
 
-          {/* Estad├¡sticas */}
+          {/* Estadísticas */}
           <div className='grid grid-cols-2 md:grid-cols-5 gap-4 mt-6'>
             <Card>
               <CardContent className='p-4'>
@@ -323,7 +356,7 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* Filtros y b├║squeda */}
+        {/* Filtros y búsqueda */}
         <Card className='mb-6'>
           <CardContent className='p-6'>
             <div className='flex flex-col md:flex-row gap-4'>
@@ -331,7 +364,7 @@ export default function OrdersPage() {
                 <div className='relative'>
                   <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4' />
                   <Input
-                    placeholder='Buscar por n├║mero de orden, tracking o producto...'
+                    placeholder='Buscar por número de orden, tracking o producto...'
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     className='pl-10'
@@ -362,8 +395,8 @@ export default function OrdersPage() {
           <Card>
             <CardContent className='p-12 text-center'>
               <Filter className='h-12 w-12 mx-auto text-gray-400 mb-4' />
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>No se encontraron ├│rdenes</h3>
-              <p className='text-gray-600 mb-4'>Intenta ajustar los filtros de b├║squeda</p>
+              <h3 className='text-lg font-medium text-gray-900 mb-2'>No se encontraron órdenes</h3>
+              <p className='text-gray-600 mb-4'>Intenta ajustar los filtros de búsqueda</p>
               <Button
                 variant='outline'
                 onClick={() => {
@@ -378,8 +411,8 @@ export default function OrdersPage() {
         ) : orders.length === 0 ? (
           <div className='text-center py-12'>
             <Package className='mx-auto h-12 w-12 text-gray-400 mb-4' />
-            <h3 className='text-lg font-medium text-gray-900 mb-2'>No tienes ├│rdenes a├║n</h3>
-            <p className='text-gray-600 mb-6'>Cuando realices tu primera compra, aparecer├í aqu├¡</p>
+            <h3 className='text-lg font-medium text-gray-900 mb-2'>No tienes órdenes aún</h3>
+            <p className='text-gray-600 mb-6'>Cuando realices tu primera compra, aparecerá aquí</p>
             <Link
               href='/shop'
               className='inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blaze-orange-600 hover:bg-blaze-orange-700 transition-colors'
@@ -404,7 +437,8 @@ export default function OrdersPage() {
                       <p className='text-sm text-gray-600'>{formatDate(order.created_at)}</p>
                     </div>
                     <div className='flex items-center space-x-3'>
-                      {getStatusBadge(order.payment_status, 'payment')}
+                      {getPaymentMethodBadge(order.payment_method || order.payer_info?.payment_method)}
+                      {order.payment_status !== order.status && getStatusBadge(order.payment_status, 'payment')}
                       {getStatusBadge(order.status, 'order')}
                     </div>
                   </div>
@@ -456,15 +490,15 @@ export default function OrdersPage() {
                         <Truck className='w-4 h-4 mr-1' />
                         Rastrear
                       </Button>
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => fetchOrderDetails(order.id)}
-                        disabled={loadingDetails}
-                      >
-                        <Eye className='w-4 h-4 mr-1' />
-                        {loadingDetails ? 'Cargando...' : 'Ver detalles'}
-                      </Button>
+                      <Link href={`/mis-ordenes/${order.order_number || order.external_reference}`}>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                        >
+                          <Eye className='w-4 h-4 mr-1' />
+                          Ver detalles
+                        </Button>
+                      </Link>
                       {order.status === 'delivered' && <Button size='sm'>Volver a comprar</Button>}
                     </div>
                   </div>
@@ -474,7 +508,7 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {/* Di├ílogo de tracking */}
+        {/* Diálogo de tracking */}
         <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
           <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
             <DialogHeader>
@@ -487,12 +521,12 @@ export default function OrdersPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Di├ílogo de detalles de orden */}
+        {/* Diálogo de detalles de orden */}
         <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
           <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
             <DialogHeader>
               <DialogTitle>Detalles de la Orden</DialogTitle>
-              <DialogDescription>Informaci├│n completa de tu pedido</DialogDescription>
+              <DialogDescription>Información completa de tu pedido</DialogDescription>
             </DialogHeader>
             {orderDetails && (
               <div className='space-y-6'>
@@ -500,7 +534,7 @@ export default function OrdersPage() {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <Card>
                     <CardHeader>
-                      <CardTitle className='text-lg'>Informaci├│n de la Orden</CardTitle>
+                      <CardTitle className='text-lg'>Información de la Orden</CardTitle>
                     </CardHeader>
                     <CardContent className='space-y-3'>
                       <div>
@@ -509,7 +543,7 @@ export default function OrdersPage() {
                       </div>
                       <div>
                         <span className='text-sm font-medium text-gray-600'>
-                          Fecha de Creaci├│n:
+                          Fecha de Creación:
                         </span>
                         <p className='text-sm text-gray-900'>
                           {formatDate(orderDetails.created_at)}
@@ -544,11 +578,11 @@ export default function OrdersPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Informaci├│n del comprador */}
+                  {/* Información del comprador */}
                   {orderDetails.payer_info && (
                     <Card>
                       <CardHeader>
-                        <CardTitle className='text-lg'>Informaci├│n del Comprador</CardTitle>
+                        <CardTitle className='text-lg'>Información del Comprador</CardTitle>
                       </CardHeader>
                       <CardContent className='space-y-3'>
                         {orderDetails.payer_info.email && (
@@ -570,7 +604,7 @@ export default function OrdersPage() {
                         )}
                         {orderDetails.payer_info.phone && (
                           <div>
-                            <span className='text-sm font-medium text-gray-600'>Tel├⌐fono:</span>
+                            <span className='text-sm font-medium text-gray-600'>Teléfono:</span>
                             <p className='text-sm text-gray-900'>
                               {typeof orderDetails.payer_info.phone === 'string'
                                 ? orderDetails.payer_info.phone
@@ -594,7 +628,7 @@ export default function OrdersPage() {
                   )}
                 </div>
 
-                {/* Direcci├│n de env├¡o */}
+                {/* Dirección de envío */}
                 {orderDetails.shipping_address ? (
                   <Card>
                     <CardHeader>
@@ -623,12 +657,12 @@ export default function OrdersPage() {
                 ) : (
                   <Card>
                     <CardHeader>
-                      <CardTitle className='text-lg'>Informaci├│n de Entrega</CardTitle>
+                      <CardTitle className='text-lg'>Información de Entrega</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className='text-sm text-gray-600 italic'>
-                        <p>≡ƒôª Retiro en tienda o informaci├│n de env├¡o no disponible</p>
-                        <p className='mt-2'>Para consultas sobre el env├¡o, contacta al vendedor.</p>
+                        <p>🏪 Retiro en tienda o información de envío no disponible</p>
+                        <p className='mt-2'>Para consultas sobre el envío, contacta al vendedor.</p>
                       </div>
                     </CardContent>
                   </Card>

@@ -101,7 +101,23 @@ export default function OrderDetailPage() {
               quantity: 1,
               price: (order.total || 0).toString()
             }],
-            paymentMethod: order.payment_method || order.payment_status || 'Pago contra entrega'
+            paymentMethod: (() => {
+              // Traducir método de pago a español legible
+              const method = order.payment_method || order.payment_status || 'cash'
+              if (method === 'cash' || method === 'cash_on_delivery') {
+                return 'Pago al recibir'
+              }
+              if (method === 'mercadopago') {
+                return 'MercadoPago'
+              }
+              if (method === 'credit_card') {
+                return 'Tarjeta de crédito'
+              }
+              if (method === 'debit_card') {
+                return 'Tarjeta de débito'
+              }
+              return method // Mantener el valor original si no coincide con ningún patrón conocido
+            })()
           }
 
           setOrderData(orderDataFromDB)

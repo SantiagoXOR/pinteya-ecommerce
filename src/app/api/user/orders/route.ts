@@ -50,11 +50,8 @@ export async function GET(request: NextRequest) {
           id,
           quantity,
           price,
-          products (
-            id,
-            name,
-            images
-          )
+          product_id,
+          product_snapshot
         )
       `
       )
@@ -78,6 +75,56 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Error al obtener órdenes:', error)
       return NextResponse.json({ error: 'Error al obtener órdenes' }, { status: 500 })
+    }
+
+    // Obtener imágenes de productos desde product_images para todas las órdenes
+    if (orders && orders.length > 0) {
+      // Recopilar todos los product_ids de todos los order_items
+      const productIds: number[] = []
+      orders.forEach((order: any) => {
+        if (order.order_items) {
+          order.order_items.forEach((item: any) => {
+            if (item.product_id && !productIds.includes(item.product_id)) {
+              productIds.push(item.product_id)
+            }
+          })
+        }
+      })
+
+      // Obtener imágenes desde product_images si hay productos
+      if (productIds.length > 0) {
+        const { data: productImages } = await supabaseAdmin
+          .from('product_images')
+          .select('product_id, url, is_primary')
+          .in('product_id', productIds)
+          .order('is_primary', { ascending: false })
+          .order('display_order', { ascending: true })
+
+        // Agrupar imágenes por product_id
+        const imagesByProductId = (productImages || []).reduce((acc: any, img: any) => {
+          if (!acc[img.product_id]) {
+            acc[img.product_id] = []
+          }
+          acc[img.product_id].push(img)
+          return acc
+        }, {})
+
+        // Agregar image_url a cada order_item con prioridad: product_images > product_snapshot.image > null
+        orders.forEach((order: any) => {
+          if (order.order_items) {
+            order.order_items = order.order_items.map((item: any) => {
+              const images = imagesByProductId[item.product_id] || []
+              const imageFromProductImages = images[0]?.url || null
+              const imageFromSnapshot = item.product_snapshot?.image || null
+
+              return {
+                ...item,
+                image_url: imageFromProductImages || imageFromSnapshot || null,
+              }
+            })
+          }
+        })
+      }
     }
 
     // Calcular estadísticas

@@ -378,6 +378,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 500 })
     }
 
+    // Obtener imágenes de productos desde product_images
+    const { data: productImages } = await supabaseAdmin
+      .from('product_images')
+      .select('product_id, url, is_primary')
+      .in('product_id', productIds)
+      .order('is_primary', { ascending: false })
+      .order('display_order', { ascending: true })
+
+    // Agrupar imágenes por product_id
+    const imagesByProductId = (productImages || []).reduce((acc: any, img: any) => {
+      if (!acc[img.product_id]) {
+        acc[img.product_id] = []
+      }
+      acc[img.product_id].push(img)
+      return acc
+    }, {})
+
     // Definir tipo para productos con categoría y variantes (como viene de Supabase)
     type SupabaseProduct = {
       id: number
@@ -715,11 +732,36 @@ export async function POST(request: NextRequest) {
       const itemTotal = finalPrice * item.quantity
 
       // 🔧 Preparar product_snapshot con información de variante
+      // Obtener imagen del producto (desde product_images o product.images JSONB)
+      const productImagesList = imagesByProductId[product.id] || []
+      let productImage: string | null = null
+      
+      // Prioridad 1: Imagen desde product_images
+      if (productImagesList.length > 0) {
+        productImage = productImagesList[0].url || null
+      }
+      
+      // Prioridad 2: Imagen desde campo images JSONB del producto (si existe)
+      if (!productImage && product.images) {
+        if (typeof product.images === 'string') {
+          try {
+            const parsed = JSON.parse(product.images)
+            productImage = Array.isArray(parsed) ? parsed[0] : (parsed?.url || parsed?.main || parsed?.previews?.[0] || null)
+          } catch {
+            productImage = product.images
+          }
+        } else if (Array.isArray(product.images)) {
+          productImage = product.images[0] || null
+        } else if (typeof product.images === 'object') {
+          productImage = product.images.url || product.images.main || product.images.previews?.[0] || null
+        }
+      }
+
       const productSnapshot: any = {
         name: product.name,
         price: finalPrice,
         category: product.category?.name || null,
-        image: product.images?.previews?.[0] || null,
+        image: productImage, // Usar imagen obtenida desde product_images
       }
 
       // Incluir información de variante si está disponible
