@@ -269,7 +269,7 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen py-12">
-        <div className="max-w-4xl mx-auto px-8 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blaze-orange-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Cargando detalles de la orden...</p>
@@ -282,7 +282,7 @@ export default function OrderDetailPage() {
   if (!orderData) {
     return (
       <div className="min-h-screen py-12">
-        <div className="max-w-4xl mx-auto px-8 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-gray-600">No se encontraron datos de la orden</p>
             <Link href="/mis-ordenes">

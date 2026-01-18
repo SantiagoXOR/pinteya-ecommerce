@@ -220,7 +220,7 @@ const Checkout = () => {
       <>
         <Breadcrumb title={'Checkout'} pages={['checkout']} />
         <section className='overflow-hidden py-8 md:py-20 bg-gray-50'>
-          <div className='max-w-4xl w-full mx-auto px-8 sm:px-8 xl:px-0'>
+          <div className='max-w-4xl w-full mx-auto px-3 sm:px-8 xl:px-0'>
             {/* Progress indicator */}
             <div className='mb-8'>
               <div className='flex items-center justify-between mb-4'>
@@ -267,7 +267,7 @@ const Checkout = () => {
       <>
         <Breadcrumb title={'Checkout - Pago'} pages={['checkout', 'pago']} />
         <section className='overflow-hidden py-8 md:py-20 bg-gray-50'>
-          <div className='max-w-6xl w-full mx-auto px-8 sm:px-8 xl:px-0'>
+          <div className='max-w-6xl w-full mx-auto px-3 sm:px-8 xl:px-0'>
             {/* Progress indicator */}
             <div className='mb-8'>
               <div className='flex items-center justify-between mb-4'>
@@ -338,7 +338,7 @@ const Checkout = () => {
       <>
         <Breadcrumb title={'Checkout'} pages={['checkout']} />
         <section className='overflow-hidden py-8 md:py-20 bg-gray-50'>
-          <div className='max-w-4xl w-full mx-auto px-8 sm:px-8 xl:px-0'>
+          <div className='max-w-4xl w-full mx-auto px-3 sm:px-8 xl:px-0'>
             {/* Progress indicator */}
             <div className='mb-8'>
               <div className='flex items-center justify-between mb-4'>

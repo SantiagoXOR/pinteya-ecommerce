@@ -124,7 +124,7 @@ const TrendingSearchesBase = () => {
 
   return (
     <section className='py-8 border-b border-white/10'>
-      <div className='max-w-7xl mx-auto px-8 sm:px-6 lg:px-8'>
+      <div className='max-w-7xl mx-auto px-3 sm:px-6 lg:px-8'>
         {/* Header */}
         <div className='flex items-center gap-3 mb-5'>
           <div className='flex items-center gap-2 text-orange-600'>

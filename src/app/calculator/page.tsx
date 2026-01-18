@@ -189,7 +189,7 @@ export default function CalculatorPage() {
   return (
     <>
       <section className='pb-20 pt-10 relative overflow-hidden min-h-screen'>
-        <div className='max-w-[1170px] w-full mx-auto px-8 sm:px-8 xl:px-0 relative z-10'>
+        <div className='max-w-[1170px] w-full mx-auto px-3 sm:px-8 xl:px-0 relative z-10'>
           {/* Header Mejorado */}
           <div className='text-center mb-12'>
             {/* Badge superior con gradiente */}
