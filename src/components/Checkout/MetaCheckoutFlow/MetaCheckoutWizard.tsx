@@ -424,16 +424,16 @@ export const MetaCheckoutWizard: React.FC = () => {
         </div>
 
         {/* Contenido scrollable con padding para elementos fixed */}
-        <div className='max-w-4xl mx-auto px-4 pt-28 sm:pt-32 pb-32 w-full'>
+        <div className='max-w-4xl mx-auto px-4 pt-20 pb-32 w-full'>
 
           {/* Contenido del paso */}
           {state.currentStep === 'summary' ? (
             <>
-              <div className='mb-2'>
+              <div className='mb-4'>
                 {renderStepContent()}
               </div>
               {/* Footer con resumen - Solo en paso summary */}
-              <div className='mb-2'>
+              <div className='mb-4'>
                 <CartSummaryFooter
                   subtotal={totalPrice}
                   shipping={totalPrice >= 50000 ? 0 : 10000}
