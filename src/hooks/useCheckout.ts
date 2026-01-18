@@ -482,25 +482,25 @@ export const useCheckout = () => {
           email: billing.email || (sanitizedPhone ? `${sanitizedPhone}@temp.metacheckout.local` : 'noreply@metacheckout.local'),
           phone: sanitizedPhone, // Teléfono sanitizado (solo números)
         },
-        shipping:
-          shippingCost > 0
-            ? {
-                cost: shippingCost,
-                address: (() => {
-                  const full = (billing.streetAddress || '').trim()
-                  const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
-                  const street_name = match ? match[1].trim() : full
-                  const street_number = match ? match[2].trim() : ''
-                  return {
-                    street_name,
-                    street_number,
-                    zip_code: billing.zipCode || '5000',
-                    city_name: billing.city || 'Córdoba',
-                    state_name: billing.state || 'Córdoba',
-                  }
-                })(),
-              }
-            : undefined,
+        // Siempre enviar datos de shipping (incluso si el costo es 0)
+        shipping: {
+          cost: shippingCost,
+          address: (() => {
+            const full = (billing.streetAddress || '').trim()
+            const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
+            const street_name = match ? match[1].trim() : full
+            const street_number = match ? match[2].trim() : ''
+            return {
+              street_name,
+              street_number,
+              zip_code: billing.zipCode || '5000',
+              city_name: billing.city || 'Córdoba',
+              state_name: billing.state || 'Córdoba',
+              apartment: billing.apartment || undefined,
+              observations: billing.observations || undefined,
+            }
+          })(),
+        },
         external_reference: `express_checkout_${Date.now()}`,
       }
 
@@ -612,25 +612,26 @@ export const useCheckout = () => {
           email: billing.email,
           phone: billing.phone,
         },
-        shipping:
-          shippingCost > 0
-            ? {
-                cost: shippingCost,
-                address: (() => {
-                  const full = (shipping.differentAddress ? shipping.streetAddress : billing.streetAddress) || ''
-                  const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
-                  const street_name = match ? match[1].trim() : full.trim()
-                  const street_number = match ? match[2].trim() : ''
-                  return {
-                    street_name,
-                    street_number,
-                    zip_code: (shipping.differentAddress ? shipping.zipCode : billing.zipCode)!,
-                    city_name: (shipping.differentAddress ? shipping.city : billing.city)!,
-                    state_name: (shipping.differentAddress ? shipping.state : billing.state)!,
-                  }
-                })(),
-              }
-            : undefined,
+        // Siempre enviar datos de shipping (incluso si el costo es 0)
+        shipping: {
+          cost: shippingCost,
+          address: (() => {
+            const full = (shipping.differentAddress ? shipping.streetAddress : billing.streetAddress) || ''
+            const match = full.match(/^(.*?)(\b\d{1,5}\b)(.*)$/)
+            const street_name = match ? match[1].trim() : full.trim()
+            const street_number = match ? match[2].trim() : ''
+            const sourceData = shipping.differentAddress ? shipping : billing
+            return {
+              street_name,
+              street_number,
+              zip_code: sourceData.zipCode || '5000',
+              city_name: sourceData.city || 'Córdoba',
+              state_name: sourceData.state || 'Córdoba',
+              apartment: sourceData.apartment || undefined,
+              observations: sourceData.observations || undefined,
+            }
+          })(),
+        },
         external_reference: `checkout_${Date.now()}`,
       }
 
