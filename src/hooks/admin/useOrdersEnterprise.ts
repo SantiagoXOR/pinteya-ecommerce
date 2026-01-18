@@ -256,10 +256,15 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       return response.json()
     },
     onSuccess: () => {
-      // Invalidar y refetch inmediato para actualización rápida
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] })
-      queryClient.invalidateQueries({ queryKey: ['admin-orders-stats'] })
-      queryClient.refetchQueries({ queryKey: ['admin-orders'] })
+      // Invalidar con exact: false para invalidar todas las variantes con filtros
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['admin-orders-stats'], exact: false })
+      
+      // Forzar refetch inmediato de todas las queries (como en productos)
+      queryClient.refetchQueries({ 
+        queryKey: ['admin-orders'], 
+        exact: false 
+      }).catch(() => {}) // No fallar si hay error en refetch
     },
     onError: (error) => {
       console.error('[useOrdersEnterprise] Error updating order status:', error)
@@ -290,8 +295,15 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       return response.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] })
-      queryClient.invalidateQueries({ queryKey: ['admin-orders-stats'] })
+      // Invalidar con exact: false para invalidar todas las variantes con filtros
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['admin-orders-stats'], exact: false })
+      
+      // Forzar refetch inmediato
+      queryClient.refetchQueries({ 
+        queryKey: ['admin-orders'], 
+        exact: false 
+      }).catch(() => {})
     },
   })
 

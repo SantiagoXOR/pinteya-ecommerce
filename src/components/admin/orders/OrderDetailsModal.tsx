@@ -405,8 +405,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       let responsePayload: any = null
       let historyApplied = false
 
-      // Cargar detalles de la orden
-      const response = await fetch(`/api/admin/orders/${encodeURIComponent(orderId!)}`)
+      // Cargar detalles de la orden con cache buster para datos frescos
+      const response = await fetch(`/api/admin/orders/${encodeURIComponent(orderId!)}?_t=${Date.now()}`)
       if (response.ok) {
         const data = await response.json()
         responsePayload = data
@@ -440,10 +440,11 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         return
       }
 
-      if (!historyApplied && orderData) {
+      // Siempre recargar historial desde la API con cache buster para datos frescos
+      if (orderData) {
         try {
           const historyResponse = await fetch(
-            `/api/admin/orders/${encodeURIComponent(orderId!)}/history`
+            `/api/admin/orders/${encodeURIComponent(orderId!)}/history?_t=${Date.now()}`
           )
           if (historyResponse.ok) {
             const historyData = await historyResponse.json()

@@ -177,6 +177,11 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: statusHistory,
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      }
     })
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Unexpected error in order history API', {
