@@ -86,8 +86,10 @@ export async function POST(
         status,
         payment_status,
         external_reference,
+        payer_info,
         user_profiles!orders_user_id_fkey (
-          name,
+          first_name,
+          last_name,
           email
         )
       `
@@ -135,6 +137,14 @@ export async function POST(
       )
     }
 
+    // Obtener datos del pagador - priorizar payer_info de la orden (órdenes de visitantes)
+    const payerInfo = order.payer_info as { name?: string; surname?: string; email?: string; phone?: string } | null
+    const userProfile = Array.isArray(order.user_profiles) ? order.user_profiles[0] : order.user_profiles
+    
+    const payerName = payerInfo?.name || userProfile?.first_name || 'Cliente'
+    const payerSurname = payerInfo?.surname || userProfile?.last_name || ''
+    const payerEmail = payerInfo?.email || userProfile?.email || 'cliente@pinteya.com'
+
     // Preparar datos para MercadoPago
     const preferenceData = {
       items: orderItems.map(item => {
@@ -149,8 +159,8 @@ export async function POST(
         }
       }),
       payer: {
-        name: (Array.isArray(order.user_profiles) ? order.user_profiles[0]?.name : order.user_profiles?.name) || 'Cliente',
-        email: (Array.isArray(order.user_profiles) ? order.user_profiles[0]?.email : order.user_profiles?.email) || 'cliente@pinteya.com',
+        name: `${payerName} ${payerSurname}`.trim(),
+        email: payerEmail,
       },
       external_reference: order.external_reference || orderId.toString(),
       back_urls: {
