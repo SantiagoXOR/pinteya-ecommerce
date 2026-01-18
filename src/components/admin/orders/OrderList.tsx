@@ -62,8 +62,7 @@ interface OrderItem {
   products?: {
     id: number
     name: string
-    images: string[] | any
-    image_url?: string
+    images: any // Can be string, array, or JSON object
   }
 }
 
@@ -584,11 +583,7 @@ function getProductImage(item: OrderItem): string | null {
   const snapshotImage = resolveImageSource(item.product_snapshot?.image)
   if (snapshotImage) return snapshotImage
 
-  // 2. Intentar desde products.image_url (URL directa)
-  const productImageUrl = resolveImageSource(item.products?.image_url)
-  if (productImageUrl) return productImageUrl
-
-  // 3. Intentar desde products.images (JSON/JSONB)
+  // 2. Intentar desde products.images (puede ser string, array, o JSON object)
   const productsImage = resolveImageSource(item.products?.images)
   if (productsImage) return productsImage
 
