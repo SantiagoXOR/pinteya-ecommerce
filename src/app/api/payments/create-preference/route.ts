@@ -531,29 +531,27 @@ export async function POST(request: NextRequest) {
     // ===================================
     // CREAR ORDEN EN BASE DE DATOS
     // ===================================
-    // Solo usar columnas que existen: id, user_id, total, status, payment_id, shipping_address, 
-    // created_at, updated_at, external_reference, payment_preference_id, payer_info, payment_status
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         user_id: userId,
+        order_number: orderNumber,
         status: 'pending',
         payment_status: 'pending',
+        payment_method: 'mercadopago',
         total: totalAmount,
         shipping_address: orderData.shipping?.address
           ? JSON.stringify(orderData.shipping.address)
           : null,
-        // Usar external_reference para almacenar el número de orden (order_number no existe en schema)
         external_reference: orderNumber,
-        // Guardar información del payer (incluyendo payment_method y order_number aquí)
         payer_info: {
           name: orderData.payer.name,
           surname: orderData.payer.surname,
           email: orderData.payer.email,
           phone: orderData.payer.phone,
           identification: orderData.payer.identification,
-          payment_method: 'mercadopago', // Guardar payment_method en payer_info
-          order_number: orderNumber, // Guardar order_number en payer_info también
+          payment_method: 'mercadopago',
+          order_number: orderNumber,
         },
       })
       .select()
