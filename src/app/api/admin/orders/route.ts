@@ -274,7 +274,8 @@ export async function GET(request: NextRequest) {
           products (
             id,
             name,
-            images
+            images,
+            image_url
           )
         )
       `,
