@@ -177,6 +177,8 @@ import {
   IconSend,
   IconLayoutGrid,
   IconArrowsVertical,
+  IconWallet,
+  IconCash,
 } from '@tabler/icons-react'
 
 // Re-exportar con nombres compatibles (aliases para facilitar migración)
@@ -339,6 +341,8 @@ export {
   IconSend as Send,
   IconLayoutGrid as Grid,
   IconArrowsVertical as Scroll,
+  IconWallet as Wallet,
+  IconCash as Banknote,
 }
 
 // ===================================
