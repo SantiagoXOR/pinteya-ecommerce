@@ -79,48 +79,97 @@ const CartSidebarModal = () => {
     }
   }, [isCartModalOpen])
 
-  // Handlers para el drag to dismiss
-  const handleDragStart = (clientY: number) => {
+  // Refs para mejorar el rendimiento del drag
+  const contentAreaRef = React.useRef<HTMLDivElement>(null)
+  const dragStartTimeRef = React.useRef<number | null>(null)
+  const lastYRef = React.useRef<number | null>(null)
+
+  // Handlers para el drag to dismiss mejorado
+  const handleDragStart = (clientY: number, target: HTMLElement) => {
+    // Solo permitir drag si el contenido está en la parte superior o si se toca el header
+    const contentArea = contentAreaRef.current
+    const isHeader = target.closest('[class*="flex-col flex-shrink-0"]') !== null
+    
+    if (!isHeader && contentArea) {
+      // Si el contenido es scrolleable y no está en el top, no permitir drag
+      const isAtTop = contentArea.scrollTop <= 5
+      if (!isAtTop) return
+    }
+
     setDragStartY(clientY)
+    setDragCurrentY(clientY)
     setIsDragging(true)
+    dragStartTimeRef.current = Date.now()
+    lastYRef.current = clientY
   }
 
   const handleDragMove = (clientY: number) => {
     if (dragStartY === null) return
-    setDragCurrentY(clientY)
+    
+    const deltaY = clientY - dragStartY
+    // Solo permitir arrastrar hacia abajo (valores positivos)
+    if (deltaY > 0) {
+      setDragCurrentY(clientY)
+      lastYRef.current = clientY
+    }
   }
 
   const handleDragEnd = () => {
-    if (dragStartY !== null && dragCurrentY !== null) {
-      const dragDistance = dragCurrentY - dragStartY
-      // Si arrastró hacia abajo más de 100px, cerrar el modal
-      if (dragDistance > 100) {
-        // Primero resetear el estado del drag para que vuelva a su posición
-        setDragStartY(null)
-        setDragCurrentY(null)
-        setIsDragging(false)
-        // Luego cerrar el modal después de un pequeño delay
-        setTimeout(() => {
-          closeCartModal()
-        }, 50)
-        return
-      }
+    if (dragStartY === null || dragCurrentY === null || dragStartTimeRef.current === null) {
+      // Resetear estado si no hay datos válidos
+      setDragStartY(null)
+      setDragCurrentY(null)
+      setIsDragging(false)
+      dragStartTimeRef.current = null
+      lastYRef.current = null
+      return
     }
-    setDragStartY(null)
-    setDragCurrentY(null)
-    setIsDragging(false)
+
+    const dragDistance = dragCurrentY - dragStartY
+    const dragDuration = Date.now() - dragStartTimeRef.current
+    const dragVelocity = dragDistance / dragDuration // píxeles por milisegundo
+
+    // Calcular umbral dinámico: si la velocidad es alta, cerrar con menos distancia
+    const velocityThreshold = 0.5 // px/ms
+    const distanceThreshold = dragVelocity > velocityThreshold ? 50 : 100
+
+    // Si arrastró lo suficiente o con suficiente velocidad, cerrar el modal
+    if (dragDistance > distanceThreshold || dragVelocity > velocityThreshold) {
+      closeCartModal()
+    } else {
+      // Volver a la posición original con animación suave
+      setDragStartY(null)
+      setDragCurrentY(null)
+      setIsDragging(false)
+    }
+
+    dragStartTimeRef.current = null
+    lastYRef.current = null
   }
 
+  // Touch handlers mejorados
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches[0]) {
-      handleDragStart(e.touches[0].clientY)
+      handleDragStart(e.touches[0].clientY, e.currentTarget as HTMLElement)
     }
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || dragStartY === null) return
+    
     if (e.touches[0]) {
-      e.preventDefault() // Prevenir scroll mientras arrastra
-      handleDragMove(e.touches[0].clientY)
+      const deltaY = e.touches[0].clientY - dragStartY
+      
+      // Si estamos arrastrando hacia abajo, prevenir scroll
+      if (deltaY > 10) {
+        e.preventDefault()
+        handleDragMove(e.touches[0].clientY)
+      } else if (deltaY < -5) {
+        // Si intenta arrastrar hacia arriba, cancelar el drag
+        setDragStartY(null)
+        setDragCurrentY(null)
+        setIsDragging(false)
+      }
     }
   }
 
@@ -128,26 +177,51 @@ const CartSidebarModal = () => {
     handleDragEnd()
   }
 
+  // Mouse handlers mejorados con listeners globales
   const handleMouseDown = (e: React.MouseEvent) => {
-    handleDragStart(e.clientY)
+    handleDragStart(e.clientY, e.currentTarget as HTMLElement)
   }
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) {
-      handleDragMove(e.clientY)
+  // Efecto para manejar mouse global durante el drag
+  useEffect(() => {
+    if (!isDragging) return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (dragStartY !== null) {
+        handleDragMove(e.clientY)
+      }
     }
-  }
 
-  const handleMouseUp = () => {
-    if (isDragging) {
+    const handleMouseUp = () => {
       handleDragEnd()
     }
-  }
 
-  // Calcular el translateY para el efecto visual
-  const translateY = dragStartY !== null && dragCurrentY !== null
-    ? Math.max(0, dragCurrentY - dragStartY)
-    : 0
+    // Agregar listeners globales para capturar movimiento fuera del elemento
+    document.addEventListener('mousemove', handleMouseMove, { passive: true })
+    document.addEventListener('mouseup', handleMouseUp, { passive: true })
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, dragStartY])
+
+  // Calcular el translateY con efecto de resistencia visual
+  const translateY = React.useMemo(() => {
+    if (dragStartY === null || dragCurrentY === null) return 0
+    
+    const rawDelta = dragCurrentY - dragStartY
+    if (rawDelta <= 0) return 0
+
+    // Efecto de resistencia: el arrastre se hace más difícil después de cierto punto
+    const resistanceStart = 200
+    if (rawDelta > resistanceStart) {
+      const excess = rawDelta - resistanceStart
+      return resistanceStart + excess * 0.3 // Reducir velocidad después del umbral
+    }
+
+    return rawDelta
+  }, [dragStartY, dragCurrentY])
 
   return (
     <>
@@ -156,8 +230,8 @@ const CartSidebarModal = () => {
           side='bottom'
           className='rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden'
           style={{
-            transform: isDragging && translateY > 0 ? `translateY(${translateY}px)` : undefined,
-            transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: translateY > 0 ? `translateY(${translateY}px)` : undefined,
+            transition: !isDragging && translateY === 0 ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
             willChange: isDragging ? 'transform' : 'auto',
             maxHeight: isLargeText 
               ? 'calc(100dvh - env(safe-area-inset-bottom, 0px))' 
@@ -173,18 +247,17 @@ const CartSidebarModal = () => {
 
           {/* Header fijo con drag handle y botón */}
           <div className='flex flex-col flex-shrink-0 bg-white rounded-t-3xl'>
-            {/* Drag Handle - Indicador visual estilo Instagram */}
+            {/* Drag Handle - Indicador visual estilo Instagram - Área de drag extendida */}
             <div 
-              className='flex justify-center pt-1.5 pb-0.5 cursor-grab active:cursor-grabbing touch-none select-none'
+              className='flex flex-col cursor-grab active:cursor-grabbing touch-none select-none'
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
             >
-              <div className='w-12 h-1 bg-gray-300 rounded-full pointer-events-none' />
+              <div className='flex justify-center pt-1.5 pb-0.5 pointer-events-none'>
+                <div className='w-12 h-1 bg-gray-300 rounded-full' />
+              </div>
             </div>
 
             {/* Información de pago - Mercado Pago */}
@@ -206,7 +279,11 @@ const CartSidebarModal = () => {
           </div>
 
           {/* Content Area - Scrollable */}
-          <div className={`flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 ${hasItems ? 'pt-1' : isLargeText ? 'pt-1' : 'pt-2'} bg-gray-50 min-h-0`} style={{ overflowY: 'auto', minHeight: '0' }}>
+          <div 
+            ref={contentAreaRef}
+            className={`flex-1 overflow-y-auto no-scrollbar px-4 sm:px-7.5 lg:px-11 ${hasItems ? 'pt-1' : isLargeText ? 'pt-1' : 'pt-2'} bg-gray-50 min-h-0`} 
+            style={{ overflowY: 'auto', minHeight: '0' }}
+          >
             <div className={`flex flex-col ${isLargeText ? 'gap-1' : 'gap-1.5'} px-1`}>
               {/* cart items */}
               {mounted && effectiveCartItems.length > 0 ? (
