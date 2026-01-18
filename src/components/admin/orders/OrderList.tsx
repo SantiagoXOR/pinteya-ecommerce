@@ -268,48 +268,57 @@ function UnifiedPaymentBadge({
 
   // Determinar el estado del pago
   let statusLabel = 'Pendiente'
-  let statusClass = 'bg-yellow-100 text-yellow-800 border-yellow-200'
   
   if (paymentStatus === 'paid') {
     statusLabel = 'Pagado'
-    statusClass = 'bg-green-100 text-green-800 border-green-200'
   } else if (paymentStatus === 'failed') {
     statusLabel = 'Fallido'
-    statusClass = 'bg-red-100 text-red-800 border-red-200'
   } else if (paymentStatus === 'refunded') {
     statusLabel = 'Reembolsado'
-    statusClass = 'bg-gray-100 text-gray-800 border-gray-200'
   } else if (paymentStatus === 'cash_on_delivery') {
     statusLabel = 'Al Recibir'
-    statusClass = 'bg-amber-100 text-amber-800 border-amber-200'
   }
 
+  // Configuración de métodos de pago con colores específicos
   const methodConfig = {
     mercadopago: {
-      label: 'MP',
+      label: 'MercadoPago',
       icon: Wallet,
+      // Colores celeste/azul de MercadoPago
+      className: 'bg-sky-100 text-sky-700 border-sky-200',
     },
     cash: {
       label: 'Efectivo',
       icon: Banknote,
+      className: 'bg-amber-100 text-amber-700 border-amber-200',
     },
+  }
+
+  // Colores del estado de pago
+  const statusColors: Record<string, string> = {
+    paid: 'text-green-600',
+    pending: 'text-yellow-600',
+    failed: 'text-red-600',
+    refunded: 'text-gray-600',
+    cash_on_delivery: 'text-amber-600',
   }
 
   const config = methodConfig[paymentMethod]
   const Icon = config.icon
+  const statusColor = statusColors[paymentStatus || 'pending'] || 'text-gray-500'
 
   return (
     <div className='flex flex-col items-center gap-1'>
       <span
         className={cn(
           'inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border',
-          statusClass
+          config.className
         )}
       >
         <Icon className='w-3 h-3' />
         <span>{config.label}</span>
       </span>
-      <span className='text-[10px] text-gray-500'>{statusLabel}</span>
+      <span className={cn('text-[10px] font-medium', statusColor)}>{statusLabel}</span>
     </div>
   )
 }

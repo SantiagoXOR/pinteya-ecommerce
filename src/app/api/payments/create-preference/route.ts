@@ -362,7 +362,8 @@ export async function POST(request: NextRequest) {
           price_list,
           color_name,
           measure,
-          finish
+          finish,
+          image_url
         )
       `
       )
@@ -417,6 +418,7 @@ export async function POST(request: NextRequest) {
         color_name: string | null
         measure: string | null
         finish: string | null
+        image_url: string | null
       }> | null
     }
 
@@ -761,7 +763,7 @@ export async function POST(request: NextRequest) {
         name: product.name,
         price: finalPrice,
         category: product.category?.name || null,
-        image: productImage, // Usar imagen obtenida desde product_images
+        image: productImage, // Imagen base desde product_images o product.images
       }
 
       // Incluir información de variante si está disponible
@@ -772,6 +774,8 @@ export async function POST(request: NextRequest) {
           if (variant.color_name) productSnapshot.color = variant.color_name
           if (variant.finish) productSnapshot.finish = variant.finish
           if (variant.measure) productSnapshot.medida = variant.measure
+          // Priorizar imagen de la variante si existe
+          if (variant.image_url) productSnapshot.image = variant.image_url
         }
       }
       if (product.brand) productSnapshot.brand = product.brand

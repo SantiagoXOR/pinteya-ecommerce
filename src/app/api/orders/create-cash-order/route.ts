@@ -226,9 +226,9 @@ export async function POST(request: NextRequest) {
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select(`
-        id, name, price, discounted_price, stock, color, medida, brand, description, aikon_id,
+        id, name, price, discounted_price, stock, color, medida, brand, description, aikon_id, images,
         product_variants (
-          id, color_name, measure, price_sale, price_list, finish, stock
+          id, color_name, measure, price_sale, price_list, finish, stock, image_url
         )
       `)
       .in('id', productIds) as { data: ProductFromDB[] | null; error: any };
@@ -349,29 +349,46 @@ export async function POST(request: NextRequest) {
         price: finalPrice,
         medida: product.medida,
         brand: product.brand,
-        image: productImage, // Agregar imagen al snapshot
+        image: productImage, // Imagen base desde product_images o product.images
       };
 
-      // Incluir color y terminación si están disponibles
-      if (item.variant_color) {
-        productSnapshot.color = item.variant_color;
-      } else if (product.color) {
-        productSnapshot.color = product.color;
-      }
-
-      if (item.variant_finish) {
-        productSnapshot.finish = item.variant_finish;
-      } else if (item.variant_id && product.product_variants) {
-        // Buscar finish en la variante específica
+      // Incluir color, terminación e imagen de la variante si están disponibles
+      if (item.variant_id && product.product_variants) {
         const variant = product.product_variants.find((v: any) => v.id.toString() === item.variant_id?.toString());
-        if (variant?.finish) {
-          productSnapshot.finish = variant.finish;
+        if (variant) {
+          // Usar color de la variante
+          if (variant.color_name) {
+            productSnapshot.color = variant.color_name;
+          }
+          // Usar medida de la variante
+          if (variant.measure) {
+            productSnapshot.medida = variant.measure;
+          }
+          // Usar finish de la variante
+          if (variant.finish) {
+            productSnapshot.finish = variant.finish;
+          }
+          // Priorizar imagen de la variante si existe
+          if (variant.image_url) {
+            productSnapshot.image = variant.image_url;
+          }
         }
-      } else if (product.product_variants && product.product_variants.length > 0) {
-        // Usar finish de la primera variante disponible
-        const firstVariant = product.product_variants[0];
-        if (firstVariant?.finish) {
-          productSnapshot.finish = firstVariant.finish;
+      } else {
+        // Si no hay variant_id, usar color del producto
+        if (item.variant_color) {
+          productSnapshot.color = item.variant_color;
+        } else if (product.color) {
+          productSnapshot.color = product.color;
+        }
+
+        if (item.variant_finish) {
+          productSnapshot.finish = item.variant_finish;
+        } else if (product.product_variants && product.product_variants.length > 0) {
+          // Usar finish de la primera variante disponible
+          const firstVariant = product.product_variants[0];
+          if (firstVariant?.finish) {
+            productSnapshot.finish = firstVariant.finish;
+          }
         }
       }
 
