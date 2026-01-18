@@ -523,20 +523,21 @@ export const MetaCheckoutWizard: React.FC = () => {
                 onClick={handleStepComplete}
                 disabled={isLoading}
                 className={cn(
-                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 py-6',
+                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 py-3 xsm:py-4 sm:py-6',
                   isLoading && 'opacity-50 cursor-not-allowed'
                 )}
               >
-                {isLoading ? (
-                  <div className='flex items-center gap-3'>
-                    <Loader2 className='w-6 h-6 animate-spin' />
-                    <span className='text-base font-medium'>Procesando pago...</span>
+              {isLoading ? (
+                  <div className='flex items-center gap-2 xsm:gap-3'>
+                    <Loader2 className='w-5 h-5 xsm:w-6 xsm:h-6 animate-spin' />
+                    <span className='text-sm xsm:text-base font-medium'>Procesando pago...</span>
                   </div>
                 ) : (
                   <div className='flex items-center justify-center gap-2'>
-                    <CreditCard className='w-5 h-5' />
-                    <span className='text-lg font-bold'>
-                      Confirmar Pedido ({formatCurrency(totalPrice + (totalPrice >= 50000 ? 0 : 10000))})
+                    <CreditCard className='w-4 h-4 xsm:w-5 xsm:h-5' />
+                    <span className='text-sm xsm:text-base sm:text-lg font-bold'>Confirmar Pedido</span>
+                    <span className='hidden sm:inline text-sm sm:text-base font-bold'>
+                      ({formatCurrency(totalPrice + (totalPrice >= 50000 ? 0 : 10000))})
                     </span>
                   </div>
                 )}
@@ -631,7 +632,7 @@ const ContactStep: React.FC<{
                 onChange={(e) => onUpdate({ firstName: e.target.value })}
                 placeholder='Juan'
                 className={cn(
-                  'pl-10 text-base transition-all duration-200 h-12',
+                  'pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
                   errors.firstName
                     ? 'border-red-500 focus:border-red-500'
                     : isValidName(formData.firstName) && !errors.firstName
@@ -670,7 +671,7 @@ const ContactStep: React.FC<{
                 onChange={(e) => onUpdate({ lastName: e.target.value })}
                 placeholder='Pérez'
                 className={cn(
-                  'pl-10 text-base transition-all duration-200 h-12',
+                  'pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
                   errors.lastName
                     ? 'border-red-500 focus:border-red-500'
                     : isValidName(formData.lastName) && !errors.lastName
@@ -710,7 +711,7 @@ const ContactStep: React.FC<{
               onChange={(e) => onUpdate({ phone: e.target.value })}
               placeholder='351 123 4567'
               className={cn(
-                'pl-10 text-base transition-all duration-200 h-12',
+                'pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
                 errors.phone
                   ? 'border-red-500 focus:border-red-500'
                   : isValidPhone(formData.phone) && !errors.phone
