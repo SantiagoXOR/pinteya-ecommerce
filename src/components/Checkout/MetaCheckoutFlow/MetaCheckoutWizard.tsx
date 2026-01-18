@@ -632,7 +632,7 @@ const ContactStep: React.FC<{
                 onChange={(e) => onUpdate({ firstName: e.target.value })}
                 placeholder='Juan'
                 className={cn(
-                  'pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
+                  'pl-3 sm:pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
                   errors.firstName
                     ? 'border-red-500 focus:border-red-500'
                     : isValidName(formData.firstName) && !errors.firstName
@@ -641,7 +641,7 @@ const ContactStep: React.FC<{
                 )}
                 required
               />
-              <User className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
+              <User className='hidden sm:block absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
               {isValidName(formData.firstName) && !errors.firstName && (
                 <CheckCircle className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500' />
               )}
@@ -671,7 +671,7 @@ const ContactStep: React.FC<{
                 onChange={(e) => onUpdate({ lastName: e.target.value })}
                 placeholder='Pérez'
                 className={cn(
-                  'pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
+                  'pl-3 sm:pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
                   errors.lastName
                     ? 'border-red-500 focus:border-red-500'
                     : isValidName(formData.lastName) && !errors.lastName
@@ -680,7 +680,7 @@ const ContactStep: React.FC<{
                 )}
                 required
               />
-              <User className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
+              <User className='hidden sm:block absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
               {isValidName(formData.lastName) && !errors.lastName && (
                 <CheckCircle className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500' />
               )}
@@ -711,7 +711,7 @@ const ContactStep: React.FC<{
               onChange={(e) => onUpdate({ phone: e.target.value })}
               placeholder='351 123 4567'
               className={cn(
-                'pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
+                'pl-3 sm:pl-12 text-sm xsm:text-base transition-all duration-200 h-10 xsm:h-12',
                 errors.phone
                   ? 'border-red-500 focus:border-red-500'
                   : isValidPhone(formData.phone) && !errors.phone
@@ -720,7 +720,7 @@ const ContactStep: React.FC<{
               )}
               required
             />
-            <Phone className='absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
+            <Phone className='hidden sm:block absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
             {isValidPhone(formData.phone) && !errors.phone && (
               <CheckCircle className='absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500' />
             )}
