@@ -328,7 +328,7 @@ function ProductAttributePill({ label, value }: { label: string; value: string }
 }
 
 // ===================================
-// EXPANDABLE ORDER ITEMS ROW
+// EXPANDABLE ORDER ITEMS ROW (Table Style like ExpandableVariantsRow)
 // ===================================
 
 function ExpandableOrderItemsRow({ 
@@ -343,73 +343,136 @@ function ExpandableOrderItemsRow({
   if (!isExpanded || !orderItems || orderItems.length === 0) return null
 
   return (
-    <TableRow className='bg-blue-50/50'>
+    <TableRow className='bg-gradient-to-b from-blue-50/80 to-white'>
       <TableCell colSpan={colSpan} className='p-0'>
-        <div className='px-6 py-3'>
-          <div className='text-xs font-medium text-gray-500 uppercase tracking-wider mb-2'>
-            Productos del Pedido
+        <div className='px-6 py-4'>
+          <div className='mb-4'>
+            <div className='flex items-center justify-between'>
+              <h4 className='text-sm font-semibold text-gray-900 flex items-center gap-2'>
+                <ShoppingBag className='h-4 w-4 text-blue-600' />
+                Productos del Pedido
+                <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
+                  {orderItems.length}
+                </span>
+              </h4>
+            </div>
           </div>
-          <div className='space-y-2'>
-            {orderItems.map((item, index) => {
-              const productName = item.product_snapshot?.name || item.products?.name || item.product_name || 'Producto'
-              const productImage = getProductImage(item)
-              const unitPrice = item.product_snapshot?.price || item.price || item.unit_price || 0
-              const totalPrice = unitPrice * item.quantity
 
-              return (
-                <div 
-                  key={item.id || index}
-                  className='flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-100'
-                >
-                  {/* Imagen del producto */}
-                  <div className='w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0'>
-                    {productImage ? (
-                      <Image
-                        src={productImage}
-                        alt={productName}
-                        width={48}
-                        height={48}
-                        className='w-full h-full object-cover'
-                      />
-                    ) : (
-                      <div className='w-full h-full flex items-center justify-center'>
-                        <Package className='w-6 h-6 text-gray-400' />
-                      </div>
-                    )}
-                  </div>
+          {/* Tabla de productos estilo ExpandableVariantsRow */}
+          <div className='overflow-x-auto rounded-lg border border-gray-200'>
+            <table className='min-w-full divide-y divide-gray-200 bg-white'>
+              <thead className='bg-gradient-to-r from-gray-50 to-gray-100/50'>
+                <tr>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                    Imagen
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                    Producto
+                  </th>
+                  <th className='px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                    Atributos
+                  </th>
+                  <th className='px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                    Cantidad
+                  </th>
+                  <th className='px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                    Precio Unit.
+                  </th>
+                  <th className='px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                    Total
+                  </th>
+                </tr>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-100'>
+                {orderItems.map((item, index) => {
+                  const productName = item.product_snapshot?.name || item.products?.name || item.product_name || 'Producto'
+                  const productId = item.products?.id || item.product_id
+                  const productImage = getProductImage(item)
+                  const unitPrice = item.product_snapshot?.price || item.price || item.unit_price || 0
+                  const totalPrice = unitPrice * item.quantity
+                  const hasAttributes = item.product_snapshot?.color || item.product_snapshot?.medida || item.product_snapshot?.finish
 
-                  {/* Info del producto */}
-                  <div className='flex-1 min-w-0'>
-                    <p className='text-sm font-medium text-gray-900 truncate'>
-                      {productName}
-                    </p>
-                    {(item.product_snapshot?.color || item.product_snapshot?.medida || item.product_snapshot?.finish) && (
-                      <div className='flex flex-wrap items-center gap-1.5 mt-1'>
-                        {item.product_snapshot?.color && (
-                          <ProductAttributePill label="Color" value={item.product_snapshot.color} />
-                        )}
-                        {item.product_snapshot?.medida && (
-                          <ProductAttributePill label="Medida" value={item.product_snapshot.medida} />
-                        )}
-                        {item.product_snapshot?.finish && (
-                          <ProductAttributePill label="Terminación" value={item.product_snapshot.finish} />
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  return (
+                    <tr
+                      key={item.id || index}
+                      className='group hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-transparent transition-all duration-200'
+                    >
+                      {/* Imagen con hover effect */}
+                      <td className='px-4 py-3'>
+                        <div className='relative w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center ring-2 ring-gray-200 group-hover:ring-blue-300 transition-all'>
+                          {productImage ? (
+                            <Image
+                              src={productImage}
+                              alt={productName}
+                              width={48}
+                              height={48}
+                              className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-200'
+                              unoptimized
+                            />
+                          ) : (
+                            <Package className='w-6 h-6 text-gray-400' />
+                          )}
+                        </div>
+                      </td>
 
-                  {/* Cantidad y precio */}
-                  <div className='text-right flex-shrink-0'>
-                    <p className='text-sm text-gray-600'>
-                      {item.quantity} x {formatCurrency(unitPrice)}
-                    </p>
-                    <p className='text-sm font-semibold text-gray-900'>
-                      {formatCurrency(totalPrice)}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
+                      {/* Producto (Nombre + ID) */}
+                      <td className='px-4 py-3'>
+                        <div className='min-w-0'>
+                          <p className='text-sm font-medium text-gray-900 truncate'>
+                            {productName}
+                          </p>
+                          {productId && (
+                            <code className='text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded font-mono'>
+                              #{productId}
+                            </code>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Atributos (Color, Medida, Terminación) */}
+                      <td className='px-4 py-3'>
+                        {hasAttributes ? (
+                          <div className='flex flex-wrap items-center gap-1.5'>
+                            {item.product_snapshot?.color && (
+                              <ProductAttributePill label="Color" value={item.product_snapshot.color} />
+                            )}
+                            {item.product_snapshot?.medida && (
+                              <ProductAttributePill label="Medida" value={item.product_snapshot.medida} />
+                            )}
+                            {item.product_snapshot?.finish && (
+                              <ProductAttributePill label="Terminación" value={item.product_snapshot.finish} />
+                            )}
+                          </div>
+                        ) : (
+                          <span className='text-sm text-gray-400'>-</span>
+                        )}
+                      </td>
+
+                      {/* Cantidad */}
+                      <td className='px-4 py-3 text-center'>
+                        <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800'>
+                          {item.quantity}x
+                        </span>
+                      </td>
+
+                      {/* Precio Unitario */}
+                      <td className='px-4 py-3 text-right'>
+                        <span className='text-sm text-gray-700'>
+                          {formatCurrency(unitPrice)}
+                        </span>
+                      </td>
+
+                      {/* Total */}
+                      <td className='px-4 py-3 text-right'>
+                        <span className='text-sm font-semibold text-green-600'>
+                          {formatCurrency(totalPrice)}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       </TableCell>
@@ -464,38 +527,66 @@ function getClientPhone(order: Order): string | null {
   return order.payer_info?.phone || order.user_profiles?.phone || null
 }
 
-function getProductImage(item: OrderItem): string | null {
-  // 1. Intentar desde product_snapshot
-  if (item.product_snapshot?.image) {
-    return item.product_snapshot.image
+// ===================================
+// RESOLVE IMAGE SOURCE (from ProductList)
+// ===================================
+
+const resolveImageSource = (payload: any): string | null => {
+  const normalize = (value?: string | null) => {
+    if (!value || typeof value !== 'string') {
+      return null
+    }
+    const trimmed = value.trim()
+    return trimmed.length > 0 ? trimmed : null
   }
-  
-  // 2. Intentar desde products.images (puede ser string JSON o array)
-  if (item.products?.images) {
-    const images = item.products.images
-    
-    // Si es un string, intentar parsearlo como JSON
-    if (typeof images === 'string') {
+
+  if (!payload) {
+    return null
+  }
+
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim()
+    if (!trimmed) return null
+
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
       try {
-        const parsed = JSON.parse(images)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed[0]
-        }
-        if (typeof parsed === 'string') {
-          return parsed
-        }
+        return resolveImageSource(JSON.parse(trimmed))
       } catch {
-        // Si falla el parse, usar el string directamente
-        return images
+        return normalize(trimmed)
       }
     }
-    
-    // Si es un array, tomar el primer elemento
-    if (Array.isArray(images) && images.length > 0) {
-      return images[0]
-    }
+
+    return normalize(trimmed)
   }
-  
+
+  if (Array.isArray(payload)) {
+    return normalize(payload[0])
+  }
+
+  if (typeof payload === 'object') {
+    return (
+      normalize(payload.preview) ||
+      normalize(payload.previews?.[0]) ||
+      normalize(payload.thumbnails?.[0]) ||
+      normalize(payload.gallery?.[0]) ||
+      normalize(payload.main) ||
+      normalize(payload.url) ||
+      normalize(payload.image)
+    )
+  }
+
+  return null
+}
+
+function getProductImage(item: OrderItem): string | null {
+  // 1. Intentar desde product_snapshot.image
+  const snapshotImage = resolveImageSource(item.product_snapshot?.image)
+  if (snapshotImage) return snapshotImage
+
+  // 2. Intentar desde products.images
+  const productsImage = resolveImageSource(item.products?.images)
+  if (productsImage) return productsImage
+
   return null
 }
 
