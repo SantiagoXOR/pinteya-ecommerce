@@ -13,12 +13,13 @@ import {
   Eye,
   Edit,
   Printer,
-  Download,
   RefreshCw,
   XCircle,
   DollarSign,
   MoreHorizontal,
   History,
+  CheckCircle,
+  Truck,
 } from '@/lib/optimized-imports'
 
 interface Order {
@@ -92,25 +93,32 @@ export function OrderRowActions({ order, onAction }: OrderRowActionsProps) {
             <Printer className='w-4 h-4 mr-2' />
             Imprimir
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onAction('download')}>
-            <Download className='w-4 h-4 mr-2' />
-            Descargar
-          </DropdownMenuItem>
 
           <DropdownMenuSeparator />
 
           {/* Acciones de cambio de estado */}
-          {order.status !== 'processing' && order.status !== 'cancelled' && (
+          {order.status !== 'processing' && order.status !== 'cancelled' && order.status !== 'delivered' && (
             <DropdownMenuItem onClick={() => onAction('process')}>
-              <RefreshCw className='w-4 h-4 mr-2' />
+              <RefreshCw className='w-4 h-4 mr-2 text-blue-600' />
               Marcar como En Proceso
             </DropdownMenuItem>
           )}
 
           {order.status !== 'delivered' && order.status !== 'cancelled' && (
             <DropdownMenuItem onClick={() => onAction('deliver')}>
-              <RefreshCw className='w-4 h-4 mr-2' />
+              <Truck className='w-4 h-4 mr-2 text-green-600' />
               Marcar como Entregada
+            </DropdownMenuItem>
+          )}
+
+          {/* Marcar como pagada - solo si no está pagada */}
+          {order.payment_status !== 'paid' && order.status !== 'cancelled' && (
+            <DropdownMenuItem 
+              onClick={() => onAction('mark_paid')}
+              className='text-green-600 focus:text-green-600'
+            >
+              <CheckCircle className='w-4 h-4 mr-2' />
+              Marcar como Pagada
             </DropdownMenuItem>
           )}
 

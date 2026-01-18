@@ -137,7 +137,7 @@ export function OrdersPageClient() {
         throw new Error('Error al obtener datos de la orden')
       }
       const data = await response.json()
-      const order = data.data
+      const order = data.data?.order || data.data
 
       if (!order) {
         toast.error('No se encontraron datos de la orden')
@@ -152,87 +152,252 @@ export function OrdersPageClient() {
       }
 
       const formatCurrency = (amount: number) => 
-        new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount)
+        new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount || 0)
 
       const formatDate = (dateString: string) =>
-        new Date(dateString).toLocaleDateString('es-AR', {
+        dateString ? new Date(dateString).toLocaleDateString('es-AR', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
-        })
+        }) : 'No especificada'
 
       const clientName = order.payer_info?.name && order.payer_info?.surname
         ? `${order.payer_info.name} ${order.payer_info.surname}`
+        : order.payer_info?.name 
+        ? order.payer_info.name
         : order.user_profiles?.first_name
         ? `${order.user_profiles.first_name} ${order.user_profiles.last_name || ''}`
         : 'Cliente'
 
       const clientPhone = order.payer_info?.phone || order.user_profiles?.phone || 'No especificado'
 
+      // Construir items con atributos
       const items = order.order_items?.map((item: any) => {
         const name = item.product_snapshot?.name || item.products?.name || 'Producto'
-        const price = item.product_snapshot?.price || item.price || 0
+        const price = item.product_snapshot?.price || item.price || item.unit_price || 0
+        const color = item.product_snapshot?.color
+        const medida = item.product_snapshot?.medida
+        const finish = item.product_snapshot?.finish
+        
+        // Construir atributos como texto
+        const attrs = []
+        if (color) attrs.push(`Color: ${color}`)
+        if (medida) attrs.push(`Medida: ${medida}`)
+        if (finish) attrs.push(`Terminación: ${finish}`)
+        const attrsText = attrs.length > 0 ? `<br><small style="color: #666;">${attrs.join(' | ')}</small>` : ''
+        
         return `
           <tr>
-            <td style="padding: 8px; border-bottom: 1px solid #eee;">${name}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(price)}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(price * item.quantity)}</td>
+            <td style="padding: 12px 8px; border-bottom: 1px solid #eee;">${name}${attrsText}</td>
+            <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+            <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: right;">${formatCurrency(price)}</td>
+            <td style="padding: 12px 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600;">${formatCurrency(price * item.quantity)}</td>
           </tr>
         `
-      }).join('') || ''
+      }).join('') || '<tr><td colspan="4" style="text-align: center; padding: 20px;">Sin productos</td></tr>'
 
-      const address = order.shipping_address
-        ? `${order.shipping_address.street_name} ${order.shipping_address.street_number}, ${order.shipping_address.city_name}, ${order.shipping_address.state_name}`
-        : 'No especificada'
+      // Construir dirección completa
+      const addr = order.shipping_address || {}
+      const streetFull = addr.street || `${addr.street_name || ''} ${addr.street_number || ''}`.trim()
+      const addressParts = [streetFull]
+      if (addr.apartment) addressParts.push(`Piso/Depto: ${addr.apartment}`)
+      if (addr.city_name || addr.city) addressParts.push(addr.city_name || addr.city)
+      if (addr.state_name || addr.state) addressParts.push(addr.state_name || addr.state)
+      if (addr.zip_code) addressParts.push(`CP: ${addr.zip_code}`)
+      const address = addressParts.filter(Boolean).join(', ') || 'No especificada'
+      const observations = addr.observations || ''
+
+      // Método de pago
+      const paymentMethod = order.payment_method === 'mercadopago' ? 'MercadoPago' 
+        : order.payment_method === 'cash' ? 'Efectivo al recibir' 
+        : order.payment_method || 'No especificado'
+      
+      const paymentStatus = order.payment_status === 'paid' ? 'Pagado' 
+        : order.payment_status === 'pending' ? 'Pendiente'
+        : order.payment_status === 'cash_on_delivery' ? 'Al recibir'
+        : order.payment_status || 'Pendiente'
+
+      const orderStatus = order.status === 'pending' ? 'Pendiente'
+        : order.status === 'processing' ? 'En Proceso'
+        : order.status === 'shipped' ? 'Enviado'
+        : order.status === 'delivered' ? 'Entregado'
+        : order.status === 'cancelled' ? 'Cancelado'
+        : order.status || 'Pendiente'
 
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
         <head>
-          <title>Orden ${order.order_number || order.id}</title>
+          <title>Orden #${order.order_number || order.id} - Pinteya</title>
           <style>
-            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            .order-info { margin-bottom: 20px; }
-            .order-info h2 { color: #333; margin-bottom: 10px; }
-            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-            .info-box { background: #f5f5f5; padding: 15px; border-radius: 8px; }
-            .info-box h3 { margin: 0 0 10px 0; color: #555; font-size: 14px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-            th { background: #4f46e5; color: white; padding: 10px; text-align: left; }
-            th:last-child, th:nth-child(2), th:nth-child(3) { text-align: right; }
+            * { box-sizing: border-box; }
+            body { 
+              font-family: 'Segoe UI', Arial, sans-serif; 
+              max-width: 800px; 
+              margin: 0 auto; 
+              padding: 30px;
+              color: #333;
+            }
+            .header { 
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              border-bottom: 3px solid #f59e0b;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .logo { 
+              font-size: 28px; 
+              font-weight: bold; 
+              color: #f59e0b;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+            .logo span { color: #333; }
+            .order-meta {
+              text-align: right;
+            }
+            .order-meta h2 {
+              margin: 0 0 5px 0;
+              font-size: 18px;
+              color: #333;
+            }
+            .order-meta p {
+              margin: 3px 0;
+              font-size: 13px;
+              color: #666;
+            }
+            .status-badge {
+              display: inline-block;
+              background: #fef3c7;
+              color: #92400e;
+              padding: 4px 12px;
+              border-radius: 20px;
+              font-size: 12px;
+              font-weight: 600;
+              margin-top: 8px;
+            }
+            .info-grid { 
+              display: grid; 
+              grid-template-columns: 1fr 1fr; 
+              gap: 20px; 
+              margin-bottom: 25px; 
+            }
+            .info-box { 
+              background: #fafafa; 
+              padding: 16px; 
+              border-radius: 8px; 
+              border-left: 4px solid #f59e0b;
+            }
+            .info-box h3 { 
+              margin: 0 0 12px 0; 
+              color: #f59e0b; 
+              font-size: 12px; 
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .info-box p { margin: 6px 0; font-size: 14px; }
+            .info-box strong { color: #333; }
+            .observations {
+              background: #fef9c3;
+              border-left-color: #eab308;
+              margin-top: 10px;
+              padding: 10px 12px;
+              font-size: 13px;
+            }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              margin-bottom: 25px;
+              font-size: 14px;
+            }
+            th { 
+              background: #f59e0b; 
+              color: white; 
+              padding: 12px 8px; 
+              text-align: left;
+              font-weight: 600;
+            }
             th:nth-child(2) { text-align: center; }
-            .total { text-align: right; font-size: 18px; font-weight: bold; }
-            @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+            th:nth-child(3), th:nth-child(4) { text-align: right; }
+            td { vertical-align: top; }
+            .totals {
+              display: flex;
+              justify-content: flex-end;
+              margin-bottom: 30px;
+            }
+            .totals-box {
+              background: #fafafa;
+              padding: 16px 24px;
+              border-radius: 8px;
+              min-width: 250px;
+            }
+            .totals-row {
+              display: flex;
+              justify-content: space-between;
+              margin: 6px 0;
+              font-size: 14px;
+            }
+            .totals-row.total {
+              font-size: 18px;
+              font-weight: bold;
+              color: #f59e0b;
+              border-top: 2px solid #e5e5e5;
+              padding-top: 10px;
+              margin-top: 10px;
+            }
+            .footer {
+              text-align: center;
+              padding-top: 20px;
+              border-top: 1px solid #eee;
+              font-size: 12px;
+              color: #999;
+            }
+            @media print { 
+              body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+              .no-print { display: none; }
+            }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>Orden de Compra</h1>
-            <p style="color: #666;">Número: ${order.order_number || order.id}</p>
-            <p style="color: #666;">Fecha: ${formatDate(order.created_at)}</p>
+            <div class="logo">
+              <span style="color: #f59e0b;">●</span> <span>Pinteya</span>
+            </div>
+            <div class="order-meta">
+              <h2>Orden #${order.order_number || order.id}</h2>
+              <p>${formatDate(order.created_at)}</p>
+              <span class="status-badge">${orderStatus}</span>
+            </div>
           </div>
 
           <div class="info-grid">
             <div class="info-box">
-              <h3>DATOS DEL CLIENTE</h3>
+              <h3>📦 Datos del Cliente</h3>
               <p><strong>Nombre:</strong> ${clientName}</p>
               <p><strong>Teléfono:</strong> ${clientPhone}</p>
             </div>
             <div class="info-box">
-              <h3>DIRECCIÓN DE ENVÍO</h3>
-              <p>${address}</p>
+              <h3>💳 Método de Pago</h3>
+              <p><strong>Método:</strong> ${paymentMethod}</p>
+              <p><strong>Estado:</strong> ${paymentStatus}</p>
             </div>
+          </div>
+
+          <div class="info-box" style="margin-bottom: 25px;">
+            <h3>📍 Dirección de Envío</h3>
+            <p>${address}</p>
+            ${observations ? `<div class="observations"><strong>Indicaciones:</strong> ${observations}</div>` : ''}
           </div>
 
           <table>
             <thead>
               <tr>
                 <th>Producto</th>
-                <th>Cantidad</th>
+                <th>Cant.</th>
                 <th>Precio Unit.</th>
                 <th>Total</th>
               </tr>
@@ -242,8 +407,18 @@ export function OrdersPageClient() {
             </tbody>
           </table>
 
-          <div class="total">
-            <p>Total: ${formatCurrency(order.total)}</p>
+          <div class="totals">
+            <div class="totals-box">
+              <div class="totals-row total">
+                <span>TOTAL:</span>
+                <span>${formatCurrency(order.total)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>Gracias por tu compra en <strong>Pinteya</strong></p>
+            <p>Este documento es un comprobante de tu pedido</p>
           </div>
         </body>
         </html>
@@ -297,6 +472,31 @@ export function OrdersPageClient() {
   }
 
   // Handler con feedback visual
+  // Handler para marcar como pagada
+  const handleMarkAsPaid = async (orderId: string) => {
+    const loadingToast = toast.loading('Marcando orden como pagada...')
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}/mark-paid`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          payment_method: 'manual',
+          notes: 'Marcado como pagado manualmente por administrador',
+        }),
+      })
+
+      if (response.ok) {
+        toast.success('Orden marcada como pagada', { id: loadingToast })
+        refreshOrders()
+      } else {
+        toast.error('Error al marcar orden como pagada', { id: loadingToast })
+      }
+    } catch (error) {
+      console.error('Error marking as paid:', error)
+      toast.error('Error al marcar orden como pagada', { id: loadingToast })
+    }
+  }
+
   const handleOrderActionWithToast = async (action: string, orderId: string) => {
     // Manejar acciones especiales primero
     if (action === 'history') {
@@ -307,8 +507,8 @@ export function OrdersPageClient() {
       handlePrintOrder(orderId)
       return
     }
-    if (action === 'download') {
-      handleDownloadOrder(orderId)
+    if (action === 'mark_paid') {
+      handleMarkAsPaid(orderId)
       return
     }
 
@@ -347,6 +547,7 @@ export function OrdersPageClient() {
       try {
         await handleOrderAction(action, orderId)
         toast.success(messages.success, { id: loadingToast })
+        refreshOrders() // Refrescar después de cualquier acción
       } catch (error) {
         toast.error('Error al actualizar la orden', { id: loadingToast })
         console.error('Error en acción de orden:', error)
