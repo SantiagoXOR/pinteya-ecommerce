@@ -185,16 +185,23 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
     data: statsData,
     isLoading: statsLoading,
     error: statsError,
+    refetch: refetchStats,
   } = useQuery({
     queryKey: ['admin-orders-stats'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/orders/stats')
+      const response = await fetch(`/api/admin/orders/stats?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`)
       }
       return response.json()
     },
-    staleTime: 60000, // 1 minuto
+    staleTime: 0, // Sin cache - siempre refrescar
+    gcTime: 0,
     refetchOnWindowFocus: false,
   })
 
@@ -272,6 +279,12 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
         queryKey: ['admin-orders'], 
         exact: false 
       }).catch(() => {}) // No fallar si hay error en refetch
+      
+      // También refetch de stats
+      queryClient.refetchQueries({ 
+        queryKey: ['admin-orders-stats'], 
+        exact: false 
+      }).catch(() => {})
     },
     onError: (error) => {
       console.error('[useOrdersEnterprise] Error updating order status:', error)
@@ -309,6 +322,12 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       // Forzar refetch inmediato
       queryClient.refetchQueries({ 
         queryKey: ['admin-orders'], 
+        exact: false 
+      }).catch(() => {})
+      
+      // También refetch de stats
+      queryClient.refetchQueries({ 
+        queryKey: ['admin-orders-stats'], 
         exact: false 
       }).catch(() => {})
     },
@@ -488,8 +507,13 @@ export function useOrdersEnterprise(initialFilters?: Partial<OrderFilters>) {
       },
     },
     
-    // Función refresh simplificada
-    refreshOrders: refetchOrders,
+    // Función refresh simplificada - también refresca stats
+    refreshOrders: async () => {
+      await Promise.all([
+        refetchOrders(),
+        refetchStats(),
+      ])
+    },
     
     // Handlers para componente
     handleBulkOperation: bulkUpdateStatus,

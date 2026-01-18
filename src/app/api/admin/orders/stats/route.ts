@@ -96,6 +96,11 @@ export async function GET(request: NextRequest) {
       success: true,
       data: stats, // Consistente con otros endpoints que usan 'data'
       timestamp: new Date().toISOString(),
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+      }
     })
   } catch (error) {
     console.error('Error obteniendo estadísticas de órdenes:', error)
