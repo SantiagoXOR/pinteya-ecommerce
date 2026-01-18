@@ -34,6 +34,7 @@ import {
 } from '@/lib/optimized-imports'
 import { OrderFilters } from './OrderFilters'
 import { OrderRowActions } from './OrderActions'
+import { WhatsAppQuickActions } from './WhatsAppQuickActions'
 import { useResizableColumns } from '@/hooks/admin/useResizableColumns'
 import Image from 'next/image'
 
@@ -137,14 +138,13 @@ interface OrderListProps {
 
 const DEFAULT_COLUMN_WIDTHS = {
   select: 50,
-  actions: 80,
+  actions: 120,
   order_number: 130,
   products: 140,
-  cliente: 200,
+  cliente: 220,
   fecha: 150,
   estado: 120,
-  metodo_pago: 140,
-  pago: 120,
+  pago: 160,
   total: 120,
 }
 
@@ -252,46 +252,77 @@ function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
   )
 }
 
-function PaymentMethodBadge({ method, paymentStatus }: { method?: string | null; paymentStatus?: PaymentStatus }) {
-  // Determinar el método de pago basado en el campo payment_method o payment_status
-  let displayMethod: 'mercadopago' | 'cash' | 'pending' = 'pending'
+function UnifiedPaymentBadge({ 
+  method, 
+  paymentStatus 
+}: { 
+  method?: string | null
+  paymentStatus?: PaymentStatus 
+}) {
+  // Determinar el método de pago
+  let paymentMethod: 'mercadopago' | 'cash' = 'mercadopago'
   
-  if (method === 'mercadopago' || method === 'card' || paymentStatus === 'paid') {
-    displayMethod = 'mercadopago'
-  } else if (method === 'cash' || paymentStatus === 'cash_on_delivery') {
-    displayMethod = 'cash'
+  if (method === 'cash' || paymentStatus === 'cash_on_delivery') {
+    paymentMethod = 'cash'
+  }
+
+  // Determinar el estado del pago
+  let statusLabel = 'Pendiente'
+  let statusClass = 'bg-yellow-100 text-yellow-800 border-yellow-200'
+  
+  if (paymentStatus === 'paid') {
+    statusLabel = 'Pagado'
+    statusClass = 'bg-green-100 text-green-800 border-green-200'
+  } else if (paymentStatus === 'failed') {
+    statusLabel = 'Fallido'
+    statusClass = 'bg-red-100 text-red-800 border-red-200'
+  } else if (paymentStatus === 'refunded') {
+    statusLabel = 'Reembolsado'
+    statusClass = 'bg-gray-100 text-gray-800 border-gray-200'
+  } else if (paymentStatus === 'cash_on_delivery') {
+    statusLabel = 'Al Recibir'
+    statusClass = 'bg-amber-100 text-amber-800 border-amber-200'
   }
 
   const methodConfig = {
     mercadopago: {
-      label: 'MercadoPago',
+      label: 'MP',
       icon: Wallet,
-      className: 'bg-blue-100 text-blue-800 border-blue-200',
     },
     cash: {
-      label: 'Pago al Recibir',
+      label: 'Efectivo',
       icon: Banknote,
-      className: 'bg-orange-100 text-orange-800 border-orange-200',
-    },
-    pending: {
-      label: 'Pendiente',
-      icon: Clock,
-      className: 'bg-gray-100 text-gray-600 border-gray-200',
     },
   }
 
-  const config = methodConfig[displayMethod]
+  const config = methodConfig[paymentMethod]
   const Icon = config.icon
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border',
-        config.className
-      )}
-    >
-      <Icon className='w-3 h-3' />
-      <span>{config.label}</span>
+    <div className='flex flex-col items-center gap-1'>
+      <span
+        className={cn(
+          'inline-flex items-center space-x-1 px-2 py-1 text-xs font-medium rounded-full border',
+          statusClass
+        )}
+      >
+        <Icon className='w-3 h-3' />
+        <span>{config.label}</span>
+      </span>
+      <span className='text-[10px] text-gray-500'>{statusLabel}</span>
+    </div>
+  )
+}
+
+// ===================================
+// PRODUCT ATTRIBUTE PILL
+// ===================================
+
+function ProductAttributePill({ label, value }: { label: string; value: string }) {
+  return (
+    <span className='inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200'>
+      <span className='text-gray-500 mr-1'>{label}:</span>
+      <span className='font-semibold'>{value}</span>
     </span>
   )
 }
@@ -321,7 +352,7 @@ function ExpandableOrderItemsRow({
           <div className='space-y-2'>
             {orderItems.map((item, index) => {
               const productName = item.product_snapshot?.name || item.products?.name || item.product_name || 'Producto'
-              const productImage = item.product_snapshot?.image || (item.products?.images?.[0])
+              const productImage = getProductImage(item)
               const unitPrice = item.product_snapshot?.price || item.price || item.unit_price || 0
               const totalPrice = unitPrice * item.quantity
 
@@ -352,17 +383,19 @@ function ExpandableOrderItemsRow({
                     <p className='text-sm font-medium text-gray-900 truncate'>
                       {productName}
                     </p>
-                    <div className='flex items-center gap-2 text-xs text-gray-500'>
-                      {item.product_snapshot?.color && (
-                        <span>Color: {item.product_snapshot.color}</span>
-                      )}
-                      {item.product_snapshot?.medida && (
-                        <span>Medida: {item.product_snapshot.medida}</span>
-                      )}
-                      {item.product_snapshot?.finish && (
-                        <span>Terminación: {item.product_snapshot.finish}</span>
-                      )}
-                    </div>
+                    {(item.product_snapshot?.color || item.product_snapshot?.medida || item.product_snapshot?.finish) && (
+                      <div className='flex flex-wrap items-center gap-1.5 mt-1'>
+                        {item.product_snapshot?.color && (
+                          <ProductAttributePill label="Color" value={item.product_snapshot.color} />
+                        )}
+                        {item.product_snapshot?.medida && (
+                          <ProductAttributePill label="Medida" value={item.product_snapshot.medida} />
+                        )}
+                        {item.product_snapshot?.finish && (
+                          <ProductAttributePill label="Terminación" value={item.product_snapshot.finish} />
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Cantidad y precio */}
@@ -429,6 +462,41 @@ function getClientName(order: Order): string {
 
 function getClientPhone(order: Order): string | null {
   return order.payer_info?.phone || order.user_profiles?.phone || null
+}
+
+function getProductImage(item: OrderItem): string | null {
+  // 1. Intentar desde product_snapshot
+  if (item.product_snapshot?.image) {
+    return item.product_snapshot.image
+  }
+  
+  // 2. Intentar desde products.images (puede ser string JSON o array)
+  if (item.products?.images) {
+    const images = item.products.images
+    
+    // Si es un string, intentar parsearlo como JSON
+    if (typeof images === 'string') {
+      try {
+        const parsed = JSON.parse(images)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed[0]
+        }
+        if (typeof parsed === 'string') {
+          return parsed
+        }
+      } catch {
+        // Si falla el parse, usar el string directamente
+        return images
+      }
+    }
+    
+    // Si es un array, tomar el primer elemento
+    if (Array.isArray(images) && images.length > 0) {
+      return images[0]
+    }
+  }
+  
+  return null
 }
 
 // ===================================
@@ -578,7 +646,6 @@ export function OrderList({
     { key: 'cliente', title: 'Cliente', sortable: false },
     { key: 'fecha', title: 'Fecha', sortable: true, sortKey: 'created_at' },
     { key: 'estado', title: 'Estado', sortable: true, sortKey: 'status' },
-    { key: 'metodo_pago', title: 'Método Pago', sortable: false },
     { key: 'pago', title: 'Pago', sortable: false },
     { key: 'total', title: 'Total', sortable: true, sortKey: 'total' },
   ]
@@ -678,9 +745,17 @@ export function OrderList({
                       {getClientName(order)}
                     </p>
                     {getClientPhone(order) && (
-                      <p className='text-xs text-gray-500 truncate'>
-                        Tel: {getClientPhone(order)}
-                      </p>
+                      <div className='flex items-center gap-1'>
+                        <span className='text-xs text-gray-500 truncate'>
+                          Tel: {getClientPhone(order)}
+                        </span>
+                        <WhatsAppQuickActions
+                          phone={getClientPhone(order)!}
+                          orderNumber={order.order_number || `#${order.id}`}
+                          clientName={getClientName(order)}
+                          total={order.total}
+                        />
+                      </div>
                     )}
                   </div>
                   <Checkbox
@@ -691,8 +766,10 @@ export function OrderList({
 
                 <div className='flex flex-wrap items-center gap-2'>
                   <OrderStatusBadge status={order.status} />
-                  <PaymentMethodBadge method={order.payment_method} paymentStatus={order.payment_status} />
-                  <PaymentStatusBadge status={order.payment_status} />
+                  <UnifiedPaymentBadge 
+                    method={order.payment_method || order.payer_info?.payment_method} 
+                    paymentStatus={order.payment_status} 
+                  />
                 </div>
 
                 {/* Productos expandibles en móvil */}
@@ -889,15 +966,23 @@ export function OrderList({
                             </button>
                           </TableCell>
 
-                          {/* Cliente - Nombre, Apellido y Teléfono */}
+                          {/* Cliente - Nombre, Apellido y Teléfono con WhatsApp */}
                           <TableCell style={{ width: getColumnWidth('cliente') }}>
                             <div className='min-w-0'>
                               <div className='font-medium text-gray-900 truncate'>
                                 {getClientName(order)}
                               </div>
                               {getClientPhone(order) && (
-                                <div className='text-xs text-gray-500 truncate'>
-                                  Tel: {getClientPhone(order)}
+                                <div className='flex items-center gap-1'>
+                                  <span className='text-xs text-gray-500 truncate'>
+                                    Tel: {getClientPhone(order)}
+                                  </span>
+                                  <WhatsAppQuickActions
+                                    phone={getClientPhone(order)!}
+                                    orderNumber={order.order_number || `#${order.id}`}
+                                    clientName={getClientName(order)}
+                                    total={order.total}
+                                  />
                                 </div>
                               )}
                             </div>
@@ -917,20 +1002,13 @@ export function OrderList({
                             </div>
                           </TableCell>
 
-                          {/* Método de Pago */}
-                          <TableCell style={{ width: getColumnWidth('metodo_pago') }}>
+                          {/* Pago (Método + Estado unificado) */}
+                          <TableCell style={{ width: getColumnWidth('pago') }}>
                             <div className='flex justify-center'>
-                              <PaymentMethodBadge 
+                              <UnifiedPaymentBadge 
                                 method={order.payment_method || order.payer_info?.payment_method} 
                                 paymentStatus={order.payment_status} 
                               />
-                            </div>
-                          </TableCell>
-
-                          {/* Estado de Pago */}
-                          <TableCell style={{ width: getColumnWidth('pago') }}>
-                            <div className='flex justify-center'>
-                              <PaymentStatusBadge status={order.payment_status} />
                             </div>
                           </TableCell>
 
