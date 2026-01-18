@@ -424,7 +424,7 @@ export const MetaCheckoutWizard: React.FC = () => {
         </div>
 
         {/* Contenido scrollable con padding para elementos fixed */}
-        <div className='max-w-4xl mx-auto px-4 pt-[120px] xsm:pt-[130px] pb-32 w-full'>
+        <div className='max-w-4xl mx-auto px-4 pt-28 sm:pt-32 pb-32 w-full'>
 
           {/* Contenido del paso */}
           {state.currentStep === 'summary' ? (
