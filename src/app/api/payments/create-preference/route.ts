@@ -524,18 +524,13 @@ export async function POST(request: NextRequest) {
     const totalAmount = itemsTotal + shippingCost
 
     // ===================================
-    // GENERAR ORDER_NUMBER (como en Cash)
-    // ===================================
-    const orderNumber = `ORD-${Math.floor(Date.now() / 1000)}-${crypto.randomBytes(4).toString('hex')}`;
-
-    // ===================================
     // CREAR ORDEN EN BASE DE DATOS
     // ===================================
+    // Primero insertamos sin order_number, luego actualizamos con el ID
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .insert({
         user_id: userId,
-        order_number: orderNumber,
         status: 'pending',
         payment_status: 'pending',
         payment_method: 'mercadopago',
@@ -543,7 +538,6 @@ export async function POST(request: NextRequest) {
         shipping_address: orderData.shipping?.address
           ? JSON.stringify(orderData.shipping.address)
           : null,
-        external_reference: orderNumber,
         payer_info: {
           name: orderData.payer.name,
           surname: orderData.payer.surname,
@@ -551,7 +545,6 @@ export async function POST(request: NextRequest) {
           phone: orderData.payer.phone,
           identification: orderData.payer.identification,
           payment_method: 'mercadopago',
-          order_number: orderNumber,
         },
       })
       .select()
@@ -566,7 +559,6 @@ export async function POST(request: NextRequest) {
         shipping_address: orderData.shipping?.address
           ? JSON.stringify(orderData.shipping.address)
           : null,
-        external_reference: orderData.external_reference || `order_${Date.now()}`,
       })
       const errorResponse: ApiResponse<null> = {
         data: null,
@@ -575,6 +567,29 @@ export async function POST(request: NextRequest) {
       }
       return NextResponse.json(errorResponse, { status: 500 })
     }
+
+    // ===================================
+    // ACTUALIZAR ORDER_NUMBER CON EL ID
+    // ===================================
+    const orderNumber = order.id.toString()
+    const { error: updateOrderNumberError } = await supabaseAdmin
+      .from('orders')
+      .update({
+        order_number: orderNumber,
+        external_reference: orderNumber,
+        payer_info: {
+          ...order.payer_info,
+          order_number: orderNumber,
+        },
+      })
+      .eq('id', order.id)
+
+    if (updateOrderNumberError) {
+      console.error('Error updating order_number:', updateOrderNumberError)
+    }
+
+    // Actualizar el objeto order con el order_number
+    order.order_number = orderNumber
 
     // ===================================
     // GENERAR WHATSAPP MESSAGE (como en Cash)

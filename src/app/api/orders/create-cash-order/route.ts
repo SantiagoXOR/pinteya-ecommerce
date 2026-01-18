@@ -423,11 +423,9 @@ export async function POST(request: NextRequest) {
       throw new Error(`Total inválido: ${totalAmount}. El total debe ser mayor a 0.`);
     }
 
-    // Preparar datos para insertar en orders
-    const orderNumber = `ORD-${Math.floor(Date.now() / 1000)}-${crypto.randomBytes(4).toString('hex')}`;
+    // Preparar datos para insertar en orders (sin order_number, se actualiza después con el ID)
     const orderData = {
       user_id: userId,
-      order_number: orderNumber,
       total: totalAmount, // Columna total (NOT NULL) - único campo de total en la tabla
       status: 'pending',
       payment_status: 'cash_on_delivery',
@@ -441,7 +439,6 @@ export async function POST(request: NextRequest) {
         identification: validatedData.payer.identification,
         // ✅ También guardar en payer_info para compatibilidad y consultas JSONB
         payment_method: 'cash',
-        order_number: orderNumber
       },
       shipping_address: {
         zip_code: validatedData.shipments.receiver_address.zip_code,
@@ -484,6 +481,29 @@ export async function POST(request: NextRequest) {
       logger.error(LogCategory.ORDER, 'Error creating order', orderError || undefined);
       throw new Error(orderError?.message || orderError?.details || orderError?.hint || 'Error al crear la orden');
     }
+
+    // ===================================
+    // ACTUALIZAR ORDER_NUMBER CON EL ID
+    // ===================================
+    const orderNumber = order.id.toString();
+    const { error: updateOrderNumberError } = await supabase
+      .from('orders')
+      .update({
+        order_number: orderNumber,
+        external_reference: orderNumber,
+        payer_info: {
+          ...order.payer_info,
+          order_number: orderNumber,
+        },
+      })
+      .eq('id', order.id);
+
+    if (updateOrderNumberError) {
+      console.error('Error updating order_number:', updateOrderNumberError);
+    }
+
+    // Actualizar el objeto order con el order_number
+    order.order_number = orderNumber;
 
     // Crear items de la orden
     const orderItemsWithOrderId = orderItems.map(item => ({
