@@ -40,23 +40,23 @@ export default function CashSuccessPage() {
     fallbackPhone: string
   ): string => {
     let phone = (fallbackPhone || '').replace(/\D/g, '')
-    // Usar solo \n para saltos de línea (más compatible con WhatsApp)
-    let encodedText = rawMessage ? encodeURIComponent(rawMessage) : ''
+    // El mensaje crudo (con \n) debe codificarse con encodeURIComponent
+    // que convierte \n a %0A automáticamente
+    let messageToEncode = rawMessage || ''
 
     try {
       if (baseWaMeUrl) {
         const u = new URL(baseWaMeUrl)
         const m = u.pathname.match(/\/(\d+)/)
         if (m && m[1]) phone = m[1]
+        // searchParams.get() decodifica automáticamente, así que obtenemos el mensaje con \n
         const t = u.searchParams.get('text')
-        if (t) encodedText = t
-        // Normalizar cualquier wa.me a api.whatsapp.com/send para consistencia y mejor renderizado
-        if (u.hostname === 'wa.me') {
-          // Si faltara el text, usar el que construimos arriba
-          return `https://api.whatsapp.com/send?phone=${phone}&text=${encodedText}`
-        }
+        if (t) messageToEncode = t
       }
     } catch {}
+
+    // ✅ FIX: Siempre codificar el mensaje al final para que \n se convierta en %0A
+    const encodedText = encodeURIComponent(messageToEncode)
 
     const ua = typeof navigator !== 'undefined' ? navigator.userAgent : ''
     const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Mobile/i.test(ua)
