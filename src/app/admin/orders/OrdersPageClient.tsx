@@ -1000,6 +1000,9 @@ export function OrdersPageClient() {
                 setIsDetailsModalOpen(false)
                 setSelectedOrderId(null)
               }}
+              onOrderUpdated={() => {
+                refreshOrders()
+              }}
             />
 
             <EditOrderModal

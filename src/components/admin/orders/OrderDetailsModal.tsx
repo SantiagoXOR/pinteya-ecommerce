@@ -38,6 +38,7 @@ import { toast } from 'sonner'
 import { PaymentProofModal } from './PaymentProofModal'
 import { WhatsAppQuickActions } from './WhatsAppQuickActions'
 import Image from 'next/image'
+import { normalizeProductTitle } from '@/lib/core/utils'
 
 // ===================================
 // TIPOS
@@ -119,6 +120,7 @@ interface OrderDetailsModalProps {
   onClose: () => void
   orderId: string | null
   onFilterByClient?: (phone: string) => void
+  onOrderUpdated?: () => void
 }
 
 // ===================================
@@ -150,7 +152,10 @@ const getStatusIcon = (status: string) => {
 }
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString('es-AR', {
+  if (!dateString) return 'Fecha no disponible'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return 'Fecha no disponible'
+  return date.toLocaleString('es-AR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -167,45 +172,65 @@ const formatCurrency = (amount: number) => {
 }
 
 // ===================================
-// HELPER: RESOLVER IMAGEN
+// HELPER: RESOLVER IMAGEN (igual que OrderList)
 // ===================================
 
-function resolveImageSource(images: any): string | null {
-  if (!images) return null
-  
-  // Si es string directo
-  if (typeof images === 'string') {
-    // Podría ser JSON string
-    try {
-      const parsed = JSON.parse(images)
-      return resolveImageSource(parsed)
-    } catch {
-      return images.startsWith('http') ? images : null
+const resolveImageSource = (payload: any): string | null => {
+  const normalize = (value?: string | null) => {
+    if (!value || typeof value !== 'string') {
+      return null
     }
+    const trimmed = value.trim()
+    return trimmed.length > 0 ? trimmed : null
   }
-  
-  // Si es array
-  if (Array.isArray(images)) {
-    if (images.length === 0) return null
-    const first = images[0]
-    if (typeof first === 'string') return first
-    if (first?.url) return first.url
-    if (first?.src) return first.src
+
+  if (!payload) {
     return null
   }
-  
-  // Si es objeto
-  if (typeof images === 'object') {
-    if (images.url) return images.url
-    if (images.src) return images.src
-    if (images.image) return images.image
-    // Buscar en keys comunes
-    const keys = ['primary', 'main', 'default', 'thumbnail']
-    for (const key of keys) {
-      if (images[key]) return resolveImageSource(images[key])
+
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim()
+    if (!trimmed) return null
+
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return resolveImageSource(JSON.parse(trimmed))
+      } catch {
+        return normalize(trimmed)
+      }
     }
+
+    return normalize(trimmed)
   }
-  
+
+  if (Array.isArray(payload)) {
+    return normalize(payload[0])
+  }
+
+  if (typeof payload === 'object') {
+    return (
+      normalize(payload.preview) ||
+      normalize(payload.previews?.[0]) ||
+      normalize(payload.thumbnails?.[0]) ||
+      normalize(payload.gallery?.[0]) ||
+      normalize(payload.main) ||
+      normalize(payload.url) ||
+      normalize(payload.image)
+    )
+  }
+
+  return null
+}
+
+function getProductImage(item: OrderItem): string | null {
+  // 1. Intentar desde product_snapshot.image
+  const snapshotImage = resolveImageSource(item.product_snapshot?.image)
+  if (snapshotImage) return snapshotImage
+
+  // 2. Intentar desde products.images
+  const productsImage = resolveImageSource(item.products?.images)
+  if (productsImage) return productsImage
+
   return null
 }
 
@@ -349,6 +374,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   onClose,
   orderId,
   onFilterByClient,
+  onOrderUpdated,
 }) => {
   // Estados
   const [order, setOrder] = useState<Order | null>(null)
@@ -517,6 +543,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           toast.success('Orden marcada como pagada', { id: loadingToast })
           // Recargar datos de la orden
           loadOrderDetails()
+          // Notificar al padre para refrescar la lista
+          onOrderUpdated?.()
         } else {
           toast.error('Error al marcar orden como pagada', { id: loadingToast })
         }
@@ -552,6 +580,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           toast.success('Reembolso procesado exitosamente', { id: loadingToast })
           // Recargar datos de la orden
           loadOrderDetails()
+          // Notificar al padre para refrescar la lista
+          onOrderUpdated?.()
         } else {
           toast.error('Error al procesar reembolso', { id: loadingToast })
         }
@@ -685,77 +715,133 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className='space-y-3'>
-                        {order.order_items?.map(item => {
-                          const productName = item.product_snapshot?.name || item.products?.name || 'Producto'
-                          const productImage = item.product_snapshot?.image || resolveImageSource(item.products?.images)
-                          const unitPrice = item.product_snapshot?.price || item.price || item.unit_price || 0
-                          const hasAttributes = item.product_snapshot?.color || item.product_snapshot?.medida || item.product_snapshot?.finish
-                          
-                          return (
-                            <div
-                              key={item.id}
-                              className='flex gap-3 p-3 bg-gray-50 rounded-lg'
-                            >
-                              {/* Imagen */}
-                              <div className='relative w-14 h-14 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0'>
-                                {productImage ? (
-                                  <Image
-                                    src={productImage}
-                                    alt={productName}
-                                    width={56}
-                                    height={56}
-                                    className='w-full h-full object-cover'
-                                    unoptimized
-                                  />
-                                ) : (
-                                  <div className='w-full h-full flex items-center justify-center'>
-                                    <Package className='w-6 h-6 text-gray-400' />
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {/* Info */}
-                              <div className='flex-1 min-w-0'>
-                                <h4 className='font-medium text-sm truncate'>{productName}</h4>
-                                
-                                {/* Atributos como pills */}
-                                {hasAttributes && (
-                                  <div className='flex flex-wrap gap-1 mt-1'>
-                                    {item.product_snapshot?.color && (
-                                      <ProductAttributePill 
-                                        label="Color" 
-                                        value={item.product_snapshot.color} 
-                                        colorHex={item.product_snapshot.color_hex}
-                                      />
+                      {/* Tabla de productos igual a OrderList */}
+                      <div className='border border-gray-200 rounded-lg overflow-hidden'>
+                        <table className='min-w-full divide-y divide-gray-200 bg-white'>
+                          <thead className='bg-gradient-to-r from-gray-50 to-gray-100/50'>
+                            <tr>
+                              <th className='px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                                Imagen
+                              </th>
+                              <th className='px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                                Producto
+                              </th>
+                              <th className='px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                                Atributos
+                              </th>
+                              <th className='px-3 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                                Cant.
+                              </th>
+                              <th className='px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                                Precio
+                              </th>
+                              <th className='px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider'>
+                                Total
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className='bg-white divide-y divide-gray-100'>
+                            {order.order_items?.map((item, index) => {
+                              const rawProductName = item.product_snapshot?.name || item.products?.name || 'Producto'
+                              const productName = normalizeProductTitle(rawProductName)
+                              const productId = item.products?.id
+                              const productImage = getProductImage(item)
+                              const unitPrice = item.product_snapshot?.price || item.price || item.unit_price || 0
+                              const totalPrice = unitPrice * item.quantity
+                              const hasAttributes = item.product_snapshot?.color || item.product_snapshot?.medida || item.product_snapshot?.finish
+                              const colorHex = item.product_snapshot?.color_hex
+
+                              return (
+                                <tr
+                                  key={item.id || index}
+                                  className='group hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-transparent transition-all duration-200'
+                                >
+                                  {/* Imagen */}
+                                  <td className='px-3 py-2'>
+                                    <div className='relative w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center ring-1 ring-gray-200'>
+                                      {productImage ? (
+                                        <Image
+                                          src={productImage}
+                                          alt={productName}
+                                          width={40}
+                                          height={40}
+                                          className='w-full h-full object-cover'
+                                          unoptimized
+                                        />
+                                      ) : (
+                                        <Package className='w-5 h-5 text-gray-400' />
+                                      )}
+                                    </div>
+                                  </td>
+
+                                  {/* Producto (Nombre + ID) */}
+                                  <td className='px-3 py-2'>
+                                    <div className='min-w-0'>
+                                      <p className='text-sm font-medium text-gray-900 truncate max-w-[150px]'>
+                                        {productName}
+                                      </p>
+                                      {productId && (
+                                        <code className='text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded font-mono'>
+                                          #{productId}
+                                        </code>
+                                      )}
+                                    </div>
+                                  </td>
+
+                                  {/* Atributos */}
+                                  <td className='px-3 py-2'>
+                                    {hasAttributes ? (
+                                      <div className='flex flex-wrap items-center gap-1'>
+                                        {item.product_snapshot?.color && (
+                                          <ProductAttributePill 
+                                            label="Color" 
+                                            value={item.product_snapshot.color} 
+                                            colorHex={colorHex}
+                                          />
+                                        )}
+                                        {item.product_snapshot?.medida && (
+                                          <ProductAttributePill label="Medida" value={item.product_snapshot.medida} />
+                                        )}
+                                        {item.product_snapshot?.finish && (
+                                          <ProductAttributePill label="Terminación" value={item.product_snapshot.finish} />
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span className='text-xs text-gray-400'>-</span>
                                     )}
-                                    {item.product_snapshot?.medida && (
-                                      <ProductAttributePill label="Medida" value={item.product_snapshot.medida} />
-                                    )}
-                                    {item.product_snapshot?.finish && (
-                                      <ProductAttributePill label="Terminación" value={item.product_snapshot.finish} />
-                                    )}
-                                  </div>
-                                )}
-                                
-                                <p className='text-xs text-gray-600 mt-1'>
-                                  {item.quantity}x {formatCurrency(unitPrice)}
-                                </p>
-                              </div>
-                              
-                              {/* Total */}
-                              <div className='text-right flex-shrink-0'>
-                                <p className='font-semibold text-gray-900'>
-                                  {formatCurrency(item.total_price || item.quantity * unitPrice)}
-                                </p>
-                              </div>
-                            </div>
-                          )
-                        }) || (
-                          <p className='text-gray-500 text-center py-4'>
-                            No hay productos en esta orden
-                          </p>
-                        )}
+                                  </td>
+
+                                  {/* Cantidad */}
+                                  <td className='px-3 py-2 text-center'>
+                                    <span className='inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800'>
+                                      {item.quantity}x
+                                    </span>
+                                  </td>
+
+                                  {/* Precio Unitario */}
+                                  <td className='px-3 py-2 text-right'>
+                                    <span className='text-sm text-gray-700'>
+                                      {formatCurrency(unitPrice)}
+                                    </span>
+                                  </td>
+
+                                  {/* Total */}
+                                  <td className='px-3 py-2 text-right'>
+                                    <span className='text-sm font-semibold text-green-600'>
+                                      {formatCurrency(totalPrice)}
+                                    </span>
+                                  </td>
+                                </tr>
+                              )
+                            }) || (
+                              <tr>
+                                <td colSpan={6} className='text-center py-4 text-gray-500'>
+                                  No hay productos en esta orden
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
                       </div>
                     </CardContent>
                   </Card>
@@ -818,14 +904,28 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
                       <div>
                         <h4 className='font-medium mb-2'>Detalles del Envío</h4>
-                        <div className='text-sm space-y-2'>
-                          {order.shipping_method && (
-                            <div className='flex justify-between'>
-                              <span className='text-gray-600'>Método:</span>
-                              <span>{order.shipping_method}</span>
-                            </div>
-                          )}
-                          {order.tracking_number && (
+                        <div className='text-sm space-y-3'>
+                          {/* Estado del envío basado en el status de la orden */}
+                          <div className='flex justify-between items-center'>
+                            <span className='text-gray-600'>Estado:</span>
+                            <Badge className={getStatusColor(order.status)}>
+                              {order.status === 'pending' ? 'Pendiente de preparación' :
+                               order.status === 'processing' ? 'En preparación' :
+                               order.status === 'shipped' ? 'En camino' :
+                               order.status === 'delivered' ? 'Entregado' :
+                               order.status === 'cancelled' ? 'Cancelado' :
+                               order.status}
+                            </Badge>
+                          </div>
+                          
+                          {/* Método de envío */}
+                          <div className='flex justify-between'>
+                            <span className='text-gray-600'>Método:</span>
+                            <span>{order.shipping_method || 'Envío directo'}</span>
+                          </div>
+                          
+                          {/* Tracking si existe */}
+                          {order.tracking_number ? (
                             <div className='flex justify-between'>
                               <span className='text-gray-600'>Seguimiento:</span>
                               <div className='flex items-center gap-2'>
@@ -841,7 +941,37 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                 </Button>
                               </div>
                             </div>
+                          ) : (
+                            <div className='flex justify-between'>
+                              <span className='text-gray-600'>Seguimiento:</span>
+                              <span className='text-gray-400 text-xs'>No asignado</span>
+                            </div>
                           )}
+
+                          {/* Indicador visual de progreso */}
+                          <div className='mt-4 pt-3 border-t'>
+                            <div className='flex items-center justify-between text-xs'>
+                              <div className={`flex flex-col items-center ${['pending', 'processing', 'shipped', 'delivered'].includes(order.status) ? 'text-green-600' : 'text-gray-400'}`}>
+                                <div className={`w-3 h-3 rounded-full ${['pending', 'processing', 'shipped', 'delivered'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                <span className='mt-1'>Recibida</span>
+                              </div>
+                              <div className={`flex-1 h-0.5 mx-1 ${['processing', 'shipped', 'delivered'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`} />
+                              <div className={`flex flex-col items-center ${['processing', 'shipped', 'delivered'].includes(order.status) ? 'text-green-600' : 'text-gray-400'}`}>
+                                <div className={`w-3 h-3 rounded-full ${['processing', 'shipped', 'delivered'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                <span className='mt-1'>Preparando</span>
+                              </div>
+                              <div className={`flex-1 h-0.5 mx-1 ${['shipped', 'delivered'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`} />
+                              <div className={`flex flex-col items-center ${['shipped', 'delivered'].includes(order.status) ? 'text-green-600' : 'text-gray-400'}`}>
+                                <div className={`w-3 h-3 rounded-full ${['shipped', 'delivered'].includes(order.status) ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                <span className='mt-1'>Enviado</span>
+                              </div>
+                              <div className={`flex-1 h-0.5 mx-1 ${order.status === 'delivered' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                              <div className={`flex flex-col items-center ${order.status === 'delivered' ? 'text-green-600' : 'text-gray-400'}`}>
+                                <div className={`w-3 h-3 rounded-full ${order.status === 'delivered' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                <span className='mt-1'>Entregado</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
