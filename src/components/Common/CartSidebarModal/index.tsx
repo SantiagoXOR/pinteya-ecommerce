@@ -79,12 +79,32 @@ const CartSidebarModal = () => {
     }
   }, [isCartModalOpen])
 
-  // Refs para mejorar el rendimiento del drag
+  // Refs para mejorar el rendimiento del drag - evitar re-renders
   const contentAreaRef = React.useRef<HTMLDivElement>(null)
+  const sheetContentRef = React.useRef<HTMLDivElement>(null)
   const dragStartTimeRef = React.useRef<number | null>(null)
-  const lastYRef = React.useRef<number | null>(null)
+  const dragStartYRef = React.useRef<number | null>(null)
+  const dragCurrentYRef = React.useRef<number | null>(null)
+  const animationFrameRef = React.useRef<number | null>(null)
 
-  // Handlers para el drag to dismiss mejorado
+  // Función para actualizar transform usando RAF - sin causar re-renders
+  const updateTransform = React.useCallback((deltaY: number) => {
+    if (!sheetContentRef.current) return
+
+    // Calcular con efecto de resistencia
+    const resistanceStart = 200
+    let finalDelta = deltaY
+    if (deltaY > resistanceStart) {
+      const excess = deltaY - resistanceStart
+      finalDelta = resistanceStart + excess * 0.3
+    }
+
+    // Actualizar directamente el DOM sin re-render
+    sheetContentRef.current.style.transform = `translateY(${finalDelta}px)`
+    sheetContentRef.current.style.transition = 'none'
+  }, [])
+
+  // Handlers para el drag to dismiss optimizado
   const handleDragStart = (clientY: number, target: HTMLElement) => {
     // Solo permitir drag si el contenido está en la parte superior o si se toca el header
     const contentArea = contentAreaRef.current
@@ -96,38 +116,60 @@ const CartSidebarModal = () => {
       if (!isAtTop) return
     }
 
-    setDragStartY(clientY)
-    setDragCurrentY(clientY)
-    setIsDragging(true)
+    dragStartYRef.current = clientY
+    dragCurrentYRef.current = clientY
     dragStartTimeRef.current = Date.now()
-    lastYRef.current = clientY
-  }
-
-  const handleDragMove = (clientY: number) => {
-    if (dragStartY === null) return
-    
-    const deltaY = clientY - dragStartY
-    // Solo permitir arrastrar hacia abajo (valores positivos)
-    if (deltaY > 0) {
-      setDragCurrentY(clientY)
-      lastYRef.current = clientY
+    setIsDragging(true)
+    // Limpiar cualquier animación frame pendiente
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
     }
   }
 
-  const handleDragEnd = () => {
-    if (dragStartY === null || dragCurrentY === null || dragStartTimeRef.current === null) {
-      // Resetear estado si no hay datos válidos
-      setDragStartY(null)
-      setDragCurrentY(null)
+  const handleDragMove = React.useCallback((clientY: number) => {
+    if (dragStartYRef.current === null) return
+    
+    const deltaY = clientY - dragStartYRef.current
+    // Solo permitir arrastrar hacia abajo (valores positivos)
+    if (deltaY > 0) {
+      dragCurrentYRef.current = clientY
+      
+      // Usar requestAnimationFrame para optimizar rendimiento
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(() => {
+        updateTransform(deltaY)
+      })
+    }
+  }, [updateTransform])
+
+  const handleDragEnd = React.useCallback(() => {
+    // Limpiar animation frame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+
+    if (dragStartYRef.current === null || dragCurrentYRef.current === null || dragStartTimeRef.current === null) {
+      // Resetear estado
+      dragStartYRef.current = null
+      dragCurrentYRef.current = null
       setIsDragging(false)
       dragStartTimeRef.current = null
-      lastYRef.current = null
+      
+      // Resetear transform
+      if (sheetContentRef.current) {
+        sheetContentRef.current.style.transform = ''
+        sheetContentRef.current.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      }
       return
     }
 
-    const dragDistance = dragCurrentY - dragStartY
+    const dragDistance = dragCurrentYRef.current - dragStartYRef.current
     const dragDuration = Date.now() - dragStartTimeRef.current
-    const dragVelocity = dragDistance / dragDuration // píxeles por milisegundo
+    const dragVelocity = dragDistance / Math.max(dragDuration, 1) // evitar división por cero
 
     // Calcular umbral dinámico: si la velocidad es alta, cerrar con menos distancia
     const velocityThreshold = 0.5 // px/ms
@@ -138,16 +180,20 @@ const CartSidebarModal = () => {
       closeCartModal()
     } else {
       // Volver a la posición original con animación suave
-      setDragStartY(null)
-      setDragCurrentY(null)
-      setIsDragging(false)
+      if (sheetContentRef.current) {
+        sheetContentRef.current.style.transform = ''
+        sheetContentRef.current.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      }
     }
 
+    // Resetear estado
+    dragStartYRef.current = null
+    dragCurrentYRef.current = null
+    setIsDragging(false)
     dragStartTimeRef.current = null
-    lastYRef.current = null
-  }
+  }, [closeCartModal])
 
-  // Touch handlers mejorados
+  // Touch handlers optimizados
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches[0]) {
       handleDragStart(e.touches[0].clientY, e.currentTarget as HTMLElement)
@@ -155,10 +201,10 @@ const CartSidebarModal = () => {
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || dragStartY === null) return
+    if (!isDragging || dragStartYRef.current === null) return
     
     if (e.touches[0]) {
-      const deltaY = e.touches[0].clientY - dragStartY
+      const deltaY = e.touches[0].clientY - dragStartYRef.current
       
       // Si estamos arrastrando hacia abajo, prevenir scroll
       if (deltaY > 10) {
@@ -166,9 +212,17 @@ const CartSidebarModal = () => {
         handleDragMove(e.touches[0].clientY)
       } else if (deltaY < -5) {
         // Si intenta arrastrar hacia arriba, cancelar el drag
-        setDragStartY(null)
-        setDragCurrentY(null)
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current)
+        }
+        dragStartYRef.current = null
+        dragCurrentYRef.current = null
         setIsDragging(false)
+        
+        if (sheetContentRef.current) {
+          sheetContentRef.current.style.transform = ''
+          sheetContentRef.current.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        }
       }
     }
   }
@@ -177,7 +231,7 @@ const CartSidebarModal = () => {
     handleDragEnd()
   }
 
-  // Mouse handlers mejorados con listeners globales
+  // Mouse handlers optimizados
   const handleMouseDown = (e: React.MouseEvent) => {
     handleDragStart(e.clientY, e.currentTarget as HTMLElement)
   }
@@ -187,7 +241,7 @@ const CartSidebarModal = () => {
     if (!isDragging) return
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (dragStartY !== null) {
+      if (dragStartYRef.current !== null) {
         handleDragMove(e.clientY)
       }
     }
@@ -204,34 +258,25 @@ const CartSidebarModal = () => {
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, dragStartY])
+  }, [isDragging, handleDragMove, handleDragEnd])
 
-  // Calcular el translateY con efecto de resistencia visual
-  const translateY = React.useMemo(() => {
-    if (dragStartY === null || dragCurrentY === null) return 0
-    
-    const rawDelta = dragCurrentY - dragStartY
-    if (rawDelta <= 0) return 0
-
-    // Efecto de resistencia: el arrastre se hace más difícil después de cierto punto
-    const resistanceStart = 200
-    if (rawDelta > resistanceStart) {
-      const excess = rawDelta - resistanceStart
-      return resistanceStart + excess * 0.3 // Reducir velocidad después del umbral
+  // Limpiar animation frame al desmontar
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
     }
-
-    return rawDelta
-  }, [dragStartY, dragCurrentY])
+  }, [])
 
   return (
     <>
       <Sheet open={isCartModalOpen} onOpenChange={closeCartModal}>
         <SheetContent
+          ref={sheetContentRef}
           side='bottom'
           className='rounded-t-3xl p-0 overflow-hidden flex flex-col [&>button]:hidden'
           style={{
-            transform: translateY > 0 ? `translateY(${translateY}px)` : undefined,
-            transition: !isDragging && translateY === 0 ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
             willChange: isDragging ? 'transform' : 'auto',
             maxHeight: isLargeText 
               ? 'calc(100dvh - 16px - env(safe-area-inset-bottom, 0px))' 
@@ -240,7 +285,8 @@ const CartSidebarModal = () => {
               ? 'calc(100dvh - 16px - env(safe-area-inset-bottom, 0px))' 
               : 'calc(100dvh - 16px - env(safe-area-inset-bottom, 0px))',
             bottom: 0,
-            marginTop: '16px'
+            marginTop: '16px',
+            transition: !isDragging ? 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' : 'none'
           }}
         >
           {/* Título oculto para accesibilidad */}
