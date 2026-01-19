@@ -269,7 +269,7 @@ export async function GET(request: NextRequest) {
         const description = product.description || product.name || ''
 
         xml += `    <item>\n`
-        xml += `      <g:id>${product.id}</g:id>\n`
+        xml += `      <g:id>p-${product.id}</g:id>\n`
         xml += `      <g:title>${escapeXml(product.name)}</g:title>\n`
         xml += `      <g:description>${escapeXml(description)}</g:description>\n`
         xml += `      <g:link>${productUrl}</g:link>\n`

@@ -321,8 +321,9 @@ export async function GET(request: NextRequest) {
         }
 
         // Campos requeridos por Google Merchant Center
+        // Usar prefijo 'p-' para productos sin variantes para evitar colisión con IDs de variantes
         xml += `    <item>\n`
-        xml += `      <g:id>${product.id}</g:id>\n`
+        xml += `      <g:id>p-${product.id}</g:id>\n`
         xml += `      <g:title>${escapeXml(product.name)}</g:title>\n`
         xml += `      <g:description>${escapeXml(description)}</g:description>\n`
         xml += `      <g:link>${escapeXml(productUrl)}</g:link>\n`
