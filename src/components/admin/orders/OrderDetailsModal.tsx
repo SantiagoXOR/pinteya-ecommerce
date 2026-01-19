@@ -1435,7 +1435,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 
     {/* Diálogo de Confirmación de Reembolso - FUERA del Dialog principal */}
     <AlertDialog open={isRefundConfirmOpen} onOpenChange={setIsRefundConfirmOpen}>
-      <AlertDialogContent className='z-[200]'>
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className='text-red-600'>
             ¿Confirmar Reembolso?
