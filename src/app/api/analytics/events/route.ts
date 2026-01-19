@@ -60,6 +60,17 @@ export async function POST(request: NextRequest) {
           return
         }
 
+        // Extraer datos de producto del metadata
+        const metadata = event.metadata || {}
+        const productId = metadata.productId || metadata.item_id
+        const productName = metadata.productName || metadata.item_name
+        // Usar category del metadata como categoría del PRODUCTO (no del evento)
+        const productCategory = metadata.category || metadata.category_name
+        const price = metadata.price || event.value
+        const quantity = metadata.quantity || 1
+        const deviceType = metadata.deviceType
+
+
         // Usar función RPC optimizada para insertar en tabla optimizada
         const { error: rpcError } = await supabase.rpc('insert_analytics_event_optimized', {
           p_event_name: event.event,
@@ -71,6 +82,13 @@ export async function POST(request: NextRequest) {
           p_session_id: event.sessionId,
           p_page: event.page || null,
           p_user_agent: event.userAgent || null,
+          // Datos de producto
+          p_product_id: productId && !isNaN(Number(productId)) ? parseInt(String(productId), 10) : null,
+          p_product_name: productName || null,
+          p_category_name: productCategory || null,
+          p_price: price && !isNaN(Number(price)) ? parseFloat(String(price)) : null,
+          p_quantity: quantity && !isNaN(Number(quantity)) ? parseInt(String(quantity), 10) : null,
+          p_device_type: deviceType || null,
         })
 
         if (rpcError) {

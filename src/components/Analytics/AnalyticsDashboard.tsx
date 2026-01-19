@@ -196,7 +196,7 @@ const AnalyticsDashboard: React.FC = () => {
   })
 
   // Memoizar función fetchMetrics para evitar recrearla en cada render
-  const fetchMetrics = useCallback(async () => {
+  const fetchMetrics = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true)
       const endDate = new Date().toISOString()
@@ -205,10 +205,13 @@ const AnalyticsDashboard: React.FC = () => {
       ).toISOString()
 
       // Incluir análisis avanzado para obtener todas las métricas
+      // Usar nocache cuando se fuerza refresh o en la primera carga
+      const nocacheParam = forceRefresh ? '&nocache=true' : ''
       const response = await fetch(
-        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}&advanced=true`
+        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}&advanced=true${nocacheParam}`
       )
       const data = await response.json()
+      
       setMetricsData(data)
     } catch (error) {
       console.error('Error fetching metrics:', error)
@@ -220,11 +223,12 @@ const AnalyticsDashboard: React.FC = () => {
   const fetchRealTimeMetrics = useCallback(async () => {
     try {
       // Obtener métricas de las últimas 2 horas desde la DB
+      // Siempre usar nocache para métricas en tiempo real
       const endDate = new Date().toISOString()
       const startDate = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
 
       const response = await fetch(
-        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}`
+        `/api/analytics/metrics?startDate=${startDate}&endDate=${endDate}&nocache=true`
       )
       if (response.ok) {
         const data = await response.json()
@@ -250,7 +254,8 @@ const AnalyticsDashboard: React.FC = () => {
   }, [timeRange])
 
   useEffect(() => {
-    fetchMetrics()
+    // Forzar refresh en la primera carga para evitar datos cacheados obsoletos
+    fetchMetrics(true)
     fetchRealTimeMetrics()
     
     // Actualizar métricas en tiempo real cada 10 segundos

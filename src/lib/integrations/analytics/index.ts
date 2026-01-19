@@ -11,6 +11,7 @@ export interface AnalyticsEvent {
   value?: number
   userId?: string
   sessionId: string
+  visitorId?: string // ID persistente para identificar usuarios anónimos recurrentes
   timestamp: number
   page: string
   userAgent: string
@@ -38,12 +39,14 @@ export interface UserInteraction {
   timestamp: number
   page: string
   sessionId: string
+  visitorId?: string // ID persistente para identificar usuarios anónimos recurrentes
 }
 
 class AnalyticsManager {
   private events: AnalyticsEvent[] = []
   private interactions: UserInteraction[] = []
   private sessionId: string
+  private visitorId: string // ID persistente para identificar usuarios anónimos recurrentes
   private isEnabled: boolean = true
   private isInitialized: boolean = false
   private initializationPromise: Promise<void> | null = null
@@ -71,11 +74,51 @@ class AnalyticsManager {
 
   constructor() {
     this.sessionId = this.generateSessionId()
+    this.visitorId = this.getOrCreateVisitorId()
+    
+    // #region agent log
+    if (typeof window !== 'undefined') {
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'analytics/index.ts:constructor',message:'AnalyticsManager inicializado',data:{sessionId:this.sessionId,visitorId:this.visitorId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1-INIT'})}).catch(()=>{});
+    }
+    // #endregion
+    
     // No inicializar automáticamente - usar lazy initialization
   }
 
   private generateSessionId(): string {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  }
+
+  /**
+   * Obtiene o crea un ID de visitante persistente en localStorage
+   * Este ID permite identificar usuarios anónimos recurrentes
+   */
+  private getOrCreateVisitorId(): string {
+    if (typeof window === 'undefined') {
+      return `visitor_server_${Math.random().toString(36).substr(2, 9)}`
+    }
+
+    const VISITOR_ID_KEY = 'pinteya_visitor_id'
+    let visitorId = localStorage.getItem(VISITOR_ID_KEY)
+
+    if (!visitorId) {
+      // Crear un nuevo visitorId único y persistente
+      visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      try {
+        localStorage.setItem(VISITOR_ID_KEY, visitorId)
+      } catch (error) {
+        console.warn('No se pudo guardar visitorId en localStorage:', error)
+      }
+    }
+
+    return visitorId
+  }
+
+  /**
+   * Obtener el visitorId actual (para uso externo)
+   */
+  public getVisitorId(): string {
+    return this.visitorId
   }
 
   private async ensureInitialized(): Promise<void> {
@@ -307,6 +350,7 @@ class AnalyticsManager {
       ...(label !== undefined && { label }),
       ...(value !== undefined && { value }),
       sessionId: this.sessionId,
+      visitorId: this.visitorId, // ID persistente para usuarios anónimos recurrentes
       timestamp: Date.now(),
       page: typeof window !== 'undefined' ? window.location.pathname : '',
       userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : '',
@@ -314,6 +358,11 @@ class AnalyticsManager {
     }
 
     this.events.push(analyticsEvent)
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'analytics/index.ts:trackEvent',message:'Evento creado en cliente',data:{event:analyticsEvent.event,visitorId:this.visitorId,eventVisitorId:analyticsEvent.visitorId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2-CLIENT'})}).catch(()=>{});
+    // #endregion
+    
     this.sendToAnalytics(analyticsEvent)
   }
 
@@ -408,6 +457,7 @@ class AnalyticsManager {
         value: event.value,
         userId: event.userId,
         sessionId: event.sessionId,
+        visitorId: event.visitorId, // ID persistente para usuarios anónimos
         page: event.page,
         userAgent: event.userAgent,
         metadata: event.metadata,

@@ -19,6 +19,7 @@ interface TrackEvent {
   value?: number
   userId?: string
   sessionId: string
+  visitorId?: string // ID persistente para usuarios anónimos recurrentes
   page: string
   userAgent?: string
   metadata?: Record<string, any>
@@ -44,6 +45,10 @@ export async function POST(request: NextRequest) {
   try {
     const event: TrackEvent = await request.json()
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'track/events/route.ts:POST',message:'Evento recibido en API',data:{event:event.event,visitorId:event.visitorId,metadataVisitorId:event.metadata?.visitorId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3-API'})}).catch(()=>{});
+    // #endregion
+
     if (process.env.NODE_ENV === 'development') {
       console.log('[API /api/track/events] Evento recibido:', {
         event: event.event,
@@ -51,6 +56,7 @@ export async function POST(request: NextRequest) {
         action: event.action,
         label: event.label,
         sessionId: event.sessionId,
+        visitorId: event.visitorId, // Added for debugging
       })
     }
 
@@ -136,7 +142,8 @@ export async function POST(request: NextRequest) {
         }
         
         const productName = event.productName || event.metadata?.productName || event.metadata?.item_name
-        const categoryName = event.category_name || event.category || event.metadata?.category || event.metadata?.category_name
+        // Priorizar categoría del PRODUCTO (en metadata) sobre categoría del EVENTO
+        const categoryName = event.metadata?.category || event.metadata?.category_name || event.category_name
         const price = event.price || event.metadata?.price || event.value
         const quantity = event.quantity || event.metadata?.quantity || 1
 
@@ -194,7 +201,13 @@ export async function POST(request: NextRequest) {
           p_device_type: deviceType || null,
           // Metadata adicional (se comprimirá)
           p_metadata: Object.keys(additionalMetadata).length > 0 ? additionalMetadata : null,
+          // Visitor ID persistente para usuarios anónimos recurrentes
+          p_visitor_id: event.visitorId || event.metadata?.visitorId || null,
         }
+
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'track/events/route.ts:rpcParams',message:'RPC params preparados',data:{p_event_name:rpcParams.p_event_name,p_visitor_id:rpcParams.p_visitor_id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H4-RPC'})}).catch(()=>{});
+        // #endregion
 
         // Función para intentar insertar el evento con reintentos
         const insertEventWithRetry = async (maxRetries = 3): Promise<void> => {

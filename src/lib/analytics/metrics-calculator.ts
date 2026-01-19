@@ -35,6 +35,7 @@ interface RawEvent {
   value?: number
   user_id?: string
   session_hash?: string
+  visitor_hash?: string // ID persistente para usuarios anónimos recurrentes
   page_id?: number
   created_at: string
   // Nuevos campos de metadata de productos
@@ -133,6 +134,7 @@ class MetricsCalculator {
           value,
           user_id,
           session_hash,
+          visitor_hash,
           page_id,
           created_at,
           product_id,
@@ -196,6 +198,13 @@ class MetricsCalculator {
    * Normalizar evento para trabajar con ambos formatos
    */
   private normalizeEvent(event: RawEvent) {
+    // Convertir created_at de segundos a milisegundos si es necesario
+    // Los timestamps UNIX en segundos son típicamente de 10 dígitos (ej: 1768788256)
+    // Los timestamps en milisegundos son de 13 dígitos (ej: 1768788256000)
+    const createdAtMs = typeof event.created_at === 'number' && event.created_at < 10000000000
+      ? event.created_at * 1000  // Convertir de segundos a milisegundos
+      : event.created_at
+    
     return {
       eventName: event.analytics_event_types?.name || event.event_name || 'unknown',
       category: event.analytics_categories?.name || event.category || 'unknown',
@@ -203,9 +212,11 @@ class MetricsCalculator {
       label: event.label,
       value: event.value,
       userId: event.user_id || null, // Asegurar que sea null si no existe, no undefined
+      // Usar visitor_hash como identificador de usuario anónimo si no hay user_id
+      visitorId: event.visitor_hash?.toString() || null,
       sessionId: event.session_hash?.toString() || event.session_id || '',
       page: event.analytics_pages?.path || event.page || '',
-      createdAt: event.created_at,
+      createdAt: createdAtMs,
       // Nuevos campos de metadata
       metadata: {
         productId: event.product_id?.toString(),
@@ -287,10 +298,15 @@ class MetricsCalculator {
     const normalized = events.map(e => this.normalizeEvent(e))
 
     const uniqueSessions = new Set(normalized.map(e => e.sessionId)).size
+    
+    // Contar usuarios únicos: priorizar userId (autenticados), pero usar visitorId para anónimos
     const uniqueUsers = new Set(
       normalized
-        .filter(e => e.userId != null && e.userId !== undefined && e.userId !== '')
-        .map(e => e.userId)
+        .filter(e => 
+          (e.userId != null && e.userId !== undefined && e.userId !== '') ||
+          (e.visitorId != null && e.visitorId !== undefined && e.visitorId !== '')
+        )
+        .map(e => e.userId || e.visitorId) // Preferir userId, fallback a visitorId
     ).size
     const averageEventsPerSession = uniqueSessions > 0 ? normalized.length / uniqueSessions : 0
 
@@ -570,17 +586,20 @@ class MetricsCalculator {
 
   /**
    * Análisis de retención
+   * Usa userId para usuarios autenticados y visitorId para usuarios anónimos
    */
   private analyzeRetention(events: RawEvent[]): RetentionAnalysis {
     const normalized = events.map(e => this.normalizeEvent(e))
     const userSessions: Record<string, Set<string>> = {}
 
     normalized.forEach(event => {
-      if (event.userId) {
-        if (!userSessions[event.userId]) {
-          userSessions[event.userId] = new Set()
+      // Usar userId si existe, sino usar visitorId para usuarios anónimos
+      const userIdentifier = event.userId || event.visitorId
+      if (userIdentifier) {
+        if (!userSessions[userIdentifier]) {
+          userSessions[userIdentifier] = new Set()
         }
-        userSessions[event.userId].add(event.sessionId)
+        userSessions[userIdentifier].add(event.sessionId)
       }
     })
 

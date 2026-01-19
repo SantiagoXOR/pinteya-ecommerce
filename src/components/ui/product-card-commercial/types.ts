@@ -69,6 +69,8 @@ export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDiv
   title?: string
   slug?: string
   brand?: string
+  /** Categoría del producto (ej: "Complementos", "Pinturas") - usado para analytics */
+  category?: string
   price?: number
   originalPrice?: number
   discount?: string

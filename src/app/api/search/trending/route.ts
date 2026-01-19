@@ -8,6 +8,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { ApiResponse } from '@/types/api'
+import { metricsCache } from '@/lib/analytics/metrics-cache'
 
 // ===================================
 // MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
@@ -431,6 +432,8 @@ export async function POST(request: NextRequest) {
       if (error) {
         console.error('Error registrando búsqueda en analytics:', error)
       } else {
+        // Invalidar caché de métricas para que los nuevos eventos de búsqueda se reflejen
+        await metricsCache.invalidatePattern('analytics:*').catch(() => {})
       }
     }
 

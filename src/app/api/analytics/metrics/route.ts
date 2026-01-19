@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
     const sessionId = searchParams.get('sessionId')
     const includeAdvanced = searchParams.get('advanced') === 'true'
+    const noCache = searchParams.get('nocache') === 'true' || searchParams.get('refresh') === 'true'
 
     const params: MetricsQueryParams = {
       startDate,
@@ -47,9 +48,16 @@ export async function GET(request: NextRequest) {
       cacheType = 'monthly'
     }
 
-    // Intentar obtener desde cache
-    const cacheKey = metricsCache.generateKey(params, cacheType)
-    const cached = await metricsCache.get(cacheKey)
+    // Intentar obtener desde cache (incluir advanced en la clave)
+    const baseCacheKey = metricsCache.generateKey(params, cacheType)
+    const cacheKey = includeAdvanced ? `${baseCacheKey}:advanced` : baseCacheKey
+    
+    // Si noCache está activado, invalidar cache existente
+    if (noCache) {
+      await metricsCache.invalidate(cacheKey)
+    }
+    
+    const cached = noCache ? null : await metricsCache.get(cacheKey)
 
     if (cached) {
       return NextResponse.json({

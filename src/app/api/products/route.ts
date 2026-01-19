@@ -610,6 +610,8 @@ export async function GET(request: NextRequest) {
               variant_count: productVariants.length,
               has_variants: productVariants.length > 0,
               default_variant: defaultVariant || null,
+              // ✅ NUEVO: Agregar category_name aplanado para analytics
+              category_name: (product as any).category?.name || (product as any).categories?.[0]?.category?.name || null,
               // Mantener precio y stock exclusivamente desde tabla products (requerimiento)
               price: product.price,
               discounted_price: product.discounted_price,

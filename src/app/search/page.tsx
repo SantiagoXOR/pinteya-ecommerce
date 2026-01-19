@@ -236,6 +236,9 @@ export default function SearchPage() {
                 ? `${Math.round((1 - (product.discounted_price as number) / product.price) * 100)}%`
                 : undefined
               const image = getMainImage(product)
+              
+              // Obtener categoría del producto: priorizar category_name aplanado, luego category.name, luego categories[0].category.name
+              const productCategory = (product as any).category_name || product.category?.name || (product as any).categories?.[0]?.category?.name
 
               return (
                 <CommercialProductCard
@@ -243,7 +246,8 @@ export default function SearchPage() {
                   productId={String(product.id)}
                   title={product.name}
                   slug={product.slug}
-                  brand={product.brand || product.category?.name}
+                  brand={product.brand}
+                  category={productCategory}
                   image={image}
                   price={currentPrice}
                   originalPrice={originalPrice}

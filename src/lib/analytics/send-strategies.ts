@@ -14,6 +14,7 @@ export interface AnalyticsEvent {
   value?: number
   userId?: string
   sessionId: string
+  visitorId?: string // ID persistente para usuarios anónimos recurrentes
   page: string
   userAgent?: string
   metadata?: Record<string, any>

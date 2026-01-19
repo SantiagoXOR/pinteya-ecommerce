@@ -73,6 +73,7 @@ const SingleItem: React.FC<SingleItemProps> = ({ product }) => {
       slug={(item as any)?.slug}
       title={item.name || item.title} // Usar name para consistencia con search
       brand={item.brand} // Pasar brand para extracción correcta
+      category={(item as any)?.category?.name} // Categoría del producto para analytics
       price={item.discountedPrice}
       originalPrice={item.discountedPrice < item.price ? item.price : undefined}
       discount={discount ? `${discount}%` : undefined}

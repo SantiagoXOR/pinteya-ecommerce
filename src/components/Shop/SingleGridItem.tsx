@@ -125,6 +125,7 @@ const SingleGridItem = React.memo(({ item }: { item: ExtendedProduct }) => {
       slug={item.slug}
       title={cleanTitle}
       brand={item.brand}
+      category={(item as any)?.category?.name || (item as any)?.categories?.name} // Categoría para analytics
       description={item.description}
       variants={item?.variants || []}
       specifications={item?.specifications}

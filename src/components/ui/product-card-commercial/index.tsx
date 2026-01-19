@@ -113,6 +113,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       title,
       slug,
       brand,
+      category,
       price,
       originalPrice,
       discount,
@@ -323,20 +324,20 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
 
           addProduct(productData, { quantity: 1, attributes })
           
-          // Analytics
+          // Analytics - usar category prop (categoría del producto) si está disponible
           try {
-            const category = brand || 'Producto'
+            const productCategory = category || brand || 'Producto'
             const productPrice = productData.discounted_price || productData.price
 
-            trackGA4AddToCart(String(productData.id), productData.name, category, productPrice, 1, 'ARS')
+            trackGA4AddToCart(String(productData.id), productData.name, productCategory, productPrice, 1, 'ARS')
             
             const contentIdForMeta = variantSelection.currentVariant?.id
               ? String(variantSelection.currentVariant.id)
               : String(productData.id)
-            trackMetaAddToCart(productData.name, contentIdForMeta, category, productPrice, 'ARS')
+            trackMetaAddToCart(productData.name, contentIdForMeta, productCategory, productPrice, 'ARS')
             trackCartAction('add', String(productData.id), {
               productName: productData.name,
-              category,
+              category: productCategory,
               price: productPrice,
               quantity: 1,
               currency: 'ARS',
@@ -350,7 +351,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           console.error('Error al agregar al carrito:', error)
         }
       },
-      [state.isAddingToCart, effectiveStock, currentCartQuantity, showCartAnimation, variantSelection, productId, title, image, variants, price, brand, addProduct, trackCartAction]
+      [state.isAddingToCart, effectiveStock, currentCartQuantity, showCartAnimation, variantSelection, productId, title, image, variants, price, brand, category, addProduct, trackCartAction]
     )
 
     // Handler para clic en el card
