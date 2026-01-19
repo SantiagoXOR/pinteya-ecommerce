@@ -702,6 +702,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   }
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={handleDialogChange}>
       <DialogContent className='max-w-7xl max-h-[90vh] overflow-hidden'>
         <DialogHeader>
@@ -1430,14 +1431,17 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         />
       )}
 
-      {/* Diálogo de Confirmación de Reembolso */}
-      <AlertDialog open={isRefundConfirmOpen} onOpenChange={setIsRefundConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className='text-red-600'>
-              ¿Confirmar Reembolso?
-            </AlertDialogTitle>
-            <AlertDialogDescription className='space-y-3'>
+    </Dialog>
+
+    {/* Diálogo de Confirmación de Reembolso - FUERA del Dialog principal */}
+    <AlertDialog open={isRefundConfirmOpen} onOpenChange={setIsRefundConfirmOpen}>
+      <AlertDialogContent className='z-[200]'>
+        <AlertDialogHeader>
+          <AlertDialogTitle className='text-red-600'>
+            ¿Confirmar Reembolso?
+          </AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className='space-y-3'>
               <p>
                 Estás a punto de procesar un reembolso para la orden <strong>#{order?.order_number || order?.id}</strong>.
               </p>
@@ -1459,25 +1463,26 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 ⚠️ Esta acción no se puede deshacer.
                 {order?.payment_method === 'mercadopago' && ' El dinero será devuelto al cliente.'}
               </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessingRefund}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault()
-                handleProcessRefund()
-              }}
-              disabled={isProcessingRefund}
-              className='bg-red-600 hover:bg-red-700 text-white'
-            >
-              {isProcessingRefund ? 'Procesando...' : 'Confirmar Reembolso'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Dialog>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isProcessingRefund}>
+            Cancelar
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault()
+              handleProcessRefund()
+            }}
+            disabled={isProcessingRefund}
+            className='bg-red-600 hover:bg-red-700 text-white'
+          >
+            {isProcessingRefund ? 'Procesando...' : 'Confirmar Reembolso'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   )
 }
