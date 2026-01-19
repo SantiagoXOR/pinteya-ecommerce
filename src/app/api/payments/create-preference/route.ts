@@ -807,9 +807,15 @@ export async function POST(request: NextRequest) {
       }
       if (product.brand) productSnapshot.brand = product.brand
 
+      // Guardar variant_id en product_snapshot para referencia histórica
+      if (item.variant_id) {
+        productSnapshot.variant_id = parseInt(item.variant_id)
+      }
+
       return {
         order_id: order.id,
         product_id: parseInt(item.id),
+        variant_id: item.variant_id ? parseInt(item.variant_id) : null,
         product_name: product.name,
         product_sku: null, // MercadoPago no tiene SKU, usar null
         quantity: item.quantity,

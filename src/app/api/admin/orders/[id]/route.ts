@@ -171,10 +171,10 @@ async function validateStockForConfirmation(orderId: string): Promise<{ valid: b
 
 async function decrementStockForOrder(orderId: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Obtener items de la orden
+    // Obtener items de la orden incluyendo variant_id
     const { data: items, error: itemsError } = await supabaseAdmin
       .from('order_items')
-      .select('product_id, quantity')
+      .select('product_id, variant_id, quantity')
       .eq('order_id', orderId)
 
     if (itemsError || !items) {
@@ -184,18 +184,29 @@ async function decrementStockForOrder(orderId: string): Promise<{ success: boole
 
     console.log(`[STOCK] Descontando stock para orden ${orderId}, ${items.length} items`)
 
-    // Descontar stock de cada producto usando la función RPC existente
+    // Descontar stock de cada producto/variante usando la nueva función RPC
     for (const item of items) {
-      const { error: stockError } = await supabaseAdmin.rpc('update_product_stock', {
-        product_id: item.product_id,
-        quantity_sold: item.quantity,
+      const { data: stockResult, error: stockError } = await supabaseAdmin.rpc('decrement_stock', {
+        p_product_id: item.product_id,
+        p_variant_id: item.variant_id || null,
+        p_quantity: item.quantity,
       })
 
       if (stockError) {
-        console.error(`[STOCK] Error descontando stock para producto ${item.product_id}:`, stockError)
+        console.error(`[STOCK] Error descontando stock:`, {
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+          error: stockError
+        })
         // Continuar con los demás productos, no fallar toda la operación
       } else {
-        console.log(`[STOCK] Stock descontado: producto ${item.product_id}, cantidad ${item.quantity}`)
+        console.log(`[STOCK] Stock descontado:`, {
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+          success: stockResult
+        })
       }
     }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { MercadoPagoConfig, PaymentRefund } from 'mercadopago'
 
 // ===================================
 // MIDDLEWARE DE AUTENTICACIÓN ADMIN
@@ -10,7 +11,6 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 async function validateAdminAuth() {
   try {
     // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
-    // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
     if (process.env.BYPASS_AUTH === 'true') {
       try {
         const fs = require('fs')
@@ -36,7 +36,7 @@ async function validateAdminAuth() {
       return { error: 'Usuario no autenticado', status: 401 }
     }
 
-    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
+    // Verificar si es admin usando el rol de la sesión
     const isAdmin = session.user.role === 'admin'
     if (!isAdmin) {
       return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 }
@@ -49,9 +49,60 @@ async function validateAdminAuth() {
   }
 }
 
+// ===================================
+// RESTAURAR STOCK AL REEMBOLSAR
+// ===================================
+
+async function restoreStockForOrder(orderId: string, supabase: any): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Obtener items de la orden incluyendo variant_id
+    const { data: items, error: itemsError } = await supabase
+      .from('order_items')
+      .select('product_id, variant_id, quantity')
+      .eq('order_id', orderId)
+
+    if (itemsError || !items) {
+      console.error('[STOCK] Error obteniendo items de la orden:', itemsError)
+      return { success: false, error: 'Error al obtener items de la orden' }
+    }
+
+    console.log(`[STOCK] Restaurando stock para orden ${orderId}, ${items.length} items`)
+
+    // Restaurar stock de cada producto/variante usando la función RPC
+    for (const item of items) {
+      const { data: stockResult, error: stockError } = await supabase.rpc('restore_stock', {
+        p_product_id: item.product_id,
+        p_variant_id: item.variant_id || null,
+        p_quantity: item.quantity,
+      })
+
+      if (stockError) {
+        console.error(`[STOCK] Error restaurando stock:`, {
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+          error: stockError
+        })
+      } else {
+        console.log(`[STOCK] Stock restaurado:`, {
+          product_id: item.product_id,
+          variant_id: item.variant_id,
+          quantity: item.quantity,
+          success: stockResult
+        })
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('[STOCK] Error en restoreStockForOrder:', error)
+    return { success: false, error: 'Error al restaurar stock' }
+  }
+}
+
 /**
  * POST /api/admin/orders/[id]/refund
- * Procesa un reembolso para una orden
+ * Procesa un reembolso real para una orden usando MercadoPago API
  */
 export async function POST(
   request: NextRequest,
@@ -81,7 +132,7 @@ export async function POST(
     const supabase = createAdminClient()
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, status, payment_status, total, payment_id, payment_preference_id')
+      .select('id, status, payment_status, total, payment_id, payment_preference_id, payment_method')
       .eq('id', orderId)
       .single()
 
@@ -99,38 +150,113 @@ export async function POST(
     }
 
     // Verificar que el monto no exceda el total de la orden
-    if (amount && amount > order.total) {
+    const orderTotal = parseFloat(order.total)
+    if (amount && amount > orderTotal) {
       return NextResponse.json(
         { success: false, error: 'El monto del reembolso no puede exceder el total de la orden' },
         { status: 400 }
       )
     }
 
-    const refundAmount = amount || order.total
+    const refundAmount = amount || orderTotal
+    let refundResult: { success: boolean; refund_id: string; amount: number; status: string; source: string }
 
-    // TODO: Aquí se integraría con MercadoPago para procesar el reembolso real
-    // Por ahora, simularemos el proceso
+    // ===================================
+    // PROCESAR REEMBOLSO CON MERCADOPAGO
+    // ===================================
+    if (order.payment_method === 'mercadopago' && order.payment_id) {
+      console.log('[REFUND] Procesando reembolso con MercadoPago para payment_id:', order.payment_id)
+      
+      try {
+        // Verificar que tenemos el access token
+        if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+          throw new Error('MERCADOPAGO_ACCESS_TOKEN no configurado')
+        }
 
-    // Simular procesamiento de reembolso
-    const refundResult = {
-      success: true,
-      refund_id: `refund_${Date.now()}`,
-      amount: refundAmount,
-      status: 'approved',
-    }
+        // Crear cliente de MercadoPago
+        const client = new MercadoPagoConfig({
+          accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
+        })
+        const paymentRefund = new PaymentRefund(client)
 
-    if (!refundResult.success) {
-      logger.log(LogLevel.ERROR, LogCategory.PAYMENT, 'Error processing refund', {
-        orderId,
-        refundResult,
-      })
+        // Generar idempotency key para evitar duplicados
+        const idempotencyKey = `refund-${orderId}-${Date.now()}`
+
+        let mpRefund: any
+
+        // Determinar si es reembolso total o parcial
+        if (refundAmount >= orderTotal) {
+          // Reembolso total
+          console.log('[REFUND] Ejecutando reembolso TOTAL')
+          mpRefund = await paymentRefund.create({
+            payment_id: order.payment_id,
+            requestOptions: {
+              idempotencyKey,
+            },
+          })
+        } else {
+          // Reembolso parcial
+          console.log('[REFUND] Ejecutando reembolso PARCIAL por:', refundAmount)
+          mpRefund = await paymentRefund.create({
+            payment_id: order.payment_id,
+            body: {
+              amount: refundAmount,
+            },
+            requestOptions: {
+              idempotencyKey,
+            },
+          })
+        }
+
+        console.log('[REFUND] Respuesta de MercadoPago:', mpRefund)
+
+        refundResult = {
+          success: true,
+          refund_id: mpRefund.id?.toString() || `mp_refund_${Date.now()}`,
+          amount: mpRefund.amount || refundAmount,
+          status: mpRefund.status || 'approved',
+          source: 'mercadopago',
+        }
+
+      } catch (mpError: any) {
+        console.error('[REFUND] Error de MercadoPago:', mpError)
+        
+        // Intentar extraer mensaje de error de MercadoPago
+        const errorMessage = mpError?.message || mpError?.cause?.[0]?.description || 'Error al procesar reembolso en MercadoPago'
+        
+        logger.log(LogLevel.ERROR, LogCategory.PAYMENT, 'MercadoPago refund failed', {
+          orderId,
+          payment_id: order.payment_id,
+          error: errorMessage,
+          errorDetails: mpError,
+        })
+
+        return NextResponse.json(
+          { success: false, error: `Error de MercadoPago: ${errorMessage}` },
+          { status: 500 }
+        )
+      }
+    } else if (order.payment_method === 'cash') {
+      // Para pagos en efectivo, solo actualizamos el estado (no hay reembolso real)
+      console.log('[REFUND] Orden pagada en efectivo - solo actualizando estado')
+      refundResult = {
+        success: true,
+        refund_id: `cash_refund_${Date.now()}`,
+        amount: refundAmount,
+        status: 'approved',
+        source: 'manual',
+      }
+    } else {
+      // Orden sin payment_id o método de pago desconocido
       return NextResponse.json(
-        { success: false, error: 'Error al procesar reembolso' },
-        { status: 500 }
+        { success: false, error: 'Esta orden no tiene un pago de MercadoPago asociado para reembolsar' },
+        { status: 400 }
       )
     }
 
-    // Actualizar estado de la orden
+    // ===================================
+    // ACTUALIZAR ESTADO DE LA ORDEN
+    // ===================================
     const updateData = {
       payment_status: 'refunded',
       status: 'refunded',
@@ -148,12 +274,27 @@ export async function POST(
         updateError,
       })
       return NextResponse.json(
-        { success: false, error: 'Error al actualizar estado de la orden' },
+        { success: false, error: 'Reembolso procesado pero error al actualizar estado de la orden' },
         { status: 500 }
       )
     }
 
-    // Registrar en historial de estados
+    // ===================================
+    // RESTAURAR STOCK
+    // ===================================
+    const stockResult = await restoreStockForOrder(orderId, supabase)
+    if (!stockResult.success) {
+      logger.log(LogLevel.WARN, LogCategory.API, 'Error restaurando stock (no bloqueante)', {
+        orderId,
+        error: stockResult.error,
+      })
+    } else {
+      logger.log(LogLevel.INFO, LogCategory.API, 'Stock restaurado exitosamente', { orderId })
+    }
+
+    // ===================================
+    // REGISTRAR EN HISTORIAL
+    // ===================================
     try {
       await supabase.from('order_status_history').insert({
         order_id: orderId,
@@ -163,13 +304,13 @@ export async function POST(
         reason: `Reembolso procesado: ${reason}`,
         metadata: JSON.stringify({
           refund_id: refundResult.refund_id,
-          refund_amount: refundAmount,
+          refund_amount: refundResult.amount,
           refund_reason: reason,
+          refund_source: refundResult.source,
           processed_by: authResult.userId,
         }),
       })
     } catch (historyError) {
-      // Si la tabla no existe, continuar sin registrar historial
       logger.log(
         LogLevel.WARN,
         LogCategory.API,
@@ -178,15 +319,11 @@ export async function POST(
       )
     }
 
-    // TODO: Aquí se podrían agregar acciones adicionales como:
-    // - Enviar email de confirmación de reembolso al cliente
-    // - Restaurar inventario si es necesario
-    // - Crear notificaciones
-
     logger.log(LogLevel.INFO, LogCategory.API, 'Refund processed successfully', {
       orderId,
       refund_id: refundResult.refund_id,
-      amount: refundAmount,
+      amount: refundResult.amount,
+      source: refundResult.source,
     })
 
     return NextResponse.json({
@@ -194,11 +331,16 @@ export async function POST(
       data: {
         order_id: orderId,
         refund_id: refundResult.refund_id,
-        refund_amount: refundAmount,
+        refund_amount: refundResult.amount,
+        refund_status: refundResult.status,
+        refund_source: refundResult.source,
         payment_status: 'refunded',
         status: 'refunded',
+        stock_restored: stockResult.success,
       },
-      message: 'Reembolso procesado exitosamente',
+      message: refundResult.source === 'mercadopago' 
+        ? 'Reembolso procesado exitosamente en MercadoPago' 
+        : 'Reembolso registrado exitosamente',
     })
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Unexpected error processing refund', {

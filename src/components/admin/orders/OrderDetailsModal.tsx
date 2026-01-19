@@ -7,6 +7,16 @@
 
 import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -385,6 +395,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [isPaymentProofModalOpen, setIsPaymentProofModalOpen] = useState(false)
+  const [isRefundConfirmOpen, setIsRefundConfirmOpen] = useState(false)
+  const [isProcessingRefund, setIsProcessingRefund] = useState(false)
 
   // ===================================
   // EFECTOS
@@ -597,8 +609,10 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       return
     }
 
+    setIsProcessingRefund(true)
+
     try {
-      const loadingToast = toast.loading('Procesando reembolso...')
+      const loadingToast = toast.loading('Procesando reembolso en MercadoPago...')
 
       const response = await fetch(`/api/admin/orders/${order.id}/refund`, {
         method: 'POST',
@@ -609,23 +623,35 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
         }),
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          toast.success('Reembolso procesado exitosamente', { id: loadingToast })
-          // Recargar datos de la orden
-          loadOrderDetails()
-          // Notificar al padre para refrescar la lista
-          onOrderUpdated?.()
-        } else {
-          toast.error('Error al procesar reembolso', { id: loadingToast })
-        }
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        toast.success(
+          <div className='flex flex-col gap-1'>
+            <span className='font-medium'>Reembolso procesado exitosamente</span>
+            <span className='text-xs text-gray-500'>
+              ID: {data.data?.refund_id} | Monto: ${data.data?.refund_amount?.toLocaleString('es-AR')}
+            </span>
+            {data.data?.stock_restored && (
+              <span className='text-xs text-green-600'>Stock restaurado</span>
+            )}
+          </div>,
+          { id: loadingToast, duration: 5000 }
+        )
+        // Cerrar diálogo de confirmación
+        setIsRefundConfirmOpen(false)
+        // Recargar datos de la orden
+        loadOrderDetails()
+        // Notificar al padre para refrescar la lista
+        onOrderUpdated?.()
       } else {
-        toast.error('Error al procesar reembolso', { id: loadingToast })
+        toast.error(data.error || 'Error al procesar reembolso', { id: loadingToast })
       }
     } catch (error) {
       console.error('Error processing refund:', error)
       toast.error('Error al procesar reembolso')
+    } finally {
+      setIsProcessingRefund(false)
     }
   }
 
@@ -1299,8 +1325,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                             <Button
                               variant='outline'
                               size='sm'
-                              className='w-full justify-start'
-                              onClick={() => handleProcessRefund()}
+                              className='w-full justify-start text-red-600 border-red-200 hover:bg-red-50'
+                              onClick={() => setIsRefundConfirmOpen(true)}
                             >
                               <DollarSign className='h-4 w-4 mr-2' />
                               Procesar Reembolso
@@ -1403,6 +1429,55 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           orderId={order.id}
         />
       )}
+
+      {/* Diálogo de Confirmación de Reembolso */}
+      <AlertDialog open={isRefundConfirmOpen} onOpenChange={setIsRefundConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className='text-red-600'>
+              ¿Confirmar Reembolso?
+            </AlertDialogTitle>
+            <AlertDialogDescription className='space-y-3'>
+              <p>
+                Estás a punto de procesar un reembolso para la orden <strong>#{order?.order_number || order?.id}</strong>.
+              </p>
+              <div className='bg-gray-50 p-3 rounded-lg space-y-1'>
+                <p className='text-sm'>
+                  <span className='text-gray-500'>Monto a reembolsar:</span>{' '}
+                  <span className='font-semibold text-gray-900'>
+                    ${order?.total?.toLocaleString('es-AR')}
+                  </span>
+                </p>
+                <p className='text-sm'>
+                  <span className='text-gray-500'>Método:</span>{' '}
+                  <span className='font-semibold text-gray-900'>
+                    {order?.payment_method === 'mercadopago' ? 'MercadoPago' : 'Efectivo'}
+                  </span>
+                </p>
+              </div>
+              <p className='text-amber-600 text-sm font-medium'>
+                ⚠️ Esta acción no se puede deshacer.
+                {order?.payment_method === 'mercadopago' && ' El dinero será devuelto al cliente.'}
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isProcessingRefund}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleProcessRefund()
+              }}
+              disabled={isProcessingRefund}
+              className='bg-red-600 hover:bg-red-700 text-white'
+            >
+              {isProcessingRefund ? 'Procesando...' : 'Confirmar Reembolso'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   )
 }

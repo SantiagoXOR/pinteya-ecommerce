@@ -396,8 +396,14 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Guardar variant_id en product_snapshot para referencia histórica
+      if (item.variant_id) {
+        productSnapshot.variant_id = parseInt(item.variant_id);
+      }
+
       return {
         product_id: parseInt(item.id),
+        variant_id: item.variant_id ? parseInt(item.variant_id) : null,
         product_name: product.name,
         product_sku: product.aikon_id || null, // Usar aikon_id como SKU
         quantity: item.quantity,

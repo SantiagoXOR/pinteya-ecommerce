@@ -688,27 +688,40 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
       }
     }
 
-    // Si el pago fue aprobado, actualizar stock de productos
+    // Si el pago fue aprobado, actualizar stock de productos/variantes
     if (shouldUpdateStock) {
       try {
-        // Obtener items de la orden
+        // Obtener items de la orden incluyendo variant_id
         const { data: orderItems, error: itemsError } = await supabase
           .from('order_items')
-          .select('product_id, quantity')
+          .select('product_id, variant_id, quantity')
           .eq('order_id', order.id)
 
         if (itemsError) {
           console.error('Error getting order items:', itemsError)
         } else if (orderItems) {
-          // Actualizar stock de cada producto
+          // Actualizar stock de cada producto/variante usando la nueva función RPC
           for (const item of orderItems) {
-            const { error: stockError } = await supabase.rpc('update_product_stock', {
-              product_id: item.product_id,
-              quantity_sold: item.quantity,
+            const { data: stockResult, error: stockError } = await supabase.rpc('decrement_stock', {
+              p_product_id: item.product_id,
+              p_variant_id: item.variant_id || null,
+              p_quantity: item.quantity,
             })
 
             if (stockError) {
-              console.error('Error updating stock for product:', item.product_id, stockError)
+              console.error('Error updating stock:', { 
+                product_id: item.product_id, 
+                variant_id: item.variant_id,
+                quantity: item.quantity,
+                error: stockError 
+              })
+            } else {
+              console.log('[STOCK] Descontado:', {
+                product_id: item.product_id,
+                variant_id: item.variant_id,
+                quantity: item.quantity,
+                success: stockResult
+              })
             }
           }
         }
