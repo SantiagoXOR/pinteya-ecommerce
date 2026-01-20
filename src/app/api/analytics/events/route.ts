@@ -69,7 +69,19 @@ export async function POST(request: NextRequest) {
         const price = metadata.price || event.value
         const quantity = metadata.quantity || 1
         const deviceType = metadata.deviceType
+        
+        // Extraer visitorHash para tracking de usuarios recurrentes
+        const visitorHash = event.visitorHash || metadata.visitorHash || null
+        
+        // Mejorar vinculación de userId: priorizar el que viene directamente, luego del metadata
+        const userId = event.userId || metadata.userId || null
 
+        // Construir metadata enriquecido con visitorHash y timestamp
+        const enrichedMetadata = {
+          ...metadata,
+          visitorHash,
+          timestamp: Date.now(),
+        }
 
         // Usar función RPC optimizada para insertar en tabla optimizada
         const { error: rpcError } = await supabase.rpc('insert_analytics_event_optimized', {
@@ -78,7 +90,7 @@ export async function POST(request: NextRequest) {
           p_action: event.action,
           p_label: event.label || null,
           p_value: event.value || null,
-          p_user_id: event.userId || null,
+          p_user_id: userId,
           p_session_id: event.sessionId,
           p_page: event.page || null,
           p_user_agent: event.userAgent || null,
@@ -89,6 +101,8 @@ export async function POST(request: NextRequest) {
           p_price: price && !isNaN(Number(price)) ? parseFloat(String(price)) : null,
           p_quantity: quantity && !isNaN(Number(quantity)) ? parseInt(String(quantity), 10) : null,
           p_device_type: deviceType || null,
+          // Metadata enriquecido con visitorHash (se guarda comprimido)
+          p_metadata: enrichedMetadata,
         })
 
         if (rpcError) {

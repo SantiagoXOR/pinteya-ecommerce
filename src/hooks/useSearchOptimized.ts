@@ -13,6 +13,7 @@ import { useSearchToast } from './useSearchToast'
 import { useSearchNavigation } from './useSearchNavigation'
 import { useTrendingSearches } from './useTrendingSearches'
 import { useRecentSearches } from './useRecentSearches'
+import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
 import { SEARCH_CONSTANTS } from '@/constants/shop'
 import { hasDiscount } from '@/lib/adapters/product-adapter'
 import { resolveProductImage } from '@/components/ui/product-card-commercial/utils/image-resolver'
@@ -84,6 +85,7 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
   const queryClient = useQueryClient()
   const errorHandler = useSearchErrorHandler()
   const toastHandler = useSearchToast()
+  const { trackSearch: trackSearchAnalytics } = useAnalytics()
   const navigation = useSearchNavigation({
     scrollToTop: true,
     onBeforeNavigate: url => console.log('🔍 Navegando a:', url),
@@ -420,8 +422,20 @@ export function useSearchOptimized(options: UseSearchOptimizedOptions = {}) {
           addRecentSearch(searchQuery.trim())
         }
 
-        // Registrar en trending searches
+        // Registrar en trending searches (tabla de trending)
         trackSearch(searchQuery.trim()).catch(console.warn)
+
+        // Trackear búsqueda en analytics para customer journey
+        // Esto resuelve la brecha de "sin tracking de términos de búsqueda"
+        const resultsCount = Array.isArray(searchResults)
+          ? (searchResults as ProductWithCategory[]).length
+          : Array.isArray((searchResults as any)?.data)
+            ? ((searchResults as any).data as ProductWithCategory[]).length
+            : Array.isArray((searchResults as any)?.products)
+              ? ((searchResults as any).products as ProductWithCategory[]).length
+              : 0
+
+        trackSearchAnalytics(searchQuery.trim(), resultsCount)
 
         // Navegar a página de resultados usando navegación optimizada
         navigation.navigateToSearch(searchQuery.trim(), categoryId)

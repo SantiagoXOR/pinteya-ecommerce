@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react'
+import React, { createContext, useContext, ReactNode, useEffect, useState, useRef, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -22,6 +22,52 @@ interface AnalyticsContextType {
   trackCategoryView: (categoryName: string, properties?: Record<string, any>) => void
   trackUserAction: (action: string, properties?: Record<string, any>) => void
   isEnabled: boolean
+}
+
+// Constantes para debounce y deduplicación
+const PAGE_VIEW_DEBOUNCE_MS = 500
+const VISITOR_HASH_KEY = 'pinteya_visitor_hash'
+
+/**
+ * Genera un hash único para identificar visitantes recurrentes
+ * Persiste en localStorage para mantener identidad entre sesiones
+ */
+const getOrCreateVisitorHash = (): string => {
+  if (typeof window === 'undefined') return ''
+  
+  try {
+    let visitorHash = localStorage.getItem(VISITOR_HASH_KEY)
+    
+    if (!visitorHash) {
+      // Generar hash único basado en timestamp + random
+      const timestamp = Date.now().toString(36)
+      const randomPart = Math.random().toString(36).substring(2, 15)
+      const browserFingerprint = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width,
+        screen.height,
+        new Date().getTimezoneOffset()
+      ].join('|')
+      
+      // Crear hash simple pero único
+      let hash = 0
+      const combined = `${timestamp}${randomPart}${browserFingerprint}`
+      for (let i = 0; i < combined.length; i++) {
+        const char = combined.charCodeAt(i)
+        hash = ((hash << 5) - hash) + char
+        hash = hash & hash // Convert to 32bit integer
+      }
+      
+      visitorHash = `vh_${Math.abs(hash).toString(36)}_${timestamp}`
+      localStorage.setItem(VISITOR_HASH_KEY, visitorHash)
+    }
+    
+    return visitorHash
+  } catch {
+    // localStorage no disponible
+    return `vh_temp_${Date.now().toString(36)}`
+  }
 }
 
 // Contexto
@@ -77,6 +123,9 @@ const sendAnalyticsEvent = async (
       sessionStorage.setItem('analytics_session_id', sessionId)
     }
 
+    // Obtener visitor hash para identificar usuarios recurrentes
+    const visitorHash = getOrCreateVisitorHash()
+
     const eventData = {
       event,
       category,
@@ -85,9 +134,13 @@ const sendAnalyticsEvent = async (
       value,
       userId: metadata?.userId,
       sessionId,
+      visitorHash, // Nuevo: identificador persistente de visitante
       page: typeof window !== 'undefined' ? window.location.pathname : '',
       userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-      metadata,
+      metadata: {
+        ...metadata,
+        visitorHash, // También incluir en metadata para compatibilidad
+      },
     }
 
     // Enviar evento a la API de forma asíncrona (no bloquea)
@@ -112,15 +165,53 @@ export const SimpleAnalyticsProvider: React.FC<SimpleAnalyticsProviderProps> = (
   const { user } = useAuth()
   const pathname = usePathname()
   const [isEnabled] = useState(true)
+  
+  // Referencias para debounce y deduplicación
+  const lastPageViewRef = useRef<string | null>(null)
+  const pageViewTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const lastPageViewTimeRef = useRef<number>(0)
 
-  // Track page views automáticamente
+  // Track page views automáticamente con debounce para evitar duplicados
   useEffect(() => {
-    if (isEnabled && pathname) {
+    if (!isEnabled || !pathname) return
+
+    const now = Date.now()
+    const timeSinceLastPageView = now - lastPageViewTimeRef.current
+
+    // Cancelar timeout anterior si existe
+    if (pageViewTimeoutRef.current) {
+      clearTimeout(pageViewTimeoutRef.current)
+    }
+
+    // Evitar duplicados: misma página en menos de DEBOUNCE_MS
+    if (lastPageViewRef.current === pathname && timeSinceLastPageView < PAGE_VIEW_DEBOUNCE_MS) {
+      return
+    }
+
+    // Aplicar debounce para evitar múltiples eventos por re-renders
+    pageViewTimeoutRef.current = setTimeout(() => {
+      // Doble verificación después del debounce
+      if (lastPageViewRef.current === pathname && 
+          Date.now() - lastPageViewTimeRef.current < PAGE_VIEW_DEBOUNCE_MS) {
+        return
+      }
+
+      lastPageViewRef.current = pathname
+      lastPageViewTimeRef.current = Date.now()
+
       sendAnalyticsEvent('page_view', 'navigation', 'view', pathname, undefined, {
         userId: user?.id,
+        timestamp: Date.now(),
       })
+    }, PAGE_VIEW_DEBOUNCE_MS)
+
+    // Cleanup
+    return () => {
+      if (pageViewTimeoutRef.current) {
+        clearTimeout(pageViewTimeoutRef.current)
+      }
     }
-  }, [pathname, isEnabled, user])
+  }, [pathname, isEnabled, user?.id]) // Solo user?.id, no todo el objeto user
 
   // Funciones de tracking que envían eventos reales
   const trackEvent = (eventName: string, properties?: Record<string, any>) => {
