@@ -1,14 +1,27 @@
 # Brechas Identificadas en el Sistema de Analytics
 
 **Fecha de Análisis**: 19 de Enero de 2026  
+**Última Actualización**: 20 de Enero de 2026  
 **Basado en**: Análisis de Orden #395 (Primera Venta)  
-**Estado**: Requiere acción
+**Estado**: ✅ Correcciones Implementadas (5 de 7 brechas resueltas)
 
 ---
 
 ## Resumen Ejecutivo
 
-Durante el análisis de la primera venta (Orden #395), se identificaron 7 brechas en el sistema de analytics que afectan la capacidad de tracking y análisis del customer journey. Este documento detalla cada brecha, su impacto y las acciones correctivas recomendadas.
+Durante el análisis de la primera venta (Orden #395), se identificaron 7 brechas en el sistema de analytics que afectan la capacidad de tracking y análisis del customer journey. Este documento detalla cada brecha, su impacto y las acciones correctivas implementadas.
+
+### Estado de Correcciones (20 de Enero, 2026)
+
+| # | Brecha | Estado | Commit |
+|---|--------|--------|--------|
+| 1 | Tabla `analytics_events` vacía | ⏳ Pendiente | - |
+| 2 | Sin vinculación usuario-sesión | ✅ **Corregido** | `3b7aa378` |
+| 3 | Trigger de `order_status_history` | ✅ **Corregido** | `3b7aa378` |
+| 4 | Eventos duplicados de page_view | ✅ **Corregido** | `3b7aa378` |
+| 5 | Sin tracking de product_view | ⏳ Pendiente | - |
+| 6 | Sin `visitor_hash` | ✅ **Corregido** | `3b7aa378` |
+| 7 | Sin tracking de búsquedas | ✅ **Corregido** | `3b7aa378` |
 
 ---
 
@@ -99,10 +112,24 @@ SELECT * FROM order_status_history WHERE order_id = 395;
 - La actualización de estado se hizo de forma que bypassea el trigger
 - El trigger solo captura cambios vía UPDATE, no estados iniciales
 
-**Acción Recomendada**:
-1. Verificar que el trigger esté activo
-2. Agregar inserción manual del estado inicial al crear orden
-3. Revisar la lógica del trigger para cubrir todos los casos
+**✅ CORREGIDO (20 de Enero, 2026)**:
+
+Se implementó la migración `20260119_fix_order_status_history_trigger.sql`:
+
+1. **Nuevo trigger `trigger_log_order_initial_status`**: Captura el estado inicial al crear la orden
+2. **Mejorado trigger `log_order_status_change`**: Con SECURITY DEFINER para bypassear RLS
+3. **Tracking de `payment_status`**: También registra cambios en el estado de pago
+4. **Migración retroactiva**: Se registró historial para las 21 órdenes existentes
+
+**Verificación**:
+```sql
+SELECT COUNT(*) FROM order_status_history WHERE order_id = 395;
+-- Resultado: 1 (estado retroactivo registrado)
+
+-- Triggers activos:
+-- trigger_log_order_initial_status (INSERT)
+-- trigger_log_order_status_change (UPDATE)
+```
 
 ---
 
@@ -131,10 +158,22 @@ WHERE session_hash = 381438529
 - Falta de debounce en el provider de analytics
 - Strict Mode en desarrollo duplica efectos
 
-**Acción Recomendada**:
-1. Implementar debounce de 500ms para page_view
-2. Agregar deduplicación en el servidor
-3. Usar referencia para evitar re-tracking en mismo render
+**✅ CORREGIDO (20 de Enero, 2026)**:
+
+Modificaciones en `SimpleAnalyticsProvider.tsx`:
+
+1. **Debounce de 500ms**: Agregado timeout antes de enviar page_view
+2. **Deduplicación por referencia**: `lastPageViewRef` evita re-tracking de la misma página
+3. **Timestamp de última vista**: `lastPageViewTimeRef` controla el tiempo entre eventos
+
+```typescript
+// Constantes para debounce
+const PAGE_VIEW_DEBOUNCE_MS = 500
+
+// Referencias para deduplicación
+const lastPageViewRef = useRef<string | null>(null)
+const lastPageViewTimeRef = useRef<number>(0)
+```
 
 ---
 
@@ -185,10 +224,32 @@ SELECT DISTINCT visitor_hash FROM analytics_events_optimized;
 - Análisis de retención de visitantes anónimos imposible
 - Pérdida de datos para remarketing
 
-**Acción Recomendada**:
-1. Generar hash único por dispositivo/navegador
-2. Persistir en localStorage
-3. Enviar con cada evento de analytics
+**✅ CORREGIDO (20 de Enero, 2026)**:
+
+Implementación en `SimpleAnalyticsProvider.tsx`:
+
+1. **Función `getOrCreateVisitorHash()`**: Genera hash único basado en:
+   - Timestamp
+   - Random value
+   - Browser fingerprint (userAgent, language, screen, timezone)
+
+2. **Persistencia en localStorage**: Clave `pinteya_visitor_hash`
+
+3. **Inclusión en eventos**: Se envía en cada evento de analytics
+
+```typescript
+const VISITOR_HASH_KEY = 'pinteya_visitor_hash'
+
+const getOrCreateVisitorHash = (): string => {
+  let visitorHash = localStorage.getItem(VISITOR_HASH_KEY)
+  if (!visitorHash) {
+    // Generar hash único...
+    visitorHash = `vh_${hash}_${timestamp}`
+    localStorage.setItem(VISITOR_HASH_KEY, visitorHash)
+  }
+  return visitorHash
+}
+```
 
 ---
 
@@ -213,66 +274,107 @@ WHERE session_hash = 381438529 AND event_type = 3;
 - El componente de búsqueda no dispara evento de analytics
 - Solo se trackea navegación a `/search`, no el término
 
-**Acción Recomendada**:
-1. Capturar término de búsqueda al ejecutar query
-2. Guardar en analytics con event_type=3
-3. Incluir cantidad de resultados en metadata
+**✅ CORREGIDO (20 de Enero, 2026)**:
+
+Modificaciones en `useSearchOptimized.ts`:
+
+1. **Integración con `useAnalytics`**: Importa `trackSearch` del provider
+2. **Tracking en `executeSearch`**: Captura término y cantidad de resultados
+
+```typescript
+import { useAnalytics } from '@/components/Analytics/SimpleAnalyticsProvider'
+
+// En el hook
+const { trackSearch: trackSearchAnalytics } = useAnalytics()
+
+// En executeSearch
+trackSearchAnalytics(searchQuery.trim(), resultsCount)
+```
+
+**Datos capturados**:
+- `searchTerm`: El término buscado
+- `results`: Cantidad de resultados encontrados
+- `event_type`: 3 (search)
 
 ---
 
 ## Matriz de Priorización
 
-| Brecha | Severidad | Esfuerzo | Prioridad |
-|--------|-----------|----------|-----------|
-| Tabla vacía | Alta | Medio | P1 |
-| Sin user_id | Alta | Bajo | P1 |
-| Trigger roto | Alta | Bajo | P1 |
-| Duplicados | Media | Bajo | P2 |
-| Sin product_view | Media | Medio | P2 |
-| Sin visitor_hash | Baja | Bajo | P3 |
-| Sin search tracking | Baja | Bajo | P3 |
+| Brecha | Severidad | Esfuerzo | Prioridad | Estado |
+|--------|-----------|----------|-----------|--------|
+| Tabla vacía | Alta | Medio | P1 | ⏳ Pendiente |
+| Sin user_id | Alta | Bajo | P1 | ✅ Corregido |
+| Trigger roto | Alta | Bajo | P1 | ✅ Corregido |
+| Duplicados | Media | Bajo | P2 | ✅ Corregido |
+| Sin product_view | Media | Medio | P2 | ⏳ Pendiente |
+| Sin visitor_hash | Baja | Bajo | P3 | ✅ Corregido |
+| Sin search tracking | Baja | Bajo | P3 | ✅ Corregido |
 
 ---
 
 ## Plan de Acción
 
-### Fase 1: Correcciones Críticas (Inmediato)
+### Fase 1: Correcciones Críticas (Inmediato) - ✅ COMPLETADA
 
-1. **Revisar y reparar trigger de order_status_history**
-   - Archivo: `supabase/migrations/YYYYMMDD_fix_order_status_trigger.sql`
+1. **✅ Revisar y reparar trigger de order_status_history**
+   - Archivo: `supabase/migrations/20260119_fix_order_status_history_trigger.sql`
+   - Commit: `3b7aa378`
    
-2. **Vincular user_id en eventos de checkout**
+2. **✅ Vincular user_id en eventos de checkout**
    - Archivo: `src/app/api/analytics/events/route.ts`
+   - Commit: `3b7aa378`
 
-### Fase 2: Optimizaciones de Calidad (Corto Plazo)
+### Fase 2: Optimizaciones de Calidad (Corto Plazo) - ✅ COMPLETADA
 
-3. **Implementar debounce para page_view**
+3. **✅ Implementar debounce para page_view**
    - Archivo: `src/components/Analytics/SimpleAnalyticsProvider.tsx`
+   - Commit: `3b7aa378`
 
-4. **Agregar tracking de product_view desde search**
+4. **⏳ Agregar tracking de product_view desde search** (Pendiente)
    - Archivo: `src/components/ui/product-card-commercial/ProductCardCommercial.tsx`
+   - Nota: Requiere modificar componente de producto para trackear impresiones
 
-### Fase 3: Mejoras de Tracking (Mediano Plazo)
+### Fase 3: Mejoras de Tracking (Mediano Plazo) - ✅ COMPLETADA
 
-5. **Implementar visitor_hash**
-   - Archivo: `src/lib/integrations/analytics/index.ts`
+5. **✅ Implementar visitor_hash**
+   - Archivo: `src/components/Analytics/SimpleAnalyticsProvider.tsx`
+   - Commit: `3b7aa378`
 
-6. **Agregar tracking de búsquedas**
-   - Archivo: `src/components/search/SearchInput.tsx`
+6. **✅ Agregar tracking de búsquedas**
+   - Archivo: `src/hooks/useSearchOptimized.ts`
+   - Commit: `3b7aa378`
+
+### Pendiente
+
+7. **⏳ Migrar completamente a `analytics_events_optimized`**
+   - Deprecar tabla `analytics_events` original
+   - Actualizar funciones RPC que aún usen la tabla antigua
 
 ---
 
 ## Métricas de Éxito
 
-Después de implementar las correcciones:
+Estado después de implementar las correcciones (20 de Enero, 2026):
 
-| Métrica | Estado Actual | Objetivo |
-|---------|---------------|----------|
-| Eventos con user_id | 0% | >80% (usuarios logueados) |
-| Órdenes con historial | 0% | 100% |
-| Page views duplicados | ~10x | 1x |
-| Eventos de product_view | 0 | Por cada add_to_cart |
-| Búsquedas trackeadas | 0% | 100% |
+| Métrica | Estado Antes | Estado Después | Objetivo |
+|---------|--------------|----------------|----------|
+| Eventos con user_id | 0% | ✅ Implementado | >80% (usuarios logueados) |
+| Órdenes con historial | 0% | ✅ 100% (21/21) | 100% |
+| Page views duplicados | ~10x | ✅ Debounce activo | 1x |
+| Eventos de product_view | 0 | ⏳ Pendiente | Por cada add_to_cart |
+| Búsquedas trackeadas | 0% | ✅ Implementado | 100% |
+| Visitor hash | 0% | ✅ Implementado | 100% |
+
+---
+
+## Archivos Modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/Analytics/SimpleAnalyticsProvider.tsx` | Debounce, visitor_hash |
+| `src/app/api/analytics/events/route.ts` | Mejor vinculación user_id |
+| `src/hooks/useSearchOptimized.ts` | Tracking de búsquedas |
+| `supabase/migrations/20260119_fix_order_status_history_trigger.sql` | Triggers de historial |
 
 ---
 
@@ -281,7 +383,8 @@ Después de implementar las correcciones:
 - [Documento de Orden #395](./ORDEN_395_PRIMERA_VENTA.md)
 - [Arquitectura de Analytics](../analytics/ARCHITECTURE.md)
 - [Estado del Sistema Analytics](../analytics/REINICIO_SISTEMA_2026-01-16.md)
+- [Commit de correcciones](https://github.com/SantiagoXOR/pinteya-ecommerce/commit/3b7aa378)
 
 ---
 
-*Documento generado como parte del análisis de la primera venta - Pinteya E-commerce*
+*Documento actualizado el 20 de Enero de 2026 - Pinteya E-commerce*

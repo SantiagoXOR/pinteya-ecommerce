@@ -1,7 +1,7 @@
 # Documentación del Sistema de Analytics
 
-**Última actualización:** 16 de Enero, 2026  
-**Estado:** ✅ Sistema Optimizado y Verificado
+**Última actualización:** 20 de Enero, 2026  
+**Estado:** ✅ Sistema Optimizado y Mejorado
 
 ---
 
@@ -34,6 +34,20 @@
    - Métricas de verificación
    - Estado final
 
+### Análisis y Mejoras (Enero 2026)
+
+5. **[ORDEN_395_PRIMERA_VENTA.md](../analisis/ORDEN_395_PRIMERA_VENTA.md)** - Análisis de primera venta
+   - Customer journey completo
+   - Datos de la orden y cliente
+   - Timeline de eventos
+   - Observaciones y recomendaciones
+
+6. **[BRECHAS_ANALYTICS_2026.md](../analisis/BRECHAS_ANALYTICS_2026.md)** - Brechas identificadas
+   - 7 brechas del sistema (5 corregidas)
+   - Evidencia y causa de cada brecha
+   - Estado de correcciones
+   - Plan de acción
+
 ---
 
 ## 🚀 Inicio Rápido
@@ -61,6 +75,9 @@
 - ✅ **Resistencia a Bloqueadores**: Múltiples estrategias de envío
 - ✅ **Escalabilidad**: Agregaciones SQL y materialized views
 - ✅ **Confiabilidad**: Persistencia robusta con IndexedDB y retry automático
+- ✅ **Visitor Tracking**: Hash persistente para usuarios recurrentes (nuevo)
+- ✅ **Search Tracking**: Captura de términos de búsqueda (nuevo)
+- ✅ **Debounce**: Evita eventos duplicados de page_view (nuevo)
 
 ### Componentes Clave
 
@@ -117,6 +134,13 @@ SELECT refresh_analytics_daily_summary();
 ---
 
 ## 📝 Historial de Cambios
+
+### 20 de Enero, 2026
+- ✅ Análisis de primera venta (Orden #395)
+- ✅ Identificación de 7 brechas en el sistema
+- ✅ Corrección de 5 brechas (debounce, visitor_hash, search tracking, user_id, triggers)
+- ✅ Migración para corregir trigger de order_status_history
+- ✅ Documentación de análisis y brechas
 
 ### 16 de Enero, 2026
 - ✅ Reinicio completo del sistema

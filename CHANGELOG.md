@@ -7,6 +7,26 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ## [Unreleased]
 
+### 📊 Analytics - Enero 2026
+
+- **[MAYOR] ✅ Mejoras en Sistema de Analytics y Customer Journey**
+  - ✅ **Debounce de page_view** - Evita eventos duplicados (500ms)
+  - ✅ **Visitor Hash** - Identificación de usuarios recurrentes anónimos
+  - ✅ **Search Tracking** - Captura términos de búsqueda y cantidad de resultados
+  - ✅ **Mejora vinculación user_id** - Mejor tracking de usuarios logueados
+  - ✅ **Trigger order_status_history** - Captura estado inicial y cambios
+  - 📁 Archivos modificados:
+    - `src/components/Analytics/SimpleAnalyticsProvider.tsx`
+    - `src/app/api/analytics/events/route.ts`
+    - `src/hooks/useSearchOptimized.ts`
+    - `supabase/migrations/20260119_fix_order_status_history_trigger.sql`
+  - 📚 Documentación creada:
+    - `docs/analisis/ORDEN_395_PRIMERA_VENTA.md` - Análisis primera venta
+    - `docs/analisis/BRECHAS_ANALYTICS_2026.md` - Brechas identificadas
+  - 📊 Impacto: **ALTO** - Mejor tracking de customer journey
+  - 🎉 **Estado**: COMPLETADO (5 de 7 brechas corregidas)
+  - 🔗 **Commit**: `3b7aa378`
+
 ### 🎨 Features - Diciembre 2025
 
 - **[MAYOR] ✅ Refactorización ProductCard en Arquitectura Modular**
