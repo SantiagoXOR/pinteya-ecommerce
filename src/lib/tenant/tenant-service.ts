@@ -196,13 +196,9 @@ async function fetchTenantFromDB(
   subdomain: string | null,
   customDomain: string | null
 ): Promise<TenantDBRow | null> {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'tenant-service.ts:195',message:'fetchTenantFromDB called',data:{subdomain,customDomain},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
+  // ⚠️ REMOVIDO: Requests a 127.0.0.1:7242 causaban popup de acceso a red local en producción
+  // Estos logs de debugging solo deben ejecutarse en desarrollo local, no en producción
   const supabase = createAdminClient()
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'tenant-service.ts:200',message:'Before tenants query',data:{hasSupabase:!!supabase},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
   let query = supabase
     .from('tenants')
     .select('*')
@@ -215,11 +211,17 @@ async function fetchTenantFromDB(
     // Si el dominio es www.pinteya.com.ar, también buscar www.pinteya.com
     // Si el dominio es www.pintemas.com.ar, también buscar www.pintemas.com
     // Esto permite que ambos dominios funcionen con el mismo tenant
-    if (customDomain === 'www.pintemas.com.ar') {
+    if (customDomain === 'www.pintemas.com.ar' || customDomain === 'pintemas.com.ar') {
       // Buscar por cualquiera de los dos dominios usando OR
       query = query.or('custom_domain.eq.www.pintemas.com,custom_domain.eq.www.pintemas.com.ar')
-    } else if (customDomain === 'www.pinteya.com.ar') {
+    } else if (customDomain === 'www.pintemas.com' || customDomain === 'pintemas.com') {
+      // Buscar por www.pintemas.com (principal) o www.pintemas.com.ar
+      query = query.or('custom_domain.eq.www.pintemas.com,custom_domain.eq.www.pintemas.com.ar')
+    } else if (customDomain === 'www.pinteya.com.ar' || customDomain === 'pinteya.com.ar') {
       // Buscar por cualquiera de los dos dominios usando OR
+      query = query.or('custom_domain.eq.www.pinteya.com,custom_domain.eq.www.pinteya.com.ar')
+    } else if (customDomain === 'www.pinteya.com' || customDomain === 'pinteya.com') {
+      // Buscar por www.pinteya.com (principal) o www.pinteya.com.ar
       query = query.or('custom_domain.eq.www.pinteya.com,custom_domain.eq.www.pinteya.com.ar')
     } else {
       query = query.eq('custom_domain', customDomain)
@@ -230,9 +232,7 @@ async function fetchTenantFromDB(
   }
   
   const { data, error } = await query.single()
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'tenant-service.ts:215',message:'After tenants query',data:{hasData:!!data,hasError:!!error,errorCode:error?.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
+  // ⚠️ REMOVIDO: Requests a 127.0.0.1:7242 causaban popup de acceso a red local en producción
   
   if (error || !data) {
     console.warn(`[TenantService] Tenant not found for subdomain=${subdomain}, customDomain=${customDomain}`)
@@ -285,8 +285,22 @@ export const getTenantConfig = cache(async (): Promise<TenantConfig> => {
   // Detectar tenant
   const { subdomain, customDomain } = detectTenantFromHost(hostname)
   
+  // Debug logging para verificar detección
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[TenantService] Detecting tenant:', { hostname, subdomain, customDomain })
+  }
+  
   // Buscar en DB
   let tenantRow = await fetchTenantFromDB(subdomain, customDomain)
+  
+  // Debug logging para verificar resultado
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[TenantService] Tenant found:', { 
+      found: !!tenantRow, 
+      slug: tenantRow?.slug, 
+      name: tenantRow?.name 
+    })
+  }
   
   // Fallback al tenant por defecto
   if (!tenantRow) {
