@@ -213,8 +213,12 @@ async function fetchTenantFromDB(
   } else if (customDomain) {
     // Buscar por coincidencia exacta
     // Si el dominio es www.pinteya.com.ar, también buscar www.pinteya.com
+    // Si el dominio es www.pintemas.com.ar, también buscar www.pintemas.com
     // Esto permite que ambos dominios funcionen con el mismo tenant
-    if (customDomain === 'www.pinteya.com.ar') {
+    if (customDomain === 'www.pintemas.com.ar') {
+      // Buscar por cualquiera de los dos dominios usando OR
+      query = query.or('custom_domain.eq.www.pintemas.com,custom_domain.eq.www.pintemas.com.ar')
+    } else if (customDomain === 'www.pinteya.com.ar') {
       // Buscar por cualquiera de los dos dominios usando OR
       query = query.or('custom_domain.eq.www.pinteya.com,custom_domain.eq.www.pinteya.com.ar')
     } else {

@@ -369,16 +369,54 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
           tenantAccessToken = tenant.mercadopagoAccessToken
           tenantWebhookSecret = tenant.mercadopagoWebhookSecret || null
           console.log('[WEBHOOK_ASYNC] Credenciales del tenant obtenidas')
+        } else {
+          // ⚠️ CRÍTICO: Si encontramos la orden pero el tenant no tiene credenciales, fallar
+          console.error(
+            '[WEBHOOK_ASYNC] Orden encontrada pero tenant no tiene credenciales de MercadoPago configuradas',
+            {
+              tenantId: orderTenantId,
+              orderId: order.id,
+              externalReference: paymentExternalReference,
+            }
+          )
+          logger.error(
+            LogCategory.PAYMENT,
+            'Webhook failed: tenant has no MercadoPago credentials',
+            {
+              tenantId: orderTenantId,
+              orderId: order.id,
+              externalReference: paymentExternalReference,
+            },
+            { clientIP }
+          )
+          return
         }
       }
     }
 
-    // Si no tenemos credenciales del tenant, usar las temporales como fallback
-    const accessTokenToUse = tenantAccessToken || tempAccessToken
-    if (!accessTokenToUse) {
-      console.error('[WEBHOOK_ASYNC] No hay credenciales disponibles para procesar el webhook')
+    // ⚠️ CRÍTICO: NO usar fallback a variables de entorno. Si no hay credenciales del tenant, fallar
+    // El tempAccessToken solo se usa para obtener external_reference inicialmente
+    if (!tenantAccessToken) {
+      console.error(
+        '[WEBHOOK_ASYNC] No hay credenciales del tenant disponibles para procesar el webhook',
+        {
+          hasOrderTenantId: !!orderTenantId,
+          externalReference: paymentExternalReference,
+        }
+      )
+      logger.error(
+        LogCategory.PAYMENT,
+        'Webhook failed: no tenant credentials available',
+        {
+          hasOrderTenantId: !!orderTenantId,
+          externalReference: paymentExternalReference,
+        },
+        { clientIP }
+      )
       return
     }
+
+    const accessTokenToUse = tenantAccessToken
 
     // ✅ ENTERPRISE: Procesar webhook con circuit breaker
     const webhookResult = await executeWebhookProcessing(async () => {
@@ -571,12 +609,35 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
       order = orderData
       orderTenantId = order.tenant_id
 
-      // Obtener credenciales del tenant si no las tenemos
+      // ⚠️ CRÍTICO: Obtener credenciales del tenant si no las tenemos
+      // Si el tenant no tiene credenciales, fallar en lugar de usar fallback
       if (orderTenantId && !tenantAccessToken) {
         const tenant = await getTenantById(orderTenantId)
         if (tenant && tenant.mercadopagoAccessToken) {
           tenantAccessToken = tenant.mercadopagoAccessToken
           tenantWebhookSecret = tenant.mercadopagoWebhookSecret || null
+          console.log('[WEBHOOK_ASYNC] Credenciales del tenant obtenidas después de buscar orden')
+        } else {
+          // ⚠️ CRÍTICO: Si el tenant no tiene credenciales, fallar
+          console.error(
+            '[WEBHOOK_ASYNC] Orden encontrada pero tenant no tiene credenciales de MercadoPago configuradas',
+            {
+              tenantId: orderTenantId,
+              orderId: order.id,
+              externalReference: orderReference,
+            }
+          )
+          logger.error(
+            LogCategory.PAYMENT,
+            'Webhook failed: tenant has no MercadoPago credentials',
+            {
+              tenantId: orderTenantId,
+              orderId: order.id,
+              externalReference: orderReference,
+            },
+            { clientIP }
+          )
+          return
         }
       }
     } else {
