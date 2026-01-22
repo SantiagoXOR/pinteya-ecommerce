@@ -15,6 +15,9 @@ import { NextResponse, NextRequest } from 'next/server'
 const PLATFORM_DOMAIN = 'pintureriadigital.com'
 const DEFAULT_TENANT_SLUG = 'pinteya'
 
+/** Dominios de deployment (Vercel) que no son tenant; redirigir al tenant por defecto */
+const PLATFORM_DEPLOYMENT_DOMAINS = ['pintureriadigital.vercel.app']
+
 // ============================================================================
 // HELPERS PARA DETECCIÓN DE TENANT
 // ============================================================================
@@ -110,6 +113,36 @@ export default async function middleware(req: NextRequest) {
     // ✅ CRÍTICO: Retornar inmediatamente sin acceder a headers ni procesar el request
     // Esto evita que Next.js intente leer el body antes de que el handler lo lea
     return NextResponse.next()
+  }
+
+  // ============================================================================
+  // REDIRECT PLATAFORMA → TENANT POR DEFECTO (Multitenant)
+  // ============================================================================
+  const host = hostname.split(':')[0]
+  if (
+    PLATFORM_DEPLOYMENT_DOMAINS.includes(host) &&
+    !nextUrl.pathname.startsWith('/api')
+  ) {
+    // Obtener tenant por defecto y su URL canónica usando tenant service
+    try {
+      const { getTenantBySlug, getTenantBaseUrl } = await import('./src/lib/tenant/tenant-service')
+      const defaultTenantSlug = process.env.DEFAULT_TENANT_SLUG || DEFAULT_TENANT_SLUG
+      const defaultTenant = await getTenantBySlug(defaultTenantSlug)
+      
+      if (defaultTenant) {
+        const tenantBaseUrl = getTenantBaseUrl(defaultTenant)
+        const target = new URL(nextUrl.pathname + nextUrl.search, tenantBaseUrl)
+        return NextResponse.redirect(target, 307)
+      }
+    } catch (error) {
+      console.error('[Middleware] Error obteniendo tenant por defecto:', error)
+    }
+    
+    // Fallback a env o hardcoded
+    const defaultBase =
+      process.env.DEFAULT_TENANT_CANONICAL_URL || 'https://www.pinteya.com'
+    const target = new URL(nextUrl.pathname + nextUrl.search, defaultBase)
+    return NextResponse.redirect(target, 307)
   }
 
   // ✅ FIX: Detectar multipart/form-data y evitar leer el body

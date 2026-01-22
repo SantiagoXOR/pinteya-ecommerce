@@ -45,6 +45,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     signIn: '/auth/signin',
     error: '/auth/error',
   },
+  trustHost: true,
   callbacks: {
     async jwt({ token, user, account, trigger }) {
       console.log(`[NextAuth JWT] Callback ejecutado - trigger: ${trigger || 'auto'}, hasUser: ${!!user}, hasAccount: ${!!account}, hasTokenUserId: ${!!token.userId}`)
@@ -97,6 +98,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return session
     },
     async redirect({ url, baseUrl }) {
+      // Multitenant: priorizar origen de la request para mantener al usuario en el dominio del tenant
       const base: string = (baseUrl || process.env.NEXTAUTH_URL || 'http://localhost:3000') as string
       // Si la URL es el callback de auth, redirigir a nuestra página de callback
       if (url.includes('/api/auth/callback') || url === base || url === `${base}/`) {

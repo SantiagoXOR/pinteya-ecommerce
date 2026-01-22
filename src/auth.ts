@@ -124,7 +124,8 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
-      const base: string = (nextAuthUrl || baseUrl || 'http://localhost:3000') as string
+      // Multitenant: priorizar origen de la request para mantener al usuario en el dominio del tenant
+      const base: string = (baseUrl || process.env.NEXTAUTH_URL || 'http://localhost:3000') as string
       
       if (url.includes('/api/auth/callback') || url === base || url === `${base}/`) {
         return `${base}/auth/callback`

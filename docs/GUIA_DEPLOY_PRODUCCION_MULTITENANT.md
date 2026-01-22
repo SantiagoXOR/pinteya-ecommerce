@@ -129,6 +129,10 @@ RESEND_FROM_EMAIL=noreply@pintureriadigital.com
 # Analytics
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 ANALYTICS_ENABLED=true
+
+# Multitenant: URL canónica del tenant por defecto (redirect desde dominio plataforma)
+# Si no se define, se usa https://www.pinteya.com
+DEFAULT_TENANT_CANONICAL_URL=https://www.pinteya.com
 ```
 
 ### Configuración en Vercel
@@ -164,6 +168,7 @@ Marca las que ya configuraste:
 - [ ] `REDIS_PORT` (Opcional)
 - [ ] `REDIS_PASSWORD` (Opcional)
 - [ ] `RESEND_API_KEY` (Opcional)
+- [ ] `DEFAULT_TENANT_CANONICAL_URL` (Opcional; default `https://www.pinteya.com` para redirect plataforma → tenant)
 
 ---
 
@@ -314,6 +319,58 @@ NextAuth usa `NEXTAUTH_URL` principalmente para:
 - `https://www.pintemas.com/api/auth/callback/google` ✅ (cuando lo agregues)
 
 Con esta configuración, NextAuth puede redirigir correctamente desde cualquier dominio autorizado, independientemente del valor de `NEXTAUTH_URL`.
+
+#### OAuth y URL canónica multitenant
+
+El sistema implementa un flujo multitenant para que el login y los redirects post-OAuth mantengan al usuario en el **dominio del tenant** desde el que inició sesión.
+
+**1. Redirect post-login por origen de la request (`baseUrl`)**
+
+El callback `redirect` de NextAuth prioriza `baseUrl` (origen de la petición) sobre `NEXTAUTH_URL`. Con `trustHost: true`, `baseUrl` se deriva del host de la request (o `X-Forwarded-Host` en Vercel). El callback de OAuth llega al dominio desde el que se inició el login, así que el usuario permanece en ese dominio tras autenticarse.
+
+- Login desde **www.pinteya.com** → redirect a `.../auth/callback` en www.pinteya.com.
+- Login desde **www.pintemas.com** (u otro tenant) → redirect en su propio dominio.
+
+**2. `NEXTAUTH_URL` como fallback**
+
+`NEXTAUTH_URL` se usa solo cuando no hay `baseUrl` (por ejemplo, contextos server-side sin request). Mantener `NEXTAUTH_URL` = dominio de la app en Vercel (p. ej. `https://pintureriadigital.vercel.app`).
+
+**3. Redirect dominio plataforma → tenant por defecto**
+
+Si el usuario accede por un **dominio de deployment** (p. ej. `pintureriadigital.vercel.app`) que no es un tenant, el middleware redirige las rutas de **UI** (no `/api`) al tenant por defecto:
+
+- Dominios plataforma: `pintureriadigital.vercel.app` (solo ese, no `*.vercel.app`, para no afectar previews).
+- El middleware obtiene el tenant por defecto usando `getTenantBySlug(DEFAULT_TENANT_SLUG)` y construye la URL canónica con `getTenantBaseUrl()` (usa `custom_domain` o subdominio según la configuración del tenant).
+- Redirect **307** a la URL canónica del tenant + pathname + search.
+
+**Variables de entorno opcionales:**
+
+```env
+# Slug del tenant por defecto (default: 'pinteya')
+DEFAULT_TENANT_SLUG=pinteya
+
+# Fallback: URL canónica directa (solo si falla obtener el tenant desde BD)
+DEFAULT_TENANT_CANONICAL_URL=https://www.pinteya.com
+```
+
+**Prioridad de configuración:**
+1. Si `DEFAULT_TENANT_SLUG` está definido → obtiene el tenant desde BD y usa su URL canónica (recomendado).
+2. Si no, usa `DEFAULT_TENANT_CANONICAL_URL` del env.
+3. Si ninguna está definida, usa `https://www.pinteya.com` como fallback hardcoded.
+
+Las rutas `/api/*` no se redirigen (OAuth y APIs siguen en el dominio de la request).
+
+**4. Lista de redirect URI por tenant en Google OAuth**
+
+En **Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client**, incluir en **Authorized redirect URIs** **cada** dominio donde haya login:
+
+- `https://www.pinteya.com/api/auth/callback/google`
+- `https://www.pinteya.com.ar/api/auth/callback/google`
+- `https://pintureriadigital.vercel.app/api/auth/callback/google`
+- Por cada **nuevo tenant** con custom domain: `https://<custom_domain>/api/auth/callback/google`
+- Si usas subdominios: `https://pinteya.pintureriadigital.com/api/auth/callback/google`, etc.
+
+Sin el `redirect_uri` correspondiente, el login desde ese dominio fallará.
 
 ### 2.4. Agregar Más Dominios Custom (Futuro)
 
