@@ -1342,6 +1342,41 @@ export function MyComponent() {
 
 ## Troubleshooting
 
+### "Popup de acceso a red local"
+
+**Causa**: Requests a `127.0.0.1:7242` en el código (logs de debugging ejecutándose en producción).
+
+**Solución**: 
+- ✅ **RESUELTO** en commit `fa9a5aaa` - Requests eliminados de `tenant-service.ts`
+- Los logs de debugging solo deben ejecutarse en desarrollo local, no en producción
+- Si el problema persiste, verificar que no hay otros archivos con requests a localhost
+
+### "Assets de Pintemas no se cargan"
+
+**Causas posibles**:
+1. Assets no incluidos en el build de Vercel
+2. Problema de caché en Vercel o navegador
+3. Ruta incorrecta en el código
+4. Dominio no configurado correctamente en Vercel
+
+**Soluciones**:
+1. Verificar que los assets están en git:
+   ```bash
+   git ls-files public/tenants/pintemas/
+   ```
+
+2. Forzar nuevo build en Vercel (redeploy)
+
+3. Verificar build logs en Vercel Dashboard para errores
+
+4. Invalidar caché del navegador (Ctrl+Shift+R o Cmd+Shift+R)
+
+5. Verificar que el dominio está configurado en Vercel Dashboard
+
+6. Verificar configuración en `next.config.js` para assets estáticos
+
+**Ver guía completa**: `docs/VERIFICACION_PRODUCCION_PINTEMAS.md`
+
 ### "Tenant not found"
 
 **Causa:** El hostname no coincide con ningún tenant en la BD.
@@ -1625,6 +1660,14 @@ export const GET = withTenantAdmin(async (
 - ✅ Actualización de schema markup para usar configuración del tenant
 - ✅ Build verificado sin errores
 
+### v1.5.0 (2026-01-22) - Implementación Completa de Pintemas
+- ✅ Soporte para múltiples dominios custom de Pintemas (`www.pintemas.com` y `www.pintemas.com.ar`)
+- ✅ Eliminación de requests a localhost que causaban popup de acceso a red local
+- ✅ Validación estricta de credenciales de MercadoPago por tenant (sin fallback a Pinteya)
+- ✅ Mejora en detección de dominios (soporte para con y sin `www`)
+- ✅ Script de verificación de tenant Pintemas (`scripts/verify-tenant-pintemas.js`)
+- ✅ Documentación de verificación en producción (`docs/VERIFICACION_PRODUCCION_PINTEMAS.md`)
+
 ### v1.0.0 (2026-01-21)
 
 - Implementación inicial del sistema multitenant
@@ -1672,8 +1715,9 @@ El sistema multitenant de PintureríaDigital está **completamente implementado 
 #### ✅ Funcionalidades Completadas
 
 1. **Detección de Tenant**
-   - Soporte para subdominios (`pinteya.pintureriadigital.com`)
-   - Soporte para dominios custom (`www.pinteya.com`)
+   - Soporte para subdominios (`pinteya.pintureriadigital.com`, `pintemas.pintureriadigital.com`)
+   - Soporte para dominios custom (`www.pinteya.com`, `www.pinteya.com.ar`, `www.pintemas.com`, `www.pintemas.com.ar`)
+   - Soporte para dominios con y sin `www`
    - Fallback automático a tenant por defecto
    - Redirect de dominio plataforma → tenant por defecto
 
