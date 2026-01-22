@@ -14,6 +14,7 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN ENTERPRISE
@@ -186,8 +187,9 @@ function buildSearchConditions(rawSearch: string) {
 // ===================================
 // GET - Listar órdenes con filtros avanzados
 // ===================================
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (guardResult: TenantAdminGuardResult, request: NextRequest) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -205,12 +207,6 @@ export async function GET(request: NextRequest) {
       const response = NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
       addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.admin)
       return response
-    }
-
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
     // Validar parámetros de consulta
@@ -244,8 +240,11 @@ export async function GET(request: NextRequest) {
     const filters = filtersResult.data
 
     // Construir query base con joins optimizados (usando user_profiles después de migración NextAuth)
-    let query = supabaseAdmin.from('orders').select(
-      `
+    // ⚡ MULTITENANT: Filtrar por tenant_id
+    let query = supabaseAdmin
+      .from('orders')
+      .select(
+        `
         id,
         order_number,
         status,
@@ -278,8 +277,9 @@ export async function GET(request: NextRequest) {
           )
         )
       `,
-      { count: 'exact' }
-    )
+        { count: 'exact' }
+      )
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
     // Aplicar filtros
     if (filters.status) {
@@ -432,13 +432,14 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
 // ===================================
 // POST - Crear nueva orden (admin)
 // ===================================
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (guardResult: TenantAdminGuardResult, request: NextRequest) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -456,12 +457,6 @@ export async function POST(request: NextRequest) {
       const response = NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
       addRateLimitHeaders(response, rateLimitResult, RATE_LIMIT_CONFIGS.admin)
       return response
-    }
-
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
     // Validar datos de entrada
@@ -491,7 +486,8 @@ export async function POST(request: NextRequest) {
     )
 
     // Crear orden en transacción
-    // Solo usar columnas que existen en la tabla: id, user_id, total, status, payment_id, shipping_address, created_at, updated_at, external_reference, payment_preference_id, payer_info, payment_status, order_number
+    // Solo usar columnas que existen en la tabla: id, user_id, total, status, payment_id, shipping_address, created_at, updated_at, external_reference, payment_preference_id, payer_info, payment_status, order_number, tenant_id
+    // ⚡ MULTITENANT: Incluir tenant_id al crear orden
     const orderInsertData = {
       user_id: orderData.user_id,
       status: 'pending',
@@ -502,6 +498,7 @@ export async function POST(request: NextRequest) {
         : null,
       order_number: orderNumber, // Usar order_number para almacenar el número de orden
       external_reference: `admin_order_${Date.now()}`,
+      tenant_id: tenantId, // ⚡ MULTITENANT: Asignar tenant_id
     }
 
     console.log('📝 [Orders API] Insertando orden:', JSON.stringify(orderInsertData, null, 2))
@@ -521,11 +518,13 @@ export async function POST(request: NextRequest) {
     console.log('✅ [Orders API] Orden creada exitosamente:', order)
 
     // Crear items de la orden
+    // ⚡ MULTITENANT: Incluir tenant_id en order_items
     const orderItems = orderData.items.map(item => ({
       order_id: order.id,
       product_id: item.product_id,
       quantity: item.quantity,
       price: item.unit_price, // La tabla order_items usa 'price' en lugar de 'unit_price' y 'total_price'
+      tenant_id: tenantId, // ⚡ MULTITENANT: Asignar tenant_id
     }))
 
     console.log('📝 [Orders API] Insertando items:', JSON.stringify(orderItems, null, 2))
@@ -574,4 +573,4 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})

@@ -2,25 +2,22 @@
 export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdminAuth } from '@/lib/auth/admin-auth'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 /**
  * GET /api/admin/orders/stats
  * Obtener estadísticas de órdenes desde Supabase
+ * ⚡ MULTITENANT: Filtra por tenant_id
  */
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (guardResult: TenantAdminGuardResult, request: NextRequest) => {
   try {
-    // Verificar autenticación y permisos de admin
-    const authResult = await requireAdminAuth()
-
-    if (!authResult.success) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status || 401 })
-    }
+    const { tenantId } = guardResult
 
     const today = new Date().toISOString().split('T')[0]
 
     // Obtener estadísticas de órdenes con revenue
+    // ⚡ MULTITENANT: Filtrar todas las queries por tenant_id
     const [
       totalResult,
       pendingResult,
@@ -32,42 +29,48 @@ export async function GET(request: NextRequest) {
       todayRevenueResult,
     ] = await Promise.all([
       // Total de órdenes
-      supabaseAdmin.from('orders').select('id', { count: 'exact', head: true }),
+      supabaseAdmin.from('orders').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
       // Órdenes pendientes
       supabaseAdmin
         .from('orders')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending'),
+        .eq('status', 'pending')
+        .eq('tenant_id', tenantId),
       // Órdenes en procesamiento (confirmadas + en proceso)
       supabaseAdmin
         .from('orders')
         .select('id', { count: 'exact', head: true })
-        .in('status', ['confirmed', 'processing']),
+        .in('status', ['confirmed', 'processing'])
+        .eq('tenant_id', tenantId),
       // Órdenes completadas
       supabaseAdmin
         .from('orders')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'delivered'),
+        .eq('status', 'delivered')
+        .eq('tenant_id', tenantId),
       // Órdenes canceladas
       supabaseAdmin
         .from('orders')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'cancelled'),
+        .eq('status', 'cancelled')
+        .eq('tenant_id', tenantId),
       // Órdenes de hoy
       supabaseAdmin
         .from('orders')
         .select('id', { count: 'exact', head: true })
         .gte('created_at', `${today}T00:00:00Z`)
-        .lt('created_at', `${today}T23:59:59Z`),
+        .lt('created_at', `${today}T23:59:59Z`)
+        .eq('tenant_id', tenantId),
       // Revenue total (órdenes completadas)
-      supabaseAdmin.from('orders').select('total').eq('status', 'delivered'),
+      supabaseAdmin.from('orders').select('total').eq('status', 'delivered').eq('tenant_id', tenantId),
       // Revenue de hoy (órdenes completadas de hoy)
       supabaseAdmin
         .from('orders')
         .select('total')
         .eq('status', 'delivered')
         .gte('created_at', `${today}T00:00:00Z`)
-        .lt('created_at', `${today}T23:59:59Z`),
+        .lt('created_at', `${today}T23:59:59Z`)
+        .eq('tenant_id', tenantId),
     ])
 
     // Calcular revenue
@@ -125,4 +128,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

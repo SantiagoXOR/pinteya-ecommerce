@@ -25,6 +25,8 @@ import { composeMiddlewares } from '@/lib/api/middleware-composer'
 import { withErrorHandler, ApiError, ValidationError } from '@/lib/api/error-handler'
 import { withApiLogging } from '@/lib/api/api-logger'
 import { withAdminAuth } from '@/lib/auth/api-auth-middleware'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -104,7 +106,10 @@ const BulkCategoryActionSchema = z.object({
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
-async function getCategoriesWithStats(filters: z.infer<typeof CategoryFiltersSchema>) {
+async function getCategoriesWithStats(
+  filters: z.infer<typeof CategoryFiltersSchema>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+) {
   // Use new CategoryService to get categories
   const service = createCategoryService(true)
   
@@ -116,9 +121,11 @@ async function getCategoriesWithStats(filters: z.infer<typeof CategoryFiltersSch
     sortOrder: filters.sort_order,
     limit: filters.limit,
     offset: (filters.page - 1) * filters.limit,
+    tenantId, // ⚡ MULTITENANT: Pasar tenantId al servicio
   }
 
   // Get categories with counts
+  // ⚡ MULTITENANT: El servicio debe filtrar por tenant_id
   const uiCategories = await service.getCategoriesWithCounts(categoryFilters)
   const total = await service.getCategoryCount(categoryFilters)
 
@@ -148,7 +155,11 @@ async function getCategoriesWithStats(filters: z.infer<typeof CategoryFiltersSch
   }
 }
 
-async function createCategory(categoryData: z.infer<typeof CreateCategorySchema>, userId: string) {
+async function createCategory(
+  categoryData: z.infer<typeof CreateCategorySchema>,
+  userId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+) {
   // Use new CategoryService to create category
   // Nota: description no existe en la tabla categories, no se incluye
   const payload: CreateCategoryPayload = {
@@ -157,6 +168,24 @@ async function createCategory(categoryData: z.infer<typeof CreateCategorySchema>
     image_url: categoryData.image_url || null,
     parent_id: categoryData.parent_id ? parseInt(categoryData.parent_id, 10) : null,
     display_order: categoryData.order_index || null,
+    tenant_id: tenantId, // ⚡ MULTITENANT: Asignar tenant_id
+  }
+
+  // ⚡ MULTITENANT: Verificar que el parent_id pertenece al tenant si existe
+  if (categoryData.parent_id) {
+    const supabase = getSupabaseClient(true)
+    if (supabase) {
+      const { data: parentCategory } = await supabase
+        .from('categories')
+        .select('id, tenant_id')
+        .eq('id', parseInt(categoryData.parent_id, 10))
+        .eq('tenant_id', tenantId)
+        .single()
+      
+      if (!parentCategory) {
+        throw new ValidationError('La categoría padre no existe o no pertenece a este tenant')
+      }
+    }
   }
 
   const newCategory = await createCategoryInDB(payload, true)
@@ -197,9 +226,14 @@ async function logAuditAction(action: string, categoryId: string, userId: string
 
 // ===================================
 // GET /api/admin/categories - Obtener categorías (Admin)
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -217,21 +251,6 @@ export async function GET(request: NextRequest) {
       const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
       // Rate limit headers are handled internally
       return response
-    }
-
-    // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_read'])
-
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          error: authResult.error,
-          code: authResult.code,
-          enterprise: true,
-          timestamp: new Date().toISOString(),
-        },
-        { status: authResult.status || 401 }
-      )
     }
 
     // Parsear parámetros de consulta
@@ -253,8 +272,8 @@ export async function GET(request: NextRequest) {
     }
     const filters = CategoryFiltersSchema.parse(rawFilters)
 
-    // Obtener categorías
-    const result = await getCategoriesWithStats(filters)
+    // ⚡ MULTITENANT: Obtener categorías filtrando por tenant_id
+    const result = await getCategoriesWithStats(filters, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -262,7 +281,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id,
+      userId: guardResult.userId,
     })
 
     const response: ApiResponse<{
@@ -316,13 +335,18 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // POST /api/admin/categories - Crear categoría o operaciones masivas (Admin)
+// ⚡ MULTITENANT: Filtra y asigna tenant_id
 // ===================================
-const postHandler = async (request: NextRequest) => {
+const postHandler = async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   // Rate limiting (después de autenticación)
   const rateLimitResult = await checkRateLimit(
@@ -337,18 +361,6 @@ const postHandler = async (request: NextRequest) => {
 
   if (!rateLimitResult.success) {
     throw new ApiError(rateLimitResult.message, 429, 'RATE_LIMIT_EXCEEDED')
-  }
-
-  // Obtener usuario autenticado (el middleware withAdminAuth ya verificó la autenticación)
-  let userId: string | undefined
-  if (process.env.BYPASS_AUTH !== 'true') {
-    try {
-      const { auth } = await import('@/lib/auth/config')
-      const session = await auth()
-      userId = session?.user?.id
-    } catch (authError: any) {
-      console.warn('[POST /categories] No se pudo obtener usuario')
-    }
   }
 
   const body = await request.json()
@@ -380,11 +392,12 @@ const postHandler = async (request: NextRequest) => {
           updateData = { is_featured: false }
           break
         case 'delete':
-          // Verificar que las categorías no tengan productos
+          // ⚡ MULTITENANT: Verificar que las categorías no tengan productos y pertenezcan al tenant
           const { data: categoriesWithProducts } = await supabase
             .from('categories')
             .select('id, name, product_count')
             .in('id', bulkData.category_ids)
+            .eq('tenant_id', tenantId) // ⚡ MULTITENANT
             .gt('product_count', 0)
 
           if (categoriesWithProducts && categoriesWithProducts.length > 0) {
@@ -393,10 +406,12 @@ const postHandler = async (request: NextRequest) => {
             )
           }
 
+          // ⚡ MULTITENANT: Eliminar solo categorías del tenant
           const { data: deletedCategories, error: deleteError } = await supabase
             .from('categories')
             .delete()
             .in('id', bulkData.category_ids)
+            .eq('tenant_id', tenantId) // ⚡ MULTITENANT
             .select()
 
           if (deleteError) {
@@ -405,7 +420,7 @@ const postHandler = async (request: NextRequest) => {
 
           // Registrar auditoría para cada categoría eliminada
           for (const categoryId of bulkData.category_ids) {
-            await logAuditAction('bulk_delete', categoryId, userId!, bulkData)
+            await logAuditAction('bulk_delete', categoryId, userId, bulkData)
           }
 
           const deleteResponse: ApiResponse<typeof deletedCategories> = {
@@ -423,10 +438,12 @@ const postHandler = async (request: NextRequest) => {
       }
 
       if (Object.keys(updateData).length > 0) {
+        // ⚡ MULTITENANT: Actualizar solo categorías del tenant
         const { data: updatedCategories, error: updateError } = await supabase
           .from('categories')
           .update({ ...updateData, updated_at: new Date().toISOString() })
           .in('id', bulkData.category_ids)
+          .eq('tenant_id', tenantId) // ⚡ MULTITENANT
           .select()
 
         if (updateError) {
@@ -438,7 +455,7 @@ const postHandler = async (request: NextRequest) => {
           await logAuditAction(
             `bulk_${bulkData.action}`,
             categoryId,
-            userId!,
+            userId,
             bulkData
           )
         }
@@ -469,11 +486,11 @@ const postHandler = async (request: NextRequest) => {
       throw ValidationError('La imagen de la categoría es requerida')
     }
 
-    // Use new CategoryService to create category
-    const newCategory = await createCategory(categoryPayload, userId!)
+    // ⚡ MULTITENANT: Use new CategoryService to create category con tenantId
+    const newCategory = await createCategory(categoryPayload, userId, tenantId)
 
     // Registrar auditoría
-    await logAuditAction('create', newCategory.id, userId!, categoryData)
+    await logAuditAction('create', newCategory.id.toString(), userId, categoryData)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -493,9 +510,5 @@ const postHandler = async (request: NextRequest) => {
     return NextResponse.json(response, { status: 201 })
 }
 
-// Aplicar middlewares
-export const POST = composeMiddlewares(
-  withAdminAuth(['categories_create']), // Ejecutar PRIMERO para verificar autenticación
-  withErrorHandler,
-  withApiLogging
-)(postHandler)
+// ⚡ MULTITENANT: Aplicar withTenantAdmin
+export const POST = withTenantAdmin(postHandler)

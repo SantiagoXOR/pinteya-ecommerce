@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { MessageCircle, X } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface FloatingWhatsAppProps {
   showImmediately?: boolean
@@ -12,8 +13,10 @@ const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ showImmediately = f
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const whatsappNumber = '5493513411796' // Número oficial de Pinteya
-  const defaultMessage = 'Hola! Necesito ayuda con productos de pinturería'
+  // Obtener número de WhatsApp del tenant
+  const tenant = useTenantSafe()
+  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+  const defaultMessage = tenant?.whatsappMessageTemplate || 'Hola! Necesito ayuda con productos de pinturería'
 
   useEffect(() => {
     // Si showImmediately es true, mostrar inmediatamente

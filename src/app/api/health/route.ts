@@ -11,7 +11,7 @@ export async function GET() {
   return NextResponse.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    service: 'pinteya-ecommerce',
+    service: 'pintureria-digital',
     version: '1.0.0',
   })
 }

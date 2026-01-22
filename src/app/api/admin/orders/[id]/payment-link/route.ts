@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { createPaymentPreference } from '@/lib/integrations/mercadopago'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
+import { getTenantById } from '@/lib/tenant/tenant-service'
 
 // ===================================
 // MIDDLEWARE DE AUTENTICACIÓN ADMIN
@@ -54,27 +56,26 @@ async function validateAdminAuth() {
  * POST /api/admin/orders/[id]/payment-link
  * Crea un link de pago para una orden manual
  */
-export async function POST(
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   let orderId: string | undefined
+  const { tenantId } = guardResult
   try {
     const { id } = await context.params
     orderId = id
 
-    // Verificar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status || 401 })
-    }
-
     logger.log(LogLevel.INFO, LogCategory.API, 'Creating payment link for order', {
       orderId,
-      userId: authResult.userId,
+      userId: guardResult.userId,
+      tenantId,
     })
 
-    // Obtener datos de la orden
+    // ===================================
+    // MULTITENANT: Obtener orden del tenant
+    // ===================================
     const supabase = createAdminClient()
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -87,6 +88,7 @@ export async function POST(
         payment_status,
         external_reference,
         payer_info,
+        tenant_id,
         user_profiles!orders_user_id_fkey (
           first_name,
           last_name,
@@ -95,6 +97,7 @@ export async function POST(
       `
       )
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .single()
 
     if (orderError || !order) {
@@ -172,8 +175,21 @@ export async function POST(
       notification_url: `${process.env.NEXT_PUBLIC_URL}/api/payments/webhook`,
     }
 
-    // Crear preferencia en MercadoPago
-    const preferenceResult = await createPaymentPreference(preferenceData)
+    // ⚡ MULTITENANT: Obtener credenciales del tenant
+    const tenant = await getTenantById(tenantId)
+    if (!tenant || !tenant.mercadopagoAccessToken) {
+      logger.log(LogLevel.ERROR, LogCategory.PAYMENT, 'MercadoPago no configurado para este tenant', {
+        orderId,
+        tenantId,
+      })
+      return NextResponse.json(
+        { success: false, error: 'MercadoPago no configurado para este tenant' },
+        { status: 400 }
+      )
+    }
+
+    // Crear preferencia en MercadoPago usando credenciales del tenant
+    const preferenceResult = await createPaymentPreference(preferenceData, tenant.mercadopagoAccessToken)
 
     if (!preferenceResult.success || !preferenceResult.data) {
       logger.log(LogLevel.ERROR, LogCategory.PAYMENT, 'Error creating MercadoPago preference', {
@@ -186,7 +202,9 @@ export async function POST(
       )
     }
 
-    // Actualizar orden con preference_id y payment_link
+    // ===================================
+    // MULTITENANT: Actualizar orden del tenant
+    // ===================================
     const { error: updateError } = await supabase
       .from('orders')
       .update({
@@ -195,6 +213,7 @@ export async function POST(
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
 
     if (updateError) {
       logger.log(LogLevel.ERROR, LogCategory.API, 'Error updating order with preference_id', {
@@ -235,4 +254,4 @@ export async function POST(
       { status: 500 }
     )
   }
-}
+})

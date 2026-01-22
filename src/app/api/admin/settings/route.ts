@@ -14,6 +14,8 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -178,11 +180,30 @@ async function validateAdminAuth() {
   }
 }
 
+async function getTenantIdFromRequest(request: NextRequest): Promise<string> {
+  // ⚡ MULTITENANT: Obtener tenant desde headers o usar tenant por defecto
+  const tenantDomain = request.headers.get('x-tenant-domain')
+  if (tenantDomain) {
+    // Si hay un dominio custom, buscar el tenant
+    const { getTenantConfig } = await import('@/lib/tenant')
+    try {
+      const tenant = await getTenantConfig()
+      return tenant.id
+    } catch {
+      // Si falla, usar tenant por defecto (Pinteya)
+    }
+  }
+  // Usar tenant por defecto (Pinteya)
+  const { getTenantBySlug } = await import('@/lib/tenant')
+  const defaultTenant = await getTenantBySlug('pinteya')
+  return defaultTenant?.id || ''
+}
+
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
 
-async function getSystemSettings(): Promise<SystemSettings> {
+async function getSystemSettings(tenantId: string): Promise<SystemSettings> {
   try {
     if (!supabaseAdmin) {
       console.error('[getSystemSettings] Cliente de Supabase no disponible')
@@ -196,10 +217,11 @@ async function getSystemSettings(): Promise<SystemSettings> {
     }
 
     console.log('[getSystemSettings] Intentando obtener configuraciones con estructura nueva...')
-    // Intentar obtener con la estructura nueva primero
+    // ⚡ MULTITENANT: Obtener configuraciones del tenant
     let { data: settings, error } = await supabaseAdmin
       .from('system_settings')
       .select('key, value, category')
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .order('category', { ascending: true })
     console.log('[getSystemSettings] Resultado query estructura nueva:', { 
       hasData: !!settings, 
@@ -217,11 +239,12 @@ async function getSystemSettings(): Promise<SystemSettings> {
         { error: error.message, code: error.code, details: error.details }
       )
 
-      // Intentar con estructura antigua como fallback
+      // ⚡ MULTITENANT: Intentar con estructura antigua como fallback (filtrando por tenant)
       console.log('[getSystemSettings] Intentando con estructura antigua...')
       const { data: oldSettings, error: oldError } = await supabaseAdmin
         .from('system_settings')
         .select('setting_key, setting_value, description')
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .order('setting_key', { ascending: true })
       
       console.log('[getSystemSettings] Resultado query estructura antigua:', { 
@@ -250,8 +273,8 @@ async function getSystemSettings(): Promise<SystemSettings> {
     }
 
     if (!settings || settings.length === 0) {
-      // Inicializar configuraciones por defecto
-      await initializeDefaultSettings()
+      // ⚡ MULTITENANT: Inicializar configuraciones por defecto para el tenant
+      await initializeDefaultSettings(tenantId)
       return DEFAULT_SETTINGS
     }
 
@@ -291,7 +314,8 @@ async function getSystemSettings(): Promise<SystemSettings> {
 
 async function updateSystemSettings(
   updates: Partial<SystemSettings>,
-  adminUserId: string
+  adminUserId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<void> {
   const settingsToUpdate: Array<{ key: string; value: string; category: string }> = []
 
@@ -385,7 +409,7 @@ async function updateSystemSettings(
   })
 }
 
-async function initializeDefaultSettings(): Promise<void> {
+async function initializeDefaultSettings(tenantId: string): Promise<void> {
   try {
     const settingsToInsert: Array<{ key: string; value: string; category: string }> = []
 
@@ -434,20 +458,23 @@ async function initializeDefaultSettings(): Promise<void> {
   }
 }
 
-async function resetToDefaults(adminUserId: string): Promise<void> {
+async function resetToDefaults(
+  adminUserId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+): Promise<void> {
   try {
-    // Eliminar todas las configuraciones existentes
+    // ⚡ MULTITENANT: Eliminar todas las configuraciones existentes del tenant
     const { error: deleteError } = await supabaseAdmin
       .from('system_settings')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000') // Condición que siempre es verdadera
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
     if (deleteError) {
       throw deleteError
     }
 
-    // Reinicializar con valores por defecto
-    await initializeDefaultSettings()
+    // ⚡ MULTITENANT: Reinicializar con valores por defecto para el tenant
+    await initializeDefaultSettings(tenantId)
 
     // Log de auditoría
     logger.log(
@@ -472,9 +499,14 @@ async function resetToDefaults(adminUserId: string): Promise<void> {
 
 // ===================================
 // GET - Obtener configuraciones del sistema
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -499,19 +531,8 @@ export async function GET(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
-    // Obtener configuraciones del sistema
-    const settings = await getSystemSettings()
+    // ⚡ MULTITENANT: Obtener configuraciones del sistema del tenant
+    const settings = await getSystemSettings(tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -519,7 +540,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     const response: ApiResponse<SystemSettings> = {
@@ -568,7 +589,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // PUT - Actualizar configuraciones del sistema
@@ -599,17 +620,6 @@ export async function PUT(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Validar datos de entrada
     const body = await request.json()
     const validationResult = SystemSettingsSchema.safeParse(body)
@@ -623,11 +633,25 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 })
     }
 
-    // Actualizar configuraciones
-    await updateSystemSettings(validationResult.data, authResult.userId!)
+    // Validar autenticación admin y obtener tenantId
+    const authResult = await validateAdminAuth()
+    if (authResult.error) {
+      const errorResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: authResult.error,
+      }
+      return NextResponse.json(errorResponse, { status: authResult.status })
+    }
 
-    // Obtener configuraciones actualizadas
-    const updatedSettings = await getSystemSettings()
+    const { userId } = authResult
+    const tenantId = await getTenantIdFromRequest(request)
+
+    // ⚡ MULTITENANT: Actualizar configuraciones del tenant
+    await updateSystemSettings(validationResult.data, userId, tenantId)
+
+    // ⚡ MULTITENANT: Obtener configuraciones actualizadas del tenant
+    const updatedSettings = await getSystemSettings(tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -635,7 +659,7 @@ export async function PUT(request: NextRequest) {
       method: 'PUT',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const response: ApiResponse<SystemSettings> = {
@@ -709,11 +733,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: authResult.status })
     }
 
-    // Restablecer a configuraciones por defecto
-    await resetToDefaults(authResult.userId!)
+    const { userId } = authResult
+    const tenantId = await getTenantIdFromRequest(request)
 
-    // Obtener configuraciones restablecidas
-    const defaultSettings = await getSystemSettings()
+    // ⚡ MULTITENANT: Restablecer a configuraciones por defecto para el tenant
+    await resetToDefaults(userId, tenantId)
+
+    // ⚡ MULTITENANT: Obtener configuraciones restablecidas del tenant
+    const defaultSettings = await getSystemSettings(tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -721,7 +748,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const response: ApiResponse<SystemSettings> = {

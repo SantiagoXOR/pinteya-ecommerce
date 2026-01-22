@@ -75,7 +75,7 @@ export async function GET() {
       config,
       issues,
       recommendations: [
-        'Si usas claves de producción, agrega pinteya-ecommerce.vercel.app a dominios autorizados en Clerk',
+        'Si usas claves de producción, agrega www.pinteya.com a dominios autorizados en Clerk',
         'Si usas claves de desarrollo, funcionarán en cualquier dominio',
         'Verifica que las claves estén completas (no truncadas)',
         'Redeploy después de cambiar variables de entorno',

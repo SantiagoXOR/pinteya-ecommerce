@@ -1,4 +1,7 @@
 // Force redeploy to fix Server Action error - 2025-08-02T00:30:00.000Z
+// =====================================================
+// ROOT LAYOUT - PintureríaDigital (Multitenant)
+// =====================================================
 import Providers from './providers'
 import React, { Suspense } from 'react'
 // ⚡ PERFORMANCE: Fuentes optimizadas con next/font/google
@@ -11,29 +14,61 @@ import './css/style.css'
 import { metadata as defaultMetadata } from './metadata'
 import type { Metadata } from 'next'
 
+// ⚡ MULTITENANT: Imports para sistema de tenants
+import { getTenantPublicConfig, getTenantBaseUrl } from '@/lib/tenant'
+import { TenantProviderWrapper } from '@/components/providers/TenantProviderWrapper'
+
 // ⚡ CRITICAL: Lazy load de componentes no críticos para reducir Script Evaluation
 // Estos componentes se cargan después del FCP para no bloquear la carga inicial
 import dynamic from 'next/dynamic'
 
-// ⚡ FASE 1.1: Lazy load de StructuredData - No crítico para render inicial
-// Structured data se carga después del FCP para reducir Script Evaluation
-const StructuredData = dynamic(() => import('@/components/SEO/StructuredData'), {
-  ssr: true, // SSR para SEO (necesario para crawlers)
-  loading: () => null, // No mostrar loading, no afecta render inicial
-})
+// ⚡ NOTA: StructuredData estático reemplazado por TenantStructuredData dinámico
+// El componente TenantStructuredData es un Server Component que genera
+// los structured data basados en la configuración del tenant actual
 
 // ⚡ FIX Next.js 15: Componentes con ssr: false deben estar en Client Components
 // Mover todos los dynamic imports con ssr: false a un componente cliente
 import ClientAnalytics from '@/components/Performance/ClientAnalytics'
 
-// ⚡ PERFORMANCE: Structured data - Import estático para SSR (necesario para SEO)
-import {
-  organizationStructuredData,
-  websiteStructuredData,
-  storeStructuredData,
-} from '@/lib/structured-data'
+// ⚡ MULTITENANT: Structured data dinámico basado en tenant
+import TenantStructuredData from '@/components/SEO/TenantStructuredData'
 
-export const metadata: Metadata = defaultMetadata
+// ⚡ MULTITENANT: Metadata dinámico basado en el tenant actual
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const tenant = await getTenantPublicConfig()
+    const baseUrl = getTenantBaseUrl(tenant)
+    
+    return {
+      ...defaultMetadata,
+      title: {
+        default: tenant.siteTitle || defaultMetadata.title?.toString() || 'PintureríaDigital',
+        template: `%s | ${tenant.name}`,
+      },
+      description: tenant.siteDescription || defaultMetadata.description,
+      keywords: tenant.siteKeywords?.length > 0 ? tenant.siteKeywords : defaultMetadata.keywords,
+      openGraph: {
+        ...defaultMetadata.openGraph,
+        title: tenant.siteTitle || defaultMetadata.openGraph?.title,
+        description: tenant.siteDescription || defaultMetadata.openGraph?.description,
+        url: baseUrl,
+        siteName: tenant.name,
+        images: tenant.ogImageUrl ? [{ url: tenant.ogImageUrl }] : defaultMetadata.openGraph?.images,
+      },
+      twitter: {
+        ...defaultMetadata.twitter,
+        title: tenant.siteTitle || defaultMetadata.twitter?.title,
+        description: tenant.siteDescription || defaultMetadata.twitter?.description,
+      },
+      metadataBase: new URL(baseUrl),
+    }
+  } catch (error) {
+    // Fallback a metadata por defecto si hay error
+    console.error('[Layout] Error generating tenant metadata:', error)
+    return defaultMetadata
+  }
+}
+
 export { viewport } from './viewport'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -242,9 +277,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         
         {/* ⚡ OPTIMIZACIÓN LCP: Resource Hints para mejorar descubrimiento de recursos */}
-        {/* Preconnect al dominio propio para reducir latencia de DNS y conexión */}
-        <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://www.pinteya.com" />
+        {/* NOTA: Preconnect al dominio propio - En producción, el dominio real viene del tenant */}
+        {/* TODO MULTITENANT: Hacer dinámico basado en getTenantBaseUrl(tenant) */}
         
         {/* ⚡ FIX: Eliminados prefetch de framework.js y main.js */}
         {/* Next.js genera estos archivos con hashes dinámicos (ej: framework-abc123.js) */}
@@ -314,11 +348,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         
-        {/* ⚡ FASE 7: Preconnect al dominio propio - Después del script de interceptación */}
-        {/* Esto establece la conexión antes de que se necesiten los recursos (fuentes, CSS, imágenes) */}
-        {/* Ahorro estimado: -500-800ms en latencia de fuentes (reduce bottleneck de 1,795ms) */}
-        <link rel="preconnect" href="https://www.pinteya.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://www.pinteya.com" />
+        {/* ⚡ FASE 7: Preconnect eliminado - Era duplicado y hardcodeado */}
+        {/* El preconnect al dominio del tenant debe ser dinámico (ver TODO MULTITENANT arriba) */}
         
         {/* ⚡ CRITICAL CSS - Inline para FCP rápido (-0.2s) */}
         <style dangerouslySetInnerHTML={{__html: `
@@ -377,10 +408,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             --chart-5:340 75% 55%;
           }
           
-          /* Reset y base styles */
+          /* Reset y base styles - Con variables CSS tenant y fallbacks */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;overflow-y:auto!important;max-width:100vw;width:100%;height:100%}
-          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,#000000 0%,#000000 60%,#eb6313 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
+          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,var(--tenant-gradient-start,#000000) 0%,var(--tenant-gradient-start,#000000) 60%,var(--tenant-gradient-end,#eb6313) 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
           #__next{overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;height:auto;position:relative}
           main{overflow-x:hidden!important;overflow-y:hidden!important;position:relative}
           header[class*="fixed"],nav[class*="fixed"]{position:fixed!important;z-index:1100!important}
@@ -390,10 +421,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           button,input,select,textarea{font:inherit}
           h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2}
           a{text-decoration:none;color:inherit}
-          header{background-color:#bd4811;position:fixed;top:env(safe-area-inset-top, 0px);left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.5);border-radius:0 0 1.5rem 1.5rem}
+          header{background-color:var(--tenant-header-bg,#bd4811);position:fixed;top:env(safe-area-inset-top, 0px);left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.5);border-radius:0 0 1.5rem 1.5rem}
           
-          /* Critical Hero Styles */
-          .hero-section{min-height:320px;background:linear-gradient(135deg,#bd4811,#000000);position:relative;overflow:hidden}
+          /* Critical Hero Styles - Con variables CSS tenant */
+          .hero-section{min-height:320px;background:linear-gradient(135deg,var(--tenant-primary-dark,#bd4811),var(--tenant-gradient-start,#000000));position:relative;overflow:hidden}
           @media(min-width:1024px){.hero-section{min-height:500px}}
           
           /* Critical Hero Carousel Styles - Mínimos para evitar layout shift mientras carga CSS diferido */
@@ -413,12 +444,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           .hero-skeleton{animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite}
           @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
           
-          /* Gradient backgrounds */
-          .bg-gradient-hero{background:linear-gradient(135deg,#bd4811 0%,#000000 100%)}
+          /* Gradient backgrounds - Con variables CSS tenant */
+          .bg-gradient-hero{background:linear-gradient(135deg,var(--tenant-primary-dark,#bd4811) 0%,var(--tenant-gradient-start,#000000) 100%)}
           
-          /* Critical button styles - Optimizado para GPU */
-          .btn-primary{background:#eb6313;color:#fff;padding:1rem 2rem;border-radius:0.5rem;font-weight:600;transition:background-color 0.2s ease,transform 0.2s ease;border:2px solid #bd4811}
-          .btn-primary:hover{background:#bd4811;transform:scale(1.05);border-color:#ea5a17}
+          /* Critical button styles - Con variables CSS tenant */
+          .btn-primary{background:var(--tenant-primary,#eb6313);color:#fff;padding:1rem 2rem;border-radius:0.5rem;font-weight:600;transition:background-color 0.2s ease,transform 0.2s ease;border:2px solid var(--tenant-primary-dark,#bd4811)}
+          .btn-primary:hover{background:var(--tenant-primary-dark,#bd4811);transform:scale(1.05);border-color:var(--tenant-primary,#ea5a17)}
           
           /* Prevent layout shift */
           .aspect-video{aspect-ratio:16/9}
@@ -481,20 +512,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://images.clerk.dev" crossOrigin="anonymous" />
         
         {/* Google Merchant Center Verification */}
+        {/* TODO MULTITENANT: Este valor debería venir del tenant.googleSiteVerification */}
         <meta
           name="google-site-verification"
           content="YoGAj7X-fCg9Xclet5ZnoNgCpzkuLd74sEzyfDI9WXs"
         />
         
-        <StructuredData
-          data={[organizationStructuredData, websiteStructuredData, storeStructuredData]}
-        />
+        {/* ⚡ MULTITENANT: Structured data dinámico basado en tenant */}
+        <TenantStructuredData />
       </head>
       <body>
         {/* Suspense global para componentes compartidos que usan useSearchParams (Header/Search) */}
         <Suspense fallback={null}>
           <div className="overflow-x-hidden max-w-full w-full">
-            <Providers>{children}</Providers>
+            {/* ⚡ MULTITENANT: TenantProvider envuelve la aplicación con contexto del tenant */}
+            <TenantProviderWrapper>
+              <Providers>{children}</Providers>
+            </TenantProviderWrapper>
           </div>
         </Suspense>
         

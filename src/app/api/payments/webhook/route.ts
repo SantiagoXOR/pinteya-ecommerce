@@ -30,6 +30,7 @@ import {
 } from '@/lib/monitoring/enterprise-metrics'
 import { sendOrderConfirmationEmail } from '../../../../../lib/email'
 import { whatsappLinkService, OrderDetails } from '@/lib/integrations/whatsapp/whatsapp-link-service'
+import { getTenantById } from '@/lib/tenant/tenant-service'
 
 // ✅ ELIMINADO: Rate limiting básico reemplazado por sistema avanzado con Redis
 
@@ -190,12 +191,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: 'ignored' }, { status: 200 })
     }
 
-    // ✅ TEMPORAL: Validación de firma más permisiva para diagnosticar
+    // ⚡ MULTITENANT: Obtener tenant desde la orden asociada al pago
+    // Primero necesitamos obtener el payment_id para buscar la orden
+    // Como aún no tenemos el payment_id, usaremos un webhook secret genérico temporalmente
+    // La validación completa se hará después de obtener la orden
+    
+    // Validación temporal de firma (se validará completamente después de obtener el tenant)
+    // Por ahora, usar un secret genérico o permitir temporalmente
+    const tempWebhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET || ''
     const signatureValidation = validateWebhookSignature(
       xSignature,
       xRequestId,
       webhookData.data.id,
-      timestamp
+      timestamp,
+      tempWebhookSecret
     )
 
     if (!signatureValidation.isValid) {
@@ -305,10 +314,76 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
     console.log('[WEBHOOK_ASYNC] Iniciando procesamiento asíncrono para:', webhookData.data.id)
     console.log('[WEBHOOK_ASYNC] Webhook data completo:', JSON.stringify(webhookData, null, 2))
 
+    // ⚡ MULTITENANT: Primero necesitamos obtener el tenant
+    // Para eso, intentamos obtener el pago con credenciales temporales solo para obtener external_reference
+    // Luego buscaremos la orden y obtendremos el tenant correcto
+    
+    // Inicializar Supabase para buscar la orden
+    const supabase = getSupabaseClient(true)
+    if (!supabase) {
+      console.error('[WEBHOOK_ASYNC] Cliente de Supabase no disponible')
+      return
+    }
+
+    // ⚡ MULTITENANT: Estrategia para obtener tenant:
+    // 1. Intentar obtener el pago con credenciales temporales (solo para external_reference)
+    // 2. Buscar orden por external_reference
+    // 3. Obtener tenant desde la orden
+    // 4. Usar credenciales del tenant para validar y procesar
+
+    let tenantAccessToken: string | null = null
+    let tenantWebhookSecret: string | null = null
+    let orderTenantId: string | null = null
+
+    // Intentar obtener el pago con credenciales temporales para obtener external_reference
+    const tempAccessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
+    let paymentExternalReference: string | null = null
+
+    if (tempAccessToken) {
+      try {
+        const tempPaymentResult = await getPaymentInfo(webhookData.data.id, tempAccessToken)
+        if (tempPaymentResult.success && 'data' in tempPaymentResult) {
+          paymentExternalReference = tempPaymentResult.data.external_reference || null
+          console.log('[WEBHOOK_ASYNC] External reference obtenido:', paymentExternalReference)
+        }
+      } catch (error) {
+        console.warn('[WEBHOOK_ASYNC] No se pudo obtener external_reference con credenciales temporales:', error)
+      }
+    }
+
+    // Buscar la orden por external_reference si lo tenemos
+    if (paymentExternalReference) {
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('*, tenant_id')
+        .eq('external_reference', paymentExternalReference)
+        .single()
+
+      if (!orderError && order && order.tenant_id) {
+        orderTenantId = order.tenant_id
+        console.log('[WEBHOOK_ASYNC] Orden encontrada, tenant_id:', orderTenantId)
+
+        // Obtener configuración del tenant
+        const tenant = await getTenantById(orderTenantId)
+        if (tenant && tenant.mercadopagoAccessToken) {
+          tenantAccessToken = tenant.mercadopagoAccessToken
+          tenantWebhookSecret = tenant.mercadopagoWebhookSecret || null
+          console.log('[WEBHOOK_ASYNC] Credenciales del tenant obtenidas')
+        }
+      }
+    }
+
+    // Si no tenemos credenciales del tenant, usar las temporales como fallback
+    const accessTokenToUse = tenantAccessToken || tempAccessToken
+    if (!accessTokenToUse) {
+      console.error('[WEBHOOK_ASYNC] No hay credenciales disponibles para procesar el webhook')
+      return
+    }
+
     // ✅ ENTERPRISE: Procesar webhook con circuit breaker
     const webhookResult = await executeWebhookProcessing(async () => {
-      // Obtener información del pago desde MercadoPago
-      console.log('[WEBHOOK_ASYNC] Llamando getPaymentInfo con ID:', webhookData.data.id)
+      // Obtener información del pago desde MercadoPago usando credenciales del tenant
+      console.log('[WEBHOOK_ASYNC] Llamando getPaymentInfo con ID:', webhookData.data.id, 'usando credenciales del tenant')
 
       // ✅ TESTING: Manejar IDs de prueba y debug
       if (
@@ -406,7 +481,8 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
         }
       }
 
-      const paymentResult = await getPaymentInfo(webhookData.data.id)
+      // ⚡ MULTITENANT: Usar credenciales del tenant obtenidas anteriormente
+      const paymentResult = await getPaymentInfo(webhookData.data.id, accessTokenToUse)
       console.log(
         '[WEBHOOK_ASYNC] Resultado de getPaymentInfo:',
         JSON.stringify(paymentResult, null, 2)
@@ -467,39 +543,105 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
       JSON.stringify(payment.additional_info?.shipments, null, 2)
     )
 
-    // Inicializar Supabase con cliente administrativo
-    const supabase = getSupabaseClient(true)
-
-    // Verificar que el cliente esté disponible
-    if (!supabase) {
-      console.error('[WEBHOOK_ASYNC] Cliente de Supabase no disponible')
-      return
-    }
-
-    // Buscar la orden por external_reference
-    const orderReference = payment.external_reference
+    // Buscar la orden por external_reference (si no la encontramos antes)
+    const orderReference = payment.external_reference || paymentExternalReference
     if (!orderReference) {
       console.error('[WEBHOOK_ASYNC] No external_reference found in payment')
       return
     }
 
-    // Buscar orden por external_reference (no por id)
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('external_reference', orderReference)
-      .single()
+    // ⚡ MULTITENANT: Buscar orden por external_reference si no la encontramos antes
+    let order: any = null
+    if (!orderTenantId) {
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('*, tenant_id')
+        .eq('external_reference', orderReference)
+        .single()
 
-    if (orderError || !order) {
+      if (orderError || !orderData) {
+        console.error(
+          '[WEBHOOK_ASYNC] Order not found by external_reference:',
+          orderReference,
+          orderError
+        )
+        return
+      }
+
+      order = orderData
+      orderTenantId = order.tenant_id
+
+      // Obtener credenciales del tenant si no las tenemos
+      if (orderTenantId && !tenantAccessToken) {
+        const tenant = await getTenantById(orderTenantId)
+        if (tenant && tenant.mercadopagoAccessToken) {
+          tenantAccessToken = tenant.mercadopagoAccessToken
+          tenantWebhookSecret = tenant.mercadopagoWebhookSecret || null
+        }
+      }
+    } else {
+      // Si ya tenemos el tenant_id, buscar la orden
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('*, tenant_id')
+        .eq('external_reference', orderReference)
+        .eq('tenant_id', orderTenantId)
+        .single()
+
+      if (orderError || !orderData) {
+        console.error(
+          '[WEBHOOK_ASYNC] Order not found by external_reference and tenant_id:',
+          orderReference,
+          orderTenantId,
+          orderError
+        )
+        return
+      }
+
+      order = orderData
+    }
+
+    // ⚡ MULTITENANT: Validar que la orden tiene tenant_id
+    if (!order.tenant_id) {
       console.error(
-        '[WEBHOOK_ASYNC] Order not found by external_reference:',
-        orderReference,
-        orderError
+        '[WEBHOOK_ASYNC] Order found but missing tenant_id:',
+        order.id,
+        orderReference
+      )
+      logger.security(
+        LogLevel.ERROR,
+        'Webhook processing blocked: order missing tenant_id',
+        {
+          threat: 'missing_tenant_id',
+          blocked: true,
+          reason: 'Order found but tenant_id is null',
+          orderId: order.id,
+          externalReference: orderReference,
+        },
+        { clientIP }
       )
       return
     }
 
-    console.log('[WEBHOOK_ASYNC] Order encontrada:', order.id, 'Status actual:', order.status)
+    console.log('[WEBHOOK_ASYNC] Order encontrada:', order.id, 'Tenant ID:', orderTenantId, 'Status actual:', order.status)
+
+    // Validar que tenemos credenciales del tenant
+    if (!tenantAccessToken) {
+      console.error('[WEBHOOK_ASYNC] No hay credenciales del tenant disponibles:', orderTenantId)
+      logger.security(
+        LogLevel.ERROR,
+        'Webhook processing blocked: tenant missing MercadoPago credentials',
+        {
+          threat: 'missing_credentials',
+          blocked: true,
+          reason: 'Tenant missing MercadoPago access token',
+          orderId: order.id,
+          tenantId: orderTenantId,
+        },
+        { clientIP }
+      )
+      return
+    }
 
     // Mapear estados de MercadoPago a estados internos
     let newOrderStatus: string
@@ -571,6 +713,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
     }
 
     // Actualizar estado de la orden con información completa
+    // ⚡ MULTITENANT: Asegurar que la actualización solo afecte a la orden del tenant correcto
     const { error: updateError } = await supabase
       .from('orders')
       .update({
@@ -582,6 +725,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
         updated_at: new Date().toISOString(),
       })
       .eq('id', order.id)
+      .eq('tenant_id', orderTenantId) // ⚡ MULTITENANT: Validar tenant al actualizar
 
     if (updateError) {
       console.error('[WEBHOOK_ASYNC] Error updating order:', updateError)
@@ -592,6 +736,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
     if (shouldSendEmail && order.payer_info) {
       try {
         // Obtener items de la orden para el email
+        // ⚡ MULTITENANT: Filtrar order_items por tenant_id (a través de la relación con orders)
         const { data: orderItems, error: itemsError } = await supabase
           .from('order_items')
           .select(
@@ -604,6 +749,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
           `
           )
           .eq('order_id', order.id)
+          .eq('tenant_id', orderTenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
         if (!itemsError && orderItems) {
           const emailItems = orderItems.map(item => ({
@@ -651,6 +797,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
             const { link: whatsappLink, message: whatsappMessage } = whatsappLinkService.generateOrderWhatsApp(orderDetails)
 
             // Guardar el enlace en la base de datos
+            // ⚡ MULTITENANT: Asegurar tenant al actualizar
             const { error: whatsappUpdateError } = await supabase
               .from('orders')
               .update({
@@ -659,6 +806,7 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
                 whatsapp_generated_at: new Date().toISOString(),
               })
               .eq('id', order.id)
+              .eq('tenant_id', orderTenantId) // ⚡ MULTITENANT: Validar tenant
 
             if (whatsappUpdateError) {
               console.error('Error saving WhatsApp link:', whatsappUpdateError)
@@ -692,10 +840,12 @@ async function processWebhookAsync(webhookData: MercadoPagoWebhookData, clientIP
     if (shouldUpdateStock) {
       try {
         // Obtener items de la orden incluyendo variant_id
+        // ⚡ MULTITENANT: Filtrar order_items por tenant_id
         const { data: orderItems, error: itemsError } = await supabase
           .from('order_items')
           .select('product_id, variant_id, quantity')
           .eq('order_id', order.id)
+          .eq('tenant_id', orderTenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
         if (itemsError) {
           console.error('Error getting order items:', itemsError)

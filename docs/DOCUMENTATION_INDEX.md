@@ -1,13 +1,14 @@
-# 📚 ÍNDICE COMPLETO DE DOCUMENTACIÓN - PINTEYA E-COMMERCE
+# 📚 ÍNDICE COMPLETO DE DOCUMENTACIÓN - PINTURERÍADIGITAL
 
 ## 📋 Información General
 
-**Proyecto**: Pinteya E-commerce
-**Fecha de Actualización**: 2 de Agosto, 2025
-**Estado**: ✅ **DOCUMENTACIÓN COMPLETA + HOTFIX APLICADO**
+**Proyecto**: PintureríaDigital (Plataforma Multitenant)
+**Fecha de Actualización**: 22 de Enero, 2026
+**Estado**: ✅ **DOCUMENTACIÓN COMPLETA + SISTEMA MULTITENANT**
 **Auditoría**: 100% COMPLETADA (16/16 tareas)
 **HOTFIX CRÍTICO**: ✅ JsonSafetyInitializer reactivado (commit 6feca8a)
 **Sistemas Enterprise**: ✅ 4/4 funcionando (Cache, Alertas, Testing, Monitoreo)
+**Sistema Multitenant**: ✅ IMPLEMENTADO (2 tenants: Pinteya, Pintemas) - 75% APIs migradas
 **Código Enterprise**: ✅ 2,700+ líneas implementadas
 
 ## 🎯 DOCUMENTO MAESTRO
@@ -19,6 +20,118 @@
   - Métricas finales de performance
   - Estado enterprise-ready certificado
   - Roadmap de mantenimiento
+
+---
+
+## 🏢 SISTEMA MULTITENANT (Enero 2026)
+
+### Documentación Principal
+
+| Documento | Descripción | Audiencia |
+|-----------|-------------|-----------|
+| **[MULTITENANCY.md](MULTITENANCY.md)** | Arquitectura completa del sistema multitenant | Desarrolladores Senior |
+| **[TENANT-QUICK-START.md](TENANT-QUICK-START.md)** | Guía rápida para desarrolladores | Todos los desarrolladores |
+| **[MIGRATION_STATUS.md](MIGRATION_STATUS.md)** | Estado detallado de migración multitenant | Desarrolladores, PM |
+| **[ITERACION_7_COMPLETADA.md](ITERACION_7_COMPLETADA.md)** | Resumen completo de la iteración 7 | Desarrolladores, PM |
+| **[API-SYNC-ERP.md](API-SYNC-ERP.md)** | API de sincronización con ERPs externos | Integradores |
+| **[MIGRACION_MERCADOPAGO_MULTITENANT.md](MIGRACION_MERCADOPAGO_MULTITENANT.md)** | Migración de MercadoPago a credenciales por tenant | Desarrolladores, DevOps |
+| **[MERCADOPAGO_TENANT_SETUP.md](MERCADOPAGO_TENANT_SETUP.md)** | Guía de configuración de MercadoPago por tenant | DevOps, Administradores |
+
+### Arquitectura Multitenant
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    VERCEL (Edge Network)                     │
+│  Wildcard: *.pintureriadigital.com + Custom domains         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                    MIDDLEWARE (Tenant Detection)             │
+│  Headers: x-tenant-subdomain, x-tenant-custom-domain        │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                    TENANT SERVICE (React cache)              │
+│  src/lib/tenant/tenant-service.ts                           │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                    SUPABASE (PostgreSQL + RLS)               │
+│  tenants, tenant_products, shared_stock_pools, etc.         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Tenants Configurados
+
+| Tenant | Subdominio | Dominio Custom | Stock | ERP |
+|--------|------------|----------------|-------|-----|
+| **Pinteya** | `pinteya.pintureriadigital.com` | `www.pinteya.com` | Pool Córdoba | Aikon |
+| **Pintemas** | `pintemas.pintureriadigital.com` | `www.pintemas.com` | Pool Córdoba | Aikon |
+
+### Migraciones SQL
+
+```
+supabase/migrations/
+├── 20260121000001_create_tenants_system.sql
+├── 20260121000002_create_shared_stock_pools.sql
+├── 20260121000003_create_tenant_products.sql
+├── 20260121000004_create_external_systems.sql
+├── 20260121000005_add_tenant_id_columns.sql
+├── 20260121000006_create_tenant_roles.sql
+├── 20260121000007_create_tenant_rls_policies.sql
+├── 20260121000008_seed_tenants.sql
+├── 20260121000009_migrate_existing_data_to_pinteya.sql
+└── 20260121000010_create_tenant_pintemas.sql
+```
+
+### Archivos Clave
+
+| Archivo | Propósito |
+|---------|-----------|
+| `src/lib/tenant/tenant-service.ts` | Servicio de detección y fetch de tenant |
+| `src/lib/tenant/types.ts` | Tipos TypeScript del sistema |
+| `src/contexts/TenantContext.tsx` | Context y hooks para client components |
+| `src/components/theme/TenantThemeStyles.tsx` | CSS variables dinámicas |
+| `src/lib/auth/guards/` | Guards de autenticación (Super Admin, Tenant Admin) |
+| `src/lib/products/tenant-product-service.ts` | Servicio de productos por tenant |
+| `src/app/api/sync/[system]/route.ts` | API de sincronización ERP |
+| `middleware.ts` | Detección de tenant por hostname |
+
+### Estado de Migración
+
+**Progreso:** ~75% completado (Iteración 7 - 22 Enero 2026)
+
+**Documentación de Iteraciones:**
+- **[ITERACION_7_COMPLETADA.md](ITERACION_7_COMPLETADA.md)** - Resumen completo de la iteración 7
+
+**Completado:**
+- ✅ APIs de productos (públicas y admin)
+- ✅ APIs de analytics (100%)
+- ✅ APIs admin de órdenes (100%)
+- ✅ APIs de reportes (100%)
+- ✅ APIs públicas transaccionales (carrito, checkout, órdenes usuario)
+
+**Pendiente - Prioridad Alta:**
+- ❌ APIs admin de órdenes restantes (whatsapp, history, shipments, payment-proof)
+- ❌ APIs admin de productos individuales
+- ❌ APIs admin de usuarios individuales
+
+**Ver:** [MIGRATION_STATUS.md](MIGRATION_STATUS.md) y [ITERACION_7_COMPLETADA.md](ITERACION_7_COMPLETADA.md) para detalles completos
+
+### Uso Rápido
+
+```typescript
+// Server Component
+import { getTenantConfig } from '@/lib/tenant'
+const tenant = await getTenantConfig()
+
+// Client Component
+import { useTenant } from '@/contexts/TenantContext'
+const tenant = useTenant()
+
+// Tailwind con colores dinámicos
+<button className="bg-tenant-primary">Comprar</button>
+```
 
 ## 📁 ESTRUCTURA DE DOCUMENTACIÓN
 
@@ -94,6 +207,16 @@
   - Manejo de webhooks enterprise
   - Error handling y retry logic
   - Compliance y auditoría
+- **`docs/MIGRACION_MERCADOPAGO_MULTITENANT.md`** - **MIGRACIÓN MERCADOPAGO MULTITENANT** ✅ **NUEVO**
+  - Migración de credenciales globales a por tenant
+  - Guía de configuración por tenant
+  - Flujo de datos y validaciones
+  - Seguridad y testing
+- **`docs/MERCADOPAGO_TENANT_SETUP.md`** - **GUÍA DE CONFIGURACIÓN MERCADOPAGO** ✅ **NUEVO**
+  - Pasos para configurar credenciales por tenant
+  - Verificación y testing
+  - Troubleshooting común
+  - Buenas prácticas de seguridad
 
 ### 🛠️ HERRAMIENTAS Y SCRIPTS
 
@@ -305,15 +428,33 @@ La documentación está completa, actualizada y lista para ser utilizada por el 
 
 ---
 
+## 📦 DOCUMENTACIÓN ARCHIVADA
+
+### Notas de Sesión (92 archivos)
+
+Documentación de sesiones de desarrollo anteriores movida a `docs/archive/session-notes/`:
+
+- `ANALISIS_*.md` - Análisis técnicos
+- `OPTIMIZACION-*.md` - Documentación de optimizaciones
+- `FIX_*.md`, `FIX-*.md` - Correcciones implementadas
+- `RESUMEN_*.md`, `RESUMEN-*.md` - Resúmenes ejecutivos
+- `PLAN_*.md`, `PLAN-*.md` - Planes de implementación
+- `IMPLEMENTACION-*.md` - Detalles de implementaciones
+- `GUIA-*.md` - Guías técnicas
+
+Para ver documentación archivada: [docs/archive/session-notes/](archive/session-notes/)
+
+---
+
 ## 🔍 NAVEGACIÓN RÁPIDA
 
 ### Documentos Principales
 
 1. **[Estado del Proyecto](PROJECT_STATUS_MASTER_DOCUMENT.md)** - Documento maestro
-2. **[FASE 4 Completa](FASE4_OPTIMIZATION_MONITORING_COMPLETE.md)** - Sistema enterprise completo
-3. **[Auditoría Final](audit/FINAL_AUDIT_REPORT.md)** - Reporte de auditoría
-4. **[Performance Final](performance/FINAL_PERFORMANCE_REPORT.md)** - Análisis de performance
-5. **[Testing Manual](testing/MANUAL_TESTING_FINAL_REPORT.md)** - Validación manual
+2. **[Arquitectura Multitenant](MULTITENANCY.md)** - Sistema multitenant completo
+3. **[Guía Rápida Tenants](TENANT-QUICK-START.md)** - Setup de nuevos tenants
+4. **[Auditoría Final](audit/FINAL_AUDIT_REPORT.md)** - Reporte de auditoría
+5. **[Performance Final](performance/FINAL_PERFORMANCE_REPORT.md)** - Análisis de performance
 
 ### Herramientas
 
@@ -326,4 +467,4 @@ La documentación está completa, actualizada y lista para ser utilizada por el 
 
 ---
 
-_Este índice se actualiza automáticamente con cada nueva versión de la documentación._
+_Última actualización: 21 de Enero, 2026 - Consolidación Iteración 2_

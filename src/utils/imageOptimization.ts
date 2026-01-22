@@ -145,3 +145,92 @@ export const pinteyaDesktopLogoPngProps = {
   ...pinteyaDesktopLogoProps,
   src: '/images/logo/LOGO POSITIVO.svg', // Mantiene el SVG original
 }
+
+// ===================================
+// MULTITENANT LOGO SUPPORT
+// ===================================
+
+export type LogoVariant = 'mobile' | 'desktop' | 'hero'
+
+/**
+ * Genera las props del logo para un tenant específico
+ * Usa la estructura de assets: /tenants/{slug}/logo.svg
+ * 
+ * @param tenantSlug - El slug del tenant (ej: 'pinteya', 'pintemas')
+ * @param tenantName - El nombre del tenant para el alt text
+ * @param variant - La variante del logo ('mobile', 'desktop', 'hero')
+ * @returns Props optimizadas para el componente de logo
+ */
+export const getTenantLogoProps = (
+  tenantSlug: string,
+  tenantName: string,
+  variant: LogoVariant = 'desktop'
+) => {
+  const basePath = `/tenants/${tenantSlug}`
+  
+  const variantConfigs = {
+    mobile: {
+      src: `${basePath}/logo.svg`,
+      alt: `${tenantName} - Logo`,
+      width: 64,
+      height: 64,
+      priority: true,
+      className: 'rounded-xl object-contain',
+      quality: 90,
+    },
+    desktop: {
+      src: `${basePath}/logo.svg`,
+      alt: `${tenantName} - Logo`,
+      width: 200,
+      height: 56,
+      priority: true,
+      className: 'object-contain',
+    },
+    hero: {
+      src: `${basePath}/logo.svg`,
+      alt: `${tenantName} - Logo`,
+      width: 320,
+      height: 80,
+      priority: true,
+      className: 'object-contain',
+      quality: 95,
+    },
+  }
+
+  return variantConfigs[variant]
+}
+
+/**
+ * Genera las rutas de assets para un tenant
+ * 
+ * @param tenantSlug - El slug del tenant
+ * @returns Objeto con todas las rutas de assets del tenant
+ */
+export const getTenantAssetPaths = (tenantSlug: string) => {
+  const basePath = `/tenants/${tenantSlug}`
+  
+  return {
+    logo: `${basePath}/logo.svg`,
+    logoDark: `${basePath}/logo-dark.svg`,
+    favicon: `${basePath}/favicon.svg`,
+    ogImage: `${basePath}/og-image.png`,
+    heroImage: (index: number) => `${basePath}/hero/hero${index}.webp`,
+  }
+}
+
+/**
+ * Obtiene las rutas de hero images para un tenant
+ * 
+ * @param tenantSlug - El slug del tenant
+ * @param count - Número de hero images (default: 3)
+ * @returns Array de objetos con rutas de hero images
+ */
+export const getTenantHeroSlides = (tenantSlug: string, count: number = 3) => {
+  const basePath = `/tenants/${tenantSlug}/hero`
+  
+  return Array.from({ length: count }, (_, i) => ({
+    id: `hero-${i + 1}`,
+    image: `${basePath}/hero${i + 1}.webp`,
+    alt: `Hero image ${i + 1}`,
+  }))
+}

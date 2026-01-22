@@ -1,12 +1,16 @@
 import type { Metadata } from 'next'
 
+// URL base dinámica por entorno
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://pinteya.com'
+const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'E-commerce'
+
 export const metadata: Metadata = {
   title: {
-    default: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
-    template: '%s | Pinteya E-commerce',
+    default: `${SITE_NAME} - Tu Pinturería Online | Pinturas, Ferretería y Corralón`,
+    template: `%s | ${SITE_NAME}`,
   },
   description:
-    'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales, accesorios y todo lo necesario para tus proyectos de construcción y decoración. Envío gratis en compras superiores a $50.000.',
+    `${SITE_NAME} es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales, accesorios y todo lo necesario para tus proyectos de construcción y decoración. Envío gratis en compras superiores a $50.000.`,
   keywords: [
     'pinturería online',
     'pinturas',
@@ -23,21 +27,21 @@ export const metadata: Metadata = {
     'envío gratis',
     'Argentina',
   ],
-  authors: [{ name: 'Pinteya E-commerce' }],
-  creator: 'Pinteya E-commerce',
-  publisher: 'Pinteya E-commerce',
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://pinteya-ecommerce.vercel.app'),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: 'Pinteya - Tu Pinturería Online | Pinturas, Ferretería y Corralón',
+    title: `${SITE_NAME} - Tu Pinturería Online | Pinturas, Ferretería y Corralón`,
     description:
-      'Pinteya es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales y todo lo necesario para tus proyectos.',
-    url: 'https://pinteya-ecommerce.vercel.app',
-    siteName: 'Pinteya E-commerce',
+      `${SITE_NAME} es tu pinturería online especializada en productos de pintura, ferretería y corralón. Encuentra pinturas de calidad, herramientas profesionales y todo lo necesario para tus proyectos.`,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     images: [
       {
         url: '/images/quickview/quick-view-01.png',

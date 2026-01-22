@@ -69,7 +69,7 @@ graph TB
 ## 📁 Estructura del Proyecto
 
 ```
-pinteya-ecommerce/
+pintureria-digital/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── (auth)/            # Rutas de autenticación

@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
 import { auth } from '@/lib/auth/config'
 import { ApiResponse } from '@/types/api'
+// ⚡ MULTITENANT: Importar configuración del tenant
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
 // GET - Obtener órdenes del usuario
@@ -31,6 +33,10 @@ export async function GET(request: NextRequest) {
       console.error('Usuario no autenticado en GET /api/user/orders')
       return NextResponse.json({ error: 'Usuario no autenticado' }, { status: 401 })
     }
+
+    // ⚡ MULTITENANT: Obtener configuración del tenant actual
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
 
     // Obtener parámetros de consulta
     const { searchParams } = new URL(request.url)
@@ -56,6 +62,7 @@ export async function GET(request: NextRequest) {
       `
       )
       .eq('user_id', session.user.id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
     // Filtrar por status si se especifica
     if (status && status !== 'all') {
@@ -132,6 +139,7 @@ export async function GET(request: NextRequest) {
       .from('orders')
       .select('status, total')
       .eq('user_id', session.user.id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
     const statistics = {
       total_orders: stats?.length || 0,

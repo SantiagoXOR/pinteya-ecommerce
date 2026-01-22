@@ -1,16 +1,106 @@
 /**
- * Middleware de NextAuth.js para Pinteya E-commerce
- * Protege rutas administrativas y maneja autenticación
+ * Middleware de NextAuth.js para PintureríaDigital (Multitenant E-commerce)
+ * - Detección de tenant basada en dominio/subdomain
+ * - Protección de rutas administrativas
+ * - Manejo de autenticación
  * Optimizado para rendimiento y producción
  */
 
 import { getToken } from 'next-auth/jwt'
 import { NextResponse, NextRequest } from 'next/server'
 
+// ============================================================================
+// CONSTANTES MULTITENANT
+// ============================================================================
+const PLATFORM_DOMAIN = 'pintureriadigital.com'
+const DEFAULT_TENANT_SLUG = 'pinteya'
+
+// ============================================================================
+// HELPERS PARA DETECCIÓN DE TENANT
+// ============================================================================
+
+/**
+ * Extrae información del tenant desde el hostname
+ */
+function getTenantInfoFromHost(hostname: string): {
+  subdomain: string | null
+  customDomain: string | null
+  isAdminDomain: boolean
+  isSuperAdminDomain: boolean
+} {
+  const host = hostname.split(':')[0] // Remover puerto
+  
+  // Localhost → tenant por defecto
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return { 
+      subdomain: DEFAULT_TENANT_SLUG, 
+      customDomain: null,
+      isAdminDomain: false,
+      isSuperAdminDomain: false,
+    }
+  }
+  
+  // admin.pintureriadigital.com → super admin
+  if (host === `admin.${PLATFORM_DOMAIN}`) {
+    return { 
+      subdomain: null, 
+      customDomain: null,
+      isAdminDomain: false,
+      isSuperAdminDomain: true,
+    }
+  }
+  
+  // *.pintureriadigital.com → extraer subdominio
+  if (host.endsWith(`.${PLATFORM_DOMAIN}`)) {
+    const subdomain = host.replace(`.${PLATFORM_DOMAIN}`, '')
+    
+    // Ignorar subdominios especiales
+    if (subdomain === 'www' || subdomain === 'api') {
+      return { 
+        subdomain: DEFAULT_TENANT_SLUG, 
+        customDomain: null,
+        isAdminDomain: false,
+        isSuperAdminDomain: false,
+      }
+    }
+    
+    return { 
+      subdomain, 
+      customDomain: null,
+      isAdminDomain: false,
+      isSuperAdminDomain: false,
+    }
+  }
+  
+  // pintureriadigital.com sin subdominio
+  if (host === PLATFORM_DOMAIN || host === `www.${PLATFORM_DOMAIN}`) {
+    return { 
+      subdomain: DEFAULT_TENANT_SLUG, 
+      customDomain: null,
+      isAdminDomain: false,
+      isSuperAdminDomain: false,
+    }
+  }
+  
+  // Dominio personalizado (ej: www.pinteya.com)
+  return { 
+    subdomain: null, 
+    customDomain: host,
+    isAdminDomain: false,
+    isSuperAdminDomain: false,
+  }
+}
+
 export default async function middleware(req: NextRequest) {
   const { nextUrl } = req
   const isProduction = process.env.NODE_ENV === 'production'
   const startTime = Date.now()
+  
+  // ============================================================================
+  // DETECCIÓN DE TENANT
+  // ============================================================================
+  const hostname = req.headers.get('host') || 'localhost'
+  const tenantInfo = getTenantInfoFromHost(hostname)
 
   // BYPASS AUTH - Solo para desarrollo/testing
   // ⚠️ IMPORTANTE: Desactivar en producción (BYPASS_AUTH=false o eliminar variable)
@@ -167,6 +257,19 @@ export default async function middleware(req: NextRequest) {
   const response = NextResponse.next()
   const responseTime = Date.now() - startTime
 
+  // ============================================================================
+  // HEADERS DE TENANT
+  // ============================================================================
+  // Propagar información del tenant para uso en Server Components
+  response.headers.set('x-tenant-domain', hostname)
+  if (tenantInfo.subdomain) {
+    response.headers.set('x-tenant-subdomain', tenantInfo.subdomain)
+  }
+  if (tenantInfo.customDomain) {
+    response.headers.set('x-tenant-custom-domain', tenantInfo.customDomain)
+  }
+  response.headers.set('x-tenant-is-super-admin', tenantInfo.isSuperAdminDomain ? 'true' : 'false')
+
   // Headers esenciales de seguridad
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -184,21 +287,22 @@ export default async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match specific paths that need protection:
-     * - /admin/* (admin UI routes)
-     * - /api/admin/* (admin API routes)
+     * Match paths for:
+     * - Tenant detection (all routes except static files)
+     * - Auth protection for admin/dashboard/driver routes
+     * 
+     * Protected routes:
+     * - /admin/* (tenant admin UI routes)
+     * - /api/admin/* (tenant admin API routes)
+     * - /super-admin/* (platform super admin routes)
+     * - /api/super-admin/* (platform super admin API routes)
      * - /dashboard/* (user dashboard routes)
      * - /api/user/* (user API routes)
      * - /driver/* (driver UI routes)
      * - /api/driver/* (driver API routes)
-     * Exclude NextAuth.js routes and static files
-     * Note: Routes with /images are handled specially when BYPASS_AUTH is active
+     * 
+     * Exclude: NextAuth.js routes, static files, _next
      */
-    '/admin/:path*',
-    '/api/admin/:path*',
-    '/dashboard/:path*',
-    '/api/user/:path*',
-    '/driver/:path*',
-    '/api/driver/:path*',
+    '/((?!_next/static|_next/image|favicon.ico|images|tenants).*)',
   ],
 }

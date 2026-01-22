@@ -10,10 +10,16 @@ import EnhancedSearchBar from '@/components/Header/EnhancedSearchBar'
 import ActionButtons from '@/components/Header/ActionButtons'
 import DropdownTester from '@/components/Header/DropdownTester'
 import { CheckCircle, AlertCircle, Info, Smartphone, Monitor, Tablet } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const HeaderDemoPage = () => {
   const [searchResults, setSearchResults] = useState<string[]>([])
   const [selectedDevice, setSelectedDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const tenantLogo = tenant?.logoUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo.svg`
+  const tenantName = tenant?.name || 'Pinteya'
 
   const handleSearch = (query: string, category?: string) => {
     setSearchResults([
@@ -252,8 +258,8 @@ const HeaderDemoPage = () => {
                       <div className='flex items-center justify-between gap-4'>
                         <div className='flex-shrink-0'>
                           <img
-                            src='/images/logo/LOGO POSITIVO.svg'
-                            alt='Pinteya Logo'
+                            src={tenantLogo}
+                            alt={`${tenantName} Logo`}
                             className='h-8 w-auto'
                           />
                         </div>

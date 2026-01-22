@@ -12,6 +12,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/config'
 import { createClient } from '@/lib/integrations/supabase/server'
 import { z } from 'zod'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 import {
   Courier,
   ShippingService,
@@ -131,15 +133,15 @@ function calculateEstimatedDeliveryDays(
 
 // =====================================================
 // GET: OBTENER COURIERS
+// ⚡ MULTITENANT: Couriers son compartidos, pero estadísticas deben filtrarse por tenant
 // =====================================================
 
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    // Validar autenticación
-    const authError = await validateAdminAuth(request)
-    if (authError) {
-      return authError
-    }
+    const { tenantId } = guardResult
 
     // Parsear query parameters
     const { searchParams } = new URL(request.url)
@@ -149,7 +151,7 @@ export async function GET(request: NextRequest) {
     // Crear cliente Supabase
     const supabase = await createClient()
 
-    // Construir query
+    // ⚡ MULTITENANT: Construir query (couriers son compartidos)
     let query = supabase.from('couriers').select('*').order('name')
 
     if (activeOnly) {
@@ -162,16 +164,19 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
-    // Si se solicitan estadísticas, obtenerlas
+    // ⚡ MULTITENANT: Si se solicitan estadísticas, filtrarlas por tenant_id
+    // Nota: couriers es compartido, pero las estadísticas son por tenant
     let couriersWithStats = couriers
 
     if (includeStats && couriers) {
       const courierStats = await Promise.all(
         couriers.map(async courier => {
+          // ⚡ MULTITENANT: Filtrar estadísticas por tenant_id
           const { data: shipments } = await supabase
             .from('shipments')
             .select('status, shipping_cost, created_at, delivered_at')
             .eq('carrier_id', courier.id)
+            .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
           const totalShipments = shipments?.length || 0
           const deliveredShipments = shipments?.filter(s => s.status === 'delivered').length || 0
@@ -206,19 +211,19 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
 // =====================================================
 // POST: CREAR COURIER
+// ⚡ MULTITENANT: Couriers son compartidos
 // =====================================================
 
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    // Validar autenticación
-    const authError = await validateAdminAuth(request)
-    if (authError) {
-      return authError
-    }
+    const { tenantId } = guardResult
 
     // Parsear y validar body
     const body = await request.json()
@@ -307,7 +312,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
 // =====================================================
 // POST: COTIZAR ENVÍOS

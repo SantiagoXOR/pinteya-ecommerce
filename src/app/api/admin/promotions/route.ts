@@ -8,6 +8,8 @@ import { auth } from '@/lib/auth/config'
 import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -304,8 +306,14 @@ async function validateAdminAuth() {
   return { userId: session.user.id, role: profile.role }
 }
 
-async function getPromotions(filters: z.infer<typeof PromotionFiltersSchema>) {
-  let query = supabase.from('promotions').select(`
+async function getPromotions(
+  filters: z.infer<typeof PromotionFiltersSchema>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+) {
+  // ⚡ MULTITENANT: Filtrar por tenant_id
+  let query = supabase
+    .from('promotions')
+    .select(`
       *,
       categories:promotion_categories!promotion_categories_promotion_id_fkey(
         category:categories!promotion_categories_category_id_fkey(
@@ -331,6 +339,7 @@ async function getPromotions(filters: z.infer<typeof PromotionFiltersSchema>) {
         email
       )
     `)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   // Aplicar filtros
   if (filters.status) {
@@ -428,7 +437,8 @@ async function getPromotions(filters: z.infer<typeof PromotionFiltersSchema>) {
 
 async function createPromotion(
   promotionData: z.infer<typeof CreatePromotionSchema>,
-  userId: string
+  userId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ) {
   // Validar fechas
   const startsAt = new Date(promotionData.starts_at)
@@ -466,21 +476,22 @@ async function createPromotion(
       break
   }
 
-  // Validar código de cupón si es requerido
+  // ⚡ MULTITENANT: Validar código de cupón si es requerido (dentro del mismo tenant)
   if (promotionData.requires_coupon_code) {
     if (!promotionData.coupon_code) {
       throw new Error('El código de cupón es requerido cuando se habilita esta opción')
     }
 
-    // Verificar que el código no exista
+    // ⚡ MULTITENANT: Verificar que el código no exista en el mismo tenant
     const { data: existingPromotion } = await supabase
       .from('promotions')
       .select('id')
       .eq('coupon_code', promotionData.coupon_code)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (existingPromotion) {
-      throw new Error('Ya existe una promoción con este código de cupón')
+      throw new Error('Ya existe una promoción con este código de cupón en este tenant')
     }
   }
 
@@ -488,12 +499,13 @@ async function createPromotion(
   const { category_ids, product_ids, brand_ids, bundle_products, ...promotionInsertData } =
     promotionData
 
-  // Crear promoción
+  // ⚡ MULTITENANT: Crear promoción con tenant_id
   const { data: newPromotion, error: promotionError } = await supabase
     .from('promotions')
     .insert({
       ...promotionInsertData,
       usage_count: 0,
+      tenant_id: tenantId, // ⚡ MULTITENANT
       created_by: userId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -569,9 +581,12 @@ async function createPromotion(
   return newPromotion
 }
 
-async function getPromotionStats(): Promise<PromotionStats> {
-  // Obtener todas las promociones
-  const { data: promotions, error } = await supabase.from('promotions').select('*')
+async function getPromotionStats(tenantId: string): Promise<PromotionStats> {
+  // ⚡ MULTITENANT: Obtener todas las promociones del tenant
+  const { data: promotions, error } = await supabase
+    .from('promotions')
+    .select('*')
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     throw new Error(`Error al obtener estadísticas de promociones: ${error.message}`)
@@ -582,8 +597,12 @@ async function getPromotionStats(): Promise<PromotionStats> {
   const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const last30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  // Obtener uso de promociones
-  const { data: usage } = await supabase.from('promotion_usage').select('*')
+  // ⚡ MULTITENANT: Obtener uso de promociones del tenant
+  const promotionIds = promotions?.map(p => p.id) || []
+  const { data: usage } = await supabase
+    .from('promotion_usage')
+    .select('*')
+    .in('promotion_id', promotionIds) // ⚡ MULTITENANT: Filtrar por promociones del tenant
 
   const totalPromotions = promotions?.length || 0
   let activePromotions = 0
@@ -599,6 +618,7 @@ async function getPromotionStats(): Promise<PromotionStats> {
     if (promotion.is_paused) {
       pausedPromotions++
     } else if (!promotion.is_active) {
+      inactivePromotions++
     } else if (now < startsAt) {
       scheduledPromotions++
     } else if (endsAt && now > endsAt) {
@@ -613,10 +633,11 @@ async function getPromotionStats(): Promise<PromotionStats> {
   const totalDiscountGiven = (usage || []).reduce((sum, u) => sum + (u.discount_amount || 0), 0)
   const averageDiscount = totalUsage > 0 ? totalDiscountGiven / totalUsage : 0
 
-  // Calcular tasa de conversión (simplificada)
+  // ⚡ MULTITENANT: Calcular tasa de conversión filtrando por tenant
   const { count: totalOrders } = await supabase
     .from('orders')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .gte('created_at', last30d.toISOString())
 
   const ordersWithPromotions = (usage || []).filter(u => new Date(u.created_at) >= last30d).length
@@ -710,9 +731,14 @@ async function getPromotionStats(): Promise<PromotionStats> {
 
 // ===================================
 // GET - Obtener promociones
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -732,25 +758,14 @@ export async function GET(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Parsear parámetros de consulta
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action')
 
     // Manejar diferentes acciones
     if (action === 'stats') {
-      // Obtener estadísticas
-      const stats = await getPromotionStats()
+      // ⚡ MULTITENANT: Obtener estadísticas filtrando por tenant_id
+      const stats = await getPromotionStats(tenantId)
 
       // Registrar métricas
       metricsCollector.recordApiCall({
@@ -758,7 +773,7 @@ export async function GET(request: NextRequest) {
         method: 'GET',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId,
+        userId: guardResult.userId,
       })
 
       const response: ApiResponse<PromotionStats> = {
@@ -787,7 +802,8 @@ export async function GET(request: NextRequest) {
       sort_order: searchParams.get('sort_order'),
     })
 
-    const { promotions, total, totalPages } = await getPromotions(filters)
+    // ⚡ MULTITENANT: Obtener promociones del tenant
+    const { promotions, total, totalPages } = await getPromotions(filters, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -795,7 +811,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     const response: ApiResponse<PromotionData[]> = {
@@ -833,13 +849,18 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // POST - Crear promoción o acción masiva
+// ⚡ MULTITENANT: Filtra y asigna tenant_id
 // ===================================
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -859,23 +880,12 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Validar datos de entrada
     const body = await request.json()
     const { action } = body
 
     if (action === 'bulk') {
-      // Acción masiva
+      // ⚡ MULTITENANT: Acción masiva filtrando por tenant
       const bulkAction = BulkPromotionActionSchema.parse(body)
       const results = []
 
@@ -899,10 +909,12 @@ export async function POST(request: NextRequest) {
               break
             case 'extend':
               if (bulkAction.extend_days) {
+                // ⚡ MULTITENANT: Verificar que la promoción pertenece al tenant
                 const { data: promotion } = await supabase
                   .from('promotions')
                   .select('ends_at')
                   .eq('id', promotionId)
+                  .eq('tenant_id', tenantId) // ⚡ MULTITENANT
                   .single()
 
                 if (promotion?.ends_at) {
@@ -913,10 +925,12 @@ export async function POST(request: NextRequest) {
               }
               break
             case 'delete':
+              // ⚡ MULTITENANT: Eliminar solo promociones del tenant
               const { error: deleteError } = await supabase
                 .from('promotions')
                 .delete()
                 .eq('id', promotionId)
+                .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
               if (deleteError) {
                 throw deleteError
@@ -926,10 +940,12 @@ export async function POST(request: NextRequest) {
           }
 
           if (bulkAction.action !== 'delete') {
+            // ⚡ MULTITENANT: Actualizar solo promociones del tenant
             const { error: updateError } = await supabase
               .from('promotions')
               .update(updateData)
               .eq('id', promotionId)
+              .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
             if (updateError) {
               throw updateError
@@ -952,7 +968,7 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId,
+        userId: userId,
       })
 
       const response: ApiResponse<typeof results> = {
@@ -966,9 +982,9 @@ export async function POST(request: NextRequest) {
       return nextResponse
     }
 
-    // Crear promoción normal
+    // ⚡ MULTITENANT: Crear promoción normal con tenantId
     const promotionData = CreatePromotionSchema.parse(body)
-    const newPromotion = await createPromotion(promotionData, authResult.userId!)
+    const newPromotion = await createPromotion(promotionData, userId, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -976,7 +992,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 201,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const response: ApiResponse<typeof newPromotion> = {
@@ -1008,4 +1024,4 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})

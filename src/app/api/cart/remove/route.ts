@@ -9,6 +9,8 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { auth } from '@/lib/auth/config'
+// ⚡ MULTITENANT: Importar configuración del tenant
+import { getTenantConfig } from '@/lib/tenant'
 
 /**
  * DELETE /api/cart/remove
@@ -34,9 +36,13 @@ export async function DELETE(request: NextRequest) {
 
     const userId = session.user.id
 
+    // ⚡ MULTITENANT: Obtener configuración del tenant actual
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Obtener datos del request
     const body = await request.json()
-    const { productId, quantity } = body
+    const { productId, quantity, variantId } = body
 
     // Validaciones
     if (!productId) {
@@ -66,12 +72,14 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verificar que el item existe en el carrito
-    const { data: existingItem, error: existingError } = await supabase
+    // ⚡ MULTITENANT: Incluir variant_id en la búsqueda para soportar variantes
+    let existingItemQuery = supabase
       .from('cart_items')
       .select(
         `
         id,
         quantity,
+        variant_id,
         products (
           id,
           name,
@@ -82,7 +90,17 @@ export async function DELETE(request: NextRequest) {
       )
       .eq('user_id', userId)
       .eq('product_id', productId)
-      .single()
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar ownership
+    
+    // Si se proporciona variantId, buscar por variant_id específico
+    // Si no, buscar items con variant_id IS NULL (productos sin variantes)
+    if (variantId) {
+      existingItemQuery = existingItemQuery.eq('variant_id', variantId)
+    } else {
+      existingItemQuery = existingItemQuery.is('variant_id', null)
+    }
+    
+    const { data: existingItem, error: existingError } = await existingItemQuery.single()
 
     if (existingError || !existingItem) {
       console.log(`❌ Cart Remove API: Producto ${productId} no está en el carrito`)
@@ -107,6 +125,7 @@ export async function DELETE(request: NextRequest) {
         .from('cart_items')
         .update({ quantity: newQuantity })
         .eq('id', existingItem.id)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Asegurar tenant
         .select()
         .single()
 
@@ -146,6 +165,7 @@ export async function DELETE(request: NextRequest) {
         .from('cart_items')
         .delete()
         .eq('id', existingItem.id)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Asegurar tenant
 
       if (deleteError) {
         console.error('❌ Cart Remove API: Error removiendo del carrito:', deleteError)
@@ -209,6 +229,7 @@ export async function GET() {
       productId: 'number - ID del producto a remover (requerido)',
       quantity:
         'number - Cantidad específica a remover (opcional). Si no se especifica o es mayor/igual a la cantidad actual, se remueve completamente',
+      variantId: 'number - ID de la variante del producto (opcional). Si no se proporciona, se busca el item sin variante',
     },
     examples: {
       removeCompletely: {

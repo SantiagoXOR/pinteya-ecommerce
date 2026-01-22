@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -248,8 +250,12 @@ async function validateAdminAuth() {
   return { userId: session.user.id, role: profile.role }
 }
 
-async function getPromotionById(promotionId: string, includeStats = false) {
-  // Obtener promoción con relaciones
+async function getPromotionById(
+  promotionId: string,
+  tenantId: string, // ⚡ MULTITENANT: Agregar tenantId
+  includeStats = false
+) {
+  // ⚡ MULTITENANT: Obtener promoción con relaciones filtrando por tenant
   const { data: promotion, error } = await supabase
     .from('promotions')
     .select(
@@ -290,6 +296,7 @@ async function getPromotionById(promotionId: string, includeStats = false) {
     `
     )
     .eq('id', promotionId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (error) {
@@ -408,7 +415,8 @@ async function getPromotionUsageStats(promotionId: string) {
 async function updatePromotion(
   promotionId: string,
   updateData: z.infer<typeof UpdatePromotionSchema>,
-  userId: string
+  userId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ) {
   // Validar fechas si se proporcionan
   if (updateData.starts_at && updateData.ends_at) {
@@ -420,17 +428,18 @@ async function updatePromotion(
     }
   }
 
-  // Validar código de cupón si se cambia
+  // ⚡ MULTITENANT: Validar código de cupón si se cambia (dentro del mismo tenant)
   if (updateData.coupon_code) {
     const { data: existingPromotion } = await supabase
       .from('promotions')
       .select('id')
       .eq('coupon_code', updateData.coupon_code)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .neq('id', promotionId)
       .single()
 
     if (existingPromotion) {
-      throw new Error('Ya existe otra promoción con este código de cupón')
+      throw new Error('Ya existe otra promoción con este código de cupón en este tenant')
     }
   }
 
@@ -438,7 +447,7 @@ async function updatePromotion(
   const { category_ids, product_ids, brand_ids, bundle_products, ...promotionUpdateData } =
     updateData
 
-  // Actualizar promoción principal
+  // ⚡ MULTITENANT: Actualizar promoción principal solo si pertenece al tenant
   const { data: updatedPromotion, error: updateError } = await supabase
     .from('promotions')
     .update({
@@ -446,6 +455,7 @@ async function updatePromotion(
       updated_at: new Date().toISOString(),
     })
     .eq('id', promotionId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .select()
     .single()
 
@@ -541,7 +551,10 @@ async function updatePromotion(
   return updatedPromotion
 }
 
-async function deletePromotion(promotionId: string) {
+async function deletePromotion(
+  promotionId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+) {
   // Verificar si la promoción tiene uso activo
   const { data: activeUsage } = await supabase
     .from('promotion_usage')
@@ -584,9 +597,13 @@ async function deletePromotion(promotionId: string) {
   return { deleted: true, deactivated: false }
 }
 
-async function duplicatePromotion(promotionId: string, userId: string) {
-  // Obtener promoción original
-  const originalPromotion = await getPromotionById(promotionId)
+async function duplicatePromotion(
+  promotionId: string,
+  userId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+) {
+  // ⚡ MULTITENANT: Obtener promoción original del tenant
+  const originalPromotion = await getPromotionById(promotionId, tenantId)
 
   // Preparar datos para duplicación
   const duplicateData = {
@@ -597,6 +614,7 @@ async function duplicatePromotion(promotionId: string, userId: string) {
       : undefined,
     is_active: false, // Crear como inactiva
     usage_count: 0,
+    tenant_id: tenantId, // ⚡ MULTITENANT: Asignar tenant_id
     created_by: userId,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -612,7 +630,7 @@ async function duplicatePromotion(promotionId: string, userId: string) {
   delete duplicateData.creator
   delete duplicateData.usage_stats
 
-  // Crear nueva promoción
+  // ⚡ MULTITENANT: Crear nueva promoción con tenant_id
   const { data: newPromotion, error: createError } = await supabase
     .from('promotions')
     .insert(duplicateData)
@@ -681,9 +699,15 @@ async function logAuditAction(action: string, promotionId: string, userId: strin
 
 // ===================================
 // GET - Obtener promoción por ID
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -703,19 +727,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
+    const { id: promotionId } = await context.params
 
     // Validar ID de promoción
-    if (!params.id || typeof params.id !== 'string') {
+    if (!promotionId || typeof promotionId !== 'string') {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -728,8 +743,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const { searchParams } = new URL(request.url)
     const includeStats = searchParams.get('include_stats') === 'true'
 
-    // Obtener promoción
-    const promotion = await getPromotionById(params.id, includeStats)
+    // ⚡ MULTITENANT: Obtener promoción del tenant
+    const promotion = await getPromotionById(promotionId, tenantId, includeStats)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -737,7 +752,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     const response: ApiResponse<PromotionData> = {
@@ -773,13 +788,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(errorResponse, { status: statusCode })
   }
-}
+})
 
 // ===================================
 // PUT - Actualizar promoción
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export const PUT = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -799,19 +820,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
+    const { id: promotionId } = await context.params
 
     // Validar ID de promoción
-    if (!params.id || typeof params.id !== 'string') {
+    if (!promotionId || typeof promotionId !== 'string') {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -825,36 +837,37 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const { action } = body
 
     if (action) {
-      // Manejar acciones especiales
+      // ⚡ MULTITENANT: Manejar acciones especiales con tenantId
       const actionData = PromotionActionSchema.parse(body)
       let result
 
       switch (actionData.action) {
         case 'activate':
           result = await updatePromotion(
-            params.id,
+            promotionId,
             { is_active: true, is_paused: false },
-            authResult.userId!
+            userId,
+            tenantId
           )
-          await logAuditAction('activate', params.id, authResult.userId!, { action: 'activate' })
+          await logAuditAction('activate', promotionId, userId, { action: 'activate' })
           break
         case 'deactivate':
-          result = await updatePromotion(params.id, { is_active: false }, authResult.userId!)
-          await logAuditAction('deactivate', params.id, authResult.userId!, {
+          result = await updatePromotion(promotionId, { is_active: false }, userId, tenantId)
+          await logAuditAction('deactivate', promotionId, userId, {
             action: 'deactivate',
           })
           break
         case 'pause':
-          result = await updatePromotion(params.id, { is_paused: true }, authResult.userId!)
-          await logAuditAction('pause', params.id, authResult.userId!, { action: 'pause' })
+          result = await updatePromotion(promotionId, { is_paused: true }, userId, tenantId)
+          await logAuditAction('pause', promotionId, userId, { action: 'pause' })
           break
         case 'resume':
-          result = await updatePromotion(params.id, { is_paused: false }, authResult.userId!)
-          await logAuditAction('resume', params.id, authResult.userId!, { action: 'resume' })
+          result = await updatePromotion(promotionId, { is_paused: false }, userId, tenantId)
+          await logAuditAction('resume', promotionId, userId, { action: 'resume' })
           break
         case 'duplicate':
-          result = await duplicatePromotion(params.id, authResult.userId!)
-          await logAuditAction('duplicate', params.id, authResult.userId!, {
+          result = await duplicatePromotion(promotionId, userId, tenantId)
+          await logAuditAction('duplicate', promotionId, userId, {
             new_promotion_id: result.id,
           })
           break
@@ -863,10 +876,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
             throw new Error('Días de extensión requeridos')
           }
 
+          // ⚡ MULTITENANT: Verificar que la promoción pertenece al tenant
           const { data: currentPromotion } = await supabase
             .from('promotions')
             .select('ends_at')
-            .eq('id', params.id)
+            .eq('id', promotionId)
+            .eq('tenant_id', tenantId) // ⚡ MULTITENANT
             .single()
 
           if (!currentPromotion?.ends_at) {
@@ -877,11 +892,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
           newEndDate.setDate(newEndDate.getDate() + actionData.extend_days)
 
           result = await updatePromotion(
-            params.id,
+            promotionId,
             { ends_at: newEndDate.toISOString() },
-            authResult.userId!
+            userId,
+            tenantId
           )
-          await logAuditAction('extend', params.id, authResult.userId!, {
+          await logAuditAction('extend', promotionId, userId, {
             extend_days: actionData.extend_days,
             new_end_date: newEndDate.toISOString(),
           })
@@ -896,7 +912,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         method: 'PUT',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId,
+        userId: userId,
       })
 
       const response: ApiResponse<typeof result> = {
@@ -910,12 +926,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return nextResponse
     }
 
-    // Actualización normal
+    // ⚡ MULTITENANT: Actualización normal con tenantId
     const updateData = UpdatePromotionSchema.parse(body)
-    const updatedPromotion = await updatePromotion(params.id, updateData, authResult.userId!)
+    const updatedPromotion = await updatePromotion(promotionId, updateData, userId, tenantId)
 
     // Registrar auditoría
-    await logAuditAction('update', params.id, authResult.userId!, updateData)
+    await logAuditAction('update', promotionId, userId, updateData)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -923,7 +939,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       method: 'PUT',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const response: ApiResponse<typeof updatedPromotion> = {
@@ -938,7 +954,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PUT /api/admin/promotions/[id]', {
       error,
-      promotionId: params.id,
+      promotionId: (await context.params).id,
     })
 
     // Registrar métricas de error
@@ -958,13 +974,19 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // DELETE - Eliminar promoción
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export const DELETE = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -984,32 +1006,14 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
+    const { id: promotionId } = await context.params
 
-    // Validar ID de promoción
-    if (!params.id || typeof params.id !== 'string') {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: 'ID de promoción inválido',
-      }
-      return NextResponse.json(errorResponse, { status: 400 })
-    }
-
-    // Verificar que la promoción existe
+    // ⚡ MULTITENANT: Verificar que la promoción existe y pertenece al tenant
     const { data: existingPromotion } = await supabase
       .from('promotions')
       .select('id, name')
-      .eq('id', params.id)
+      .eq('id', promotionId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (!existingPromotion) {
@@ -1021,14 +1025,14 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json(errorResponse, { status: 404 })
     }
 
-    // Eliminar promoción
-    const deleteResult = await deletePromotion(params.id)
+    // ⚡ MULTITENANT: Eliminar promoción con tenantId
+    const deleteResult = await deletePromotion(promotionId, tenantId)
 
     // Registrar auditoría
     await logAuditAction(
       deleteResult.deleted ? 'delete' : 'deactivate',
-      params.id,
-      authResult.userId!,
+      promotionId,
+      userId,
       {
         promotion_name: existingPromotion.name,
         deleted: deleteResult.deleted,
@@ -1042,7 +1046,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       method: 'DELETE',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const message = deleteResult.deleted
@@ -1061,7 +1065,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en DELETE /api/admin/promotions/[id]', {
       error,
-      promotionId: params.id,
+      promotionId: (await context.params).id,
     })
 
     // Registrar métricas de error
@@ -1081,4 +1085,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useSwipeGestures } from '@/hooks/useSwipeGestures'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface Slide {
   id: string
@@ -11,14 +12,28 @@ interface Slide {
   alt: string
 }
 
-// ⚡ Carrusel simple con las 3 imágenes hero - Similar a CombosSection
-const slides: Slide[] = [
+// Fallback slides si no hay tenant context
+const FALLBACK_SLIDES: Slide[] = [
   { id: 'hero-1', image: '/images/hero/hero2/hero1.webp', alt: 'Pintá rápido, fácil y cotiza al instante' },
   { id: 'hero-2', image: '/images/hero/hero2/hero2.webp', alt: 'Envío express en 24HS' },
   { id: 'hero-3', image: '/images/hero/hero2/hero3.webp', alt: 'Pagá con Mercado Pago' },
 ]
 
 const SimpleHeroCarousel: React.FC = () => {
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const tenantName = tenant?.name || 'PinteYa'
+  
+  // Generar slides basados en el tenant
+  const slides = useMemo<Slide[]>(() => {
+    if (!tenant) return FALLBACK_SLIDES
+    
+    return [
+      { id: 'hero-1', image: `/tenants/${tenant.slug}/hero/hero1.webp`, alt: `${tenantName} - Pintá rápido, fácil y cotiza al instante` },
+      { id: 'hero-2', image: `/tenants/${tenant.slug}/hero/hero2.webp`, alt: `${tenantName} - Envío express en 24HS` },
+      { id: 'hero-3', image: `/tenants/${tenant.slug}/hero/hero3.webp`, alt: `${tenantName} - Pagá con Mercado Pago` },
+    ]
+  }, [tenant, tenantName])
   const [currentIndex, setCurrentIndex] = useState(1)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
@@ -43,7 +58,7 @@ const SimpleHeroCarousel: React.FC = () => {
 
   const extendedSlides = useMemo(
     () => [slides[slides.length - 1], ...slides, slides[0]],
-    []
+    [slides]
   )
 
   const goToSlide = useCallback((index: number) => {

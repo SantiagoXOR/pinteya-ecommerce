@@ -1,12 +1,13 @@
 // ===================================
-// PINTEYA E-COMMERCE - DYNAMIC SITEMAP.XML ROUTE
-// Ruta para servir sitemap.xml dinámico que reemplaza el estático
+// PINTURERÍADIGITAL - DYNAMIC SITEMAP.XML ROUTE (MULTITENANT)
+// Ruta para servir sitemap.xml dinámico por tenant
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator'
 import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { getTenantConfig, getTenantBaseUrl } from '@/lib/tenant'
 
 // ===================================
 // GET /sitemap.xml - Servir sitemap dinámico
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     )
 
     // Fallback a sitemap básico en caso de error
-    const fallbackXML = generateFallbackSitemap()
+    const fallbackXML = await generateFallbackSitemap()
 
     return new NextResponse(fallbackXML, {
       status: 200,
@@ -76,7 +77,9 @@ export async function GET(request: NextRequest) {
 // ===================================
 
 async function generateCompleteSitemapXML(): Promise<string> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pinteya-ecommerce.vercel.app'
+  // MULTITENANT: Obtener URL base del tenant actual
+  const tenant = await getTenantConfig()
+  const baseUrl = getTenantBaseUrl(tenant)
   const now = new Date().toISOString().split('T')[0]
 
   // Obtener datos dinámicos
@@ -247,8 +250,10 @@ function escapeXml(text: string): string {
     .replace(/'/g, '&#39;')
 }
 
-function generateFallbackSitemap(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pinteya-ecommerce.vercel.app'
+async function generateFallbackSitemap(): Promise<string> {
+  // MULTITENANT: Obtener URL base del tenant actual
+  const tenant = await getTenantConfig()
+  const baseUrl = getTenantBaseUrl(tenant)
   const now = new Date().toISOString().split('T')[0]
 
   return `<?xml version="1.0" encoding="UTF-8"?>

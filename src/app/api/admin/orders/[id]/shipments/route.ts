@@ -2,22 +2,14 @@
 // API: INTEGRACIÓN ÓRDENES-LOGÍSTICA
 // Ruta: /api/admin/orders/[id]/shipments
 // Descripción: Crear y gestionar envíos desde órdenes
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth/config'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { z } from 'zod'
 import { OrderEnterprise, OrderItemEnterprise } from '@/types/orders-enterprise'
-
-// =====================================================
-// CONFIGURACIÓN
-// =====================================================
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // =====================================================
 // ESQUEMAS DE VALIDACIÓN
@@ -70,7 +62,9 @@ function generateShipmentNumber(): string {
   return `SHP-${timestamp.slice(-8)}-${random}`
 }
 
-async function validateOrderAccess(orderId: string, userId: string): Promise<any> {
+async function validateOrderAccess(orderId: string, tenantId: string): Promise<any> {
+  const supabase = createAdminClient()
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: order, error } = await supabase
     .from('orders')
     .select(
@@ -101,6 +95,7 @@ async function validateOrderAccess(orderId: string, userId: string): Promise<any
     `
     )
     .eq('id', orderId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (error) {
@@ -123,8 +118,10 @@ async function validateOrderAccess(orderId: string, userId: string): Promise<any
 
 async function createShipmentRecord(
   orderData: OrderEnterprise,
-  validatedData: CreateShipmentFromOrderSchema
+  validatedData: CreateShipmentFromOrderSchema,
+  tenantId: string
 ): Promise<any> {
+  const supabase = createAdminClient()
   const shipmentNumber = generateShipmentNumber()
 
   // Calcular peso total si no se proporciona
@@ -139,11 +136,13 @@ async function createShipmentRecord(
   // Usar dirección de envío de la orden si no se proporciona
   const deliveryAddress = validatedData.delivery_address || orderData.shipping_address
 
+  // ⚡ MULTITENANT: Incluir tenant_id al crear el envío
   const { data: shipment, error } = await supabase
     .from('shipments')
     .insert({
       shipment_number: shipmentNumber,
       order_id: orderData.id,
+      tenant_id: tenantId, // ⚡ MULTITENANT
       status: 'pending',
       carrier_id: validatedData.carrier_id,
       shipping_service: validatedData.shipping_service,
@@ -177,6 +176,7 @@ async function createShipmentItems(
   orderItems: any[],
   requestedItems: any[]
 ): Promise<void> {
+  const supabase = createAdminClient()
   const shipmentItems = requestedItems.map(reqItem => {
     const orderItem = orderItems.find(oi => oi.id === reqItem.order_item_id)
     if (!orderItem) {
@@ -207,6 +207,7 @@ async function createShipmentItems(
 }
 
 async function createInitialTrackingEvent(shipmentId: string): Promise<void> {
+  const supabase = createAdminClient()
   const { error } = await supabase.from('tracking_events').insert({
     shipment_id: shipmentId,
     status: 'pending',
@@ -221,8 +222,9 @@ async function createInitialTrackingEvent(shipmentId: string): Promise<void> {
   }
 }
 
-async function updateOrderStatus(orderId: string): Promise<void> {
-  // Actualizar estado de la orden a "shipped" si todos los items tienen envío
+async function updateOrderStatus(orderId: string, tenantId: string): Promise<void> {
+  const supabase = createAdminClient()
+  // ⚡ MULTITENANT: Actualizar estado de la orden filtrando por tenant_id
   const { error } = await supabase
     .from('orders')
     .update({
@@ -230,6 +232,7 @@ async function updateOrderStatus(orderId: string): Promise<void> {
       updated_at: new Date().toISOString(),
     })
     .eq('id', orderId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     console.error('Error actualizando estado de orden:', error)
@@ -241,15 +244,15 @@ async function updateOrderStatus(orderId: string): Promise<void> {
 // HANDLER POST - CREAR ENVÍO DESDE ORDEN
 // =====================================================
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    const orderId = params.id
+    const { tenantId } = guardResult
+    const { id } = await context.params
+    const orderId = id
 
     // Validar datos de entrada
     const body = await request.json()
@@ -267,10 +270,11 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     const validatedData = validationResult.data
 
-    // Validar acceso a la orden y obtener datos
-    const orderData = await validateOrderAccess(orderId, session.user.id!)
+    // ⚡ MULTITENANT: Validar acceso a la orden y obtener datos
+    const orderData = await validateOrderAccess(orderId, tenantId)
 
     // Verificar que el carrier existe
+    const supabase = createAdminClient()
     const { data: carrier, error: carrierError } = await supabase
       .from('couriers')
       .select('id, name, is_active')
@@ -282,8 +286,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Carrier no encontrado o inactivo' }, { status: 404 })
     }
 
-    // Crear el envío
-    const shipment = await createShipmentRecord(orderData, validatedData)
+    // ⚡ MULTITENANT: Crear el envío con tenant_id
+    const shipment = await createShipmentRecord(orderData, validatedData, tenantId)
 
     // Crear los items del envío
     await createShipmentItems(shipment.id, orderData.order_items, validatedData.items)
@@ -291,8 +295,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Crear evento de tracking inicial
     await createInitialTrackingEvent(shipment.id)
 
-    // Actualizar estado de la orden
-    await updateOrderStatus(orderId)
+    // ⚡ MULTITENANT: Actualizar estado de la orden
+    await updateOrderStatus(orderId, tenantId)
 
     // Obtener el envío completo con todos los datos
     const { data: completeShipment, error: fetchError } = await supabase
@@ -314,6 +318,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       `
       )
       .eq('id', shipment.id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (fetchError) {
@@ -324,8 +329,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       shipment_id: shipment.id,
       shipment_number: shipment.shipment_number,
       order_id: orderId,
+      tenant_id: tenantId,
       carrier: carrier.name,
-      user_id: session.user.id,
+      user_id: guardResult.userId,
     })
 
     return NextResponse.json({
@@ -344,23 +350,24 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       { status: 500 }
     )
   }
-}
+})
 
 // =====================================================
 // HANDLER GET - OBTENER ENVÍOS DE UNA ORDEN
 // =====================================================
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
+    const { tenantId } = guardResult
+    const { id } = await context.params
+    const orderId = id
 
-    const orderId = params.id
-
-    // Obtener envíos de la orden
+    // ⚡ MULTITENANT: Obtener envíos de la orden filtrando por tenant_id
+    const supabase = createAdminClient()
     const { data: shipments, error } = await supabase
       .from('shipments')
       .select(
@@ -380,6 +387,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       `
       )
       .eq('order_id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -401,4 +409,4 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       { status: 500 }
     )
   }
-}
+})

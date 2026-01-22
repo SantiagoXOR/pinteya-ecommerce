@@ -11,6 +11,7 @@ import { CheckCircle, Package, Truck, ArrowRight, Home, Receipt } from '@/lib/op
 import { trackPurchase as trackGA4Purchase } from '@/lib/google-analytics'
 import { trackPurchase as trackMetaPurchase } from '@/lib/meta-pixel'
 import { trackGoogleAdsPurchase } from '@/lib/google-ads'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface PaymentInfo {
   payment_id?: string
@@ -24,6 +25,11 @@ export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams()
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({})
   const [isLoading, setIsLoading] = useState(true)
+  
+  // ⚡ MULTITENANT: Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const supportEmail = tenant?.supportEmail || `soporte@${tenant?.slug || 'pinteya'}.com`
+  const tenantName = tenant?.name || 'Pinteya'
 
   useEffect(() => {
     // Obtener parámetros de la URL
@@ -267,8 +273,8 @@ export default function CheckoutSuccessPage() {
             <div className='text-center pt-6 border-t border-gray-200'>
               <p className='text-gray-600 text-sm'>
                 ¿Tienes alguna pregunta? Contáctanos en{' '}
-                <a href='mailto:soporte@pinteya.com' className='text-green-600 hover:underline'>
-                  soporte@pinteya.com
+                <a href={`mailto:${supportEmail}`} className='text-green-600 hover:underline'>
+                  {supportEmail}
                 </a>
               </p>
             </div>

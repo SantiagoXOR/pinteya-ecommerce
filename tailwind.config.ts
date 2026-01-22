@@ -74,23 +74,36 @@ const config: Config = {
         'custom-3': ['35px', '45px'],
       },
       colors: {
+        // ============================================
+        // COLORES DINÁMICOS DEL TENANT
+        // Estos colores se sobreescriben con CSS variables
+        // inyectadas por TenantThemeStyles
+        // ============================================
+        'tenant': {
+          primary: 'var(--tenant-primary, #f27a1d)',
+          'primary-dark': 'var(--tenant-primary-dark, #bd4811)',
+          'primary-light': 'var(--tenant-primary-light, #f9be78)',
+          secondary: 'var(--tenant-secondary, #00f269)',
+          accent: 'var(--tenant-accent, #f9a007)',
+          'header-bg': 'var(--tenant-header-bg, #bd4811)',
+        },
         'blaze-orange': {
           '50': '#fef7ee',
           '100': '#feeed6',
           '200': '#fcd9ac',
           '300': '#f9be78',
           '400': '#f59842',
-          '500': '#f27a1d',
-          '600': '#eb6313',
-          '700': '#bd4811',
+          '500': 'var(--tenant-primary, #f27a1d)',
+          '600': 'var(--tenant-primary-dark, #eb6313)',
+          '700': 'var(--tenant-primary-dark, #bd4811)',
           '800': '#963a16',
           '900': '#793115',
           '950': '#411709',
-          DEFAULT: '#f27a1d',
-          dark: '#bd4811',
-          light: '#f9be78',
-          hover: '#eb6313',
-          active: '#bd4811',
+          DEFAULT: 'var(--tenant-primary, #f27a1d)',
+          dark: 'var(--tenant-primary-dark, #bd4811)',
+          light: 'var(--tenant-primary-light, #f9be78)',
+          hover: 'var(--tenant-primary-dark, #eb6313)',
+          active: 'var(--tenant-primary-dark, #bd4811)',
         },
         'fun-green': {
           '50': '#ecfff5',

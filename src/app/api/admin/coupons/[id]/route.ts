@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -165,7 +167,12 @@ async function validateAdminAuth() {
   return { userId: session.user.id, role: profile.role }
 }
 
-async function getCouponById(couponId: string, includeUsage: boolean = false): Promise<CouponData> {
+async function getCouponById(
+  couponId: string,
+  tenantId: string, // ⚡ MULTITENANT: Agregar tenantId
+  includeUsage: boolean = false
+): Promise<CouponData> {
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const query = supabase
     .from('coupons')
     .select(
@@ -191,6 +198,7 @@ async function getCouponById(couponId: string, includeUsage: boolean = false): P
     `
     )
     .eq('id', couponId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   const { data: coupon, error } = await query
@@ -255,10 +263,11 @@ async function getCouponById(couponId: string, includeUsage: boolean = false): P
 async function updateCoupon(
   couponId: string,
   updateData: z.infer<typeof UpdateCouponSchema>,
-  userId: string
+  userId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ) {
-  // Verificar que el cupón existe
-  const existingCoupon = await getCouponById(couponId)
+  // ⚡ MULTITENANT: Verificar que el cupón existe y pertenece al tenant
+  const existingCoupon = await getCouponById(couponId, tenantId)
 
   // Validar fechas si se proporcionan
   if (updateData.starts_at || updateData.expires_at) {
@@ -292,11 +301,12 @@ async function updateCoupon(
     updated_at: new Date().toISOString(),
   }
 
-  // Actualizar cupón
+  // ⚡ MULTITENANT: Actualizar cupón solo si pertenece al tenant
   const { data: updatedCoupon, error: updateError } = await supabase
     .from('coupons')
     .update(finalUpdateData)
     .eq('id', couponId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .select()
     .single()
 
@@ -384,8 +394,12 @@ async function deleteCoupon(couponId: string, userId: string) {
 
   await supabase.from('coupon_products').delete().eq('coupon_id', couponId)
 
-  // Eliminar cupón
-  const { error: deleteError } = await supabase.from('coupons').delete().eq('id', couponId)
+  // ⚡ MULTITENANT: Eliminar cupón solo si pertenece al tenant
+  const { error: deleteError } = await supabase
+    .from('coupons')
+    .delete()
+    .eq('id', couponId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (deleteError) {
     throw new Error(`Error al eliminar cupón: ${deleteError.message}`)
@@ -406,7 +420,11 @@ async function deleteCoupon(couponId: string, userId: string) {
   return { success: true }
 }
 
-async function getCouponUsage(couponId: string, filters: z.infer<typeof CouponUsageSchema>) {
+async function getCouponUsage(
+  couponId: string,
+  filters: z.infer<typeof CouponUsageSchema>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+) {
   let query = supabase
     .from('coupon_usage')
     .select(
@@ -458,9 +476,15 @@ async function getCouponUsage(couponId: string, filters: z.infer<typeof CouponUs
 
 // ===================================
 // GET - Obtener cupón específico
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -480,23 +504,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action')
-    const couponId = params.id
+    const { id: couponId } = await context.params
 
     if (action === 'usage') {
-      // Obtener historial de uso
+      // ⚡ MULTITENANT: Obtener historial de uso del cupón del tenant
       const filters = CouponUsageSchema.parse({
         page: searchParams.get('page'),
         limit: searchParams.get('limit'),
@@ -506,7 +519,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         date_to: searchParams.get('date_to'),
       })
 
-      const { usage, total, totalPages } = await getCouponUsage(couponId, filters)
+      const { usage, total, totalPages } = await getCouponUsage(couponId, filters, tenantId)
 
       // Registrar métricas
       metricsCollector.recordApiCall({
@@ -514,7 +527,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         method: 'GET',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId,
+        userId: guardResult.userId,
       })
 
       const response: ApiResponse<CouponUsageData[]> = {
@@ -544,7 +557,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     const response: ApiResponse<CouponData> = {
@@ -559,7 +572,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/coupons/[id]', {
       error,
-      couponId: params.id,
+      couponId: (await context.params).id,
     })
 
     // Registrar métricas de error
@@ -580,13 +593,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(errorResponse, { status: statusCode })
   }
-}
+})
 
 // ===================================
 // PUT - Actualizar cupón
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export const PUT = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -606,24 +625,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Validar datos de entrada
     const body = await request.json()
     const updateData = UpdateCouponSchema.parse(body)
-    const couponId = params.id
+    const { id: couponId } = await context.params
 
-    // Actualizar cupón
-    const updatedCoupon = await updateCoupon(couponId, updateData, authResult.userId!)
+    // ⚡ MULTITENANT: Actualizar cupón con tenantId
+    const updatedCoupon = await updateCoupon(couponId, updateData, userId, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -631,7 +639,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       method: 'PUT',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const response: ApiResponse<typeof updatedCoupon> = {
@@ -646,7 +654,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PUT /api/admin/coupons/[id]', {
       error,
-      couponId: params.id,
+      couponId: (await context.params).id,
     })
 
     // Registrar métricas de error
@@ -667,13 +675,19 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(errorResponse, { status: statusCode })
   }
-}
+})
 
 // ===================================
 // DELETE - Eliminar cupón
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export const DELETE = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -693,21 +707,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
+    const { id: couponId } = await context.params
 
-    const couponId = params.id
-
-    // Eliminar cupón
-    const result = await deleteCoupon(couponId, authResult.userId!)
+    // ⚡ MULTITENANT: Eliminar cupón con tenantId
+    const result = await deleteCoupon(couponId, userId, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -715,7 +718,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       method: 'DELETE',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const response: ApiResponse<typeof result> = {
@@ -730,7 +733,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en DELETE /api/admin/coupons/[id]', {
       error,
-      couponId: params.id,
+      couponId: (await context.params).id,
     })
 
     // Registrar métricas de error
@@ -751,4 +754,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     return NextResponse.json(errorResponse, { status: statusCode })
   }
-}
+})

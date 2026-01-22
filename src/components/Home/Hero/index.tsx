@@ -1,13 +1,13 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { HeroSlide as HeroSlideType } from '@/types/hero'
 // ⚡ FIX: Importar directamente sin lazy loading para evitar skeleton
 import HeroSlideCarousel from '@/components/Common/HeroSlideCarousel'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
-// ⚡ HERO MODULAR Y RESPONSIVE: Diseño estilo Mercado Libre
-// Contenido separado de imágenes para máxima flexibilidad responsive
-const heroSlides: HeroSlideType[] = [
+// Función para generar hero slides dinámicos por tenant
+const generateHeroSlides = (tenantSlug: string): HeroSlideType[] => [
   {
     id: 'slide-1',
     backgroundGradient: 'from-blaze-orange-500 via-blaze-orange-400 to-blaze-orange-600',
@@ -34,7 +34,7 @@ const heroSlides: HeroSlideType[] = [
     ],
     productImages: [
       {
-        src: '/images/hero/hero2/hero1.webp',
+        src: `/tenants/${tenantSlug}/hero/hero1.webp`,
         alt: 'Pareja eligiendo pinturas con laptop y muestras de colores',
         priority: true,
         position: {
@@ -79,7 +79,7 @@ const heroSlides: HeroSlideType[] = [
     ],
     productImages: [
       {
-        src: '/images/hero/hero2/hero2.webp',
+        src: `/tenants/${tenantSlug}/hero/hero2.webp`,
         alt: 'Pareja en sofá con muestras de colores y app móvil',
         priority: false,
         position: {
@@ -123,8 +123,8 @@ const heroSlides: HeroSlideType[] = [
     ],
     productImages: [
       {
-        src: '/images/hero/hero2/hero3.webp',
-        alt: 'Equipo de entrega con productos Pinte YA',
+        src: `/tenants/${tenantSlug}/hero/hero3.webp`,
+        alt: 'Equipo de entrega con productos',
         priority: false,
         position: {
           top: '50%',
@@ -150,6 +150,12 @@ const heroSlides: HeroSlideType[] = [
 ]
 
 const Hero = () => {
+  // Obtener tenant para rutas dinámicas
+  const tenant = useTenantSafe()
+  const tenantSlug = tenant?.slug || 'pinteya'
+  
+  // Generar hero slides basados en el tenant
+  const heroSlides = useMemo(() => generateHeroSlides(tenantSlug), [tenantSlug])
   return (
     <section className='relative overflow-hidden w-full' style={{ minHeight: '400px' }}>
       {/* Hero Modular y Responsive - Layout único que se adapta */}

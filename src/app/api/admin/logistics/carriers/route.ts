@@ -18,6 +18,8 @@ import { withValidation } from '@/lib/validation/admin-schemas'
 import { createClient } from '@/lib/integrations/supabase/server'
 import { auth } from '@/lib/auth/config'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 import {
   Courier,
   ShippingService,
@@ -119,12 +121,11 @@ async function decryptApiKey(encryptedKey: string): Promise<string> {
 // HANDLERS
 // =====================================================
 
-async function getHandler(request: NextRequest) {
-  // Validar autenticación
-  const authError = await validateAdminAuth(request)
-  if (authError) {
-    return authError
-  }
+async function getHandler(
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) {
+  const { tenantId } = guardResult
 
   const { searchParams } = new URL(request.url)
   const filters = CarrierFiltersSchema.parse({
@@ -140,7 +141,7 @@ async function getHandler(request: NextRequest) {
 
   const supabase = createClient()
 
-  // Construir query con filtros
+  // ⚡ MULTITENANT: Construir query con filtros (carriers son compartidos)
   let query = supabase.from('couriers').select('*', { count: 'exact' })
 
   // Aplicar filtros
@@ -203,20 +204,17 @@ async function getHandler(request: NextRequest) {
   return NextResponse.json(response)
 }
 
-async function postHandler(request: NextRequest) {
-  // Validar autenticación
-  const authError = await validateAdminAuth(request)
-  if (authError) {
-    return authError
-  }
-
-  const session = await auth()
+async function postHandler(
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) {
+  const { tenantId, userId } = guardResult
   const body = await request.json()
   const validatedData = CarrierCreateSchema.parse(body)
 
   const supabase = createClient()
 
-  // Verificar que el código no exista
+  // ⚡ MULTITENANT: Verificar que el código no exista (carriers son compartidos globalmente)
   const { data: existingCarrier } = await supabase
     .from('couriers')
     .select('id')
@@ -261,8 +259,8 @@ async function postHandler(request: NextRequest) {
     throw new ApiError('Error al crear transportista', 500, 'DATABASE_ERROR', error)
   }
 
-  // Log de auditoría
-  await logAdminAction(session.user.id, 'CREATE', 'carrier', carrier.id, null, carrier)
+  // ⚡ MULTITENANT: Log de auditoría con userId del guard
+  await logAdminAction(userId, 'CREATE', 'carrier', carrier.id, null, carrier)
 
   const response: CarrierResponse = {
     data: {
@@ -329,8 +327,8 @@ async function putHandler(request: NextRequest) {
     throw new ApiError('Error al actualizar transportista', 500, 'DATABASE_ERROR', error)
   }
 
-  // Log de auditoría
-  await logAdminAction(session.user.id, 'UPDATE', 'carrier', carrier.id, existingCarrier, carrier)
+  // ⚡ MULTITENANT: Log de auditoría con userId del guard
+  await logAdminAction(userId, 'UPDATE', 'carrier', carrier.id, existingCarrier, carrier)
 
   const response: CarrierResponse = {
     data: {
@@ -372,12 +370,21 @@ async function deleteHandler(request: NextRequest) {
     throw new NotFoundError('Transportista no encontrado')
   }
 
-  // Verificar que no tenga envíos activos
-  const { data: activeShipments, error: shipmentsError } = await supabase
+  // ⚡ MULTITENANT: Verificar que no tenga envíos activos del tenant actual
+  // Nota: carriers es compartido, pero los envíos son por tenant
+  // Obtener tenantId del request (si está disponible)
+  const tenantId = request.headers.get('x-tenant-id') || null
+  
+  let shipmentsQuery = supabase
     .from('shipments')
     .select('id')
     .eq('carrier_id', carrierId)
     .in('status', ['pending', 'confirmed', 'picked_up', 'in_transit', 'out_for_delivery'])
+  
+  // Si hay tenantId, filtrar por tenant (para estadísticas por tenant)
+  // Si no, verificar todos los tenants (para eliminar carrier compartido)
+  // Por ahora, verificar todos los tenants para evitar eliminar carrier con envíos activos
+  const { data: activeShipments, error: shipmentsError } = await shipmentsQuery
 
   if (shipmentsError) {
     throw new ApiError('Error al verificar envíos activos', 500, 'DATABASE_ERROR', shipmentsError)
@@ -400,8 +407,8 @@ async function deleteHandler(request: NextRequest) {
     throw new ApiError('Error al eliminar transportista', 500, 'DATABASE_ERROR', error)
   }
 
-  // Log de auditoría
-  await logAdminAction(session.user.id, 'DELETE', 'carrier', carrierId, existingCarrier, null)
+  // ⚡ MULTITENANT: Log de auditoría con userId del guard
+  await logAdminAction(userId, 'DELETE', 'carrier', carrierId, existingCarrier, null)
 
   return NextResponse.json({
     success: true,
@@ -410,13 +417,11 @@ async function deleteHandler(request: NextRequest) {
 }
 
 // =====================================================
-// EXPORTS CON MIDDLEWARES
+// EXPORTS CON MULTITENANT
+// ⚡ MULTITENANT: Carriers son compartidos, pero estadísticas deben filtrarse por tenant
 // =====================================================
 
-export const GET = composeMiddlewares(withErrorHandler, withApiLogging)(getHandler)
-
-export const POST = composeMiddlewares(withErrorHandler, withApiLogging)(postHandler)
-
-export const PUT = composeMiddlewares(withErrorHandler, withApiLogging)(putHandler)
-
-export const DELETE = composeMiddlewares(withErrorHandler, withApiLogging)(deleteHandler)
+export const GET = withTenantAdmin(getHandler)
+export const POST = withTenantAdmin(postHandler)
+export const PUT = withTenantAdmin(putHandler)
+export const DELETE = withTenantAdmin(deleteHandler)

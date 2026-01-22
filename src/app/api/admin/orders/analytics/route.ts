@@ -14,6 +14,7 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit, type RateLimitResult } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -129,6 +130,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Validar parámetros de consulta
     const { searchParams } = new URL(request.url)
     const filtersResult = AnalyticsFiltersSchema.safeParse({
@@ -149,10 +156,13 @@ export async function GET(request: NextRequest) {
     const filters = filtersResult.data
     const { startDate, endDate } = getDateRange(filters.period, filters.date_from, filters.date_to)
 
-    // Obtener métricas básicas de prueba
+    // ===================================
+    // MULTITENANT: Obtener métricas filtradas por tenant_id
+    // ===================================
     const totalOrdersResult = await supabaseAdmin
       .from('orders')
       .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
 
     const totalOrders = totalOrdersResult.count || 0
 

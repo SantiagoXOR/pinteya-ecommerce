@@ -5,6 +5,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { MessageCircle } from "@/lib/optimized-imports"
 import { cn } from "@/lib/utils"
+import { useTenantSafe } from "@/contexts/TenantContext"
 
 interface HelpCardProps {
   categoryName?: string | null
@@ -13,7 +14,10 @@ interface HelpCardProps {
 
 const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
   const [isHovered, setIsHovered] = useState(false)
-  const whatsappNumber = "5493513411796"
+  
+  // Obtener número de WhatsApp del tenant
+  const tenant = useTenantSafe()
+  const whatsappNumber = tenant?.whatsappNumber || "5493513411796"
 
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation()

@@ -8,6 +8,8 @@ import { auth } from '@/lib/auth/config'
 import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -197,8 +199,14 @@ async function validateAdminAuth() {
   return { userId: session.user.id, role: profile.role }
 }
 
-async function getCoupons(filters: z.infer<typeof CouponFiltersSchema>) {
-  let query = supabase.from('coupons').select(`
+async function getCoupons(
+  filters: z.infer<typeof CouponFiltersSchema>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+) {
+  // ⚡ MULTITENANT: Filtrar por tenant_id
+  let query = supabase
+    .from('coupons')
+    .select(`
       *,
       categories:coupon_categories!coupon_categories_coupon_id_fkey(
         category:categories!coupon_categories_category_id_fkey(
@@ -218,6 +226,7 @@ async function getCoupons(filters: z.infer<typeof CouponFiltersSchema>) {
         email
       )
     `)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   // Aplicar filtros
   if (filters.status) {
@@ -312,16 +321,21 @@ async function getCoupons(filters: z.infer<typeof CouponFiltersSchema>) {
   }
 }
 
-async function createCoupon(couponData: z.infer<typeof CreateCouponSchema>, userId: string) {
-  // Verificar que el código no exista
+async function createCoupon(
+  couponData: z.infer<typeof CreateCouponSchema>,
+  userId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+) {
+  // ⚡ MULTITENANT: Verificar que el código no exista en el mismo tenant
   const { data: existingCoupon } = await supabase
     .from('coupons')
     .select('id')
     .eq('code', couponData.code)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (existingCoupon) {
-    throw new Error('Ya existe un cupón con este código')
+    throw new Error('Ya existe un cupón con este código en este tenant')
   }
 
   // Validar fechas
@@ -337,7 +351,7 @@ async function createCoupon(couponData: z.infer<typeof CreateCouponSchema>, user
     throw new Error('El descuento porcentual no puede ser mayor al 100%')
   }
 
-  // Crear cupón
+  // ⚡ MULTITENANT: Crear cupón con tenant_id
   const { data: newCoupon, error: couponError } = await supabase
     .from('coupons')
     .insert({
@@ -357,6 +371,7 @@ async function createCoupon(couponData: z.infer<typeof CreateCouponSchema>, user
       applicable_to: couponData.applicable_to,
       exclude_sale_items: couponData.exclude_sale_items,
       first_time_customers_only: couponData.first_time_customers_only,
+      tenant_id: tenantId, // ⚡ MULTITENANT
       created_by: userId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -402,9 +417,10 @@ async function createCoupon(couponData: z.infer<typeof CreateCouponSchema>, user
 }
 
 async function validateCoupon(
-  validation: z.infer<typeof ValidateCouponSchema>
+  validation: z.infer<typeof ValidateCouponSchema>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<CouponValidationResult> {
-  // Obtener cupón
+  // ⚡ MULTITENANT: Obtener cupón del tenant
   const { data: coupon, error } = await supabase
     .from('coupons')
     .select(
@@ -419,6 +435,7 @@ async function validateCoupon(
     `
     )
     .eq('code', validation.code.toUpperCase())
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (error || !coupon) {
@@ -565,9 +582,12 @@ async function validateCoupon(
   }
 }
 
-async function getCouponStats(): Promise<CouponStats> {
-  // Obtener todos los cupones
-  const { data: coupons, error } = await supabase.from('coupons').select('*')
+async function getCouponStats(tenantId: string): Promise<CouponStats> {
+  // ⚡ MULTITENANT: Obtener todos los cupones del tenant
+  const { data: coupons, error } = await supabase
+    .from('coupons')
+    .select('*')
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     throw new Error(`Error al obtener estadísticas de cupones: ${error.message}`)
@@ -578,8 +598,13 @@ async function getCouponStats(): Promise<CouponStats> {
   const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   const last30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-  // Obtener uso de cupones
-  const { data: usage } = await supabase.from('coupon_usage').select('*')
+  // ⚡ MULTITENANT: Obtener uso de cupones del tenant
+  // Nota: coupon_usage puede tener tenant_id o filtrarse por coupon_id que pertenece al tenant
+  const couponIds = coupons?.map(c => c.id) || []
+  const { data: usage } = await supabase
+    .from('coupon_usage')
+    .select('*')
+    .in('coupon_id', couponIds) // ⚡ MULTITENANT: Filtrar por cupones del tenant
 
   const totalCoupons = coupons?.length || 0
   let activeCoupons = 0
@@ -672,9 +697,14 @@ async function getCouponStats(): Promise<CouponStats> {
 
 // ===================================
 // GET - Obtener cupones
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -694,25 +724,14 @@ export async function GET(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Parsear parámetros de consulta
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action')
 
     // Manejar diferentes acciones
     if (action === 'stats') {
-      // Obtener estadísticas
-      const stats = await getCouponStats()
+      // ⚡ MULTITENANT: Obtener estadísticas filtrando por tenant_id
+      const stats = await getCouponStats(tenantId)
 
       // Registrar métricas
       metricsCollector.recordApiCall({
@@ -744,7 +763,8 @@ export async function GET(request: NextRequest) {
         category_ids: searchParams.get('category_ids')?.split(','),
       })
 
-      const validationResult = await validateCoupon(validation)
+      // ⚡ MULTITENANT: Validar cupón del tenant
+      const validationResult = await validateCoupon(validation, tenantId)
 
       // Registrar métricas
       metricsCollector.recordApiCall({
@@ -781,7 +801,8 @@ export async function GET(request: NextRequest) {
       sort_order: searchParams.get('sort_order'),
     })
 
-    const { coupons, total, totalPages } = await getCoupons(filters)
+    // ⚡ MULTITENANT: Obtener cupones del tenant
+    const { coupons, total, totalPages } = await getCoupons(filters, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -827,13 +848,18 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // POST - Crear cupón o acción masiva
+// ⚡ MULTITENANT: Filtra y asigna tenant_id
 // ===================================
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -853,23 +879,12 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Validar datos de entrada
     const body = await request.json()
     const { action } = body
 
     if (action === 'bulk') {
-      // Acción masiva
+      // ⚡ MULTITENANT: Acción masiva filtrando por tenant
       const bulkAction = BulkCouponActionSchema.parse(body)
       const results = []
 
@@ -886,10 +901,12 @@ export async function POST(request: NextRequest) {
               break
             case 'extend_expiry':
               if (bulkAction.extend_days) {
+                // ⚡ MULTITENANT: Verificar que el cupón pertenece al tenant
                 const { data: coupon } = await supabase
                   .from('coupons')
                   .select('expires_at')
                   .eq('id', couponId)
+                  .eq('tenant_id', tenantId) // ⚡ MULTITENANT
                   .single()
 
                 if (coupon?.expires_at) {
@@ -900,10 +917,12 @@ export async function POST(request: NextRequest) {
               }
               break
             case 'delete':
+              // ⚡ MULTITENANT: Eliminar solo cupones del tenant
               const { error: deleteError } = await supabase
                 .from('coupons')
                 .delete()
                 .eq('id', couponId)
+                .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
               if (deleteError) {
                 throw deleteError
@@ -913,10 +932,12 @@ export async function POST(request: NextRequest) {
           }
 
           if (bulkAction.action !== 'delete') {
+            // ⚡ MULTITENANT: Actualizar solo cupones del tenant
             const { error: updateError } = await supabase
               .from('coupons')
               .update(updateData)
               .eq('id', couponId)
+              .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
             if (updateError) {
               throw updateError
@@ -939,7 +960,7 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId,
+        userId: userId,
       })
 
       const response: ApiResponse<typeof results> = {
@@ -953,9 +974,9 @@ export async function POST(request: NextRequest) {
       return nextResponse
     }
 
-    // Crear cupón normal
+    // ⚡ MULTITENANT: Crear cupón normal con tenantId
     const couponData = CreateCouponSchema.parse(body)
-    const newCoupon = await createCoupon(couponData, authResult.userId!)
+    const newCoupon = await createCoupon(couponData, userId, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -963,7 +984,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 201,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const response: ApiResponse<typeof newCoupon> = {
@@ -995,4 +1016,4 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})

@@ -42,7 +42,7 @@ const OPTIMIZED_CLIENT_CONFIG = {
   },
   global: {
     headers: {
-      'x-client-info': 'pinteya-ecommerce@1.0.0',
+      'x-client-info': 'pintureria-digital@1.0.0',
       'x-connection-pool': 'optimized',
     },
   },
@@ -64,7 +64,7 @@ const OPTIMIZED_ADMIN_CONFIG = {
   },
   global: {
     headers: {
-      'x-client-info': 'pinteya-admin@1.0.0',
+      'x-client-info': 'pintureria-digital-admin@1.0.0',
       'x-connection-pool': 'admin-optimized',
     },
   },
@@ -102,6 +102,9 @@ export const supabaseAdmin =
  * @returns Cliente de Supabase
  */
 export function getSupabaseClient(useAdmin = false) {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabase/index.ts:104',message:'getSupabaseClient called',data:{useAdmin,hasSupabase:!!supabase,hasSupabaseAdmin:!!supabaseAdmin},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   if (useAdmin) {
     if (!supabaseAdmin) {
       if (process.env.NODE_ENV === 'production') {
@@ -114,6 +117,9 @@ export function getSupabaseClient(useAdmin = false) {
       )
       return null
     }
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabase/index.ts:117',message:'Returning admin client',data:{clientType:'admin'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     return supabaseAdmin
   }
   if (!supabase) {
@@ -125,6 +131,9 @@ export function getSupabaseClient(useAdmin = false) {
     console.warn('[DEV] Cliente público de Supabase no disponible. Devolviendo null para mocks.')
     return null
   }
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabase/index.ts:128',message:'Returning public client',data:{clientType:'anon'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  // #endregion
   return supabase
 }
 

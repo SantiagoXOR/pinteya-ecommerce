@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/auth/rate-limiting'
 import { MetricsCollector } from '@/lib/enterprise/metrics'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -220,8 +221,9 @@ async function decrementStockForOrder(orderId: string): Promise<{ success: boole
 // ===================================
 // GET - Obtener orden específica
 // ===================================
-export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export const GET = withTenantAdmin(async (guardResult: TenantAdminGuardResult, request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
   let orderId: string | undefined
 
   try {
@@ -239,12 +241,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status })
-    }
-
     // Obtener orden con todos los detalles
     console.log('[ORDER_DETAIL] Fetching order with ID:', id)
     
@@ -254,10 +250,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     }
 
     // Primero intentar obtener la orden sin las relaciones para diagnosticar
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: basicOrder, error: basicError } = await supabaseAdmin
       .from('orders')
       .select('*')
       .eq('id' as any, id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .single()
 
     console.log('[ORDER_DETAIL] Basic order query:', { hasBasicOrder: !!basicOrder, basicError })
@@ -274,6 +272,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     }
 
     // Ahora intentar con todas las relaciones
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: order, error } = await supabaseAdmin
       .from('orders')
       .select(
@@ -303,6 +302,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       `
       )
       .eq('id' as any, id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .single()
 
     console.log('[ORDER_DETAIL] Query result:', { hasOrder: !!order, error })
@@ -444,13 +444,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // ===================================
 // PATCH - Actualizar orden
 // ===================================
-export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export const PATCH = withTenantAdmin(async (guardResult: TenantAdminGuardResult, request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
   const { id } = await context.params
 
   try {
@@ -463,12 +464,6 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 })
-    }
-
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
     const orderId = id
@@ -491,10 +486,12 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return NextResponse.json({ error: 'Base de datos no disponible' }, { status: 500 })
     }
     
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
       .from('orders')
       .select('id, status, payment_status')
       .eq('id' as any, orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .single()
 
     if (fetchError) {
@@ -587,10 +584,12 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     }
 
     // Actualizar orden
+    // ⚡ MULTITENANT: Asegurar que solo se actualiza la orden del tenant
     const { data: updatedOrder, error: updateError } = await supabaseAdmin!
       .from('orders')
       .update(updatePayload)
       .eq('id' as any, orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .select()
       .single()
 
@@ -629,7 +628,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
           order_id: orderId as any,
           previous_status: currentOrder.status as any,
           new_status: updateData.status,
-          changed_by: authResult.userId,
+          changed_by: guardResult.userId, // ⚡ MULTITENANT: Usar userId del guard
           reason: `Cambio manual por administrador`,
         })
       } catch (historyError) {
@@ -686,4 +685,4 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})

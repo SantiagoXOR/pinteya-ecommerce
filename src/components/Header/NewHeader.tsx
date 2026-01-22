@@ -9,8 +9,19 @@ import { ShopDetailModal } from '@/components/ShopDetails/ShopDetailModal'
 import { cn } from '@/lib/utils'
 import { SearchSuggestion } from '@/types/search'
 import { useRouter } from 'next/navigation'
+import { useTenantAssets, useTenantSafe } from '@/contexts/TenantContext'
 
 const NewHeader = () => {
+  // Obtener assets del tenant (con fallback seguro)
+  const tenant = useTenantSafe()
+  const tenantAssets = tenant ? {
+    logo: tenant.logoUrl || `/tenants/${tenant.slug}/logo.svg`,
+    logoDark: tenant.logoDarkUrl || `/tenants/${tenant.slug}/logo-dark.svg`,
+  } : {
+    logo: '/images/logo/LOGO POSITIVO.svg',
+    logoDark: '/images/logo/LOGO NEGATIVO.svg',
+  }
+  const tenantName = tenant?.name || 'Pinteya'
   const router = useRouter()
   const [stickyMenu, setStickyMenu] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -77,12 +88,12 @@ const NewHeader = () => {
       >
         <div className='max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='flex items-center justify-between h-16 lg:h-20'>
-            {/* Logo - Sección izquierda */}
+            {/* Logo - Sección izquierda (dinámico por tenant) */}
             <div className='flex-shrink-0'>
               <Link href='/' className='flex items-center'>
                 <Image
-                  src='/images/logo/LOGO POSITIVO.svg'
-                  alt='Pinteya Logo'
+                  src={tenantAssets.logo}
+                  alt={`${tenantName} Logo`}
                   width={200}
                   height={40}
                   className='h-10 w-auto'

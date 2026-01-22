@@ -5,6 +5,8 @@ import { requireAdminAuth } from '@/lib/auth/admin-auth'
 import { checkRateLimit } from '@/lib/enterprise/rate-limiter'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -81,9 +83,13 @@ interface CategoryStats {
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
-async function getCategoryById(categoryId: string): Promise<Category | null> {
+async function getCategoryById(
+  categoryId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+): Promise<Category | null> {
   const supabase = await createClient()
 
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: category, error } = await supabase
     .from('categories')
     .select(
@@ -104,6 +110,7 @@ async function getCategoryById(categoryId: string): Promise<Category | null> {
     `
     )
     .eq('id', categoryId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (error) {
@@ -119,38 +126,53 @@ async function getCategoryById(categoryId: string): Promise<Category | null> {
 async function updateCategory(
   categoryId: string,
   updateData: any,
-  userId: string
+  userId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<Category> {
   const supabase = await createClient()
 
-  // Verificar que la categoría existe
-  const existingCategory = await getCategoryById(categoryId)
+  // ⚡ MULTITENANT: Verificar que la categoría existe y pertenece al tenant
+  const existingCategory = await getCategoryById(categoryId, tenantId)
   if (!existingCategory) {
     throw new Error('Categoría no encontrada')
   }
 
-  // Verificar slug único si se está actualizando
+  // ⚡ MULTITENANT: Verificar slug único dentro del mismo tenant si se está actualizando
   if (updateData.slug && updateData.slug !== existingCategory.slug) {
     const { data: existingSlug } = await supabase
       .from('categories')
       .select('id')
       .eq('slug', updateData.slug)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .neq('id', categoryId)
       .single()
 
     if (existingSlug) {
-      throw new Error('Ya existe una categoría con ese slug')
+      throw new Error('Ya existe una categoría con ese slug en este tenant')
     }
   }
 
-  // Verificar jerarquía circular si se está actualizando parent_id
+  // ⚡ MULTITENANT: Verificar jerarquía circular si se está actualizando parent_id
   if (updateData.parent_id) {
+    // Verificar que el parent pertenece al mismo tenant
+    const { data: parentCategory } = await supabase
+      .from('categories')
+      .select('id, tenant_id')
+      .eq('id', updateData.parent_id)
+      .eq('tenant_id', tenantId)
+      .single()
+    
+    if (!parentCategory) {
+      throw new Error('La categoría padre no existe o no pertenece a este tenant')
+    }
+    
     const isCircular = await checkCircularHierarchy(categoryId, updateData.parent_id)
     if (isCircular) {
       throw new Error('No se puede crear una jerarquía circular')
     }
   }
 
+  // ⚡ MULTITENANT: Actualizar solo si pertenece al tenant
   const { data: updatedCategory, error } = await supabase
     .from('categories')
     .update({
@@ -158,6 +180,7 @@ async function updateCategory(
       updated_at: new Date().toISOString(),
     })
     .eq('id', categoryId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .select(
       `
       *,
@@ -184,11 +207,15 @@ async function updateCategory(
   return updatedCategory
 }
 
-async function deleteCategory(categoryId: string, userId: string): Promise<void> {
+async function deleteCategory(
+  categoryId: string,
+  userId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+): Promise<void> {
   const supabase = await createClient()
 
-  // Verificar que la categoría existe
-  const category = await getCategoryById(categoryId)
+  // ⚡ MULTITENANT: Verificar que la categoría existe y pertenece al tenant
+  const category = await getCategoryById(categoryId, tenantId)
   if (!category) {
     throw new Error('Categoría no encontrada')
   }
@@ -198,32 +225,53 @@ async function deleteCategory(categoryId: string, userId: string): Promise<void>
     throw new Error('No se puede eliminar una categoría que tiene productos')
   }
 
-  // Verificar que no tenga subcategorías
-  if (category.children && category.children.length > 0) {
+  // ⚡ MULTITENANT: Verificar que no tenga subcategorías del mismo tenant
+  const { data: subcategories } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('parent_id', categoryId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
+  
+  if (subcategories && subcategories.length > 0) {
     throw new Error('No se puede eliminar una categoría que tiene subcategorías')
   }
 
-  const { error } = await supabase.from('categories').delete().eq('id', categoryId)
+  // ⚡ MULTITENANT: Eliminar solo si pertenece al tenant
+  const { error } = await supabase
+    .from('categories')
+    .delete()
+    .eq('id', categoryId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     throw new Error(`Error eliminando categoría: ${error.message}`)
   }
 }
 
-async function getCategoryStats(categoryId: string): Promise<CategoryStats> {
+async function getCategoryStats(
+  categoryId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+): Promise<CategoryStats> {
   const supabase = await createClient()
 
-  // Obtener estadísticas de productos
+  // ⚡ MULTITENANT: Obtener estadísticas de productos del tenant usando tenant_products
   const { data: productStats } = await supabase
     .from('products')
-    .select('is_active, price')
+    .select('is_active, price, id')
     .eq('category_id', categoryId)
+    .in('id', 
+      supabase
+        .from('tenant_products')
+        .select('product_id')
+        .eq('tenant_id', tenantId)
+    )
 
-  // Obtener subcategorías
+  // ⚡ MULTITENANT: Obtener subcategorías del tenant
   const { data: subcategories } = await supabase
     .from('categories')
     .select('id')
     .eq('parent_id', categoryId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   // Calcular estadísticas
   const totalProducts = productStats?.length || 0
@@ -309,9 +357,15 @@ async function logAuditAction(
 
 // ===================================
 // GET /api/admin/categories/[id] - Obtener categoría específica (Admin)
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -327,27 +381,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return response
     }
 
-    // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_read'])
-
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          error: authResult.error,
-          code: authResult.code,
-          enterprise: true,
-          timestamp: new Date().toISOString(),
-        },
-        { status: authResult.status || 401 }
-      )
-    }
-
-    const categoryId = params.id
+    const { id: categoryId } = await context.params
     const url = new URL(request.url)
     const includeStats = url.searchParams.get('include_stats') === 'true'
 
-    // Obtener categoría
-    const category = await getCategoryById(categoryId)
+    // ⚡ MULTITENANT: Obtener categoría filtrando por tenant_id
+    const category = await getCategoryById(categoryId, tenantId)
 
     if (!category) {
       const notFoundResponse: ApiResponse<null> = {
@@ -358,10 +397,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(notFoundResponse, { status: 404 })
     }
 
-    // Obtener estadísticas si se solicitan
+    // ⚡ MULTITENANT: Obtener estadísticas si se solicitan (filtrando por tenant)
     let stats: CategoryStats | undefined
     if (includeStats) {
-      stats = await getCategoryStats(categoryId)
+      stats = await getCategoryStats(categoryId, tenantId)
     }
 
     // Registrar métricas
@@ -370,7 +409,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id,
+      userId: guardResult.userId,
     })
 
     const response: ApiResponse<Category & { stats?: CategoryStats }> = {
@@ -388,7 +427,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   } catch (error: any) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/categories/[id]', {
       error,
-      categoryId: params.id,
+      categoryId: (await context.params).id,
     })
 
     // Registrar métricas de error
@@ -408,13 +447,19 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // PUT /api/admin/categories/[id] - Actualizar categoría (Admin)
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export const PUT = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -434,29 +479,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return response
     }
 
-    // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_update'])
-
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          error: authResult.error,
-          code: authResult.code,
-          enterprise: true,
-          timestamp: new Date().toISOString(),
-        },
-        { status: authResult.status || 401 }
-      )
-    }
-
-    const categoryId = params.id
+    const { id: categoryId } = await context.params
     const body = await request.json()
 
     // Validar datos de entrada
     const updateData = UpdateCategorySchema.parse(body)
 
-    // Obtener categoría actual para auditoría
-    const oldCategory = await getCategoryById(categoryId)
+    // ⚡ MULTITENANT: Obtener categoría actual para auditoría (filtrando por tenant)
+    const oldCategory = await getCategoryById(categoryId, tenantId)
     if (!oldCategory) {
       const notFoundResponse: ApiResponse<null> = {
         data: null,
@@ -466,11 +496,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(notFoundResponse, { status: 404 })
     }
 
-    // Actualizar categoría
-    const updatedCategory = await updateCategory(categoryId, updateData, authResult.user?.id!)
+    // ⚡ MULTITENANT: Actualizar categoría con tenantId
+    const updatedCategory = await updateCategory(categoryId, updateData, userId, tenantId)
 
     // Registrar auditoría
-    await logAuditAction('update', categoryId, authResult.user?.id!, {
+    await logAuditAction('update', categoryId, userId, {
       oldValues: oldCategory,
       newValues: updatedCategory,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
@@ -483,7 +513,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       method: 'PUT',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id,
+      userId: userId,
     })
 
     const response: ApiResponse<Category> = {
@@ -498,7 +528,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   } catch (error: any) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PUT /api/admin/categories/[id]', {
       error,
-      categoryId: params.id,
+      categoryId: (await context.params).id,
     })
 
     // Registrar métricas de error
@@ -518,13 +548,19 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // DELETE /api/admin/categories/[id] - Eliminar categoría (Admin)
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export const DELETE = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -544,25 +580,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return response
     }
 
-    // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, ['categories_delete'])
+    const { id: categoryId } = await context.params
 
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          error: authResult.error,
-          code: authResult.code,
-          enterprise: true,
-          timestamp: new Date().toISOString(),
-        },
-        { status: authResult.status || 401 }
-      )
-    }
-
-    const categoryId = params.id
-
-    // Obtener categoría para auditoría
-    const category = await getCategoryById(categoryId)
+    // ⚡ MULTITENANT: Obtener categoría para auditoría (filtrando por tenant)
+    const category = await getCategoryById(categoryId, tenantId)
     if (!category) {
       const notFoundResponse: ApiResponse<null> = {
         data: null,
@@ -572,11 +593,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json(notFoundResponse, { status: 404 })
     }
 
-    // Eliminar categoría
-    await deleteCategory(categoryId, authResult.user?.id!)
+    // ⚡ MULTITENANT: Eliminar categoría con tenantId
+    await deleteCategory(categoryId, userId, tenantId)
 
     // Registrar auditoría
-    await logAuditAction('delete', categoryId, authResult.user?.id!, {
+    await logAuditAction('delete', categoryId, userId, {
       oldValues: category,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
       userAgent: request.headers.get('user-agent'),
@@ -588,7 +609,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       method: 'DELETE',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id,
+      userId: userId,
     })
 
     const response: ApiResponse<null> = {
@@ -603,7 +624,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   } catch (error: any) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en DELETE /api/admin/categories/[id]', {
       error,
-      categoryId: params.id,
+      categoryId: (await context.params).id,
     })
 
     // Registrar métricas de error
@@ -623,4 +644,4 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})

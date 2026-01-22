@@ -19,6 +19,7 @@ declare global {
 
 interface MercadoPagoWalletProps {
   preferenceId: string
+  publicKey?: string // ⚡ MULTITENANT: Public key del tenant (opcional, usa env var como fallback)
   onReady?: () => void
   onError?: (error: any) => void
   onSubmit?: (data: any) => void
@@ -27,6 +28,7 @@ interface MercadoPagoWalletProps {
 
 export default function MercadoPagoWallet({
   preferenceId,
+  publicKey,
   onReady,
   onError,
   onSubmit,
@@ -119,9 +121,9 @@ export default function MercadoPagoWallet({
         setIsLoading(true)
         setError(null)
 
-        // Verificar que tenemos la clave pública
-        const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY
-        if (!publicKey) {
+        // ⚡ MULTITENANT: Usar public key del tenant o fallback a variable de entorno
+        const mpPublicKey = publicKey || process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY
+        if (!mpPublicKey) {
           throw new Error('Clave pública de MercadoPago no configurada')
         }
 
@@ -132,8 +134,8 @@ export default function MercadoPagoWallet({
           return
         }
 
-        // Inicializar MercadoPago
-        const mp = new window.MercadoPago(publicKey)
+        // Inicializar MercadoPago con la public key del tenant
+        const mp = new window.MercadoPago(mpPublicKey)
 
         // Limpiar contenedor anterior si existe
         container.innerHTML = ''

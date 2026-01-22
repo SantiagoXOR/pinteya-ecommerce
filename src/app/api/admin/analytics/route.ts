@@ -17,6 +17,8 @@ import { metricsCollector } from '@/lib/enterprise/metrics'
 import { metricsCalculator } from '@/lib/analytics/metrics-calculator'
 import { metricsCache } from '@/lib/analytics/metrics-cache'
 import { MetricsQueryParams } from '@/lib/analytics/types'
+import { getTenantConfig } from '@/lib/tenant'
+import { withTenantAdmin } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -132,8 +134,11 @@ async function validateAdminAuth() {
 // FUNCIONES DE CONSULTA DE DATOS
 // ===================================
 
-async function getOverviewMetrics(dateFrom: string, dateTo: string) {
+async function getOverviewMetrics(dateFrom: string, dateTo: string, tenantId: string) {
   try {
+    // ===================================
+    // MULTITENANT: Filtrar por tenant_id
+    // ===================================
     // Total de ingresos
     const { data: revenueData } = await supabaseAdmin
       .from('orders')
@@ -141,6 +146,7 @@ async function getOverviewMetrics(dateFrom: string, dateTo: string) {
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
       .eq('status', 'completed')
+      .eq('tenant_id', tenantId)
 
     const totalRevenue = revenueData?.reduce((sum, order) => sum + (order.total || 0), 0) || 0
 
@@ -150,12 +156,14 @@ async function getOverviewMetrics(dateFrom: string, dateTo: string) {
       .select('*', { count: 'exact', head: true })
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
+      .eq('tenant_id', tenantId)
 
-    // Total de productos
+    // Total de productos (usar tenant_products para contar productos visibles del tenant)
     const { count: totalProducts } = await supabaseAdmin
-      .from('products')
+      .from('tenant_products')
       .select('*', { count: 'exact', head: true })
-      .eq('is_active', true)
+      .eq('tenant_id', tenantId)
+      .eq('is_visible', true)
 
     // Total de usuarios
     const { count: totalUsers } = await supabaseAdmin
@@ -163,6 +171,7 @@ async function getOverviewMetrics(dateFrom: string, dateTo: string) {
       .select('*', { count: 'exact', head: true })
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
+      .eq('tenant_id', tenantId)
 
     const avgOrderValue = totalOrders ? totalRevenue / totalOrders : 0
     const conversionRate = 0.025 // Placeholder - calcular basado en visitas vs órdenes
@@ -181,8 +190,11 @@ async function getOverviewMetrics(dateFrom: string, dateTo: string) {
   }
 }
 
-async function getTrends(dateFrom: string, dateTo: string) {
+async function getTrends(dateFrom: string, dateTo: string, tenantId: string) {
   try {
+    // ===================================
+    // MULTITENANT: Filtrar por tenant_id
+    // ===================================
     // Tendencia de ingresos por día
     const { data: revenueData } = await supabaseAdmin
       .from('orders')
@@ -190,6 +202,7 @@ async function getTrends(dateFrom: string, dateTo: string) {
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
       .eq('status', 'completed')
+      .eq('tenant_id', tenantId)
       .order('created_at')
 
     // Agrupar por día
@@ -211,6 +224,7 @@ async function getTrends(dateFrom: string, dateTo: string) {
       .select('created_at')
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
+      .eq('tenant_id', tenantId)
       .order('created_at')
 
     const ordersTrend =
@@ -227,10 +241,11 @@ async function getTrends(dateFrom: string, dateTo: string) {
 
     // Tendencia de usuarios por día
     const { data: usersData } = await supabaseAdmin
-      .from('users')
+      .from('user_profiles')
       .select('created_at')
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
+      .eq('tenant_id', tenantId)
       .order('created_at')
 
     const usersTrend =
@@ -256,8 +271,11 @@ async function getTrends(dateFrom: string, dateTo: string) {
   }
 }
 
-async function getTopProducts(dateFrom: string, dateTo: string) {
+async function getTopProducts(dateFrom: string, dateTo: string, tenantId: string) {
   try {
+    // ===================================
+    // MULTITENANT: Filtrar por tenant_id
+    // ===================================
     const { data } = await supabaseAdmin
       .from('order_items')
       .select(
@@ -271,13 +289,15 @@ async function getTopProducts(dateFrom: string, dateTo: string) {
         ),
         orders!inner(
           created_at,
-          status
+          status,
+          tenant_id
         )
       `
       )
       .gte('orders.created_at', dateFrom)
       .lte('orders.created_at', dateTo)
       .eq('orders.status', 'completed')
+      .eq('orders.tenant_id', tenantId)
 
     // Agrupar por producto
     const productStats =
@@ -305,8 +325,11 @@ async function getTopProducts(dateFrom: string, dateTo: string) {
   }
 }
 
-async function getTopCategories(dateFrom: string, dateTo: string) {
+async function getTopCategories(dateFrom: string, dateTo: string, tenantId: string) {
   try {
+    // ===================================
+    // MULTITENANT: Filtrar por tenant_id
+    // ===================================
     const { data } = await supabaseAdmin
       .from('order_items')
       .select(
@@ -322,13 +345,15 @@ async function getTopCategories(dateFrom: string, dateTo: string) {
         ),
         orders!inner(
           created_at,
-          status
+          status,
+          tenant_id
         )
       `
       )
       .gte('orders.created_at', dateFrom)
       .lte('orders.created_at', dateTo)
       .eq('orders.status', 'completed')
+      .eq('orders.tenant_id', tenantId)
 
     // Agrupar por categoría
     const categoryStats =
@@ -361,8 +386,11 @@ async function getTopCategories(dateFrom: string, dateTo: string) {
   }
 }
 
-async function getRecentOrders() {
+async function getRecentOrders(tenantId: string) {
   try {
+    // ===================================
+    // MULTITENANT: Filtrar por tenant_id
+    // ===================================
     const { data } = await supabaseAdmin
       .from('orders')
       .select(
@@ -371,11 +399,13 @@ async function getRecentOrders() {
         total,
         status,
         created_at,
+        tenant_id,
         users(
           email
         )
       `
       )
+      .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(10)
 
@@ -429,6 +459,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: authResult.status })
     }
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Validar parámetros
     const { searchParams } = new URL(request.url)
     const validationResult = AnalyticsFiltersSchema.safeParse({
@@ -478,13 +514,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Obtener datos de analytics
+    // Obtener datos de analytics (filtrados por tenant)
     const [overview, trends, topProducts, topCategories, recentOrders] = await Promise.all([
-      getOverviewMetrics(dateFrom, dateTo),
-      getTrends(dateFrom, dateTo),
-      getTopProducts(dateFrom, dateTo),
-      getTopCategories(dateFrom, dateTo),
-      getRecentOrders(),
+      getOverviewMetrics(dateFrom, dateTo, tenantId),
+      getTrends(dateFrom, dateTo, tenantId),
+      getTopProducts(dateFrom, dateTo, tenantId),
+      getTopCategories(dateFrom, dateTo, tenantId),
+      getRecentOrders(tenantId),
     ])
 
     const analyticsData: AnalyticsData = {

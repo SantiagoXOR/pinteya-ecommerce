@@ -15,6 +15,7 @@ import { metricsCollector } from '@/lib/enterprise/metrics'
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { createSecurityLogger } from '@/lib/logging/security-logger'
 import { withTimeout, ENDPOINT_TIMEOUTS } from '@/lib/config/api-timeouts'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN DE RATE LIMITING
@@ -139,42 +140,9 @@ interface ApiResponse<T> {
 // FUNCIONES AUXILIARES
 // ===================================
 
-async function validateAdminAuth() {
-  try {
-    // En desarrollo, permitir acceso sin autenticación
-    if (process.env.NODE_ENV === 'development') {
-      logger.log(LogLevel.WARN, LogCategory.AUTH, 'Admin auth bypassed in development mode')
-      return { userId: 'dev-admin', email: 'dev@admin.com' }
-    }
+// ⚡ MULTITENANT: validateAdminAuth removido - ahora usamos withTenantAdmin
 
-    const session = await auth()
-    if (!session?.user?.email) {
-      throw new Error('No authenticated session found')
-    }
-
-    // Verificar si el usuario es admin
-    const { data: profile, error } = await supabaseAdmin
-      .from('user_profiles')
-      .select('role, permissions')
-      .eq('email', session.user.email)
-      .single()
-
-    if (error || !profile) {
-      throw new Error('User profile not found')
-    }
-
-    if (profile.role !== 'admin' && profile.role !== 'super_admin') {
-      throw new Error('Insufficient permissions')
-    }
-
-    return { userId: session.user.id, email: session.user.email }
-  } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.AUTH, 'Admin authentication failed', { error })
-    throw error
-  }
-}
-
-async function getDashboardMetrics(period: string, timezone: string): Promise<DashboardMetrics> {
+async function getDashboardMetrics(period: string, timezone: string, tenantId: string): Promise<DashboardMetrics> {
   try {
     const now = new Date()
     let startDate: Date
@@ -208,29 +176,36 @@ async function getDashboardMetrics(period: string, timezone: string): Promise<Da
     }
 
     // Obtener métricas de órdenes
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: ordersData } = await supabaseAdmin
       .from('orders')
       .select('id, total, status, created_at, customer_id')
       .gte('created_at', startDate.toISOString())
+      .eq('tenant_id', tenantId)
 
     const { data: previousOrdersData } = await supabaseAdmin
       .from('orders')
       .select('total')
       .gte('created_at', previousStartDate.toISOString())
       .lt('created_at', startDate.toISOString())
+      .eq('tenant_id', tenantId)
 
     // Obtener métricas de productos
+    // ⚡ NOTA: products puede no tener tenant_id aún - se migrará en iteración futura
     const { data: productsData } = await supabaseAdmin
       .from('products')
       .select('id, name, price, stock_quantity, is_active')
 
     // Obtener métricas de clientes
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: customersData } = await supabaseAdmin
       .from('user_profiles')
-      .select('id, full_name, email, created_at')
-      .eq('role', 'customer')
+      .select('id, first_name, last_name, email, created_at')
+      .eq('tenant_id', tenantId)
+      .not('role', 'eq', 'admin') // ⚡ Filtrar clientes (no admins)
 
     // Obtener categorías
+    // ⚡ NOTA: categories puede no tener tenant_id aún - se migrará en iteración futura
     const { data: categoriesData } = await supabaseAdmin
       .from('categories')
       .select('id')
@@ -287,7 +262,7 @@ async function getDashboardMetrics(period: string, timezone: string): Promise<Da
         ?.slice(0, 10)
         ?.map(order => ({
           id: order.id,
-          customer_name: 'Cliente', // Se podría obtener del perfil
+          customer_name: 'Cliente', // ⚡ Se podría obtener del perfil relacionado
           total: order.total || 0,
           status: order.status,
           created_at: order.created_at,
@@ -375,25 +350,22 @@ async function logAuditAction(adminUserId: string, action: string, details?: any
 // HANDLERS DE LA API
 // ===================================
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/dashboard
+ * Obtener métricas del dashboard administrativo
+ * ⚡ MULTITENANT: Filtra por tenant_id
+ */
+export const GET = withTenantAdmin(async (guardResult: TenantAdminGuardResult, request: NextRequest) => {
   // Aplicar rate limiting para APIs administrativos
   const rateLimitResult = await withRateLimit(request, RATE_LIMIT_CONFIGS.admin, async () => {
     // Crear logger de seguridad
     const securityLogger = createSecurityLogger(request)
     const startTime = Date.now()
-    let adminUserId = ''
+    const { tenantId, userId: adminUserId } = guardResult
 
     try {
       // Log del acceso al dashboard administrativo
       securityLogger.logApiAccess(securityLogger.context, 'admin/dashboard', 'read')
-
-      // Autenticación con timeout
-      const authResult = await withTimeout(
-        () => validateAdminAuth(),
-        ENDPOINT_TIMEOUTS['/api/admin']?.request || 30000,
-        'Validación de autenticación de admin'
-      )
-      adminUserId = authResult.userId
 
       // Validar parámetros
       const { searchParams } = new URL(request.url)
@@ -418,8 +390,9 @@ export async function GET(request: NextRequest) {
       const { period, timezone, include_comparisons } = validationResult.data
 
       // Obtener métricas del dashboard con timeout
+      // ⚡ MULTITENANT: Pasar tenantId a getDashboardMetrics
       const metrics = await withTimeout(
-        () => getDashboardMetrics(period, timezone),
+        () => getDashboardMetrics(period, timezone, tenantId),
         ENDPOINT_TIMEOUTS['/api/admin']?.request || 30000,
         'Obtención de métricas del dashboard'
       )
@@ -492,4 +465,4 @@ export async function GET(request: NextRequest) {
   })
 
   return rateLimitResult
-}
+})

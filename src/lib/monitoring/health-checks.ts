@@ -473,34 +473,108 @@ export class EnterpriseHealthSystem {
     const startTime = Date.now()
 
     try {
-      const publicKey =
-        process.env.MERCADOPAGO_PUBLIC_KEY_PROD || process.env.MERCADOPAGO_PUBLIC_KEY_TEST
-      const accessToken =
-        process.env.MERCADOPAGO_ACCESS_TOKEN_PROD || process.env.MERCADOPAGO_ACCESS_TOKEN_TEST
+      // ⚡ MULTITENANT: Verificar credenciales por tenant
+      const { getAllTenants } = await import('@/lib/tenant/tenant-service')
+      const tenants = await getAllTenants()
 
-      if (!publicKey || !accessToken) {
-        throw new Error('MercadoPago credentials not configured')
+      if (tenants.length === 0) {
+        // Fallback: verificar variables de entorno globales (para compatibilidad)
+        const publicKey =
+          process.env.MERCADOPAGO_PUBLIC_KEY_PROD || process.env.MERCADOPAGO_PUBLIC_KEY_TEST
+        const accessToken =
+          process.env.MERCADOPAGO_ACCESS_TOKEN_PROD || process.env.MERCADOPAGO_ACCESS_TOKEN_TEST
+
+        if (!publicKey || !accessToken) {
+          throw new Error('MercadoPago credentials not configured (no tenants found and no global credentials)')
+        }
+
+        const responseTime = Date.now() - startTime
+        const environment = publicKey.includes('TEST') ? 'test' : 'production'
+
+        return {
+          service: 'mercadopago',
+          status: HealthStatus.HEALTHY,
+          severity: HealthSeverity.LOW,
+          responseTime,
+          message: `MercadoPago credentials configured for ${environment} (global fallback)`,
+          details: {
+            publicKeyConfigured: !!publicKey,
+            accessTokenConfigured: !!accessToken,
+            environment,
+            source: 'global_env',
+          },
+          lastChecked: new Date().toISOString(),
+          nextCheck: new Date(Date.now() + config.interval * 1000).toISOString(),
+          metrics: {
+            configurationScore: 100,
+          },
+        }
       }
 
-      const responseTime = Date.now() - startTime
-      const environment = publicKey.includes('TEST') ? 'test' : 'production'
+      // Verificar credenciales de cada tenant
+      const tenantCredentialsStatus = tenants.map(tenant => ({
+        tenantId: tenant.id,
+        tenantSlug: tenant.slug,
+        hasAccessToken: !!tenant.mercadopagoAccessToken,
+        hasPublicKey: !!tenant.mercadopagoPublicKey,
+        hasWebhookSecret: !!tenant.mercadopagoWebhookSecret,
+        isConfigured: !!(tenant.mercadopagoAccessToken && tenant.mercadopagoPublicKey),
+      }))
 
-      return {
-        service: 'mercadopago',
-        status: HealthStatus.HEALTHY,
-        severity: HealthSeverity.LOW,
-        responseTime,
-        message: `MercadoPago credentials configured for ${environment}`,
-        details: {
-          publicKeyConfigured: !!publicKey,
-          accessTokenConfigured: !!accessToken,
-          environment,
-        },
-        lastChecked: new Date().toISOString(),
-        nextCheck: new Date(Date.now() + config.interval * 1000).toISOString(),
-        metrics: {
-          configurationScore: 100,
-        },
+      const configuredTenants = tenantCredentialsStatus.filter(t => t.isConfigured)
+      const unconfiguredTenants = tenantCredentialsStatus.filter(t => !t.isConfigured)
+
+      const responseTime = Date.now() - startTime
+
+      if (unconfiguredTenants.length === 0) {
+        // Todos los tenants tienen credenciales configuradas
+        return {
+          service: 'mercadopago',
+          status: HealthStatus.HEALTHY,
+          severity: HealthSeverity.LOW,
+          responseTime,
+          message: `MercadoPago credentials configured for all ${tenants.length} tenant(s)`,
+          details: {
+            totalTenants: tenants.length,
+            configuredTenants: configuredTenants.length,
+            unconfiguredTenants: unconfiguredTenants.length,
+            tenants: tenantCredentialsStatus,
+          },
+          lastChecked: new Date().toISOString(),
+          nextCheck: new Date(Date.now() + config.interval * 1000).toISOString(),
+          metrics: {
+            configurationScore: 100,
+          },
+        }
+      } else if (configuredTenants.length > 0) {
+        // Algunos tenants tienen credenciales, otros no
+        return {
+          service: 'mercadopago',
+          status: HealthStatus.DEGRADED,
+          severity: HealthSeverity.MEDIUM,
+          responseTime,
+          message: `MercadoPago credentials configured for ${configuredTenants.length}/${tenants.length} tenant(s)`,
+          details: {
+            totalTenants: tenants.length,
+            configuredTenants: configuredTenants.length,
+            unconfiguredTenants: unconfiguredTenants.length,
+            tenants: tenantCredentialsStatus,
+            unconfiguredTenantSlugs: unconfiguredTenants.map(t => t.tenantSlug),
+          },
+          lastChecked: new Date().toISOString(),
+          nextCheck: new Date(Date.now() + config.interval * 1000).toISOString(),
+          recommendations: [
+            `Configure MercadoPago credentials for ${unconfiguredTenants.length} tenant(s)`,
+            'Check tenant configuration in database',
+            'Verify API keys for unconfigured tenants',
+          ],
+          metrics: {
+            configurationScore: Math.round((configuredTenants.length / tenants.length) * 100),
+          },
+        }
+      } else {
+        // Ningún tenant tiene credenciales configuradas
+        throw new Error(`MercadoPago credentials not configured for any of ${tenants.length} tenant(s)`)
       }
     } catch (error) {
       return {
@@ -512,8 +586,8 @@ export class EnterpriseHealthSystem {
         details: { error: error instanceof Error ? error.message : 'Unknown error' },
         lastChecked: new Date().toISOString(),
         recommendations: [
-          'Configure MercadoPago credentials',
-          'Check environment variables',
+          'Configure MercadoPago credentials for tenants',
+          'Check tenant configuration in database',
           'Verify API keys',
         ],
       }

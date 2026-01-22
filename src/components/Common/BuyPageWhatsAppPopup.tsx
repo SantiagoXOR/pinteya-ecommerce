@@ -3,13 +3,16 @@
 import React, { useState, useEffect } from 'react'
 import { MessageCircle, X, Sparkles } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const BuyPageWhatsAppPopup = () => {
   const [isVisible, setIsVisible] = useState(false)
   const [hasShown, setHasShown] = useState(false)
 
-  const whatsappNumber = '5493513411796' // Número oficial de Pinteya
-  const defaultMessage = 'Hola! Necesito ayuda para elegir productos de pinturería'
+  // Obtener número de WhatsApp del tenant
+  const tenant = useTenantSafe()
+  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+  const defaultMessage = tenant?.whatsappMessageTemplate || 'Hola! Necesito ayuda para elegir productos de pinturería'
 
   useEffect(() => {
     // Verificar si ya se mostró en esta sesión

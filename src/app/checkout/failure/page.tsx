@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { XCircle, AlertTriangle, ArrowLeft, RefreshCw, CreditCard, HelpCircle } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface PaymentError {
   payment_id?: string
@@ -69,6 +70,10 @@ function CheckoutFailureContent() {
   const searchParams = useSearchParams()
   const [paymentError, setPaymentError] = useState<PaymentError>({})
   const [isLoading, setIsLoading] = useState(true)
+  
+  // ⚡ MULTITENANT: Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const supportEmail = tenant?.supportEmail || `soporte@${tenant?.slug || 'pinteya'}.com`
 
   useEffect(() => {
     // Obtener parámetros de la URL
@@ -133,8 +138,9 @@ function CheckoutFailureContent() {
 
   const handleContactSupport = () => {
     // Abrir email o chat de soporte
+    // ⚡ MULTITENANT: Usar email del tenant
     window.location.href =
-      'mailto:soporte@pinteya.com?subject=Problema con el pago&body=ID de pago: ' +
+      `mailto:${supportEmail}?subject=Problema con el pago&body=ID de pago: ` +
       (paymentError.payment_id || 'N/A')
   }
 

@@ -42,9 +42,16 @@ export interface OriginValidationConfig {
 const CSRF_CONFIG: OriginValidationConfig = {
   allowedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-    'https://pinteya-ecommerce.vercel.app',
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://pinteya.com',
+    // Dominios de producción (multitenant)
     'https://pinteya.com',
     'https://www.pinteya.com',
+    'https://pintemas.com',
+    'https://www.pintemas.com',
+    // Dominio de plataforma
+    'https://pintureriadigital.com',
+    'https://pinteya.pintureriadigital.com',
+    'https://pintemas.pintureriadigital.com',
   ],
   allowedMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   requireReferer: true,

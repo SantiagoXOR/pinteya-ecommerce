@@ -5,6 +5,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import Image from 'next/image'
 import { Download, Loader2 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface WhatsAppQRProps {
   size?: number // Tamaño del QR (default: 256)
@@ -22,9 +23,15 @@ const WhatsAppQR: React.FC<WhatsAppQRProps> = ({
   const qrRef = useRef<HTMLDivElement>(null)
   const [isDownloading, setIsDownloading] = useState(false)
   const [logoDataUrl, setLogoDataUrl] = useState<string>('')
+  
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+  const tenantLogo = tenant?.logoUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo.svg`
+  const tenantName = tenant?.name || 'PinteYa'
+  const tenantPrimaryColor = tenant?.primaryColor || '#eb6313'
 
   // Construir URL de WhatsApp
-  const whatsappNumber = '5493513411796'
   const whatsappUrl = message
     ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`
     : `https://wa.me/${whatsappNumber}`
@@ -33,7 +40,7 @@ const WhatsAppQR: React.FC<WhatsAppQRProps> = ({
   useEffect(() => {
     const loadLogo = async () => {
       try {
-        const response = await fetch('/images/logo/LOGO POSITIVO.svg')
+        const response = await fetch(tenantLogo)
         const svgText = await response.text()
         const blob = new Blob([svgText], { type: 'image/svg+xml' })
         const url = URL.createObjectURL(blob)
@@ -50,7 +57,7 @@ const WhatsAppQR: React.FC<WhatsAppQRProps> = ({
       }
     }
     loadLogo()
-  }, [])
+  }, [tenantLogo])
 
   // Función para descargar el QR como SVG
   const handleDownload = async () => {
@@ -159,12 +166,12 @@ const WhatsAppQR: React.FC<WhatsAppQRProps> = ({
           value={whatsappUrl}
           size={size}
           level='H' // Alto nivel de corrección de errores para permitir logo
-          fgColor='#eb6313' // Color naranja de marca PinteYa
+          fgColor={tenantPrimaryColor}
           bgColor='#ffffff'
           includeMargin={false}
         />
 
-        {/* Logo de PinteYa superpuesto en el centro */}
+        {/* Logo del tenant superpuesto en el centro */}
         <div
           className='absolute bg-white rounded-lg p-2 shadow-md'
           style={{
@@ -176,8 +183,8 @@ const WhatsAppQR: React.FC<WhatsAppQRProps> = ({
           }}
         >
           <Image
-            src='/images/logo/LOGO POSITIVO.svg'
-            alt='PinteYa Logo'
+            src={tenantLogo}
+            alt={`${tenantName} Logo`}
             width={logoSize}
             height={logoSize}
             className='object-contain'
@@ -193,11 +200,11 @@ const WhatsAppQR: React.FC<WhatsAppQRProps> = ({
           disabled={isDownloading}
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-lg',
-            'bg-[#eb6313] hover:bg-[#d4550f] text-white',
+            'bg-tenant-primary hover:bg-tenant-primary-dark text-white',
             'font-semibold transition-colors duration-200',
             'shadow-md hover:shadow-lg',
             'disabled:opacity-50 disabled:cursor-not-allowed',
-            'focus:outline-none focus:ring-2 focus:ring-[#eb6313] focus:ring-offset-2'
+            'focus:outline-none focus:ring-2 focus:ring-tenant-primary focus:ring-offset-2'
           )}
           aria-label='Descargar código QR'
         >

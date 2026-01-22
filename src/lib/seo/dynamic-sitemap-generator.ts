@@ -7,6 +7,7 @@
 import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger'
 import { getRedisClient } from '@/lib/integrations/redis'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { getTenantConfig, getTenantBaseUrl } from '@/lib/tenant'
 
 // ===================================
 // INTERFACES Y TIPOS MEJORADOS
@@ -161,7 +162,7 @@ export interface BlogData {
 
 // Configuración por defecto mejorada
 const DEFAULT_SITEMAP_CONFIG: SitemapConfig = {
-  baseUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://pinteya-ecommerce.vercel.app',
+  baseUrl: process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://pinteya.com',
   maxUrlsPerSitemap: 50000,
   enableImages: true,
   enableVideos: false,
@@ -283,6 +284,7 @@ export class EnhancedDynamicSitemapGenerator {
 
   /**
    * Generar sitemap completo con análisis de performance
+   * MULTITENANT: Actualiza baseUrl con el tenant actual
    */
   public async generateSitemap(): Promise<string[]> {
     const startTime = Date.now()
@@ -290,10 +292,17 @@ export class EnhancedDynamicSitemapGenerator {
     this.stats.warnings = []
 
     try {
-      logger.info(LogLevel.INFO, 'Starting enhanced sitemap generation', {}, LogCategory.SEO)
+      // MULTITENANT: Actualizar baseUrl con el tenant actual
+      const tenant = await getTenantConfig()
+      this.config.baseUrl = getTenantBaseUrl(tenant)
 
-      // Verificar cache
-      const cachedSitemap = await this.getCachedSitemap()
+      logger.info(LogLevel.INFO, 'Starting enhanced sitemap generation', { 
+        baseUrl: this.config.baseUrl,
+        tenant: tenant.slug 
+      }, LogCategory.SEO)
+
+      // Verificar cache (con clave por tenant)
+      const cachedSitemap = await this.getCachedSitemap(tenant.id)
       if (cachedSitemap) {
         this.updateCacheStats(true)
         logger.info(LogLevel.INFO, 'Sitemap served from cache', {}, LogCategory.SEO)
@@ -338,8 +347,8 @@ export class EnhancedDynamicSitemapGenerator {
       // Actualizar estadísticas
       this.updateStats(allEntries, sitemaps.length, Date.now() - startTime)
 
-      // Cachear resultado
-      await this.cacheSitemap(sitemapUrls)
+      // Cachear resultado (con tenant_id) - tenant ya está definido arriba
+      await this.cacheSitemap(sitemapUrls, tenant.id)
 
       // Notificar a motores de búsqueda
       await this.notifySearchEngines()
@@ -470,6 +479,7 @@ export class EnhancedDynamicSitemapGenerator {
 
   /**
    * Obtener páginas de productos desde la base de datos
+   * MULTITENANT: Filtra por tenant usando tenant_products
    */
   private async getProductPages(): Promise<SitemapEntry[]> {
     try {
@@ -479,15 +489,24 @@ export class EnhancedDynamicSitemapGenerator {
         return []
       }
 
+      // MULTITENANT: Obtener tenant actual
+      const tenant = await getTenantConfig()
+
       const { data: products, error } = await supabase
         .from('products')
         .select(
           `
           id, slug, name, updated_at, images,
-          category:categories(slug, name)
+          category:categories(slug, name),
+          tenant_products!inner (
+            tenant_id,
+            is_visible
+          )
         `
         )
         .eq('is_active', true)
+        .eq('tenant_products.tenant_id', tenant.id)
+        .eq('tenant_products.is_visible', true)
         .order('updated_at', { ascending: false })
 
       if (error) {
@@ -521,6 +540,7 @@ export class EnhancedDynamicSitemapGenerator {
 
   /**
    * Obtener páginas de categorías desde la base de datos
+   * MULTITENANT: Filtra por tenant_id
    */
   private async getCategoryPages(): Promise<SitemapEntry[]> {
     try {
@@ -530,6 +550,9 @@ export class EnhancedDynamicSitemapGenerator {
         return []
       }
 
+      // MULTITENANT: Obtener tenant actual
+      const tenant = await getTenantConfig()
+
       const { data: categories, error } = await supabase
         .from('categories')
         .select(
@@ -538,6 +561,7 @@ export class EnhancedDynamicSitemapGenerator {
           products_count:products(count)
         `
         )
+        .eq('tenant_id', tenant.id)
         .order('name')
 
       if (error) {
@@ -707,16 +731,19 @@ export class EnhancedDynamicSitemapGenerator {
 
   /**
    * Obtener sitemap desde cache
+   * MULTITENANT: Incluye tenant_id en la clave del cache
    */
-  private async getCachedSitemap(): Promise<string[] | null> {
+  private async getCachedSitemap(tenantId?: string): Promise<string[] | null> {
     if (!this.config.cacheEnabled) {
       return null
     }
 
+    const cacheKey = tenantId ? `sitemap:urls:${tenantId}` : 'sitemap:urls'
+
     try {
       // Intentar Redis primero
       if (this.redis) {
-        const cached = await this.redis.get('sitemap:urls')
+        const cached = await this.redis.get(cacheKey)
         if (cached) {
           const data = JSON.parse(cached)
           if (Date.now() - data.timestamp < this.config.cacheTTL * 1000) {
@@ -726,7 +753,7 @@ export class EnhancedDynamicSitemapGenerator {
       }
 
       // Fallback a cache en memoria
-      const cached = this.cache.get('sitemap:urls')
+      const cached = this.cache.get(cacheKey)
       if (cached && Date.now() - cached.timestamp < this.config.cacheTTL * 1000) {
         return cached.data
       }
@@ -740,11 +767,14 @@ export class EnhancedDynamicSitemapGenerator {
 
   /**
    * Cachear sitemap generado
+   * MULTITENANT: Incluye tenant_id en la clave del cache
    */
-  private async cacheSitemap(urls: string[]): Promise<void> {
+  private async cacheSitemap(urls: string[], tenantId?: string): Promise<void> {
     if (!this.config.cacheEnabled) {
       return
     }
+
+    const cacheKey = tenantId ? `sitemap:urls:${tenantId}` : 'sitemap:urls'
 
     const cacheData = {
       urls,
@@ -754,11 +784,11 @@ export class EnhancedDynamicSitemapGenerator {
     try {
       // Cachear en Redis
       if (this.redis) {
-        await this.redis.setex('sitemap:urls', this.config.cacheTTL, JSON.stringify(cacheData))
+        await this.redis.setex(cacheKey, this.config.cacheTTL, JSON.stringify(cacheData))
       }
 
       // Cachear en memoria como fallback
-      this.cache.set('sitemap:urls', cacheData)
+      this.cache.set(cacheKey, cacheData)
     } catch (error) {
       logger.warn(LogLevel.WARN, 'Error caching sitemap', {}, LogCategory.SEO)
     }

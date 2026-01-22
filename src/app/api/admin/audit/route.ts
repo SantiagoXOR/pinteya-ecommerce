@@ -8,6 +8,8 @@ import { auth } from '@/lib/auth/config'
 import { checkRateLimit, addRateLimitHeaders } from '@/lib/enterprise/rate-limiter'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -192,9 +194,9 @@ async function getAuditLogs(filters: z.infer<typeof AuditFiltersSchema>) {
   }
 }
 
-async function getAuditStats(): Promise<AuditStats> {
-  // Obtener todos los logs para estadísticas
-  const { data: allLogs, error } = await supabase.from('audit_logs').select(`
+async function getAuditStats(tenantId?: string): Promise<AuditStats> {
+  // ⚡ MULTITENANT: Obtener logs para estadísticas (HÍBRIDO: algunos por tenant, otros globales)
+  let query = supabase.from('audit_logs').select(`
       *,
       user:profiles!audit_logs_user_id_fkey(
         id,
@@ -203,6 +205,13 @@ async function getAuditStats(): Promise<AuditStats> {
         role
       )
     `)
+  
+  // ⚡ MULTITENANT: Filtrar por tenant_id si está disponible (opcional para logs híbridos)
+  // if (tenantId) {
+  //   query = query.eq('tenant_id', tenantId) // Comentado hasta que la tabla exista
+  // }
+  
+  const { data: allLogs, error } = await query
 
   if (error) {
     throw new Error(`Error al obtener estadísticas de auditoría: ${error.message}`)
@@ -287,9 +296,10 @@ async function getAuditStats(): Promise<AuditStats> {
 async function exportAuditLogs(
   format: 'csv' | 'json' | 'xlsx',
   filters?: z.infer<typeof AuditFiltersSchema>,
-  includeDetails: boolean = false
+  includeDetails: boolean = false,
+  tenantId?: string // ⚡ MULTITENANT: Opcional para logs híbridos
 ) {
-  // Obtener logs con filtros aplicados
+  // ⚡ MULTITENANT: Obtener logs con filtros aplicados (HÍBRIDO)
   const { logs } = await getAuditLogs(
     filters || {
       page: 1,
@@ -364,9 +374,14 @@ async function createAuditLog(
 
 // ===================================
 // GET - Obtener logs de auditoría
+// ⚡ MULTITENANT: HÍBRIDO (algunos logs por tenant, otros globales)
 // ===================================
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -386,25 +401,14 @@ export async function GET(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Parsear parámetros de consulta
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action')
 
     // Manejar diferentes acciones
     if (action === 'stats') {
-      // Obtener estadísticas
-      const stats = await getAuditStats()
+      // ⚡ MULTITENANT: Obtener estadísticas (HÍBRIDO: algunos por tenant, otros globales)
+      const stats = await getAuditStats(tenantId)
 
       // Registrar métricas
       metricsCollector.recordApiCall({
@@ -412,7 +416,7 @@ export async function GET(request: NextRequest) {
         method: 'GET',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId,
+        userId: guardResult.userId,
       })
 
       const response: ApiResponse<AuditStats> = {
@@ -443,14 +447,14 @@ export async function GET(request: NextRequest) {
 
       const exportResult = await exportAuditLogs(format, filters, includeDetails)
 
-      // Crear log de auditoría para la exportación
+      // ⚡ MULTITENANT: Crear log de auditoría para la exportación
       await createAuditLog(
         'audit_logs',
         'export',
         'EXPORT',
         null,
         { format, filters, includeDetails, count: exportResult.count },
-        authResult.userId!,
+        guardResult.userId,
         request
       )
 
@@ -460,7 +464,7 @@ export async function GET(request: NextRequest) {
         method: 'GET',
         statusCode: 200,
         responseTime: Date.now() - startTime,
-        userId: authResult.userId,
+        userId: guardResult.userId,
       })
 
       const response: ApiResponse<typeof exportResult> = {
@@ -474,7 +478,7 @@ export async function GET(request: NextRequest) {
       return nextResponse
     }
 
-    // Obtener logs normales
+    // ⚡ MULTITENANT: Obtener logs normales (HÍBRIDO)
     const filters = AuditFiltersSchema.parse({
       table_name: searchParams.get('table_name'),
       action: searchParams.get('action'),
@@ -489,7 +493,7 @@ export async function GET(request: NextRequest) {
       sort_order: searchParams.get('sort_order'),
     })
 
-    const { logs, total, totalPages } = await getAuditLogs(filters)
+    const { logs, total, totalPages } = await getAuditLogs(filters, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -497,7 +501,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     const response: ApiResponse<AuditLogData[]> = {
@@ -535,13 +539,18 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // POST - Crear log de auditoría manual
+// ⚡ MULTITENANT: HÍBRIDO (algunos logs por tenant, otros globales)
 // ===================================
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting
@@ -561,17 +570,6 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Validar datos de entrada
     const body = await request.json()
     const { table_name, record_id, action, old_values, new_values } = body
@@ -585,14 +583,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 })
     }
 
-    // Crear log de auditoría
+    // ⚡ MULTITENANT: Crear log de auditoría (HÍBRIDO)
     await createAuditLog(
       table_name,
       record_id,
       action,
       old_values,
       new_values,
-      authResult.userId!,
+      userId,
       request
     )
 
@@ -602,7 +600,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 201,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: userId,
     })
 
     const response: ApiResponse<null> = {
@@ -634,4 +632,4 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})

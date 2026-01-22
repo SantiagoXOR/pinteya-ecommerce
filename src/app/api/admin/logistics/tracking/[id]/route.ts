@@ -6,11 +6,13 @@
 // =====================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
 import { createClient } from '@/lib/integrations/supabase/server'
 import { Database } from '@/types/database'
 import { z } from 'zod'
 import { TrackingEvent, CreateTrackingEventRequest, Shipment } from '@/types/logistics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // =====================================================
 // SCHEMAS DE VALIDACIÓN ZOD
@@ -50,8 +52,10 @@ async function validateAdminAuth(request: NextRequest) {
 
 async function validateShipmentExists(
   supabase: ReturnType<typeof createClient<Database>>,
-  shipmentId: number
+  shipmentId: number,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<Shipment | null> {
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data, error } = await supabase
     .from('shipments')
     .select(
@@ -65,6 +69,7 @@ async function validateShipmentExists(
     `
     )
     .eq('id', shipmentId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (error || !data) {
@@ -76,7 +81,8 @@ async function validateShipmentExists(
 async function updateShipmentStatus(
   supabase: ReturnType<typeof createClient<Database>>,
   shipmentId: number,
-  status: string
+  status: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<void> {
   const statusTimestampMap: Record<string, string> = {
     confirmed: 'confirmed_at',
@@ -93,7 +99,12 @@ async function updateShipmentStatus(
     updateData[statusTimestampMap[status]] = new Date().toISOString()
   }
 
-  const { error } = await supabase.from('shipments').update(updateData).eq('id', shipmentId)
+  // ⚡ MULTITENANT: Filtrar por tenant_id
+  const { error } = await supabase
+    .from('shipments')
+    .update(updateData)
+    .eq('id', shipmentId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     throw error
@@ -102,18 +113,20 @@ async function updateShipmentStatus(
 
 // =====================================================
 // GET: OBTENER EVENTOS DE TRACKING
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    // Validar autenticación
-    const authError = await validateAdminAuth(request)
-    if (authError) {
-      return authError
-    }
+    const { tenantId } = guardResult
+    const { id } = await context.params
 
     // Validar ID del envío
-    const shipmentId = parseInt(params.id)
+    const shipmentId = parseInt(id)
     if (isNaN(shipmentId)) {
       return NextResponse.json({ error: 'Invalid shipment ID' }, { status: 400 })
     }
@@ -121,17 +134,18 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Crear cliente Supabase
     const supabase = createClient()
 
-    // Validar que el envío existe
-    const shipment = await validateShipmentExists(supabase, shipmentId)
+    // ⚡ MULTITENANT: Validar que el envío existe y pertenece al tenant
+    const shipment = await validateShipmentExists(supabase, shipmentId, tenantId)
     if (!shipment) {
       return NextResponse.json({ error: 'Shipment not found' }, { status: 404 })
     }
 
-    // Obtener eventos de tracking
+    // ⚡ MULTITENANT: Obtener eventos de tracking filtrando por tenant_id
     const { data: trackingEvents, error } = await supabase
       .from('tracking_events')
       .select('*')
       .eq('shipment_id', shipmentId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .order('occurred_at', { ascending: false })
 
     if (error) {
@@ -155,22 +169,24 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       { status: 500 }
     )
   }
-}
+})
 
 // =====================================================
 // POST: CREAR EVENTO DE TRACKING
+// ⚡ MULTITENANT: Asigna tenant_id al crear
 // =====================================================
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    // Validar autenticación
-    const authError = await validateAdminAuth(request)
-    if (authError) {
-      return authError
-    }
+    const { tenantId } = guardResult
+    const { id } = await context.params
 
     // Validar ID del envío
-    const shipmentId = parseInt(params.id)
+    const shipmentId = parseInt(id)
     if (isNaN(shipmentId)) {
       return NextResponse.json({ error: 'Invalid shipment ID' }, { status: 400 })
     }
@@ -182,13 +198,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Crear cliente Supabase
     const supabase = createClient()
 
-    // Validar que el envío existe
-    const shipment = await validateShipmentExists(supabase, shipmentId)
+    // ⚡ MULTITENANT: Validar que el envío existe y pertenece al tenant
+    const shipment = await validateShipmentExists(supabase, shipmentId, tenantId)
     if (!shipment) {
       return NextResponse.json({ error: 'Shipment not found' }, { status: 404 })
     }
 
     // Crear evento de tracking
+    // ⚡ MULTITENANT: Asignar tenant_id al crear
     const { data: trackingEvent, error: trackingError } = await supabase
       .from('tracking_events')
       .insert({
@@ -201,6 +218,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         occurred_at: validatedData.occurred_at,
         external_event_id: validatedData.external_event_id,
         raw_data: validatedData.raw_data,
+        tenant_id: tenantId, // ⚡ MULTITENANT
       })
       .select('*')
       .single()
@@ -210,6 +228,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     // Actualizar estado del envío si es necesario
+    // ⚡ MULTITENANT: Pasar tenantId
     const statusesToUpdate = [
       'confirmed',
       'picked_up',
@@ -222,10 +241,11 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     ]
 
     if (statusesToUpdate.includes(validatedData.status)) {
-      await updateShipmentStatus(supabase, shipmentId, validatedData.status)
+      await updateShipmentStatus(supabase, shipmentId, validatedData.status, tenantId)
     }
 
     // Si el envío fue entregado, actualizar fecha de entrega real
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     if (validatedData.status === 'delivered') {
       await supabase
         .from('shipments')
@@ -233,6 +253,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
           actual_delivery_date: validatedData.occurred_at.split('T')[0],
         })
         .eq('id', shipmentId)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     }
 
     return NextResponse.json(
@@ -269,22 +290,24 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       { status: 500 }
     )
   }
-}
+})
 
 // =====================================================
 // PUT: ACTUALIZAR MÚLTIPLES EVENTOS (BULK UPDATE)
+// ⚡ MULTITENANT: Asigna tenant_id a todos los eventos
 // =====================================================
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export const PUT = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    // Validar autenticación
-    const authError = await validateAdminAuth(request)
-    if (authError) {
-      return authError
-    }
+    const { tenantId } = guardResult
+    const { id } = await context.params
 
     // Validar ID del envío
-    const shipmentId = parseInt(params.id)
+    const shipmentId = parseInt(id)
     if (isNaN(shipmentId)) {
       return NextResponse.json({ error: 'Invalid shipment ID' }, { status: 400 })
     }
@@ -303,16 +326,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     // Crear cliente Supabase
     const supabase = createClient()
 
-    // Validar que el envío existe
-    const shipment = await validateShipmentExists(supabase, shipmentId)
+    // ⚡ MULTITENANT: Validar que el envío existe y pertenece al tenant
+    const shipment = await validateShipmentExists(supabase, shipmentId, tenantId)
     if (!shipment) {
       return NextResponse.json({ error: 'Shipment not found' }, { status: 404 })
     }
 
     // Insertar eventos en lote
+    // ⚡ MULTITENANT: Asignar tenant_id a todos los eventos
     const eventsToInsert = validatedEvents.map(event => ({
       shipment_id: shipmentId,
       ...event,
+      tenant_id: tenantId, // ⚡ MULTITENANT
     }))
 
     const { data: insertedEvents, error: insertError } = await supabase
@@ -325,6 +350,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Actualizar estado del envío al último estado válido
+    // ⚡ MULTITENANT: Pasar tenantId
     const lastValidStatus = validatedEvents
       .filter(event =>
         [
@@ -341,7 +367,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       .sort((a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime())[0]
 
     if (lastValidStatus) {
-      await updateShipmentStatus(supabase, shipmentId, lastValidStatus.status)
+      await updateShipmentStatus(supabase, shipmentId, lastValidStatus.status, tenantId)
     }
 
     return NextResponse.json(
@@ -378,4 +404,4 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       { status: 500 }
     )
   }
-}
+})

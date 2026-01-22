@@ -629,7 +629,7 @@ export class EnterpriseAlertSystem {
       body: JSON.stringify({
         alert,
         timestamp: new Date().toISOString(),
-        source: 'pinteya-ecommerce',
+        source: 'pintureria-digital',
       }),
     })
 

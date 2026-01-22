@@ -14,6 +14,7 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -215,10 +216,11 @@ async function validateAdminAuth() {
 // FUNCIONES DE GENERACIÓN DE REPORTES
 // ===================================
 
-async function generateSalesReport(filters: any): Promise<SalesReport> {
+async function generateSalesReport(filters: any, tenantId: string): Promise<SalesReport> {
   const { date_range, granularity } = filters
 
   // Consulta base para órdenes en el rango de fechas
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   let ordersQuery = supabaseAdmin
     .from('orders')
     .select(
@@ -244,6 +246,7 @@ async function generateSalesReport(filters: any): Promise<SalesReport> {
     )
     .gte('created_at', date_range.start)
     .lte('created_at', date_range.end)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
   // Aplicar filtros adicionales
   if (filters.filters?.order_status) {
@@ -278,10 +281,12 @@ async function generateSalesReport(filters: any): Promise<SalesReport> {
   const previousStart = new Date(new Date(date_range.start).getTime() - periodLength).toISOString()
   const previousEnd = date_range.start
 
+  // ⚡ MULTITENANT: Filtrar órdenes anteriores por tenant_id
   const { data: previousOrders } = await supabaseAdmin
     .from('orders')
     .select('total')
     .eq('status', 'completed')
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
     .gte('created_at', previousStart)
     .lt('created_at', previousEnd)
 
@@ -347,9 +352,10 @@ async function generateSalesReport(filters: any): Promise<SalesReport> {
   }
 }
 
-async function generateProductsReport(filters: any): Promise<ProductsReport> {
+async function generateProductsReport(filters: any, tenantId: string): Promise<ProductsReport> {
   // Obtener todos los productos con sus estadísticas
-  let productsQuery = supabaseAdmin.from('products').select(`
+  // ⚡ MULTITENANT: Filtrar productos por tenant usando tenant_products
+  let productsQuery = supabaseAdmin.from('tenant_products').select(`
       id,
       name,
       price,
@@ -367,6 +373,8 @@ async function generateProductsReport(filters: any): Promise<ProductsReport> {
         )
       )
     `)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
+    .eq('is_visible', true) // Solo productos visibles
 
   if (filters.filters?.category_ids) {
     productsQuery = productsQuery.in('category_id', filters.filters.category_ids)
@@ -485,9 +493,10 @@ async function generateProductsReport(filters: any): Promise<ProductsReport> {
   }
 }
 
-async function generateUsersReport(filters: any): Promise<UsersReport> {
+async function generateUsersReport(filters: any, tenantId: string): Promise<UsersReport> {
   // Obtener usuarios con sus estadísticas
-  const { data: users, error } = await supabaseAdmin.from('users').select(`
+  // ⚡ MULTITENANT: Filtrar usuarios por tenant_id
+  const { data: users, error } = await supabaseAdmin.from('user_profiles').select(`
       id,
       name,
       email,
@@ -501,6 +510,7 @@ async function generateUsersReport(filters: any): Promise<UsersReport> {
         created_at
       )
     `)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
   if (error) {
     throw error
@@ -684,6 +694,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: authResult.status })
     }
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Parsear parámetros de consulta
     const { searchParams } = new URL(request.url)
     const reportParams = {
@@ -727,13 +743,13 @@ export async function GET(request: NextRequest) {
     // Generar reporte según el tipo
     switch (report_type) {
       case 'sales':
-        reportData = await generateSalesReport(validationResult.data)
+        reportData = await generateSalesReport(validationResult.data, tenantId)
         break
       case 'products':
-        reportData = await generateProductsReport(validationResult.data)
+        reportData = await generateProductsReport(validationResult.data, tenantId)
         break
       case 'users':
-        reportData = await generateUsersReport(validationResult.data)
+        reportData = await generateUsersReport(validationResult.data, tenantId)
         break
       case 'performance':
         reportData = await generatePerformanceReport(validationResult.data)

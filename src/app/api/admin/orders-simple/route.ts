@@ -8,6 +8,7 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getTenantConfig } from '@/lib/tenant'
 
 // =====================================================
 // CONFIGURACIÓN SIMPLIFICADA
@@ -66,6 +67,12 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ [Orders Simple API] Autenticación exitosa')
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Obtener parámetros de query
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
@@ -73,9 +80,10 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const search = searchParams.get('search')
 
-    console.log('📋 [Orders Simple API] Parámetros:', { page, limit, status, search })
+    console.log('📋 [Orders Simple API] Parámetros:', { page, limit, status, search, tenantId })
 
     // Construir query base (sin join automático)
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     let query = supabase.from('orders').select(
       `
         id,
@@ -90,6 +98,7 @@ export async function GET(request: NextRequest) {
       `,
       { count: 'exact' }
     )
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
     // Aplicar filtros
     if (status && status !== 'all') {
@@ -127,10 +136,12 @@ export async function GET(request: NextRequest) {
     let userProfiles = []
 
     if (userIds.length > 0) {
+      // ⚡ MULTITENANT: Filtrar usuarios por tenant_id
       const { data: profiles, error: profilesError } = await supabase
         .from('user_profiles')
         .select('id, email, first_name, last_name')
         .in('id', userIds)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
       if (!profilesError && profiles) {
         userProfiles = profiles
@@ -143,9 +154,11 @@ export async function GET(request: NextRequest) {
     // Calcular estadísticas básicas
     console.log('📊 [Orders Simple API] Calculando estadísticas...')
 
+    // ⚡ MULTITENANT: Filtrar estadísticas por tenant_id
     const { data: statsData, error: statsError } = await supabase
       .from('orders')
       .select('status, total')
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
     let stats = {
       totalOrders: count || 0,
@@ -263,7 +276,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Crear orden básica
+    // ⚡ MULTITENANT: Asignar tenant_id al crear orden
     const { data: order, error } = await supabase
       .from('orders')
       .insert({
@@ -273,6 +293,7 @@ export async function POST(request: NextRequest) {
         payment_id: body.payment_id || 'dev-payment',
         shipping_address: body.shipping_address || {},
         external_reference: body.external_reference || `DEV-${Date.now()}`,
+        tenant_id: tenantId, // ⚡ MULTITENANT: Asignar tenant_id
       })
       .select()
       .single()

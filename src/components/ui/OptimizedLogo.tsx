@@ -1,7 +1,10 @@
 /**
- * Componente optimizado para el logo de Pinteya
+ * Componente optimizado para el logo
+ * Soporta multitenancy - usa el tenant context cuando está disponible
  * Incluye fallbacks automáticos y optimización de performance
  */
+
+'use client'
 
 import React from 'react'
 import Image from 'next/image'
@@ -12,7 +15,9 @@ import {
   pinteyaHeroLogoProps,
   pinteyaMobileLogoPngProps,
   pinteyaDesktopLogoPngProps,
+  getTenantLogoProps,
 } from '@/utils/imageOptimization'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 export type LogoVariant = 'mobile' | 'desktop' | 'hero'
 export type LogoFormat = 'webp' | 'png' | 'auto'
@@ -23,12 +28,16 @@ interface OptimizedLogoProps {
   className?: string
   onClick?: () => void
   'data-testid'?: string
+  /** Override del src del logo (tiene prioridad sobre tenant) */
+  logoSrc?: string
+  /** Override del nombre/alt del logo */
+  logoAlt?: string
 }
 
 /**
- * Obtiene las props del logo según la variante
+ * Obtiene las props del logo según la variante (fallback sin tenant)
  */
-const getLogoProps = (variant: LogoVariant, format: LogoFormat) => {
+const getDefaultLogoProps = (variant: LogoVariant, format: LogoFormat) => {
   const baseProps = {
     mobile: format === 'png' ? pinteyaMobileLogoPngProps : pinteyaMobileLogoProps,
     desktop: format === 'png' ? pinteyaDesktopLogoPngProps : pinteyaDesktopLogoProps,
@@ -40,6 +49,7 @@ const getLogoProps = (variant: LogoVariant, format: LogoFormat) => {
 
 /**
  * Componente de logo optimizado con fallbacks automáticos
+ * Soporta multitenancy - detecta automáticamente el tenant del context
  */
 export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   variant = 'desktop',
@@ -47,7 +57,11 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   className,
   onClick,
   'data-testid': testId,
+  logoSrc,
+  logoAlt,
 }) => {
+  // Obtener tenant del context (si está disponible)
+  const tenant = useTenantSafe()
   // ⚡ FASE 11-16: Código de debugging deshabilitado en producción para mejorar rendimiento
   // Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
   // React.useEffect(() => {
@@ -56,7 +70,14 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   //   }
   // }, [variant, format, testId])
 
-  const logoProps = getLogoProps(variant, format)
+  // Obtener props del logo: prioridad a props explícitas > tenant > fallback
+  const logoProps = tenant 
+    ? getTenantLogoProps(tenant.slug, tenant.name, variant)
+    : getDefaultLogoProps(variant, format)
+  
+  // Override con props explícitas si se proporcionan
+  const finalLogoSrc = logoSrc || logoProps.src
+  const finalLogoAlt = logoAlt || logoProps.alt
 
   // Clases base según la variante
   const baseClasses = {
@@ -69,8 +90,8 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
 
   // ⚡ FIX: Para SVGs, usar <img> tag directamente para evitar re-fetches de Next.js Image
   // Next.js Image puede recargar SVGs en cada re-render incluso con unoptimized
-  const isSVG = logoProps.src.endsWith('.svg')
-  const logoSrc = React.useMemo(() => logoProps.src, [logoProps.src])
+  const isSVG = finalLogoSrc.endsWith('.svg')
+  const memoizedLogoSrc = React.useMemo(() => finalLogoSrc, [finalLogoSrc])
   
   if (isSVG) {
     // ⚡ FASE 3: Dimensiones explícitas para evitar CLS - calcular width basado en height y aspect ratio
@@ -83,8 +104,8 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
     
     return (
       <img
-        src={logoSrc}
-        alt={logoProps.alt || 'Pinteya Logo'}
+        src={memoizedLogoSrc}
+        alt={finalLogoAlt || 'Logo'}
         className={combinedClassName}
         onClick={onClick}
         data-testid={testId}
@@ -117,7 +138,8 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   return (
     <Image
       {...logoProps}
-      src={logoSrc}
+      src={memoizedLogoSrc}
+      alt={finalLogoAlt || logoProps.alt}
       unoptimized={false}
       className={combinedClassName}
       onClick={onClick}

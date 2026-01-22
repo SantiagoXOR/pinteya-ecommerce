@@ -35,6 +35,9 @@ interface BaseLogEntry {
   clientIP?: string
   userAgent?: string
   environment: string
+  // MULTITENANT: Información del tenant
+  tenantId?: string
+  tenantSlug?: string
 }
 
 interface PaymentLogEntry extends BaseLogEntry {

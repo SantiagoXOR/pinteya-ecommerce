@@ -1,9 +1,10 @@
 /* Header Enhanced Animations and Microinteractions */
+/* Usa variables CSS del tenant con fallbacks para colores */
 
 /* Smooth transitions for sticky header */
 .header-sticky-transition {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: linear-gradient(135deg, #f27a1d 0%, #eb6313 100%);
+  background: linear-gradient(135deg, var(--tenant-primary, #f27a1d) 0%, var(--tenant-primary-dark, #eb6313) 100%);
 }
 
 /* Enhanced sticky header with scroll direction */
@@ -33,8 +34,8 @@
 }
 
 .search-focus-ring:focus-within {
-  box-shadow: 0 0 0 3px rgba(242, 122, 29, 0.1);
-  border-color: #f27a1d;
+  box-shadow: 0 0 0 3px rgba(var(--tenant-primary-rgb, 242, 122, 29), 0.1);
+  border-color: var(--tenant-primary, #f27a1d);
   transform: scale(1.02);
 }
 
@@ -176,8 +177,8 @@
 }
 
 .dropdown-item-hover:hover {
-  background-color: rgba(242, 122, 29, 0.05);
-  color: #f27a1d;
+  background-color: rgba(var(--tenant-primary-rgb, 242, 122, 29), 0.05);
+  color: var(--tenant-primary, #f27a1d);
   padding-left: 1rem;
 }
 
@@ -317,7 +318,7 @@
 
 .category-selector-hover:hover {
   background-color: #f8fafc;
-  border-color: #f27a1d;
+  border-color: var(--tenant-primary, #f27a1d);
 }
 
 /* Responsive animations */
@@ -499,7 +500,7 @@
 }
 
 .glow-on-hover:hover {
-  box-shadow: 0 0 20px rgba(242, 122, 29, 0.3);
+  box-shadow: 0 0 20px rgba(var(--tenant-primary-rgb, 242, 122, 29), 0.3);
 }
 
 /* Smooth color transitions */

@@ -22,6 +22,7 @@ import { HeaderLogo } from '@/components/ui/OptimizedLogo'
 import ScrollingBanner from './ScrollingBanner'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useScrollActive } from '@/hooks/useScrollActive'
+import { useTenantSafe } from '@/contexts/TenantContext'
 // import GeolocationDebugger from "./GeolocationDebugger"; // Componente de debugging desactivado
 
 const Header = () => {
@@ -31,6 +32,10 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [isMounted, setIsMounted] = useState(false) // Para evitar hydration mismatch
+  
+  // Obtener número de WhatsApp del tenant
+  const tenant = useTenantSafe()
+  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
   
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo
   const performanceLevel = useDevicePerformance()
@@ -253,10 +258,9 @@ const Header = () => {
 
   // Handlers para botones de acción mobile
   const handleWhatsAppClick = useCallback(() => {
-    const whatsappNumber = '+5493513411796'
     const whatsappUrl = `https://wa.me/${whatsappNumber}`
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
-  }, [])
+  }, [whatsappNumber])
 
   const handleCartClick = useCallback(() => {
     openCartModal()

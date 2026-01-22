@@ -7,42 +7,51 @@ import { getCategoriesServer, getBestSellerProductsServer } from '@/lib/server/d
 import Home from '@/components/Home'
 import type { Category } from '@/lib/categories/types'
 import type { Product } from '@/types/product'
+import { getTenantPublicConfig } from '@/lib/tenant/tenant-service'
 
-export const metadata: Metadata = {
-  title: 'Pinteya - Tu Pinturería Online | Envío Gratis +$50.000',
-  description:
-    'Descubre la mejor selección de pinturas, herramientas y productos de ferretería. Marcas reconocidas como Sherwin Williams, Petrilac, Sinteplast y más. Envío gratis en compras superiores a $50.000.',
-  keywords: [
-    'pinturería online',
-    'pinturas',
-    'ferretería',
-    'corralón',
-    'Sherwin Williams',
-    'Petrilac',
-    'Sinteplast',
-    'Plavicon',
-    'herramientas',
-    'construcción',
-    'decoración',
-    'envío gratis',
-    'Argentina',
-  ],
-  openGraph: {
-    title: 'Pinteya - Tu Pinturería Online | Las Mejores Marcas',
+// ⚡ Metadata dinámica basada en el tenant
+export async function generateMetadata(): Promise<Metadata> {
+  const tenant = await getTenantPublicConfig()
+  const tenantName = tenant?.name || 'E-commerce'
+  const tenantSlug = tenant?.slug || 'pinteya'
+  const heroImageUrl = `/tenants/${tenantSlug}/hero/hero1.webp`
+  
+  return {
+    title: `${tenantName} - Tu Pinturería Online | Envío Gratis +$50.000`,
     description:
-      'Descubre la mejor selección de pinturas, herramientas y productos de ferretería en Pinteya. Marcas reconocidas y envío gratis en compras superiores a $50.000.',
-    images: [
-      {
-        url: '/images/hero/hero2/hero1.webp',
-        width: 1200,
-        height: 433,
-        alt: 'Pinteya - Tu Pinturería Online',
-      },
+      'Descubre la mejor selección de pinturas, herramientas y productos de ferretería. Marcas reconocidas como Sherwin Williams, Petrilac, Sinteplast y más. Envío gratis en compras superiores a $50.000.',
+    keywords: [
+      'pinturería online',
+      'pinturas',
+      'ferretería',
+      'corralón',
+      'Sherwin Williams',
+      'Petrilac',
+      'Sinteplast',
+      'Plavicon',
+      'herramientas',
+      'construcción',
+      'decoración',
+      'envío gratis',
+      'Argentina',
     ],
-  },
-  other: {
-    'preload-hero-image': '/images/hero/hero2/hero1.webp',
-  },
+    openGraph: {
+      title: `${tenantName} - Tu Pinturería Online | Las Mejores Marcas`,
+      description:
+        `Descubre la mejor selección de pinturas, herramientas y productos de ferretería en ${tenantName}. Marcas reconocidas y envío gratis en compras superiores a $50.000.`,
+      images: [
+        {
+          url: heroImageUrl,
+          width: 1200,
+          height: 433,
+          alt: `${tenantName} - Tu Pinturería Online`,
+        },
+      ],
+    },
+    other: {
+      'preload-hero-image': heroImageUrl,
+    },
+  }
 }
 
 // ⚡ PERFORMANCE: ISR - Revalidar cada 60 segundos para mejor cache

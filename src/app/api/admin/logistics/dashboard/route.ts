@@ -20,6 +20,8 @@ import {
   CarrierPerformance,
   Shipment,
 } from '@/types/logistics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // Cliente admin de Supabase
 const supabaseAdmin = createClient(
@@ -50,14 +52,17 @@ async function validateAdminAuth(request: NextRequest) {
 // =====================================================
 
 async function getLogisticsStats(
-  supabase: ReturnType<typeof createClient<Database>>
+  supabase: ReturnType<typeof createClient<Database>>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<LogisticsStats> {
   // Obtener estadísticas basadas en órdenes reales
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: orders, error } = await supabase
     .from('orders')
     .select(
       'id, status, fulfillment_status, total, created_at, tracking_number, carrier, estimated_delivery'
     )
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     throw error
@@ -111,9 +116,11 @@ async function getLogisticsStats(
 }
 
 async function getRecentShipments(
-  supabase: ReturnType<typeof createClient<Database>>
+  supabase: ReturnType<typeof createClient<Database>>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<Shipment[]> {
   // Obtener órdenes reales con información de envío
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: orders, error } = await supabase
     .from('orders')
     .select(
@@ -131,6 +138,7 @@ async function getRecentShipments(
       updated_at
     `
     )
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .order('created_at', { ascending: false })
     .limit(10)
 
@@ -195,7 +203,8 @@ async function getRecentShipments(
 }
 
 async function getLogisticsAlerts(
-  supabase: ReturnType<typeof createClient<Database>>
+  supabase: ReturnType<typeof createClient<Database>>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<LogisticsAlert[]> {
   const alerts: LogisticsAlert[] = []
 
@@ -203,11 +212,13 @@ async function getLogisticsAlerts(
   const twoDaysAgo = new Date()
   twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
 
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: pendingOrders } = await supabase
     .from('orders')
     .select('id, order_number, status, created_at')
     .eq('status', 'paid')
     .eq('fulfillment_status', 'unfulfilled')
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .lt('created_at', twoDaysAgo.toISOString())
 
   pendingOrders?.forEach(order => {
@@ -224,10 +235,12 @@ async function getLogisticsAlerts(
   })
 
   // Alertas por órdenes sin dirección de envío
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: ordersWithoutAddress } = await supabase
     .from('orders')
     .select('id, order_number, status')
     .eq('status', 'paid')
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .is('shipping_address', null)
 
   ordersWithoutAddress?.forEach(order => {
@@ -247,15 +260,18 @@ async function getLogisticsAlerts(
 }
 
 async function getPerformanceMetrics(
-  supabase: ReturnType<typeof createClient<Database>>
+  supabase: ReturnType<typeof createClient<Database>>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<PerformanceMetric[]> {
   // Obtener métricas basadas en órdenes reales de los últimos 30 días
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: orders } = await supabase
     .from('orders')
     .select('created_at, status, total, updated_at')
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .gte('created_at', thirtyDaysAgo.toISOString())
 
   // Agrupar por día
@@ -288,12 +304,15 @@ async function getPerformanceMetrics(
 }
 
 async function getCarrierPerformance(
-  supabase: ReturnType<typeof createClient<Database>>
+  supabase: ReturnType<typeof createClient<Database>>,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<CarrierPerformance[]> {
   // Obtener órdenes reales y couriers
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: orders } = await supabase
     .from('orders')
     .select('id, status, total, carrier, created_at')
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   const { data: couriers } = await supabase
     .from('couriers')
@@ -353,24 +372,25 @@ async function getCarrierPerformance(
 
 // =====================================================
 // ENDPOINT PRINCIPAL
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    // Validar autenticación
-    const authError = await validateAdminAuth(request)
-    if (authError) {
-      return authError
-    }
+    const { tenantId } = guardResult
 
     // Obtener todos los datos en paralelo para mejor performance usando cliente admin
+    // ⚡ MULTITENANT: Pasar tenantId a todas las funciones
     const [stats, recentShipments, alerts, performanceMetrics, carrierPerformance] =
       await Promise.all([
-        getLogisticsStats(supabaseAdmin),
-        getRecentShipments(supabaseAdmin),
-        getLogisticsAlerts(supabaseAdmin),
-        getPerformanceMetrics(supabaseAdmin),
-        getCarrierPerformance(supabaseAdmin),
+        getLogisticsStats(supabaseAdmin, tenantId),
+        getRecentShipments(supabaseAdmin, tenantId),
+        getLogisticsAlerts(supabaseAdmin, tenantId),
+        getPerformanceMetrics(supabaseAdmin, tenantId),
+        getCarrierPerformance(supabaseAdmin, tenantId),
       ])
 
     const response: LogisticsDashboardResponse = {
@@ -401,4 +421,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

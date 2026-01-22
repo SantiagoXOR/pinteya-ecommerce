@@ -1,5 +1,5 @@
 // ===================================
-// PINTEYA E-COMMERCE - CONFIGURACIÓN DE EMAIL
+// E-COMMERCE - CONFIGURACIÓN DE EMAIL (MULTITENANT)
 // ===================================
 
 import { Resend } from 'resend'
@@ -29,13 +29,37 @@ export interface EmailTemplate {
   text?: string
 }
 
+/** Configuración del tenant para emails */
+export interface TenantEmailConfig {
+  name: string
+  primaryColor: string
+  secondaryColor: string
+  supportEmail: string
+  websiteUrl: string
+  city?: string
+  province?: string
+}
+
+/** Configuración por defecto del tenant */
+const DEFAULT_TENANT_CONFIG: TenantEmailConfig = {
+  name: 'Pinteya',
+  primaryColor: '#ea5a17',
+  secondaryColor: '#fc9d04',
+  supportEmail: emailConfig.supportEmail,
+  websiteUrl: 'https://www.pinteya.com',
+  city: 'Córdoba',
+  province: 'Argentina',
+}
+
 export interface WelcomeEmailData {
   userName: string
   userEmail: string
+  tenant?: TenantEmailConfig
 }
 
 export interface OrderConfirmationData {
   userName: string
+  userEmail?: string
   orderNumber: string
   orderTotal: string
   orderItems: Array<{
@@ -43,74 +67,91 @@ export interface OrderConfirmationData {
     quantity: number
     price: string
   }>
+  tenant?: TenantEmailConfig
 }
 
 export interface PasswordResetData {
   userName: string
+  userEmail?: string
   resetLink: string
+  tenant?: TenantEmailConfig
 }
 
 // ===================================
-// PLANTILLAS DE EMAIL
+// PLANTILLAS DE EMAIL (MULTITENANT)
 // ===================================
+
+/**
+ * Genera estilos CSS dinámicos basados en el tenant
+ */
+function getTenantEmailStyles(tenant: TenantEmailConfig): string {
+  return `
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: ${tenant.primaryColor}; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; background: #f9f9f9; }
+    .button { 
+      display: inline-block; 
+      background: ${tenant.secondaryColor}; 
+      color: white; 
+      padding: 12px 24px; 
+      text-decoration: none; 
+      border-radius: 8px; 
+      margin: 20px 0;
+    }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+    .total { font-weight: bold; font-size: 18px; color: ${tenant.primaryColor}; }
+    .order-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .order-table th { background: ${tenant.secondaryColor}; color: white; padding: 12px; text-align: left; }
+    .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+  `
+}
 
 /**
  * Plantilla de email de bienvenida
  */
 export function createWelcomeEmail(data: WelcomeEmailData): EmailTemplate {
+  const tenant = data.tenant || DEFAULT_TENANT_CONFIG
+  const year = new Date().getFullYear()
+  
   return {
     to: data.userEmail,
-    subject: '¡Bienvenido a Pinteya! 🎨',
+    subject: `¡Bienvenido a ${tenant.name}! 🎨`,
     html: `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Bienvenido a Pinteya</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #ea5a17; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; background: #f9f9f9; }
-            .button { 
-              display: inline-block; 
-              background: #fc9d04; 
-              color: white; 
-              padding: 12px 24px; 
-              text-decoration: none; 
-              border-radius: 8px; 
-              margin: 20px 0;
-            }
-            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
-          </style>
+          <title>Bienvenido a ${tenant.name}</title>
+          <style>${getTenantEmailStyles(tenant)}</style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>¡Bienvenido a Pinteya!</h1>
+              <h1>¡Bienvenido a ${tenant.name}!</h1>
             </div>
             <div class="content">
               <h2>Hola ${data.userName},</h2>
-              <p>¡Gracias por unirte a Pinteya! Estamos emocionados de tenerte como parte de nuestra comunidad.</p>
-              <p>En Pinteya encontrarás todo lo que necesitas para tus proyectos de pintura:</p>
+              <p>¡Gracias por unirte a ${tenant.name}! Estamos emocionados de tenerte como parte de nuestra comunidad.</p>
+              <p>En ${tenant.name} encontrarás todo lo que necesitas para tus proyectos de pintura:</p>
               <ul>
                 <li>🎨 Pinturas de las mejores marcas</li>
                 <li>🛠️ Herramientas profesionales</li>
                 <li>📦 Envío rápido y seguro</li>
                 <li>💬 Asesoramiento especializado</li>
               </ul>
-              <a href="https://www.pinteya.com/shop" class="button">Explorar Productos</a>
-              <p>Si tienes alguna pregunta, no dudes en contactarnos en <a href="mailto:${emailConfig.supportEmail}">${emailConfig.supportEmail}</a></p>
+              <a href="${tenant.websiteUrl}/shop" class="button">Explorar Productos</a>
+              <p>Si tienes alguna pregunta, no dudes en contactarnos en <a href="mailto:${tenant.supportEmail}">${tenant.supportEmail}</a></p>
             </div>
             <div class="footer">
-              <p>© 2025 Pinteya. Todos los derechos reservados.</p>
-              <p>Córdoba, Argentina</p>
+              <p>© ${year} ${tenant.name}. Todos los derechos reservados.</p>
+              ${tenant.city && tenant.province ? `<p>${tenant.city}, ${tenant.province}</p>` : ''}
             </div>
           </div>
         </body>
       </html>
     `,
-    text: `¡Bienvenido a Pinteya, ${data.userName}! Gracias por unirte a nuestra comunidad. Visita https://www.pinteya.com/shop para explorar nuestros productos.`,
+    text: `¡Bienvenido a ${tenant.name}, ${data.userName}! Gracias por unirte a nuestra comunidad. Visita ${tenant.websiteUrl}/shop para explorar nuestros productos.`,
   }
 }
 
@@ -118,6 +159,9 @@ export function createWelcomeEmail(data: WelcomeEmailData): EmailTemplate {
  * Plantilla de email de confirmación de pedido
  */
 export function createOrderConfirmationEmail(data: OrderConfirmationData): EmailTemplate {
+  const tenant = data.tenant || DEFAULT_TENANT_CONFIG
+  const year = new Date().getFullYear()
+  
   const itemsHtml = data.orderItems
     .map(
       item =>
@@ -130,24 +174,15 @@ export function createOrderConfirmationEmail(data: OrderConfirmationData): Email
     .join('')
 
   return {
-    to: data.userEmail,
-    subject: `Confirmación de Pedido #${data.orderNumber} - Pinteya`,
+    to: data.userEmail || '',
+    subject: `Confirmación de Pedido #${data.orderNumber} - ${tenant.name}`,
     html: `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
           <title>Confirmación de Pedido</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #ea5a17; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; background: #f9f9f9; }
-            .order-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-            .order-table th { background: #fc9d04; color: white; padding: 12px; text-align: left; }
-            .total { font-weight: bold; font-size: 18px; color: #ea5a17; }
-            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
-          </style>
+          <style>${getTenantEmailStyles(tenant)}</style>
         </head>
         <body>
           <div class="container">
@@ -177,10 +212,10 @@ export function createOrderConfirmationEmail(data: OrderConfirmationData): Email
               </table>
               
               <p>Recibirás un email con el tracking cuando tu pedido sea enviado.</p>
-              <p>Si tienes alguna pregunta, contactanos en <a href="mailto:${emailConfig.supportEmail}">${emailConfig.supportEmail}</a></p>
+              <p>Si tienes alguna pregunta, contactanos en <a href="mailto:${tenant.supportEmail}">${tenant.supportEmail}</a></p>
             </div>
             <div class="footer">
-              <p>© 2025 Pinteya. Todos los derechos reservados.</p>
+              <p>© ${year} ${tenant.name}. Todos los derechos reservados.</p>
             </div>
           </div>
         </body>
@@ -194,32 +229,19 @@ export function createOrderConfirmationEmail(data: OrderConfirmationData): Email
  * Plantilla de email de recuperación de contraseña
  */
 export function createPasswordResetEmail(data: PasswordResetData): EmailTemplate {
+  const tenant = data.tenant || DEFAULT_TENANT_CONFIG
+  const year = new Date().getFullYear()
+  
   return {
-    to: data.userEmail,
-    subject: 'Recuperar Contraseña - Pinteya',
+    to: data.userEmail || '',
+    subject: `Recuperar Contraseña - ${tenant.name}`,
     html: `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
           <title>Recuperar Contraseña</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #ea5a17; color: white; padding: 20px; text-align: center; }
-            .content { padding: 20px; background: #f9f9f9; }
-            .button { 
-              display: inline-block; 
-              background: #fc9d04; 
-              color: white; 
-              padding: 12px 24px; 
-              text-decoration: none; 
-              border-radius: 8px; 
-              margin: 20px 0;
-            }
-            .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
-            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
-          </style>
+          <style>${getTenantEmailStyles(tenant)}</style>
         </head>
         <body>
           <div class="container">
@@ -228,7 +250,7 @@ export function createPasswordResetEmail(data: PasswordResetData): EmailTemplate
             </div>
             <div class="content">
               <h2>Hola ${data.userName},</h2>
-              <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en Pinteya.</p>
+              <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en ${tenant.name}.</p>
               
               <a href="${data.resetLink}" class="button">Restablecer Contraseña</a>
               
@@ -244,16 +266,16 @@ export function createPasswordResetEmail(data: PasswordResetData): EmailTemplate
               <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
               <p style="word-break: break-all; background: #f0f0f0; padding: 10px; border-radius: 5px;">${data.resetLink}</p>
               
-              <p>Si tienes problemas, contactanos en <a href="mailto:${emailConfig.supportEmail}">${emailConfig.supportEmail}</a></p>
+              <p>Si tienes problemas, contactanos en <a href="mailto:${tenant.supportEmail}">${tenant.supportEmail}</a></p>
             </div>
             <div class="footer">
-              <p>© 2025 Pinteya. Todos los derechos reservados.</p>
+              <p>© ${year} ${tenant.name}. Todos los derechos reservados.</p>
             </div>
           </div>
         </body>
       </html>
     `,
-    text: `Hola ${data.userName}, solicita restablecer tu contraseña en Pinteya. Usa este enlace: ${data.resetLink} (expira en 10 minutos)`,
+    text: `Hola ${data.userName}, solicita restablecer tu contraseña en ${tenant.name}. Usa este enlace: ${data.resetLink} (expira en 10 minutos)`,
   }
 }
 
@@ -270,17 +292,19 @@ export async function sendEmail(
   try {
     const resendClient = getResendClient()
 
-    const result = await resendClient.emails.send({
+    const payload: Record<string, unknown> = {
       from: emailConfig.fromEmail,
       to: template.to,
       subject: template.subject,
       html: template.html,
-      text: template.text,
-    })
+    }
+    if (template.text != null) payload.text = template.text
+
+    const result = await resendClient.emails.send(payload as unknown as Parameters<Resend['emails']['send']>[0])
 
     return {
       success: true,
-      messageId: result.data?.id,
+      ...(result.data?.id != null && { messageId: result.data.id }),
     }
   } catch (error) {
     console.error('Error enviando email:', error)

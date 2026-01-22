@@ -8,8 +8,17 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Building2, Users, Target, Award, MapPin, Phone, Mail, Clock } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const AboutPage = () => {
+  // ⚡ MULTITENANT: Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const tenantName = tenant?.name || 'Pinteya'
+  const contactPhone = tenant?.contactPhone || tenant?.whatsappNumber || '5493513411796'
+  const displayPhone = contactPhone.replace(/^549(\d{3})(\d{3})(\d{4})$/, '+54 9 $1 $2-$3')
+  const supportEmail = tenant?.supportEmail || `info@${tenant?.slug || 'pinteya'}.com`
+  const contactAddress = tenant?.contactAddress || 'Córdoba, Argentina'
+  const contactCity = tenant?.contactCity || 'Córdoba'
   return (
     <div className='min-h-screen'>
       {/* Hero Section */}
@@ -21,7 +30,7 @@ const AboutPage = () => {
             transition={{ duration: 0.6 }}
             className='text-center'
           >
-            <h1 className='text-4xl md:text-6xl font-bold mb-6'>Acerca de Pinteya</h1>
+            <h1 className='text-4xl md:text-6xl font-bold mb-6'>Acerca de {tenantName}</h1>
             <p className='text-xl md:text-2xl max-w-3xl mx-auto'>
               Tu socio de confianza en pinturería, ferretería y materiales de construcción
             </p>
@@ -40,7 +49,7 @@ const AboutPage = () => {
             >
               <h2 className='text-3xl font-bold text-gray-900 mb-6'>Nuestra Historia</h2>
               <p className='text-gray-600 mb-4'>
-                Pinteya nace de la pasión por brindar soluciones completas en pinturería y
+                {tenantName} nace de la pasión por brindar soluciones completas en pinturería y
                 ferretería. Con años de experiencia en el sector, nos hemos consolidado como una
                 empresa líder en la distribución de productos de calidad.
               </p>
@@ -151,7 +160,7 @@ const AboutPage = () => {
             >
               <MapPin className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
               <h4 className='font-semibold mb-1'>Ubicación</h4>
-              <p className='text-gray-600 text-sm'>Córdoba, Argentina</p>
+              <p className='text-gray-600 text-sm'>{contactAddress}</p>
             </motion.div>
 
             <motion.div
@@ -173,7 +182,7 @@ const AboutPage = () => {
             >
               <Mail className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
               <h4 className='font-semibold mb-1'>Email</h4>
-              <p className='text-gray-600 text-sm'>info@pinteya.com</p>
+              <p className='text-gray-600 text-sm'>{supportEmail}</p>
             </motion.div>
 
             <motion.div

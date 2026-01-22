@@ -1,9 +1,10 @@
 // ===================================
-// PINTEYA E-COMMERCE - FEED XML PARA GOOGLE MERCHANT CENTER
+// PINTURERÍADIGITAL - FEED XML PARA GOOGLE MERCHANT CENTER (MULTITENANT)
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { getTenantConfig, getTenantBaseUrl } from '@/lib/tenant'
 
 // Función para escapar XML - acepta cualquier tipo y lo convierte a string
 function escapeXml(unsafe: unknown): string {
@@ -92,13 +93,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Obtener base URL del sitio
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pinteya.com'
-    const protocol = baseUrl.startsWith('https') ? 'https' : 'http'
-    const domain = baseUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
-    const fullBaseUrl = `${protocol}://${domain}`
+    // MULTITENANT: Obtener URL base del tenant actual
+    const tenant = await getTenantConfig()
+    const fullBaseUrl = getTenantBaseUrl(tenant)
 
-    // Obtener todos los productos activos con sus categorías
+    // MULTITENANT: Obtener productos visibles del tenant actual usando tenant_products
     const { data: allProducts, error } = await supabase
       .from('products')
       .select(`
@@ -113,9 +112,18 @@ export async function GET(request: NextRequest) {
         images,
         is_active,
         exclude_from_meta_feed,
-        category:categories(id, name, slug)
+        category:categories(id, name, slug),
+        tenant_products!inner (
+          tenant_id,
+          price,
+          discounted_price,
+          stock,
+          is_visible
+        )
       `)
       .eq('is_active', true)
+      .eq('tenant_products.tenant_id', tenant.id)
+      .eq('tenant_products.is_visible', true)
       .order('updated_at', { ascending: false })
       .limit(10000) // Límite razonable para el feed
 
@@ -128,8 +136,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Filtrar productos: solo activos Y que NO estén excluidos del feed
+    // MULTITENANT: Usar precios y stock de tenant_products
     const products = (allProducts || []).filter((p: any) => {
       return p.is_active === true && (p.exclude_from_meta_feed !== true)
+    }).map((p: any) => {
+      // Usar precio y stock del tenant_products si está disponible
+      const tenantProduct = Array.isArray(p.tenant_products) 
+        ? p.tenant_products[0] 
+        : p.tenant_products
+      
+      if (tenantProduct) {
+        return {
+          ...p,
+          price: tenantProduct.price ?? p.price,
+          discounted_price: tenantProduct.discounted_price ?? p.discounted_price,
+          stock: tenantProduct.stock ?? p.stock,
+        }
+      }
+      return p
     })
 
     if (!products || products.length === 0) {
@@ -143,9 +167,9 @@ export async function GET(request: NextRequest) {
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`
     xml += `<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">\n`
     xml += `  <channel>\n`
-    xml += `    <title>Pinteya - Catálogo de Productos</title>\n`
+    xml += `    <title>${escapeXml(tenant.name)} - Catálogo de Productos</title>\n`
     xml += `    <link>${escapeXml(fullBaseUrl)}</link>\n`
-    xml += `    <description>Catálogo completo de productos de Pinteya para Google Merchant Center</description>\n`
+    xml += `    <description>Catálogo completo de productos de ${escapeXml(tenant.name)} para Google Merchant Center</description>\n`
 
     // Obtener TODAS las variantes activas para cada producto
     const productIds = products.map((p: any) => p.id)

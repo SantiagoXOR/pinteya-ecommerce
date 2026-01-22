@@ -52,12 +52,16 @@ import {
   PurchaseIncentives,
   ExitIntentModal,
 } from './ConversionOptimizer'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const Checkout = () => {
   const router = useRouter()
   const [showExitIntent, setShowExitIntent] = useState(false)
   const [isExpressMode, setIsExpressMode] = useState(true) // ✅ TEMPORAL: Activado por defecto para testing
   const { trackEvent } = useUnifiedAnalytics() // Analytics propio con estrategias anti-bloqueadores
+  
+  // Obtener número de WhatsApp del tenant
+  const tenant = useTenantSafe()
 
   const {
     formData,
@@ -405,7 +409,7 @@ const Checkout = () => {
                   variant='outline'
                   size='sm'
                   className='flex items-center gap-2'
-                  onClick={() => window.open('https://wa.me/5493515551234', '_blank')}
+                  onClick={() => window.open(`https://wa.me/${tenant?.whatsappNumber || '5493513411796'}`, '_blank')}
                 >
                   <MessageCircle className='w-4 h-4' />
                   <span className='hidden md:inline'>Ayuda</span>

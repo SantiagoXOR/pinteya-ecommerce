@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Clock, AlertCircle, ArrowLeft, RefreshCw, Mail, Phone, Home } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface PendingPayment {
   payment_id?: string
@@ -50,6 +51,10 @@ export default function CheckoutPendingPage() {
   const searchParams = useSearchParams()
   const [pendingPayment, setPendingPayment] = useState<PendingPayment>({})
   const [isLoading, setIsLoading] = useState(true)
+  
+  // ⚡ MULTITENANT: Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const supportEmail = tenant?.supportEmail || `soporte@${tenant?.slug || 'pinteya'}.com`
 
   useEffect(() => {
     // Obtener parámetros de la URL
@@ -261,8 +266,8 @@ export default function CheckoutPendingPage() {
             <div className='text-center pt-6 border-t border-gray-200'>
               <p className='text-gray-600 text-sm'>
                 ¿Tienes alguna pregunta? Contáctanos en{' '}
-                <a href='mailto:soporte@pinteya.com' className='text-yellow-600 hover:underline'>
-                  soporte@pinteya.com
+                <a href={`mailto:${supportEmail}`} className='text-yellow-600 hover:underline'>
+                  {supportEmail}
                 </a>
               </p>
             </div>

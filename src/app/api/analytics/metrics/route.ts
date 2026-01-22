@@ -11,6 +11,7 @@ import { metricsCalculator } from '@/lib/analytics/metrics-calculator'
 import { metricsCache } from '@/lib/analytics/metrics-cache'
 import { MetricsQueryParams } from '@/lib/analytics/types'
 import { createClient } from '@supabase/supabase-js'
+import { getTenantConfig } from '@/lib/tenant'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,6 +20,12 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     const { searchParams } = new URL(request.url)
     const startDate =
       searchParams.get('startDate') || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -76,7 +83,7 @@ export async function GET(request: NextRequest) {
       : await metricsCalculator.calculateMetrics(params)
 
     // Obtener métricas adicionales de órdenes
-    const additionalMetrics = await getAdditionalMetrics(startDate, endDate, userId || undefined)
+    const additionalMetrics = await getAdditionalMetrics(startDate, endDate, tenantId, userId || undefined)
 
     // Calcular comparación con período anterior
     const periodDuration = new Date(endDate).getTime() - new Date(startDate).getTime()
@@ -283,14 +290,16 @@ function getHourlyEventTrends(events: any[]) {
   }))
 }
 
-async function getAdditionalMetrics(startDate: string, endDate: string, userId?: string) {
+async function getAdditionalMetrics(startDate: string, endDate: string, tenantId: string, userId?: string) {
   try {
     // Obtener métricas de la base de datos principal
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     let ordersQuery = supabase
       .from('orders')
       .select('total, created_at, user_id')
       .gte('created_at', startDate)
       .lte('created_at', endDate)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
     if (userId) {
       ordersQuery = ordersQuery.eq('user_id', userId)

@@ -1,84 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
-
-// ===================================
-// MIDDLEWARE DE AUTENTICACIÓN ADMIN
-// ===================================
-
-async function validateAdminAuth() {
-  try {
-    // BYPASS SOLO EN DESARROLLO CON VALIDACIÓN ESTRICTA
-    // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
-    if (process.env.BYPASS_AUTH === 'true') {
-      try {
-        const fs = require('fs')
-        const path = require('path')
-        const envLocalPath = path.join(process.cwd(), '.env.local')
-        if (fs.existsSync(envLocalPath)) {
-          return {
-            user: {
-              id: 'dev-admin',
-              email: 'admin@bypass.dev',
-              name: 'Dev Admin',
-            },
-            userId: 'dev-admin',
-          }
-        }
-      } catch (error) {
-        console.warn('[API Admin History] No se pudo verificar .env.local, bypass deshabilitado')
-      }
-    }
-
-    const session = await auth()
-    if (!session?.user) {
-      return { error: 'Usuario no autenticado', status: 401 }
-    }
-
-    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
-    const isAdmin = session.user.role === 'admin'
-    if (!isAdmin) {
-      return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 }
-    }
-
-    return { user: session.user, userId: session.user.id }
-  } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.AUTH, 'Error en validación admin', { error })
-    return { error: 'Error de autenticación', status: 500 }
-  }
-}
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 /**
  * GET /api/admin/orders/[id]/history
  * Obtiene el historial de estados de una orden específica
+ * ⚡ MULTITENANT: Filtra por tenant_id
  */
-export async function GET(
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   let orderId: string | undefined
   try {
+    const { tenantId } = guardResult
     const { id } = await context.params
     orderId = id
 
-    // Verificar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status || 401 })
-    }
-
     logger.log(LogLevel.INFO, LogCategory.API, 'Fetching order history', {
       orderId,
-      userId: authResult.userId,
+      tenantId,
+      userId: guardResult.userId,
     })
 
-    // Verificar que la orden existe
+    // ⚡ MULTITENANT: Verificar que la orden existe y pertenece al tenant
     const supabase = createAdminClient()
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('id, status, created_at')
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (orderError || !order) {
@@ -194,4 +147,4 @@ export async function GET(
       { status: 500 }
     )
   }
-}
+})

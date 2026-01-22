@@ -7,7 +7,7 @@ const http = require('http')
 
 // Configuración
 const config = {
-  productionUrl: 'https://pinteya-ecommerce.vercel.app',
+  productionUrl: 'https://www.pinteya.com',
   webhookEndpoints: ['/api/auth/webhook', '/api/webhooks/clerk'],
 }
 

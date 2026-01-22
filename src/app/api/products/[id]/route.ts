@@ -1,5 +1,5 @@
 // ===================================
-// PINTEYA E-COMMERCE - API DE PRODUCTO INDIVIDUAL
+// PINTURERÍA DIGITAL - API DE PRODUCTO INDIVIDUAL (MULTITENANT)
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -7,12 +7,18 @@ import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supab
 import { validateData, ProductSchema } from '@/lib/validations'
 import { ApiResponse, ProductWithCategory } from '@/types/api'
 import { normalizeProductTitle } from '@/lib/core/utils'
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
-// GET /api/products/[id] - Obtener producto por ID
+// GET /api/products/[id] - Obtener producto por ID (MULTITENANT)
 // ===================================
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant actual
+    // ===================================
+    const tenant = await getTenantConfig()
+    
     const params = await context.params
     // Validar parámetro ID
     const id = parseInt(params.id, 10)
@@ -38,17 +44,48 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json(errorResponse, { status: 503 })
     }
 
-    // Obtener producto con categoría y variantes
+    // ===================================
+    // MULTITENANT: Obtener producto con tenant_products para precio/stock del tenant
+    // Usar LEFT JOIN para permitir productos sin configuración (fallback a products)
+    // ===================================
     const { data: product, error } = await supabase
       .from('products')
       .select(
         `
-        id, name, slug, description, price, discounted_price, brand, stock, images, created_at, updated_at, aikon_id, color, medida,
-        category:categories(id, name, slug)
+        id, name, slug, description, brand, images, created_at, updated_at, aikon_id, color, medida, price, discounted_price, stock,
+        category:categories(id, name, slug),
+        tenant_products (
+          price,
+          discounted_price,
+          stock,
+          is_visible,
+          tenant_id
+        )
       `
       )
       .eq('id', id)
       .single()
+    
+    // Filtrar tenant_products por tenant_id después de obtener los datos
+    // (Supabase no permite filtrar relaciones LEFT JOIN directamente)
+    if (product && Array.isArray(product.tenant_products)) {
+      product.tenant_products = product.tenant_products.filter((tp: any) => tp.tenant_id === tenant.id)
+    }
+    
+    // Verificar visibilidad: si tiene tenant_products, debe estar visible
+    const tenantProduct = Array.isArray(product?.tenant_products) 
+      ? product.tenant_products[0] 
+      : product?.tenant_products
+    
+    // Si hay configuración en tenant_products pero no está visible, retornar 404
+    if (tenantProduct && tenantProduct.is_visible === false) {
+      const notFoundResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Producto no encontrado',
+      }
+      return NextResponse.json(notFoundResponse, { status: 404 })
+    }
 
     // ✅ NUEVO: Obtener imágenes desde product_images (prioridad sobre campo images JSONB)
     let primaryImageUrl: string | null = null
@@ -166,6 +203,22 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
         const defaultVariant = processedVariants?.find(v => v.is_default) || processedVariants?.[0]
 
+        // ===================================
+        // MULTITENANT: Obtener precio/stock desde tenant_products
+        // ===================================
+        const tenantProduct = Array.isArray(product.tenant_products) 
+          ? product.tenant_products[0] 
+          : product.tenant_products
+        
+        // Precio desde tenant_products (fallback a products si no existe)
+        const tenantPrice = tenantProduct?.price ?? product.price
+        const tenantDiscountedPrice = tenantProduct?.discounted_price ?? product.discounted_price
+        
+        // Stock: priorizar variante, luego tenant_products, luego products
+        const tenantStock = tenantProduct?.stock !== null && tenantProduct?.stock !== undefined
+          ? Number(tenantProduct.stock)
+          : (product.stock !== null && product.stock !== undefined ? Number(product.stock) : null)
+
         enrichedProduct = {
           ...product,
           // ✅ NUEVO: Normalizar título del producto a formato capitalizado
@@ -192,10 +245,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
           variant_count: processedVariants?.length || 0,
           has_variants: (variants?.length || 0) > 0,
           default_variant: defaultVariant || null,
-          // Usar precios de la variante por defecto si están disponibles
-          price: defaultVariant?.price_list || product.price,
-          discounted_price: defaultVariant?.price_sale || product.discounted_price,
-          stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
+          // ===================================
+          // MULTITENANT: Usar precio desde tenant_products (fallback a variante o producto)
+          // ===================================
+          price: defaultVariant?.price_list || tenantPrice,
+          discounted_price: defaultVariant?.price_sale || tenantDiscountedPrice,
+          stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : tenantStock,
           // ✅ NUEVO: Agregar image_url desde product_images si está disponible
           image_url: primaryImageUrl || defaultVariant?.image_url || null,
           // ✅ NUEVO: Agregar ficha técnica

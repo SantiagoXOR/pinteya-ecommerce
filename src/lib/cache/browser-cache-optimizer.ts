@@ -190,7 +190,7 @@ self.addEventListener('fetch', (event) => {
 // Encontrar configuración de cache para una URL
 function findCacheConfig(url) {
   // ⚡ OPTIMIZACIÓN: También verificar por dominio completo para recursos de terceros
-  const fullUrl = url.includes('://') ? url : `https://${url}`;
+  const fullUrl = url.includes('://') ? url : \`https://\${url}\`;
   
   for (const [name, config] of Object.entries(CACHE_CONFIGS)) {
     // Verificar patrones de exclusión

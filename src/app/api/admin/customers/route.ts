@@ -2,9 +2,9 @@
 export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // Tipos para clientes
 interface Customer {
@@ -16,25 +16,19 @@ interface Customer {
   created_at: string
 }
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/customers
+ * Obtener lista de clientes
+ * ⚡ MULTITENANT: Filtra por tenant_id
+ */
+export const GET = withTenantAdmin(async (guardResult: TenantAdminGuardResult, request: NextRequest) => {
   try {
     console.log('🔍 API: GET /api/admin/customers - Iniciando...')
-
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      console.log('❌ Usuario no autenticado')
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'No autorizado',
-        },
-        { status: 401 }
-      )
-    }
+    const { tenantId } = guardResult
 
     logger.log(LogLevel.INFO, LogCategory.API, 'Fetching customers for admin', {
-      userId: session.user.id,
+      userId: guardResult.userId,
+      tenantId,
     })
 
     // Obtener parámetros de query
@@ -49,12 +43,16 @@ export async function GET(request: NextRequest) {
     const offset = (page - 1) * limit
 
     // Construir query base
+    // ⚡ MULTITENANT: Usar user_profiles que tiene tenant_id en lugar de users
     const supabase = createAdminClient()
-    let query = supabase.from('users').select('id, name, email, created_at', { count: 'exact' })
+    let query = supabase
+      .from('user_profiles')
+      .select('id, first_name, last_name, email, phone, created_at', { count: 'exact' })
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant_id
 
     // Aplicar filtros de búsqueda si se proporciona
     if (search) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
+      query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`)
     }
 
     // Aplicar paginación y ordenamiento
@@ -74,13 +72,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Formatear datos para el frontend
+    // ⚡ MULTITENANT: Adaptar formato de user_profiles
     const formattedCustomers: Customer[] =
       customers?.map(customer => ({
         id: customer.id,
-        name: customer.name || 'Sin nombre',
+        name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Sin nombre',
         email: customer.email,
-        phone: '', // TODO: Agregar campo phone a la tabla users si es necesario
-        address: '', // TODO: Agregar campo address a la tabla users si es necesario
+        phone: customer.phone || '', // ⚡ MULTITENANT: Ahora disponible desde user_profiles
+        address: '', // TODO: Obtener de user_addresses si es necesario
         created_at: customer.created_at,
       })) || []
 
@@ -124,23 +123,17 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/admin/customers
+ * Crear nuevo cliente
+ * ⚡ MULTITENANT: Asigna tenant_id automáticamente
+ */
+export const POST = withTenantAdmin(async (guardResult: TenantAdminGuardResult, request: NextRequest) => {
   try {
     console.log('🔍 API: POST /api/admin/customers - Iniciando...')
-
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'No autorizado',
-        },
-        { status: 401 }
-      )
-    }
+    const { tenantId } = guardResult
 
     // TODO: Implementar creación de clientes
     return NextResponse.json(
@@ -163,4 +156,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

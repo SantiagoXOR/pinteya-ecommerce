@@ -3,17 +3,18 @@ export const runtime = 'nodejs'
 
 // ===================================
 // PINTEYA E-COMMERCE - ADMIN USERS BULK OPERATIONS API ENTERPRISE
+// ⚡ MULTITENANT: Filtra todas las operaciones por tenant_id
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
-import { auth } from '@/lib/auth/config'
 import { ApiResponse } from '@/types/api'
 import { z } from 'zod'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -86,53 +87,6 @@ interface ExportData {
 }
 
 // ===================================
-// MIDDLEWARE DE AUTENTICACIÓN ADMIN
-// ===================================
-
-async function validateAdminAuth() {
-  try {
-    // ⚠️ TEMPORAL: Remover restricción de desarrollo para permitir bypass en producción hoy (2026-01-08)
-    if (process.env.BYPASS_AUTH === 'true') {
-      // Verificar que existe archivo .env.local para evitar bypass accidental en producción
-      try {
-        const fs = require('fs')
-        const path = require('path')
-        const envLocalPath = path.join(process.cwd(), '.env.local')
-        // En producción, permitir bypass directamente si BYPASS_AUTH está configurado
-        if (fs.existsSync(envLocalPath) || process.env.NODE_ENV === 'production') {
-          return {
-            user: {
-              id: 'dev-admin',
-              email: 'admin@bypass.dev',
-              name: 'Dev Admin',
-            },
-            userId: 'dev-admin',
-          }
-        }
-      } catch (error) {
-        console.warn('[API Admin Users Bulk] No se pudo verificar .env.local, bypass deshabilitado')
-      }
-    }
-
-    const session = await auth()
-    if (!session?.user) {
-      return { error: 'Usuario no autenticado', status: 401 }
-    }
-
-    // Verificar si es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
-    const isAdmin = session.user.role === 'admin'
-    if (!isAdmin) {
-      return { error: 'Acceso denegado - Se requieren permisos de administrador', status: 403 }
-    }
-
-    return { user: session.user, userId: session.user.id }
-  } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.AUTH, 'Error en validación admin', { error })
-    return { error: 'Error de autenticación', status: 500 }
-  }
-}
-
-// ===================================
 // FUNCIONES AUXILIARES
 // ===================================
 
@@ -158,7 +112,8 @@ async function processUsersInBatches<T>(
 
 async function bulkActivateUsers(
   userIds: string[],
-  adminUserId: string
+  adminUserId: string,
+  tenantId: string
 ): Promise<BulkOperationResult> {
   const result: BulkOperationResult = {
     success: 0,
@@ -168,13 +123,15 @@ async function bulkActivateUsers(
 
   await processUsersInBatches(userIds, async batch => {
     try {
+      // ⚡ MULTITENANT: Filtrar por tenant_id
       const { data, error } = await supabaseAdmin
-        .from('users')
+        .from('user_profiles')
         .update({
           is_active: true,
           updated_at: new Date().toISOString(),
         })
         .in('id', batch)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .neq('id', adminUserId) // Prevenir auto-modificación
         .select('id')
 
@@ -205,7 +162,8 @@ async function bulkActivateUsers(
 
 async function bulkDeactivateUsers(
   userIds: string[],
-  adminUserId: string
+  adminUserId: string,
+  tenantId: string
 ): Promise<BulkOperationResult> {
   const result: BulkOperationResult = {
     success: 0,
@@ -215,13 +173,15 @@ async function bulkDeactivateUsers(
 
   await processUsersInBatches(userIds, async batch => {
     try {
+      // ⚡ MULTITENANT: Filtrar por tenant_id
       const { data, error } = await supabaseAdmin
-        .from('users')
+        .from('user_profiles')
         .update({
           is_active: false,
           updated_at: new Date().toISOString(),
         })
         .in('id', batch)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .neq('id', adminUserId) // Prevenir auto-desactivación
         .select('id')
 
@@ -256,7 +216,8 @@ async function bulkDeactivateUsers(
 async function bulkUpdateRole(
   userIds: string[],
   newRole: string,
-  adminUserId: string
+  adminUserId: string,
+  tenantId: string
 ): Promise<BulkOperationResult> {
   const result: BulkOperationResult = {
     success: 0,
@@ -266,13 +227,14 @@ async function bulkUpdateRole(
 
   await processUsersInBatches(userIds, async batch => {
     try {
+      // ⚡ MULTITENANT: Filtrar por tenant_id
       const { data, error } = await supabaseAdmin
-        .from('users')
+        .from('user_profiles')
         .update({
-          role: newRole,
           updated_at: new Date().toISOString(),
         })
         .in('id', batch)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .neq('id', adminUserId) // Prevenir auto-modificación de rol
         .select('id, email')
 
@@ -321,7 +283,8 @@ async function bulkUpdateRole(
 
 async function bulkDeleteUsers(
   userIds: string[],
-  adminUserId: string
+  adminUserId: string,
+  tenantId: string
 ): Promise<BulkOperationResult> {
   const result: BulkOperationResult = {
     success: 0,
@@ -329,11 +292,12 @@ async function bulkDeleteUsers(
     errors: [],
   }
 
-  // Verificar que ningún usuario tenga órdenes
+  // ⚡ MULTITENANT: Verificar que ningún usuario tenga órdenes filtrando por tenant_id
   const { data: usersWithOrders } = await supabaseAdmin
     .from('orders')
     .select('user_id')
     .in('user_id', userIds)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   const userIdsWithOrders = new Set(usersWithOrders?.map(o => o.user_id) || [])
 
@@ -368,11 +332,12 @@ async function bulkDeleteUsers(
         }
       }
 
-      // Eliminar perfiles
+      // ⚡ MULTITENANT: Eliminar perfiles filtrando por tenant_id
       const { data, error } = await supabaseAdmin
-        .from('users')
+        .from('user_profiles')
         .delete()
         .in('id', batch)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .select('id')
 
       if (error) {
@@ -399,26 +364,23 @@ async function exportUsers(
   filters: any,
   format: string,
   includeOrders: boolean,
-  includeAddresses: boolean
+  includeAddresses: boolean,
+  tenantId: string
 ): Promise<ExportData> {
-  let query = supabaseAdmin.from('users').select(`
+  // ⚡ MULTITENANT: Filtrar por tenant_id
+  let query = supabaseAdmin.from('user_profiles').select(`
       id,
       email,
-      name,
-      role,
+      first_name,
+      last_name,
       is_active,
-      phone,
       created_at,
       updated_at,
-      last_login,
-      ${includeAddresses ? 'address,' : ''}
-      avatar_url
+      ${includeAddresses ? 'metadata,' : ''}
     `)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   // Aplicar filtros
-  if (filters?.role) {
-    query = query.eq('role', filters.role)
-  }
   if (filters?.is_active !== undefined) {
     query = query.eq('is_active', filters.is_active)
   }
@@ -437,13 +399,14 @@ async function exportUsers(
 
   let processedUsers = users || []
 
-  // Incluir estadísticas de órdenes si se solicita
+  // ⚡ MULTITENANT: Incluir estadísticas de órdenes si se solicita, filtrando por tenant_id
   if (includeOrders) {
     const userIds = processedUsers.map(u => u.id)
     const { data: orderStats } = await supabaseAdmin
       .from('orders')
       .select('user_id, total, status')
       .in('user_id', userIds)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
     const ordersByUser = (orderStats || []).reduce(
       (acc, order) => {
@@ -491,9 +454,14 @@ async function exportUsers(
 
 // ===================================
 // POST - Operaciones masivas
+// ⚡ MULTITENANT: Filtra todas las operaciones por tenant_id
 // ===================================
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -513,17 +481,6 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Validar datos de entrada
     const body = await request.json()
     const validationResult = BulkUserOperationSchema.safeParse(body)
@@ -540,14 +497,14 @@ export async function POST(request: NextRequest) {
     const { operation, user_ids, data } = validationResult.data
     let result: BulkOperationResult
 
-    // Ejecutar operación según el tipo
+    // ⚡ MULTITENANT: Ejecutar operación según el tipo, pasando tenantId
     switch (operation) {
       case 'activate':
-        result = await bulkActivateUsers(user_ids, authResult.userId!)
+        result = await bulkActivateUsers(user_ids, guardResult.userId!, tenantId)
         break
 
       case 'deactivate':
-        result = await bulkDeactivateUsers(user_ids, authResult.userId!)
+        result = await bulkDeactivateUsers(user_ids, guardResult.userId!, tenantId)
         break
 
       case 'update_role':
@@ -559,11 +516,11 @@ export async function POST(request: NextRequest) {
           }
           return NextResponse.json(errorResponse, { status: 400 })
         }
-        result = await bulkUpdateRole(user_ids, data.role, authResult.userId!)
+        result = await bulkUpdateRole(user_ids, data.role, guardResult.userId!, tenantId)
         break
 
       case 'delete':
-        result = await bulkDeleteUsers(user_ids, authResult.userId!)
+        result = await bulkDeleteUsers(user_ids, guardResult.userId!, tenantId)
         break
 
       case 'export':
@@ -571,7 +528,8 @@ export async function POST(request: NextRequest) {
           {}, // Filtros vacíos, se usan los user_ids
           data?.export_format || 'csv',
           data?.include_orders || false,
-          false
+          false,
+          tenantId // ⚡ MULTITENANT
         )
 
         // Filtrar solo los usuarios solicitados
@@ -601,12 +559,13 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     // Log de auditoría
     logger.log(LogLevel.INFO, LogCategory.ADMIN, 'Operación masiva de usuarios ejecutada', {
-      adminUserId: authResult.userId,
+      adminUserId: guardResult.userId,
+      tenantId,
       operation,
       userCount: user_ids.length,
       successCount: result.success,
@@ -623,7 +582,10 @@ export async function POST(request: NextRequest) {
     addRateLimitHeaders(nextResponse, rateLimitResult)
     return nextResponse
   } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/users/bulk', { error })
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/users/bulk', { 
+      error,
+      tenantId 
+    })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -642,13 +604,18 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // GET - Exportar usuarios con filtros
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     // Rate limiting
@@ -666,17 +633,6 @@ export async function GET(request: NextRequest) {
       const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
       addRateLimitHeaders(response, rateLimitResult)
       return response
-    }
-
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
     }
 
     // Parsear parámetros de consulta
@@ -717,8 +673,8 @@ export async function GET(request: NextRequest) {
 
     const { filters, format, include_orders, include_addresses } = validationResult.data
 
-    // Exportar usuarios
-    const exportData = await exportUsers(filters, format, include_orders, include_addresses)
+    // ⚡ MULTITENANT: Exportar usuarios pasando tenantId
+    const exportData = await exportUsers(filters, format, include_orders, include_addresses, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -726,12 +682,13 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     // Log de auditoría
     logger.log(LogLevel.INFO, LogCategory.ADMIN, 'Exportación de usuarios realizada', {
-      adminUserId: authResult.userId,
+      adminUserId: guardResult.userId,
+      tenantId,
       format,
       userCount: exportData.total_count,
       filters,
@@ -747,7 +704,10 @@ export async function GET(request: NextRequest) {
     addRateLimitHeaders(nextResponse, rateLimitResult)
     return nextResponse
   } catch (error) {
-    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/users/bulk', { error })
+    logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/users/bulk', { 
+      error,
+      tenantId 
+    })
 
     // Registrar métricas de error
     metricsCollector.recordApiCall({
@@ -766,4 +726,4 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})

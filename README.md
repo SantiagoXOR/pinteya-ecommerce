@@ -2,7 +2,7 @@
 
 > E-commerce especializado en productos de pinturería, ferretería y corralón, desarrollado con tecnologías modernas y arquitectura escalable.
 
-[![Deploy Status](https://img.shields.io/badge/Deploy-Vercel-success)](https://pinteya-ecommerce.vercel.app)
+[![Deploy Status](https://img.shields.io/badge/Deploy-Vercel-success)](https://www.pinteya.com)
 [![Tests](https://img.shields.io/badge/Tests-480%20passing-brightgreen)](./docs/testing/README.md)
 [![Coverage](https://img.shields.io/badge/Coverage-70%25-green)](./docs/testing/coverage.md)
 [![Design System](https://img.shields.io/badge/Design%20System-Phase%203%20Complete-success)](./docs/design-system/README.md)
@@ -63,7 +63,7 @@ npm run security:monitor      # Monitorear métricas de seguridad
 **NAVEGACIÓN FLUIDA**: ✅ Sin errores JavaScript en todo el panel administrativo
 **DEPLOY EXITOSO**: ✅ Commits 04da43d, 6bffae5 desplegados en producción
 **EXPERIENCIA USUARIO**: ✅ Estable y fluida sin interrupciones por errores
-**Aplicación Live**: [pinteya-ecommerce.vercel.app](https://pinteya-ecommerce.vercel.app) ✅ OPERATIVA
+**Aplicación Live**: [www.pinteya.com](https://www.pinteya.com) ✅ OPERATIVA
 
 Sistema completo de e-commerce con **optimización masiva enterprise-ready completada**:
 
@@ -179,8 +179,8 @@ Sistema completo de e-commerce con **optimización masiva enterprise-ready compl
 ## 🔗 Enlaces de Producción
 
 - **🌐 Aplicación en Vivo**: [pinteya.com](https://pinteya.com)
-- **📂 Repositorio GitHub**: [github.com/SantiagoXOR/pinteya-ecommerce](https://github.com/SantiagoXOR/pinteya-ecommerce)
-- **📊 Dashboard Vercel**: [vercel.com/santiagoxor/pinteya-ecommerce](https://vercel.com/santiagoxor/pinteya-ecommerce)
+- **📂 Repositorio GitHub**: [github.com/SantiagoXOR/pintureria-digital](https://github.com/SantiagoXOR/pintureria-digital)
+- **📊 Dashboard Vercel**: [vercel.com/santiagoxor/pintureria-digital](https://vercel.com/santiagoxor/pintureria-digital)
 
 ## 📊 Análisis Completo del Estado Actual (Julio 2025)
 
@@ -475,6 +475,6 @@ npm run verify-optimizations
 - **Tests Automatizados**: 4 críticos ejecutándose continuamente
 - **Código Enterprise**: 2,700+ líneas implementadas
 
-#### [🚀 Demo en Vivo](https://pinteya-ecommerce.vercel.app)
+#### [🚀 Demo en Vivo](https://www.pinteya.com)
 
 #### [📚 Documentación Completa](./docs/README.md)

@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { useGeolocation } from '@/hooks/useGeolocation'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const TopBar = () => {
   const {
@@ -23,6 +24,13 @@ const TopBar = () => {
     selectZone,
     deliveryZones,
   } = useGeolocation()
+  
+  // Obtener teléfono de contacto del tenant
+  const tenant = useTenantSafe()
+  const contactPhone = tenant?.contactPhone || tenant?.whatsappNumber || '5493513411796'
+  // Formatear número para mostrar
+  const displayPhone = contactPhone.replace(/^549(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3')
+  const telLink = `tel:+${contactPhone}`
 
   // Zona actual: detectada automáticamente o Córdoba Capital por defecto
   const currentZone = detectedZone || deliveryZones.find(zone => zone.id === 'cordoba-capital')
@@ -33,14 +41,14 @@ const TopBar = () => {
         <div className='flex items-center justify-between py-2'>
           {/* Información de contacto - Izquierda */}
           <div className='flex items-center gap-6'>
-            {/* Teléfono clickeable - NÚMERO CORREGIDO */}
+            {/* Teléfono clickeable - Dinámico por tenant */}
             <Link
-              href='tel:+5493513411796'
+              href={telLink}
               className='flex items-center gap-2 hover:text-accent-200 transition-all duration-200 hover:scale-105 group focus-ring'
             >
               <Phone className='w-4 h-4 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12' />
               <span className='text-sm font-medium transition-colors duration-200'>
-                (351) 341-1796
+                {displayPhone}
               </span>
             </Link>
 

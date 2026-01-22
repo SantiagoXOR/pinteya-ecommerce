@@ -41,11 +41,11 @@
 ```bash
 # Fork el repositorio en GitHub
 # Luego clona tu fork
-git clone https://github.com/tu-usuario/pinteya-ecommerce.git
-cd pinteya-ecommerce
+git clone https://github.com/tu-usuario/pintureria-digital.git
+cd pintureria-digital
 
 # Agregar upstream remote
-git remote add upstream https://github.com/SantiagoXOR/pinteya-ecommerce.git
+git remote add upstream https://github.com/SantiagoXOR/pintureria-digital.git
 ```
 
 ### **2. Configurar Entorno**

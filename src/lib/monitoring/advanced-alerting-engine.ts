@@ -506,7 +506,7 @@ export class AdvancedAlertingEngine {
         body: JSON.stringify({
           alert,
           timestamp: Date.now(),
-          source: 'pinteya-ecommerce',
+          source: 'pintureria-digital',
         }),
       })
 

@@ -33,7 +33,7 @@ const OPTIMIZED_CLIENT_CONFIG = {
   },
   global: {
     headers: {
-      'x-client-info': 'pinteya-ecommerce/1.0.0',
+      'x-client-info': 'pintureria-digital/1.0.0',
       'x-connection-pool': 'enabled',
     },
   },
@@ -50,7 +50,7 @@ const OPTIMIZED_ADMIN_CONFIG = {
   },
   global: {
     headers: {
-      'x-client-info': 'pinteya-admin/1.0.0',
+      'x-client-info': 'pintureria-digital-admin/1.0.0',
       'x-connection-pool': 'enabled',
     },
   },

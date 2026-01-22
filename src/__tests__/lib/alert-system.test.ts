@@ -326,7 +326,7 @@ describe('Enterprise Alert System', () => {
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
           }),
-          body: expect.stringContaining('"source":"pinteya-ecommerce"'),
+          body: expect.stringContaining('"source":"pintureria-digital"'),
         })
       )
     })

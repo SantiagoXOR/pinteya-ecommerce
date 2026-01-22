@@ -4,39 +4,23 @@
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
-import { getSupabaseClient } from '@/lib/integrations/supabase'
+import { supabaseAdmin } from '@/lib/integrations/supabase'
 import { whatsappLinkService, OrderDetails } from '@/lib/integrations/whatsapp/whatsapp-link-service'
 import { logger, LogLevel } from '@/lib/enterprise/logger'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
-export async function GET(
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    // Verificar autenticación y permisos de admin
-    const session = await auth()
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
+    const { tenantId } = guardResult
+    const { id } = await context.params
+    const orderId = id
 
-    // Verificar que el usuario sea admin usando el rol de la sesión (cargado desde la BD en auth.ts)
-    if (session.user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Permisos insuficientes' },
-        { status: 403 }
-      )
-    }
-
-    const orderId = params.id
-    const supabase = getSupabaseClient()
-
-    // Obtener la orden completa con sus items
-    const { data: order, error: orderError } = await supabase
+    // ⚡ MULTITENANT: Obtener la orden completa con sus items, filtrando por tenant_id
+    const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
       .select(`
         *,
@@ -54,6 +38,7 @@ export async function GET(
         )
       `)
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (orderError || !order) {
@@ -127,8 +112,8 @@ export async function GET(
     // Generar el enlace y obtener el mensaje crudo
     const { link: whatsappLink, message: whatsappMessage } = whatsappLinkService.generateOrderWhatsApp(orderDetails)
 
-    // Actualizar la orden con el nuevo enlace
-    const { error: updateError } = await supabase
+    // ⚡ MULTITENANT: Actualizar la orden con el nuevo enlace, filtrando por tenant_id
+    const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({
         whatsapp_notification_link: whatsappLink,
@@ -136,6 +121,7 @@ export async function GET(
         whatsapp_generated_at: new Date().toISOString(),
       })
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
     if (updateError) {
       logger.error(LogLevel.ERROR, 'Failed to save WhatsApp link to database', {
@@ -151,7 +137,8 @@ export async function GET(
 
     logger.info(LogLevel.INFO, 'WhatsApp link generated manually by admin', {
       orderId,
-      adminEmail: session.user.email,
+      tenantId,
+      adminEmail: guardResult.userEmail,
       linkLength: whatsappLink.length
     })
 
@@ -165,7 +152,8 @@ export async function GET(
 
   } catch (error) {
     logger.error(LogLevel.ERROR, 'Error in admin WhatsApp endpoint', {
-      orderId: params.id,
+      orderId: id,
+      tenantId,
       error: error instanceof Error ? error.message : 'Unknown error'
     })
 
@@ -174,36 +162,28 @@ export async function GET(
       { status: 500 }
     )
   }
-}
+})
 
-export async function POST(
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
   request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    // Verificar autenticación
-    const session = await auth()
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    // Verificar que es admin usando el rol de la sesión (cargado desde la BD en auth.ts)
-    if (session.user.role !== 'admin') {
-      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-    }
-
-    const orderId = params.id
+    const { tenantId } = guardResult
+    const { id } = await context.params
+    const orderId = id
     const body = await request.json()
     const { regenerate = false } = body
 
-    const supabase = getSupabaseClient()
-
     // Si no es regeneración, verificar si ya existe un enlace
     if (!regenerate) {
-      const { data: existingOrder } = await supabase
+      // ⚡ MULTITENANT: Verificar enlace existente filtrando por tenant_id
+      const { data: existingOrder } = await supabaseAdmin
         .from('orders')
         .select('whatsapp_notification_link, whatsapp_generated_at')
         .eq('id', orderId)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .single()
 
       if (existingOrder?.whatsapp_notification_link) {
@@ -217,11 +197,12 @@ export async function POST(
     }
 
     // Usar el método GET para generar el enlace
-    return GET(request, { params })
+    return GET(request, context)
 
   } catch (error) {
     logger.error(LogLevel.ERROR, 'Error in admin WhatsApp POST endpoint', {
-      orderId: params.id,
+      orderId: id,
+      tenantId,
       error: error instanceof Error ? error.message : 'Unknown error'
     })
 
@@ -230,4 +211,4 @@ export async function POST(
       { status: 500 }
     )
   }
-}
+})

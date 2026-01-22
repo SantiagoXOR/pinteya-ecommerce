@@ -21,6 +21,8 @@ import {
   ShipmentStatus,
   ShippingService,
 } from '@/types/logistics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // =====================================================
 // SCHEMAS DE VALIDACIÓN ZOD
@@ -79,7 +81,7 @@ const GetShipmentsSchema = z.object({
 })
 
 // =====================================================
-// MIDDLEWARE DE AUTENTICACIÓN
+// MIDDLEWARE DE AUTENTICACIÓN (DEPRECATED - usar withTenantAdmin)
 // =====================================================
 async function validateAdminAuth(request: NextRequest) {
   const session = await auth()
@@ -109,9 +111,16 @@ function generateShipmentNumber(): string {
 
 async function validateOrderExists(
   supabase: ReturnType<typeof createClient<Database>>,
-  orderId: number
+  orderId: number,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ): Promise<boolean> {
-  const { data, error } = await supabase.from('orders').select('id').eq('id', orderId).single()
+  // ⚡ MULTITENANT: Filtrar por tenant_id
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id')
+    .eq('id', orderId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
+    .single()
 
   return !error && data
 }
@@ -138,15 +147,15 @@ async function createShipmentItems(
 
 // =====================================================
 // GET: OBTENER ENVÍOS CON FILTROS Y PAGINACIÓN
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    // Validar autenticación
-    const authError = await validateAdminAuth(request)
-    if (authError) {
-      return authError
-    }
+    const { tenantId } = guardResult
 
     // Parsear y validar query parameters
     const { searchParams } = new URL(request.url)
@@ -158,6 +167,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     // Construir query base
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     let query = supabase.from('shipments').select(
       `
         *,
@@ -169,6 +179,7 @@ export async function GET(request: NextRequest) {
       `,
       { count: 'exact' }
     )
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
     // Aplicar filtros
     if (validatedParams.status) {
@@ -254,19 +265,19 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
 // =====================================================
 // POST: CREAR NUEVO ENVÍO
+// ⚡ MULTITENANT: Asigna tenant_id al crear
 // =====================================================
 
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    // Validar autenticación
-    const authError = await validateAdminAuth(request)
-    if (authError) {
-      return authError
-    }
+    const { tenantId } = guardResult
 
     // Parsear y validar body
     const body = await request.json()
@@ -275,8 +286,8 @@ export async function POST(request: NextRequest) {
     // Crear cliente Supabase
     const supabase = await createClient()
 
-    // Validar que la orden existe
-    const orderExists = await validateOrderExists(supabase, validatedData.order_id)
+    // ⚡ MULTITENANT: Validar que la orden existe y pertenece al tenant
+    const orderExists = await validateOrderExists(supabase, validatedData.order_id, tenantId)
     if (!orderExists) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
@@ -285,11 +296,13 @@ export async function POST(request: NextRequest) {
     const shipmentNumber = generateShipmentNumber()
 
     // Crear el envío
+    // ⚡ MULTITENANT: Asignar tenant_id al crear
     const { data: shipment, error: shipmentError } = await supabase
       .from('shipments')
       .insert({
         shipment_number: shipmentNumber,
         order_id: validatedData.order_id,
+        tenant_id: tenantId, // ⚡ MULTITENANT
         status: 'pending',
         carrier_id: validatedData.carrier_id,
         shipping_service: validatedData.shipping_service,
@@ -317,6 +330,7 @@ export async function POST(request: NextRequest) {
     await createShipmentItems(supabase, shipment.id, validatedData.items)
 
     // Obtener el envío completo con items
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: completeShipment, error: fetchError } = await supabase
       .from('shipments')
       .select(
@@ -330,6 +344,7 @@ export async function POST(request: NextRequest) {
       `
       )
       .eq('id', shipment.id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (fetchError) {
@@ -378,4 +393,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

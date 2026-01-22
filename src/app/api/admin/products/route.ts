@@ -986,6 +986,13 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
     }
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const { getTenantConfig } = await import('@/lib/tenant')
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     const { searchParams } = new URL(request.url)
     
     // Parse parameters
@@ -1007,16 +1014,16 @@ export const GET = async (request: NextRequest) => {
       return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 })
     }
 
-    // Build query
+    // ===================================
+    // MULTITENANT: Build query con tenant_products para obtener precio/stock del tenant
+    // ===================================
+    // Nota: En admin, usamos LEFT JOIN para ver todos los productos, incluso sin configuración en tenant_products
     let query = supabaseAdmin.from('products').select(
       `
         id,
         name,
         slug,
         description,
-        price,
-        discounted_price,
-        stock,
         category_id,
         images,
         color,
@@ -1036,10 +1043,18 @@ export const GET = async (request: NextRequest) => {
             name,
             slug
           )
+        ),
+        tenant_products (
+          price,
+          discounted_price,
+          stock,
+          is_visible
         )
       `,
       { count: 'exact' }
     )
+    // Filtrar tenant_products por tenant_id (usando filtro en la relación)
+    // Nota: Esto requiere un filtro adicional después de obtener los datos
 
     // Apply filters
     if (search) {
@@ -1251,7 +1266,18 @@ export const GET = async (request: NextRequest) => {
     const variantsByProductIdForTransform = groupVariantsByProductId(variantDataForTransform)
     
     const transformedProducts =
-      products?.map(product => {
+      products?.map((product: any) => {
+        // ===================================
+        // MULTITENANT: Obtener precio/stock desde tenant_products
+        // ===================================
+        const tenantProduct = Array.isArray(product.tenant_products) 
+          ? product.tenant_products.find((tp: any) => tp && tp.tenant_id === tenantId) || product.tenant_products[0]
+          : product.tenant_products
+        
+        // Precio desde tenant_products (fallback a products si no existe)
+        const tenantPrice = tenantProduct?.price ?? product.price
+        const tenantDiscountedPrice = tenantProduct?.discounted_price ?? product.discounted_price
+        
         // ✅ NUEVO: Prioridad: product_images > variante > images JSONB
         const primaryImageFromTable = productImagesFromTable[product.id]
         const variantImage = variantImages[product.id]
@@ -1299,18 +1325,27 @@ export const GET = async (request: NextRequest) => {
         const variantAikonIds = variantAikonIdsByProduct[product.id] || []
         const variantAikonIdsFormatted = getAllVariantAikonIdsFormatted(variants)
         
-        // ✅ NUEVO: Calcular stock efectivo (suma de variantes si hay, sino stock del producto)
+        // ✅ NUEVO: Calcular stock efectivo (suma de variantes si hay, sino stock de tenant_products, luego products)
         const variantStock = variantTotalStocks[product.id] || 0
         const numericVariantStock = typeof variantStock === 'string' 
           ? parseInt(variantStock, 10) || 0 
           : Number(variantStock) || 0
+        
+        // Stock: priorizar variantes, luego tenant_products, luego products
         const effectiveStock = numericVariantStock > 0
           ? numericVariantStock  // Suma de todas las variantes
-          : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0)
+          : (tenantProduct?.stock !== null && tenantProduct?.stock !== undefined
+            ? Number(tenantProduct.stock) || 0
+            : (product.stock !== null && product.stock !== undefined ? Number(product.stock) || 0 : 0))
         
         return {
           ...product,
-          // ✅ CRÍTICO: Stock efectivo (suma de variantes si hay, sino stock del producto)
+          // ===================================
+          // MULTITENANT: Usar precio desde tenant_products
+          // ===================================
+          price: tenantPrice,
+          discounted_price: tenantDiscountedPrice,
+          // ✅ CRÍTICO: Stock efectivo (suma de variantes si hay, sino stock de tenant_products, luego products)
           stock: effectiveStock,
           category_name: product.category?.name || categories[0]?.name || null,
           category: undefined,

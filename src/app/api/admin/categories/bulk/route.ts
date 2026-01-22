@@ -8,6 +8,8 @@ import { requireAdminAuth } from '@/lib/auth/admin-auth'
 import { checkRateLimit } from '@/lib/enterprise/rate-limiter'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // CONFIGURACIÓN
@@ -133,13 +135,18 @@ interface BulkOperationResult {
 // ===================================
 // FUNCIONES AUXILIARES
 // ===================================
-async function getCategoriesByIds(categoryIds: string[]): Promise<Category[]> {
+async function getCategoriesByIds(
+  categoryIds: string[],
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+): Promise<Category[]> {
   const supabase = await createClient()
 
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: categories, error } = await supabase
     .from('categories')
     .select('*')
     .in('id', categoryIds)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     throw new Error(`Error obteniendo categorías: ${error.message}`)
@@ -151,6 +158,7 @@ async function getCategoriesByIds(categoryIds: string[]): Promise<Category[]> {
 async function executeBulkAction(
   action: string,
   categoryIds: string[],
+  tenantId: string, // ⚡ MULTITENANT: Agregar tenantId
   data?: any,
   userId?: string
 ): Promise<BulkOperationResult> {
@@ -167,8 +175,8 @@ async function executeBulkAction(
     processed_categories: [],
   }
 
-  // Obtener categorías existentes
-  const categories = await getCategoriesByIds(categoryIds)
+  // ⚡ MULTITENANT: Obtener categorías existentes filtrando por tenant
+  const categories = await getCategoriesByIds(categoryIds, tenantId)
   const foundIds = categories.map(c => c.id)
   const notFoundIds = categoryIds.filter(id => !foundIds.includes(id))
 
@@ -205,17 +213,33 @@ async function executeBulkAction(
       case 'update_parent':
         updateData = { parent_id: data?.parent_id || null }
 
-        // Verificar jerarquías circulares
+        // ⚡ MULTITENANT: Verificar jerarquías circulares dentro del tenant
         if (data?.parent_id) {
-          for (const categoryId of foundIds) {
-            const isCircular = await checkCircularHierarchy(categoryId, data.parent_id)
-            if (isCircular) {
-              result.errors.push({
-                category_id: categoryId,
-                category_name: categories.find(c => c.id === categoryId)?.name,
-                error: 'Crearía una jerarquía circular',
-              })
-              result.error_count++
+          // Verificar que el parent pertenece al tenant
+          const { data: parentCategory } = await supabase
+            .from('categories')
+            .select('id, tenant_id')
+            .eq('id', data.parent_id)
+            .eq('tenant_id', tenantId)
+            .single()
+          
+          if (!parentCategory) {
+            result.errors.push({
+              category_id: foundIds[0],
+              error: 'La categoría padre no existe o no pertenece a este tenant',
+            })
+            result.error_count++
+          } else {
+            for (const categoryId of foundIds) {
+              const isCircular = await checkCircularHierarchy(categoryId, data.parent_id, tenantId)
+              if (isCircular) {
+                result.errors.push({
+                  category_id: categoryId,
+                  category_name: categories.find(c => c.id === categoryId)?.name,
+                  error: 'Crearía una jerarquía circular',
+                })
+                result.error_count++
+              }
             }
           }
         }
@@ -227,6 +251,7 @@ async function executeBulkAction(
           const categoryId = foundIds[i]
           const sortOrder = (data?.sort_order || 0) + i
 
+          // ⚡ MULTITENANT: Actualizar solo categorías del tenant
           const { error } = await supabase
             .from('categories')
             .update({
@@ -234,6 +259,7 @@ async function executeBulkAction(
               updated_at: new Date().toISOString(),
             })
             .eq('id', categoryId)
+            .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
           if (error) {
             result.errors.push({
@@ -261,11 +287,12 @@ async function executeBulkAction(
           })
         }
 
-        // Verificar subcategorías
+        // ⚡ MULTITENANT: Verificar subcategorías del tenant
         const { data: subcategories } = await supabase
           .from('categories')
           .select('id, name, parent_id')
           .in('parent_id', foundIds)
+          .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
         if (subcategories && subcategories.length > 0) {
           const parentIds = [...new Set(subcategories.map(s => s.parent_id))]
@@ -318,6 +345,7 @@ async function executeBulkAction(
       const idsToUpdate = foundIds.filter(id => !result.errors.some(e => e.category_id === id))
 
       if (idsToUpdate.length > 0) {
+        // ⚡ MULTITENANT: Actualizar solo categorías del tenant
         const { data: updatedCategories, error: updateError } = await supabase
           .from('categories')
           .update({
@@ -325,6 +353,7 @@ async function executeBulkAction(
             updated_at: new Date().toISOString(),
           })
           .in('id', idsToUpdate)
+          .eq('tenant_id', tenantId) // ⚡ MULTITENANT
           .select()
 
         if (updateError) {
@@ -472,6 +501,7 @@ async function exportCategories(filters: any, format: string, fields?: string[])
 async function importCategories(
   importData: any,
   options: any,
+  tenantId: string, // ⚡ MULTITENANT: Agregar tenantId
   userId: string
 ): Promise<BulkOperationResult> {
   const supabase = getSupabaseClient(true)
@@ -487,8 +517,11 @@ async function importCategories(
     processed_categories: [],
   }
 
-  // Obtener categorías existentes para verificar duplicados
-  const { data: existingCategories } = await supabase.from('categories').select('id, name, slug')
+  // ⚡ MULTITENANT: Obtener categorías existentes del tenant para verificar duplicados
+  const { data: existingCategories } = await supabase
+    .from('categories')
+    .select('id, name, slug')
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   const existingSlugs = new Set(existingCategories?.map(c => c.slug) || [])
   const existingNames = new Set(existingCategories?.map(c => c.name.toLowerCase()) || [])
@@ -519,7 +552,7 @@ async function importCategories(
         continue
       }
 
-      // Resolver parent_id si se proporciona parent_slug
+      // ⚡ MULTITENANT: Resolver parent_id si se proporciona parent_slug (debe pertenecer al tenant)
       let parentId = null
       if (categoryData.parent_slug) {
         const parentCategory = existingCategories?.find(c => c.slug === categoryData.parent_slug)
@@ -528,7 +561,7 @@ async function importCategories(
         } else {
           result.errors.push({
             category_name: categoryData.name,
-            error: `Categoría padre no encontrada: ${categoryData.parent_slug}`,
+            error: `Categoría padre no encontrada en este tenant: ${categoryData.parent_slug}`,
           })
           result.error_count++
           continue
@@ -546,18 +579,20 @@ async function importCategories(
         meta_title: categoryData.meta_title || null,
         meta_description: categoryData.meta_description || null,
         meta_keywords: categoryData.meta_keywords || null,
+        tenant_id: tenantId, // ⚡ MULTITENANT: Asignar tenant_id
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
 
       if (isDuplicateSlug && options?.update_existing) {
-        // Actualizar categoría existente
+        // ⚡ MULTITENANT: Actualizar categoría existente del tenant
         const existingCategory = existingCategories?.find(c => c.slug === categoryData.slug)
         if (existingCategory) {
           const { data: updatedCategory, error } = await supabase
             .from('categories')
             .update(insertData)
             .eq('id', existingCategory.id)
+            .eq('tenant_id', tenantId) // ⚡ MULTITENANT
             .select()
             .single()
 
@@ -573,7 +608,7 @@ async function importCategories(
           }
         }
       } else {
-        // Crear nueva categoría
+        // ⚡ MULTITENANT: Crear nueva categoría con tenant_id
         const { data: newCategory, error } = await supabase
           .from('categories')
           .insert(insertData)
@@ -622,7 +657,11 @@ async function importCategories(
   return result
 }
 
-async function checkCircularHierarchy(categoryId: string, parentId: string): Promise<boolean> {
+async function checkCircularHierarchy(
+  categoryId: string,
+  parentId: string,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
+): Promise<boolean> {
   const supabase = getSupabaseClient(true)
 
   if (!supabase) {
@@ -643,10 +682,12 @@ async function checkCircularHierarchy(categoryId: string, parentId: string): Pro
       return true
     }
 
+    // ⚡ MULTITENANT: Verificar jerarquía solo dentro del mismo tenant
     const { data: parent } = await supabase
       .from('categories')
       .select('parent_id')
       .eq('id', currentParentId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     currentParentId = parent?.parent_id
@@ -804,9 +845,14 @@ export async function GET(request: NextRequest) {
 
 // ===================================
 // POST /api/admin/categories/bulk - Operaciones masivas e importación (Admin)
+// ⚡ MULTITENANT: Filtra y asigna tenant_id
 // ===================================
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   const startTime = Date.now()
+  const { tenantId, userId } = guardResult
 
   try {
     // Rate limiting más restrictivo para operaciones masivas
@@ -826,25 +872,6 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    // Verificar autenticación de admin
-    const authResult = await requireAdminAuth(request, [
-      'categories_create',
-      'categories_update',
-      'categories_delete',
-    ])
-
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          error: authResult.error,
-          code: authResult.code,
-          enterprise: true,
-          timestamp: new Date().toISOString(),
-        },
-        { status: authResult.status || 401 }
-      )
-    }
-
     const body = await request.json()
     const { operation } = body
 
@@ -852,18 +879,19 @@ export async function POST(request: NextRequest) {
     let message: string
 
     if (operation === 'import') {
-      // Importación de categorías
+      // ⚡ MULTITENANT: Importación de categorías con tenantId
       const importParams = BulkCategoryImportSchema.parse(body)
-      result = await importCategories(importParams.data, importParams.options, authResult.user?.id!)
+      result = await importCategories(importParams.data, importParams.options, tenantId, userId)
       message = `Importación completada: ${result.success_count} categorías procesadas, ${result.error_count} errores`
     } else {
-      // Operaciones masivas estándar
+      // ⚡ MULTITENANT: Operaciones masivas estándar con tenantId
       const bulkParams = BulkCategoryActionSchema.parse(body)
       result = await executeBulkAction(
         bulkParams.action,
         bulkParams.category_ids,
+        tenantId, // ⚡ MULTITENANT
         bulkParams.data,
-        authResult.user?.id
+        userId
       )
       message = `Operación '${bulkParams.action}' completada: ${result.success_count} categorías procesadas, ${result.error_count} errores`
     }
@@ -874,7 +902,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.user?.id,
+      userId: userId,
     })
 
     const response: ApiResponse<BulkOperationResult> = {
@@ -913,4 +941,4 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})

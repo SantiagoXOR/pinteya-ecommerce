@@ -1,5 +1,5 @@
 /**
- * Página de Ayuda - Pinteya E-commerce
+ * Página de Ayuda - E-commerce Multitenant
  * Centro de ayuda con preguntas frecuentes y soporte
  */
 
@@ -23,6 +23,7 @@ import {
   RefreshCw,
 } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
@@ -98,11 +99,17 @@ const HelpPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('todos')
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
+  
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+  const tenantName = tenant?.name || 'Pinteya'
+  
   const [publicSettings, setPublicSettings] = useState<PublicSettings>({
-    contact_email: 'soporte@pinteya.com',
-    support_phone: '+54 351 XXX-XXXX',
-    site_name: 'Pinteya',
-    site_url: 'https://pinteya.com',
+    contact_email: `soporte@${tenant?.slug || 'pinteya'}.com`,
+    support_phone: tenant?.contactPhone || '+54 351 XXX-XXXX',
+    site_name: tenantName,
+    site_url: `https://${tenant?.slug || 'pinteya'}.com`,
   })
 
   // Cargar configuraciones públicas
@@ -145,8 +152,7 @@ const HelpPage = () => {
 
   const handleChatClick = () => {
     trackEvent('whatsapp_click', 'engagement', 'help_page_chat_button')
-    const whatsappNumber = '5493513411796' // Número oficial de Pinteya
-    const defaultMessage = 'Hola! Necesito ayuda con mi pedido'
+    const defaultMessage = tenant?.whatsappMessageTemplate || 'Hola! Necesito ayuda con mi pedido'
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultMessage)}`
     window.open(url, '_blank')
   }

@@ -38,7 +38,7 @@ Para configurar el proyecto de forma segura:
 
 ### Proyecto
 
-- **Nombre**: pinteya-ecommerce
+- **Nombre**: pintureria-digital
 - **ID**: aakzspzfulgftqlgwkpb
 - **Región**: sa-east-1
 - **URL**: https://aakzspzfulgftqlgwkpb.supabase.co

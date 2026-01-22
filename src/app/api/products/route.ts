@@ -2,9 +2,10 @@
 export const runtime = 'nodejs'
 
 // ===================================
-// PINTEYA E-COMMERCE - API DE PRODUCTOS
+// PINTURERÍA DIGITAL - API DE PRODUCTOS (MULTITENANT)
 // ===================================
-// API optimizada con rate limiting, timeouts centralizados y logging estructurado
+// API optimizada con rate limiting, timeouts centralizados, logging estructurado
+// y soporte para sistema multitenant
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase'
@@ -25,6 +26,11 @@ import { API_TIMEOUTS, withDatabaseTimeout, getEndpointTimeouts } from '@/lib/co
 import { createSecurityLogger } from '@/lib/logging/security-logger'
 import { expandQueryIntents, stripDiacritics } from '@/lib/search/intents'
 import { normalizeProductTitle } from '@/lib/core/utils'
+
+// ===================================
+// MULTITENANT: Importaciones para contexto de tenant
+// ===================================
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
 // FUNCIÓN DE REORDENAMIENTO INTELIGENTE
@@ -130,7 +136,7 @@ function reorderSearchResults(
 }
 
 // ===================================
-// GET /api/products - Obtener productos con filtros
+// GET /api/products - Obtener productos con filtros (MULTITENANT)
 // ===================================
 export async function GET(request: NextRequest) {
   // Crear logger de seguridad con contexto
@@ -139,6 +145,17 @@ export async function GET(request: NextRequest) {
   // Aplicar rate limiting
   const rateLimitResult = await withRateLimit(request, RATE_LIMIT_CONFIGS.products, async () => {
     try {
+      // ===================================
+      // MULTITENANT: Obtener configuración del tenant actual
+      // ===================================
+      const tenant = await getTenantConfig()
+      const tenantId = tenant.id
+      
+      // Log del tenant para debugging (solo en desarrollo)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Products API] Tenant: ${tenant.slug} (${tenantId})`)
+      }
+      
       const { searchParams } = new URL(request.url)
 
       // Extraer parámetros de query
@@ -192,20 +209,28 @@ export async function GET(request: NextRequest) {
 
       const filters = validationResult.data!
 
-      // Log de acceso a datos con contexto
+      // Log de acceso a datos con contexto (incluyendo tenant)
       securityLogger.log({
         type: 'data_access',
         severity: 'low',
         message: 'Products API accessed',
         context: securityLogger.context,
         metadata: {
+          tenantId: tenant.id,
+          tenantSlug: tenant.slug,
           filters: filters,
           hasSearch: !!filters.search,
           hasFilters: !!(filters.category || filters.brand || filters.paintType),
         },
       })
 
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:227',message:'Before getSupabaseClient',data:{tenantId,tenantSlug:tenant.slug},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       const supabase = getSupabaseClient()
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:229',message:'After getSupabaseClient',data:{hasSupabase:!!supabase,isAdmin:false},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
 
       // Verificar que el cliente de Supabase esté disponible
       if (!supabase) {
@@ -285,14 +310,31 @@ export async function GET(request: NextRequest) {
       }
 
       const result = await withDatabaseTimeout(async signal => {
+        // ===================================
+        // MULTITENANT: Usar tenant_products para obtener precio/stock/visibilidad por tenant
+        // ===================================
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:310',message:'Before products query',data:{tenantId,filters:Object.keys(filters)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         let query = supabase.from('products').select(
           `
-              id, name, slug, price, discounted_price, brand, stock, images, color, medida,
+              id, name, slug, brand, images, color, medida,
               category:categories(id, name, slug),
-              categories:product_categories(category:categories(id, name, slug))
+              categories:product_categories(category:categories(id, name, slug)),
+              tenant_products!inner (
+                price,
+                discounted_price,
+                stock,
+                is_visible
+              )
             `,
           { count: 'exact' }
         )
+        .eq('tenant_products.tenant_id', tenantId)
+        .eq('tenant_products.is_visible', true)
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:326',message:'After building query',data:{hasQuery:!!query},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
 
         // Aplicar filtros de categoría
         // ✅ CORREGIDO: Combinar categoryId y categoryIds en un solo filtro (OR, no AND)
@@ -345,12 +387,13 @@ export async function GET(request: NextRequest) {
           query = query.in('paint_type', filters.paintTypes)
         }
 
+        // Filtros de precio: usar precio de tenant_products
         if (filters.priceMin) {
-          query = query.gte('price', filters.priceMin)
+          query = query.gte('tenant_products.price', filters.priceMin)
         }
 
         if (filters.priceMax) {
-          query = query.lte('price', filters.priceMax)
+          query = query.lte('tenant_products.price', filters.priceMax)
         }
 
         if (filters.search) {
@@ -463,13 +506,23 @@ export async function GET(request: NextRequest) {
           query = query.range(from, to)
         }
 
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:504',message:'Before executing query',data:{tenantId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
         // Ejecutar query con timeout
-        return await query
+        const queryResult = await query
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:506',message:'After executing query',data:{hasError:!!queryResult.error,errorCode:queryResult.error?.code,errorMessage:queryResult.error?.message?.substring(0,100)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
+        return queryResult
       }, API_TIMEOUTS.database)
 
       const { data: products, error, count } = result
 
       if (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:512',message:'Query error detected',data:{errorCode:error.code,errorMessage:error.message,errorDetails:error.details,errorHint:error.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
         // Log de error de base de datos con contexto de seguridad
         securityLogger.logApiError(
           securityLogger.context,
@@ -564,13 +617,24 @@ export async function GET(request: NextRequest) {
           })
 
           // Enriquecer productos con variantes e imágenes
-          enrichedProducts = products.map(product => {
+          enrichedProducts = products.map((product: any) => {
             const productVariants = variantsByProduct[product.id] || []
             const defaultVariant = productVariants.find(v => v.is_default) || productVariants[0]
             
-            // ✅ NUEVO: Calcular stock efectivo considerando variantes
+            // ===================================
+            // MULTITENANT: Obtener precio/stock desde tenant_products
+            // ===================================
+            const tenantProduct = Array.isArray(product.tenant_products) 
+              ? product.tenant_products[0] 
+              : product.tenant_products
+            
+            // Precio desde tenant_products (fallback a products si no existe)
+            const tenantPrice = tenantProduct?.price ?? product.price
+            const tenantDiscountedPrice = tenantProduct?.discounted_price ?? product.discounted_price
+            
+            // ✅ NUEVO: Calcular stock efectivo considerando variantes y tenant_products
             // Si tiene variantes, sumar stock de todas las variantes activas
-            // Si no tiene variantes, usar stock del producto
+            // Si no tiene variantes, usar stock de tenant_products (fallback a products)
             let effectiveStock = 0
             if (productVariants.length > 0) {
               // Si tiene variantes, sumar stock de todas las variantes activas
@@ -578,10 +642,12 @@ export async function GET(request: NextRequest) {
                 .filter(v => v.is_active !== false)
                 .reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
             } else {
-              // Si no tiene variantes, usar stock del producto
-              effectiveStock = product.stock !== null && product.stock !== undefined 
-                ? Number(product.stock) || 0 
-                : 0
+              // Si no tiene variantes, usar stock de tenant_products (fallback a products)
+              effectiveStock = tenantProduct?.stock !== null && tenantProduct?.stock !== undefined
+                ? Number(tenantProduct.stock) || 0
+                : (product.stock !== null && product.stock !== undefined 
+                  ? Number(product.stock) || 0 
+                  : 0)
             }
             
             return {
@@ -612,10 +678,12 @@ export async function GET(request: NextRequest) {
               default_variant: defaultVariant || null,
               // ✅ NUEVO: Agregar category_name aplanado para analytics
               category_name: (product as any).category?.name || (product as any).categories?.[0]?.category?.name || null,
-              // Mantener precio y stock exclusivamente desde tabla products (requerimiento)
-              price: product.price,
-              discounted_price: product.discounted_price,
-              // ✅ CORREGIDO: Usar stock efectivo (considerando variantes)
+              // ===================================
+              // MULTITENANT: Usar precio desde tenant_products
+              // ===================================
+              price: tenantPrice,
+              discounted_price: tenantDiscountedPrice,
+              // ✅ CORREGIDO: Usar stock efectivo (considerando variantes y tenant_products)
               stock: effectiveStock,
               // ✅ NUEVO: Agregar image_url desde product_images si está disponible
               // ✅ MEJORADO: Fallback a images JSONB si no hay imagen en product_images

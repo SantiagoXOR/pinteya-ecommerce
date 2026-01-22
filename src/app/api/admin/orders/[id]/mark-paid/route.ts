@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // MIDDLEWARE DE AUTENTICACIÓN ADMIN
@@ -53,35 +54,35 @@ async function validateAdminAuth() {
  * POST /api/admin/orders/[id]/mark-paid
  * Marca una orden como pagada manualmente
  */
-export async function POST(
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   let orderId: string | undefined
+  const { tenantId } = guardResult
   try {
     const { id } = await context.params
     orderId = id
     const body = await request.json()
     const { payment_method = 'manual', notes = '' } = body
 
-    // Verificar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status || 401 })
-    }
-
     logger.log(LogLevel.INFO, LogCategory.API, 'Marking order as paid manually', {
       orderId,
-      userId: authResult.userId,
+      userId: guardResult.userId,
+      tenantId,
       payment_method,
     })
 
-    // Obtener datos actuales de la orden
+    // ===================================
+    // MULTITENANT: Obtener orden del tenant
+    // ===================================
     const supabase = createAdminClient()
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('id, status, payment_status, total')
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .single()
 
     if (orderError || !order) {
@@ -106,10 +107,14 @@ export async function POST(
       updated_at: new Date().toISOString(),
     }
 
+    // ===================================
+    // MULTITENANT: Actualizar orden del tenant
+    // ===================================
     const { error: updateError } = await supabase
       .from('orders')
       .update(updateData)
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
 
     if (updateError) {
       logger.log(LogLevel.ERROR, LogCategory.API, 'Error updating order payment status', {
@@ -129,7 +134,7 @@ export async function POST(
           order_id: orderId,
           previous_status: 'pending',
           new_status: 'confirmed',
-          changed_by: authResult.userId,
+          changed_by: guardResult.userId, // ⚡ MULTITENANT: Usar userId del guard
           reason: `Pago confirmado manualmente por administrador (${payment_method})`,
           metadata: JSON.stringify({
             payment_method,
@@ -177,4 +182,4 @@ export async function POST(
       { status: 500 }
     )
   }
-}
+})

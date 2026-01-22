@@ -9,6 +9,8 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { auth } from '@/lib/auth/config'
+// ⚡ MULTITENANT: Importar configuración del tenant
+import { getTenantConfig } from '@/lib/tenant'
 
 /**
  * PUT /api/cart/update
@@ -34,9 +36,13 @@ export async function PUT(request: NextRequest) {
 
     const userId = session.user.id
 
+    // ⚡ MULTITENANT: Obtener configuración del tenant actual
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Obtener datos del request
     const body = await request.json()
-    const { productId, quantity } = body
+    const { productId, quantity, variantId } = body
 
     // Validaciones
     if (!productId) {
@@ -97,30 +103,88 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Verificar stock disponible
-    if (quantity > product.stock) {
-      console.log(
-        `❌ Cart Update API: Stock insuficiente para producto ${productId}. Stock: ${product.stock}, Solicitado: ${quantity}`
-      )
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Stock insuficiente. Solo hay ${product.stock} disponibles`,
-          availableStock: product.stock,
-          requestedQuantity: quantity,
-          productName: product.name,
-        },
-        { status: 400 }
-      )
+    // ⚡ MULTITENANT: Validar stock considerando variantes
+    let stockAvailable = 0
+    let variantInfo = null
+
+    if (variantId) {
+      // Si hay variantId, validar stock de la variante
+      const { data: variant, error: variantError } = await supabase
+        .from('product_variants')
+        .select('id, stock, price_sale, price_list, color_name, measure')
+        .eq('id', variantId)
+        .single()
+
+      if (variantError || !variant) {
+        console.log(`❌ Cart Update API: Variante ${variantId} no encontrada`)
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Variante no encontrada',
+            variantId,
+          },
+          { status: 404 }
+        )
+      }
+
+      stockAvailable = variant.stock
+      variantInfo = variant
+
+      if (variant.stock < quantity) {
+        console.log(
+          `❌ Cart Update API: Stock insuficiente para variante ${variantId}. Stock: ${variant.stock}, Solicitado: ${quantity}`
+        )
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Stock insuficiente para esta variante. Solo hay ${variant.stock} disponibles`,
+            availableStock: variant.stock,
+            requestedQuantity: quantity,
+            productName: product.name,
+            variantId,
+          },
+          { status: 400 }
+        )
+      }
+    } else {
+      // Si no hay variantId, usar stock del producto padre
+      stockAvailable = product.stock
+
+      if (product.stock < quantity) {
+        console.log(
+          `❌ Cart Update API: Stock insuficiente para producto ${productId}. Stock: ${product.stock}, Solicitado: ${quantity}`
+        )
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Stock insuficiente. Solo hay ${product.stock} disponibles`,
+            availableStock: product.stock,
+            requestedQuantity: quantity,
+            productName: product.name,
+          },
+          { status: 400 }
+        )
+      }
     }
 
     // Verificar que el item existe en el carrito
-    const { data: existingItem, error: existingError } = await supabase
+    // ⚡ MULTITENANT: Incluir variant_id en la búsqueda para soportar variantes
+    let existingItemQuery = supabase
       .from('cart_items')
-      .select('id, quantity')
+      .select('id, quantity, variant_id')
       .eq('user_id', userId)
       .eq('product_id', productId)
-      .single()
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar ownership
+    
+    // Si se proporciona variantId, buscar por variant_id específico
+    // Si no, buscar items con variant_id IS NULL (productos sin variantes)
+    if (variantId) {
+      existingItemQuery = existingItemQuery.eq('variant_id', variantId)
+    } else {
+      existingItemQuery = existingItemQuery.is('variant_id', null)
+    }
+    
+    const { data: existingItem, error: existingError } = await existingItemQuery.single()
 
     if (existingError || !existingItem) {
       console.log(`❌ Cart Update API: Producto ${productId} no está en el carrito`)
@@ -143,6 +207,7 @@ export async function PUT(request: NextRequest) {
         .from('cart_items')
         .delete()
         .eq('id', existingItem.id)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Asegurar tenant
 
       if (deleteError) {
         console.error('❌ Cart Update API: Error removiendo del carrito:', deleteError)
@@ -178,6 +243,7 @@ export async function PUT(request: NextRequest) {
         .from('cart_items')
         .update({ quantity: quantity })
         .eq('id', existingItem.id)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Asegurar tenant
         .select(
           `
           id,
@@ -266,6 +332,7 @@ export async function GET() {
     parameters: {
       productId: 'number - ID del producto a actualizar (requerido)',
       quantity: 'number - Nueva cantidad (0-99). Si es 0, se remueve del carrito (requerido)',
+      variantId: 'number - ID de la variante del producto (opcional). Si no se proporciona, se busca el item sin variante',
     },
     examples: {
       updateQuantity: {

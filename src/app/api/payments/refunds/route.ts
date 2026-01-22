@@ -17,6 +17,7 @@ import {
 import { metricsCollector } from '@/lib/enterprise/metrics'
 import { createMercadoPagoClient } from '@/lib/integrations/mercadopago'
 import { Payment } from 'mercadopago'
+import { getTenantById } from '@/lib/tenant/tenant-service'
 
 interface RefundRequest {
   payment_id: string
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, total_amount, payment_status, external_reference')
+      .select('id, total_amount, payment_status, external_reference, tenant_id')
       .eq('external_reference', payment_id)
       .single()
 
@@ -122,8 +123,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Procesar reembolso con MercadoPago
-    const refundResult = await processRefund(payment_id, refundAmount, reason, metadata)
+    // ⚡ MULTITENANT: Obtener credenciales del tenant
+    const tenantId = order.tenant_id
+    if (!tenantId) {
+      return NextResponse.json(
+        { success: false, error: 'Orden sin tenant asociado' },
+        { status: 400 }
+      )
+    }
+
+    const tenant = await getTenantById(tenantId)
+    if (!tenant || !tenant.mercadopagoAccessToken) {
+      return NextResponse.json(
+        { success: false, error: 'MercadoPago no configurado para este tenant' },
+        { status: 400 }
+      )
+    }
+
+    // Procesar reembolso con MercadoPago usando credenciales del tenant
+    const refundResult = await processRefund(
+      payment_id,
+      refundAmount,
+      tenant.mercadopagoAccessToken,
+      reason,
+      metadata
+    )
 
     // Actualizar estado en base de datos
     await supabase
@@ -330,16 +354,18 @@ export async function GET(request: NextRequest) {
 
 /**
  * Procesa reembolso con MercadoPago
+ * MULTITENANT: Ahora requiere accessToken del tenant
  */
 async function processRefund(
   paymentId: string,
   amount: number,
+  accessToken: string,
   reason?: string,
   metadata?: Record<string, any>
 ): Promise<RefundResponse> {
   try {
-    // Crear cliente de MercadoPago
-    const client = createMercadoPagoClient()
+    // Crear cliente de MercadoPago con credenciales del tenant
+    const client = createMercadoPagoClient(accessToken)
     const payment = new Payment(client)
 
     // En una implementación real, aquí se haría la llamada a la API de MercadoPago

@@ -83,9 +83,11 @@ async function deletePdfFromStorage(path: string) {
 /**
  * POST /api/admin/products/[id]/technical-sheet
  * Upload technical sheet PDF for product
+ * ⚡ MULTITENANT: Verifica que el producto pertenece al tenant
  */
 const postHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { getTenantConfig } = await import('@/lib/tenant')
   
   const contentType = request.headers.get('content-type') || ''
   console.log('[POST /technical-sheet] Content-Type recibido:', contentType)
@@ -136,6 +138,21 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
   }
 
   const numericProductId = parseInt(productId, 10)
+
+  // ⚡ MULTITENANT: Obtener tenantId y verificar que el producto pertenece al tenant
+  const tenant = await getTenantConfig()
+  const tenantId = tenant.id
+
+  const { data: tenantProduct } = await supabaseAdmin
+    .from('tenant_products')
+    .select('product_id')
+    .eq('product_id', numericProductId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!tenantProduct) {
+    throw new NotFoundError('Producto')
+  }
 
   // Check if product exists
   const { data: product, error: productError } = await supabaseAdmin
@@ -248,9 +265,11 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
 /**
  * GET /api/admin/products/[id]/technical-sheet
  * Get technical sheet for product
+ * ⚡ MULTITENANT: Verifica que el producto pertenece al tenant
  */
 const getHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { getTenantConfig } = await import('@/lib/tenant')
   const { id } = await context.params
   const productId = id
 
@@ -261,6 +280,21 @@ const getHandler = async (request: NextRequest, context: { params: Promise<{ id:
   }
 
   const numericProductId = parseInt(productId, 10)
+
+  // ⚡ MULTITENANT: Verificar que el producto pertenece al tenant
+  const tenant = await getTenantConfig()
+  const tenantId = tenant.id
+
+  const { data: tenantProduct } = await supabaseAdmin
+    .from('tenant_products')
+    .select('product_id')
+    .eq('product_id', numericProductId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!tenantProduct) {
+    throw new NotFoundError('Producto')
+  }
 
   // Get technical sheet
   const { data: sheet, error } = await supabaseAdmin
@@ -308,6 +342,21 @@ const deleteHandler = async (request: NextRequest, context: { params: Promise<{ 
   }
 
   const numericProductId = parseInt(productId, 10)
+
+  // ⚡ MULTITENANT: Verificar que el producto pertenece al tenant
+  const tenant = await getTenantConfig()
+  const tenantId = tenant.id
+
+  const { data: tenantProduct } = await supabaseAdmin
+    .from('tenant_products')
+    .select('product_id')
+    .eq('product_id', numericProductId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!tenantProduct) {
+    throw new NotFoundError('Producto')
+  }
 
   // Get existing sheet
   const { data: existingSheet, error: getError } = await supabaseAdmin

@@ -7,6 +7,7 @@ import { Home, ArrowLeft, ShoppingCart, Search, MessageCircle } from '@/lib/opti
 import { cn } from '@/lib/utils'
 import { useAppSelector } from '@/redux/store'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface MercadoLibreBottomNavProps {
   className?: string
@@ -22,6 +23,10 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
     const [isCartPressed, setIsCartPressed] = React.useState(false)
     const [isAnimating, setIsAnimating] = React.useState(false)
     const prevCartCountRef = React.useRef(cartItemCount)
+    
+    // Obtener número de WhatsApp del tenant
+    const tenant = useTenantSafe()
+    const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
 
     // Detectar cuando se agrega un producto al carrito para activar la microinteracción
     React.useEffect(() => {
@@ -81,7 +86,6 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
     // Función para abrir WhatsApp
     const handleWhatsAppClick = (e: React.MouseEvent) => {
       e.preventDefault()
-      const whatsappNumber = '5493513411796'
       const whatsappUrl = `https://wa.me/${whatsappNumber}`
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
     }

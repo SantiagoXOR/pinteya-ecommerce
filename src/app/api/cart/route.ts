@@ -9,6 +9,8 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { auth } from '@/lib/auth/config'
+// ⚡ MULTITENANT: Importar configuración del tenant
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
 // MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
@@ -116,6 +118,10 @@ export async function GET(request: NextRequest) {
         const userId = session.user.id
         console.log(`🔍 Cart API: Obteniendo carrito para usuario ${userId}`)
 
+        // ⚡ MULTITENANT: Obtener configuración del tenant actual
+        const tenant = await getTenantConfig()
+        const tenantId = tenant.id
+
         // Obtener cliente de Supabase con manejo de errores mejorado
         let supabase
         try {
@@ -198,6 +204,7 @@ export async function GET(request: NextRequest) {
                 `
               )
               .eq('user_id', userId)
+              .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
               .order('created_at', { ascending: false })
               .abortSignal(signal)
           }, API_TIMEOUTS.database)
@@ -348,6 +355,10 @@ export async function POST(request: NextRequest) {
 
         const userId = session.user.id
 
+        // ⚡ MULTITENANT: Obtener configuración del tenant actual
+        const tenant = await getTenantConfig()
+        const tenantId = tenant.id
+
         // Obtener datos del request
         const body = await request.json()
         const { productId, variantId, quantity = 1 } = body
@@ -490,40 +501,27 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Upsert: agregar o actualizar item en carrito
-        const { data: cartItem, error: cartError } = await supabase
-          .from('cart_items')
-          .upsert(
-            {
-              user_id: userId,
-              product_id: productId,
-              variant_id: finalVariantId,
-              quantity: quantity,
-            },
-            {
-              onConflict: 'user_id,product_id,variant_id',
-            }
-          )
-          .select(
-            `
-        id,
-        user_id,
-        product_id,
-        variant_id,
-        quantity,
-        created_at,
-        updated_at
-      `
-          )
-          .single()
+        // Upsert: agregar o actualizar item en carrito usando la función RPC
+        // La constraint única es UNIQUE(user_id, product_id, variant_id, tenant_id)
+        const { data: cartItemResult, error: cartError } = await supabase
+          .rpc('upsert_cart_item', {
+            user_uuid: userId,
+            product_id_param: productId,
+            variant_id_param: finalVariantId,
+            tenant_id_param: tenantId,
+            quantity_param: quantity,
+          })
 
-        if (cartError) {
+        // La función RPC retorna un array, obtener el primer elemento
+        const cartItem = cartItemResult && cartItemResult.length > 0 ? cartItemResult[0] : null
+
+        if (cartError || !cartItem) {
           console.error('❌ Cart API: Error agregando al carrito:', cartError)
           return NextResponse.json(
             {
               success: false,
               error: 'Error agregando producto al carrito',
-              details: cartError.message,
+              details: cartError?.message || 'No se pudo crear el item en el carrito',
             },
             { status: 500 }
           )
@@ -597,6 +595,10 @@ export async function DELETE(request: NextRequest) {
 
         const userId = session.user.id
 
+        // ⚡ MULTITENANT: Obtener configuración del tenant actual
+        const tenant = await getTenantConfig()
+        const tenantId = tenant.id
+
         // Obtener cliente de Supabase
         const supabase = getSupabaseClient(true)
         if (!supabase) {
@@ -607,7 +609,11 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Eliminar todos los items del carrito del usuario
-        const { error } = await supabase.from('cart_items').delete().eq('user_id', userId)
+        const { error } = await supabase
+          .from('cart_items')
+          .delete()
+          .eq('user_id', userId)
+          .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Solo items del tenant
 
         if (error) {
           console.error('❌ Cart API: Error limpiando carrito:', error)

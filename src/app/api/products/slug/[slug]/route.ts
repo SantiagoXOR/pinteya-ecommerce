@@ -1,17 +1,23 @@
 // ===================================
-// PINTEYA E-COMMERCE - API DE PRODUCTO POR SLUG
+// PINTURERÍA DIGITAL - API DE PRODUCTO POR SLUG (MULTITENANT)
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient, handleSupabaseError } from '@/lib/integrations/supabase'
 import { ApiResponse, ProductWithCategory } from '@/types/api'
 import { normalizeProductTitle } from '@/lib/core/utils'
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
-// GET /api/products/slug/[slug] - Obtener producto por slug
+// GET /api/products/slug/[slug] - Obtener producto por slug (MULTITENANT)
 // ===================================
 export async function GET(request: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant actual
+    // ===================================
+    const tenant = await getTenantConfig()
+    
     const params = await context.params
     const slug = params.slug
 

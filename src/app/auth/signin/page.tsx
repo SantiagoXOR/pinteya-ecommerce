@@ -1,19 +1,35 @@
 /**
  * Página de Inicio de Sesión - NextAuth.js
- * Diseño moderno y responsive para Pinteya E-commerce
+ * Diseño moderno y responsive con soporte multitenant
  */
 
 import { Suspense } from 'react'
 import { SignInForm } from '@/components/Auth/SignInForm'
 import { Loader2 } from '@/lib/optimized-imports'
 import Link from 'next/link'
+import { getTenantPublicConfig } from '@/lib/tenant/tenant-service'
 import '../auth-page.css'
 
-export default function SignInPage() {
+export default async function SignInPage() {
+  // Obtener configuración del tenant
+  const tenant = await getTenantPublicConfig()
+  
+  // Assets del tenant
+  const logoUrl = tenant?.logoUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo.svg`
+  const logoDarkUrl = tenant?.logoDarkUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo-dark.svg`
+  const tenantName = tenant?.name || 'E-commerce'
+  const primaryColor = tenant?.primaryColor || '#eb6313'
+  const primaryDark = tenant?.primaryDark || '#bd4811'
+  
   return (
     <div className='auth-page-container min-h-screen flex flex-col lg:flex-row'>
-      {/* Panel izquierdo - Branding con degradado naranja de Newsletter */}
-      <div className='hidden lg:flex lg:w-1/2 bg-gradient-to-r from-[#eb6313] via-[#bd4811] to-[#eb6313] relative overflow-hidden'>
+      {/* Panel izquierdo - Branding con degradado dinámico por tenant */}
+      <div 
+        className='hidden lg:flex lg:w-1/2 relative overflow-hidden'
+        style={{
+          background: `linear-gradient(to right, ${primaryColor}, ${primaryDark}, ${primaryColor})`
+        }}
+      >
         {/* Patrón de puntos (igual que Newsletter) */}
         <div className='absolute inset-0 opacity-10'>
           <div
@@ -28,8 +44,8 @@ export default function SignInPage() {
         <div className='relative z-10 flex flex-col justify-center px-8 xl:px-12 py-16 text-white'>
           <div className='max-w-md'>
             <img 
-              src='/images/logo/LOGO POSITIVO.svg' 
-              alt='Pinteya'
+              src={logoUrl}
+              alt={tenantName}
               style={{ width: '180px', height: 'auto', maxWidth: '180px' }}
               className='mb-8 drop-shadow-2xl'
             />
@@ -67,8 +83,8 @@ export default function SignInPage() {
           {/* Logo móvil */}
           <div className='lg:hidden flex justify-center mb-8'>
             <img
-              src='/images/logo/LOGO NEGATIVO.svg'
-              alt='Pinteya'
+              src={logoDarkUrl}
+              alt={tenantName}
               style={{ width: '160px', height: 'auto', maxWidth: '160px' }}
             />
           </div>

@@ -1,16 +1,17 @@
 // ===================================
 // PINTEYA E-COMMERCE - ADMIN USER BY ID API ENTERPRISE
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
-import { auth } from '@/auth'
 import { ApiResponse } from '@/types/api'
 import { z } from 'zod'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -114,9 +115,9 @@ async function validateAdminAuth() {
 // FUNCIONES AUXILIARES
 // ===================================
 
-async function getUserWithStats(userId: string): Promise<UserWithStats | null> {
+async function getUserWithStats(userId: string, tenantId: string): Promise<UserWithStats | null> {
   try {
-    // Obtener datos del usuario
+    // ⚡ MULTITENANT: Obtener datos del usuario filtrando por tenant_id
     const { data: user, error: userError } = await supabaseAdmin
       .from('user_profiles')
       .select(
@@ -137,27 +138,30 @@ async function getUserWithStats(userId: string): Promise<UserWithStats | null> {
       `
       )
       .eq('id', userId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (userError || !user) {
       return null
     }
 
-    // Obtener estadísticas de órdenes
+    // ⚡ MULTITENANT: Obtener estadísticas de órdenes filtrando por tenant_id
     const { data: orderStats } = await supabaseAdmin
       .from('orders')
       .select('total')
       .eq('user_id', userId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .eq('status', 'completed')
 
     const orders_count = orderStats?.length || 0
     const total_spent = orderStats?.reduce((sum, order) => sum + (order.total || 0), 0) || 0
 
-    // Obtener órdenes recientes
+    // ⚡ MULTITENANT: Obtener órdenes recientes filtrando por tenant_id
     const { data: recentOrders } = await supabaseAdmin
       .from('orders')
       .select('id, total, status, created_at')
       .eq('user_id', userId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .order('created_at', { ascending: false })
       .limit(5)
 
@@ -178,9 +182,15 @@ async function getUserWithStats(userId: string): Promise<UserWithStats | null> {
 
 // ===================================
 // GET - Obtener usuario específico por ID
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     const { id } = await context.params
@@ -202,17 +212,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Validar parámetros
     const paramsValidation = UserParamsSchema.safeParse({ id })
     if (!paramsValidation.success) {
@@ -225,7 +224,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     }
 
     const userId = paramsValidation.data.id
-    const user = await getUserWithStats(userId)
+    // ⚡ MULTITENANT: Pasar tenantId a getUserWithStats
+    const user = await getUserWithStats(userId, tenantId)
 
     if (!user) {
       const errorResponse: ApiResponse<null> = {
@@ -242,13 +242,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       method: 'GET',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     // Log de auditoría
     logger.log(LogLevel.INFO, LogCategory.ADMIN, 'Usuario consultado', {
-      adminUserId: authResult.userId,
+      adminUserId: guardResult.userId,
       targetUserId: userId,
+      tenantId,
     })
 
     const response: ApiResponse<UserWithStats> = {
@@ -263,7 +264,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/users/[id]', {
       error,
-      userId: params.id,
+      userId: id,
+      tenantId,
     })
 
     // Registrar métricas de error
@@ -283,13 +285,19 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // PUT - Actualizar usuario
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export const PUT = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     const { id } = await context.params
@@ -309,17 +317,6 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       const response = NextResponse.json({ error: rateLimitResult.message }, { status: 429 })
       addRateLimitHeaders(response, rateLimitResult)
       return response
-    }
-
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
     }
 
     // Validar parámetros
@@ -349,8 +346,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     const userId = paramsValidation.data.id
     const updateData = validationResult.data
 
-    // Verificar que el usuario existe
-    const existingUser = await getUserWithStats(userId)
+    // ⚡ MULTITENANT: Verificar que el usuario existe y pertenece al tenant
+    const existingUser = await getUserWithStats(userId, tenantId)
     if (!existingUser) {
       const errorResponse: ApiResponse<null> = {
         data: null,
@@ -361,7 +358,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     }
 
     // Prevenir que un admin se desactive a sí mismo
-    if (userId === authResult.userId && updateData.is_active === false) {
+    if (userId === guardResult.userId && updateData.is_active === false) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -370,14 +367,15 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json(errorResponse, { status: 400 })
     }
 
-    // Actualizar usuario en la base de datos
+    // ⚡ MULTITENANT: Actualizar usuario en la base de datos filtrando por tenant_id
     const { data: updatedUser, error: updateError } = await supabaseAdmin
-      .from('users')
+      .from('user_profiles')
       .update({
         ...updateData,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .select()
       .single()
 
@@ -404,8 +402,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       })
     }
 
-    // Obtener usuario actualizado con estadísticas
-    const userWithStats = await getUserWithStats(userId)
+    // ⚡ MULTITENANT: Obtener usuario actualizado con estadísticas
+    const userWithStats = await getUserWithStats(userId, tenantId)
 
     // Registrar métricas
     metricsCollector.recordApiCall({
@@ -413,13 +411,14 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       method: 'PUT',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     // Log de auditoría
     logger.log(LogLevel.INFO, LogCategory.ADMIN, 'Usuario actualizado', {
-      adminUserId: authResult.userId,
+      adminUserId: guardResult.userId,
       targetUserId: userId,
+      tenantId,
       changes: updateData,
     })
 
@@ -435,7 +434,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en PUT /api/admin/users/[id]', {
       error,
-      userId: params.id,
+      userId: id,
+      tenantId,
     })
 
     // Registrar métricas de error
@@ -455,13 +455,19 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})
 
 // ===================================
 // DELETE - Eliminar usuario
+// ⚡ MULTITENANT: Filtra por tenant_id
 // ===================================
-export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export const DELETE = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
     const { id } = await context.params
@@ -483,17 +489,6 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return response
     }
 
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if (authResult.error) {
-      const errorResponse: ApiResponse<null> = {
-        data: null,
-        success: false,
-        error: authResult.error,
-      }
-      return NextResponse.json(errorResponse, { status: authResult.status })
-    }
-
     // Validar parámetros
     const paramsValidation = UserParamsSchema.safeParse({ id })
     if (!paramsValidation.success) {
@@ -507,8 +502,8 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     const userId = paramsValidation.data.id
 
-    // Verificar que el usuario existe
-    const existingUser = await getUserWithStats(userId)
+    // ⚡ MULTITENANT: Verificar que el usuario existe y pertenece al tenant
+    const existingUser = await getUserWithStats(userId, tenantId)
     if (!existingUser) {
       const errorResponse: ApiResponse<null> = {
         data: null,
@@ -519,7 +514,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     }
 
     // Prevenir que un admin se elimine a sí mismo
-    if (userId === authResult.userId) {
+    if (userId === guardResult.userId) {
       const errorResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -528,7 +523,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json(errorResponse, { status: 400 })
     }
 
-    // Verificar si el usuario tiene órdenes
+    // Verificar si el usuario tiene órdenes (ya filtrado por tenant en getUserWithStats)
     if (existingUser.orders_count > 0) {
       const errorResponse: ApiResponse<null> = {
         data: null,
@@ -554,16 +549,18 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json(errorResponse, { status: 500 })
     }
 
-    // Eliminar perfil de usuario
+    // ⚡ MULTITENANT: Eliminar perfil de usuario filtrando por tenant_id
     const { error: profileDeleteError } = await supabaseAdmin
-      .from('users')
+      .from('user_profiles')
       .delete()
       .eq('id', userId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
     if (profileDeleteError) {
       logger.log(LogLevel.ERROR, LogCategory.API, 'Error eliminando perfil de usuario', {
         profileDeleteError,
         userId,
+        tenantId,
       })
       // Nota: El usuario ya fue eliminado de Auth, pero el perfil falló
       // En un escenario real, podrías querer implementar una limpieza manual
@@ -575,13 +572,14 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       method: 'DELETE',
       statusCode: 200,
       responseTime: Date.now() - startTime,
-      userId: authResult.userId,
+      userId: guardResult.userId,
     })
 
     // Log de auditoría
     logger.log(LogLevel.INFO, LogCategory.ADMIN, 'Usuario eliminado', {
-      adminUserId: authResult.userId,
+      adminUserId: guardResult.userId,
       deletedUserId: userId,
+      tenantId,
       deletedUserEmail: existingUser.email,
     })
 
@@ -597,7 +595,8 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en DELETE /api/admin/users/[id]', {
       error,
-      userId: params.id,
+      userId: id,
+      tenantId,
     })
 
     // Registrar métricas de error
@@ -617,4 +616,4 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     return NextResponse.json(errorResponse, { status: 500 })
   }
-}
+})

@@ -420,7 +420,7 @@ export default function SEODashboard() {
               <div className='space-y-4'>
                 <div>
                   <Label htmlFor='url-analyze'>URL a analizar</Label>
-                  <Input id='url-analyze' placeholder='https://pinteya-ecommerce.vercel.app/...' />
+                  <Input id='url-analyze' placeholder='https://www.pinteya.com/...' />
                 </div>
                 <Button>
                   <Search className='h-4 w-4 mr-2' />

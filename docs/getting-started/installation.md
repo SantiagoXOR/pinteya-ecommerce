@@ -25,10 +25,10 @@ git --version     # v2.30.0+
 
 ```bash
 # Clonar desde GitHub
-git clone https://github.com/SantiagoXOR/pinteya-ecommerce.git
+git clone https://github.com/SantiagoXOR/pintureria-digital.git
 
 # Navegar al directorio
-cd pinteya-ecommerce
+cd pintureria-digital
 ```
 
 ### **2. Instalar Dependencias**

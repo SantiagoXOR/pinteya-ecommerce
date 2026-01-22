@@ -9,6 +9,8 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { auth } from '@/lib/auth/config'
+// ⚡ MULTITENANT: Importar configuración del tenant
+import { getTenantConfig } from '@/lib/tenant'
 
 /**
  * POST /api/cart/add
@@ -34,6 +36,10 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = session.user.id
+
+    // ⚡ MULTITENANT: Obtener configuración del tenant actual
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
 
     // Obtener datos del request
     const body = await request.json()
@@ -130,29 +136,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 3. Verificar si el producto ya está en el carrito
+    // 3. Verificar si el producto ya está en el carrito para validar stock
     const { data: existingItem, error: existingError } = await supabase
       .from('cart_items')
       .select('id, quantity')
       .eq('user_id', userId)
       .eq('product_id', productId)
-      .single()
+      .is('variant_id', null) // Este endpoint no maneja variantes
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar en el tenant correcto
+      .maybeSingle()
 
-    let finalQuantity = quantity
-    let operation = 'added'
-
+    // Validar stock considerando cantidad existente
     if (existingItem && !existingError) {
-      if (replace) {
-        // Reemplazar cantidad existente
-        finalQuantity = quantity
-        operation = 'updated'
-      } else {
-        // Sumar a la cantidad existente
-        finalQuantity = existingItem.quantity + quantity
-        operation = 'increased'
-      }
-
-      // Verificar que la cantidad final no exceda el stock
+      const finalQuantity = replace ? quantity : existingItem.quantity + quantity
+      
       if (finalQuantity > product.stock) {
         return NextResponse.json(
           {
@@ -168,37 +165,43 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Agregar o actualizar item en carrito
-    const { data: cartItem, error: cartError } = await supabase
-      .from('cart_items')
-      .upsert(
-        {
-          user_id: userId,
-          product_id: productId,
-          quantity: finalQuantity,
-        },
-        {
-          onConflict: 'user_id,product_id',
-        }
-      )
-      .select(
-        `
-        id,
-        user_id,
-        product_id,
-        quantity,
-        created_at,
-        updated_at
-      `
-      )
-      .single()
+    // La constraint única es UNIQUE(user_id, product_id, variant_id, tenant_id)
+    // Nota: Este endpoint no maneja variantes, así que usamos NULL para variant_id
+    let cartItem, cartError
+    
+    if (replace && existingItem) {
+      // Si es reemplazo, actualizar directamente la cantidad
+      const { data: updatedItem, error: updateError } = await supabase
+        .from('cart_items')
+        .update({ quantity: quantity })
+        .eq('id', existingItem.id)
+        .select()
+        .single()
+      
+      cartItem = updatedItem
+      cartError = updateError
+    } else {
+      // Si no es reemplazo o no existe el item, usar la función RPC (suma cantidades)
+      const { data: cartItemResult, error: rpcError } = await supabase
+        .rpc('upsert_cart_item', {
+          user_uuid: userId,
+          product_id_param: productId,
+          variant_id_param: null, // Este endpoint no maneja variantes
+          tenant_id_param: tenantId,
+          quantity_param: quantity, // La función RPC suma esta cantidad a la existente
+        })
+      
+      cartItem = cartItemResult && cartItemResult.length > 0 ? cartItemResult[0] : null
+      cartError = rpcError
+    }
 
-    if (cartError) {
+    if (cartError || !cartItem) {
       console.error('❌ Cart Add API: Error agregando al carrito:', cartError)
       return NextResponse.json(
         {
           success: false,
           error: 'Error agregando producto al carrito. Intenta nuevamente.',
-          details: cartError.message,
+          details: cartError?.message || 'No se pudo crear el item en el carrito',
           retry: true,
         },
         { status: 500 }
@@ -210,11 +213,15 @@ export async function POST(request: NextRequest) {
       .from('cart_items')
       .select('quantity')
       .eq('user_id', userId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Solo items del tenant
 
     const totalItems = cartSummary?.reduce((sum, item) => sum + item.quantity, 0) || 0
     const totalProducts = cartSummary?.length || 0
 
-    // 6. Preparar respuesta
+    // 6. Determinar operación realizada
+    const operation = existingItem ? (replace ? 'updated' : 'increased') : 'added'
+    
+    // 7. Preparar respuesta
     const responseMessage = {
       added: `${product.name} agregado al carrito`,
       updated: `Cantidad de ${product.name} actualizada en el carrito`,

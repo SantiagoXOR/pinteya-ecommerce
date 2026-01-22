@@ -19,6 +19,8 @@ import { createClient } from '@/lib/integrations/supabase/server'
 import { Database } from '@/types/database'
 import { auth } from '@/lib/auth/config'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 import {
   TrackingEvent,
   TrackingEventType,
@@ -109,9 +111,11 @@ async function validateAdminAuth(request: NextRequest) {
 async function updateShipmentStatus(
   supabase: ReturnType<typeof createClient<Database>>,
   shipmentId: number,
-  newStatus: ShipmentStatus
+  newStatus: ShipmentStatus,
+  tenantId: string // ⚡ MULTITENANT: Agregar tenantId
 ) {
   // Actualizar estado del envío basado en el último evento
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { error } = await supabase
     .from('shipments')
     .update({
@@ -123,6 +127,7 @@ async function updateShipmentStatus(
       ...(newStatus === ShipmentStatus.CANCELLED && { cancelled_at: new Date().toISOString() }),
     })
     .eq('id', shipmentId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     throw new ApiError('Error al actualizar estado del envío', 500, 'DATABASE_ERROR', error)
@@ -131,14 +136,14 @@ async function updateShipmentStatus(
 
 // =====================================================
 // HANDLERS
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-async function getHandler(request: NextRequest) {
-  // Validar autenticación
-  const authError = await validateAdminAuth(request)
-  if (authError) {
-    return authError
-  }
+async function getHandler(
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) {
+  const { tenantId } = guardResult
 
   const { searchParams } = new URL(request.url)
   const filters = TrackingFiltersSchema.parse({
@@ -163,6 +168,8 @@ async function getHandler(request: NextRequest) {
   const supabase = createClient()
 
   // Construir query con joins optimizados
+  // ⚡ MULTITENANT: Filtrar tracking_events por tenant_id a través de shipments
+  // Nota: tracking_events tiene tenant_id, pero también podemos filtrar por shipments.tenant_id
   let query = supabase.from('tracking_events').select(
     `
       *,
@@ -172,6 +179,7 @@ async function getHandler(request: NextRequest) {
         tracking_number,
         status,
         carrier_id,
+        tenant_id,
         couriers (
           id,
           name,
@@ -181,6 +189,11 @@ async function getHandler(request: NextRequest) {
     `,
     { count: 'exact' }
   )
+  
+  // ⚡ MULTITENANT: Filtrar por tenant_id
+  // Nota: Si tracking_events no tiene tenant_id, filtrar a través de shipments
+  // Por ahora, asumimos que tracking_events tiene tenant_id (agregado en migración)
+  query = query.eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   // Aplicar filtros
   if (filters.shipment_id) {
@@ -254,29 +267,29 @@ async function getHandler(request: NextRequest) {
   return NextResponse.json(response)
 }
 
-async function postHandler(request: NextRequest) {
-  // Validar autenticación
-  const authError = await validateAdminAuth(request)
-  if (authError) {
-    return authError
-  }
+async function postHandler(
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) {
+  const { tenantId } = guardResult
 
   const session = await auth()
   const body = await request.json()
 
   // Verificar si es una actualización masiva o un evento individual
   if (body.events && Array.isArray(body.events)) {
-    return handleBulkUpdate(request, body)
+    return handleBulkUpdate(guardResult, request, body)
   }
 
   const validatedData = TrackingEventCreateSchema.parse(body)
   const supabase = createClient()
 
-  // Verificar que el envío existe
+  // ⚡ MULTITENANT: Verificar que el envío existe y pertenece al tenant
   const { data: shipment, error: shipmentError } = await supabase
     .from('shipments')
     .select('id, status, tracking_number')
     .eq('id', validatedData.shipment_id)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (shipmentError || !shipment) {
@@ -284,6 +297,7 @@ async function postHandler(request: NextRequest) {
   }
 
   // Crear evento de tracking
+  // ⚡ MULTITENANT: Asignar tenant_id al crear
   const { data: trackingEvent, error } = await supabase
     .from('tracking_events')
     .insert({
@@ -296,6 +310,7 @@ async function postHandler(request: NextRequest) {
       carrier_reference: validatedData.carrier_reference,
       estimated_delivery: validatedData.estimated_delivery,
       metadata: validatedData.metadata,
+      tenant_id: tenantId, // ⚡ MULTITENANT
     })
     .select()
     .single()
@@ -305,8 +320,9 @@ async function postHandler(request: NextRequest) {
   }
 
   // Actualizar estado del envío si es necesario
+  // ⚡ MULTITENANT: Pasar tenantId
   if (validatedData.status !== shipment.status) {
-    await updateShipmentStatus(supabase, validatedData.shipment_id, validatedData.status)
+    await updateShipmentStatus(supabase, validatedData.shipment_id, validatedData.status, tenantId)
   }
 
   // Log de auditoría
@@ -328,7 +344,12 @@ async function postHandler(request: NextRequest) {
   return NextResponse.json(response, { status: 201 })
 }
 
-async function handleBulkUpdate(request: NextRequest, body: any) {
+async function handleBulkUpdate(
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  body: any
+) {
+  const { tenantId } = guardResult
   const session = await auth()
   const validatedData = BulkTrackingUpdateSchema.parse(body)
   const supabase = createClient()
@@ -339,11 +360,12 @@ async function handleBulkUpdate(request: NextRequest, body: any) {
   // Procesar eventos en lotes para mejor performance
   for (const eventData of validatedData.events) {
     try {
-      // Verificar que el envío existe
+      // ⚡ MULTITENANT: Verificar que el envío existe y pertenece al tenant
       const { data: shipment } = await supabase
         .from('shipments')
         .select('id, status')
         .eq('id', eventData.shipment_id)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .single()
 
       if (!shipment) {
@@ -355,9 +377,13 @@ async function handleBulkUpdate(request: NextRequest, body: any) {
       }
 
       // Crear evento
+      // ⚡ MULTITENANT: Asignar tenant_id al crear
       const { data: trackingEvent, error } = await supabase
         .from('tracking_events')
-        .insert(eventData)
+        .insert({
+          ...eventData,
+          tenant_id: tenantId, // ⚡ MULTITENANT
+        })
         .select()
         .single()
 
@@ -370,8 +396,9 @@ async function handleBulkUpdate(request: NextRequest, body: any) {
       }
 
       // Actualizar estado del envío si es necesario
+      // ⚡ MULTITENANT: Pasar tenantId
       if (eventData.status !== shipment.status) {
-        await updateShipmentStatus(supabase, eventData.shipment_id, eventData.status)
+        await updateShipmentStatus(supabase, eventData.shipment_id, eventData.status, tenantId)
       }
 
       results.push(trackingEvent)
@@ -408,12 +435,11 @@ async function handleBulkUpdate(request: NextRequest, body: any) {
   })
 }
 
-async function putHandler(request: NextRequest) {
-  // Validar autenticación
-  const authError = await validateAdminAuth(request)
-  if (authError) {
-    return authError
-  }
+async function putHandler(
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) {
+  const { tenantId } = guardResult
 
   const session = await auth()
   const { searchParams } = new URL(request.url)
@@ -428,11 +454,12 @@ async function putHandler(request: NextRequest) {
 
   const supabase = createClient()
 
-  // Verificar que el evento existe
+  // ⚡ MULTITENANT: Verificar que el evento existe y pertenece al tenant
   const { data: existingEvent, error: fetchError } = await supabase
     .from('tracking_events')
     .select('*')
     .eq('id', eventId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (fetchError || !existingEvent) {
@@ -440,6 +467,7 @@ async function putHandler(request: NextRequest) {
   }
 
   // Actualizar evento
+  // ⚡ MULTITENANT: Filtrar por tenant_id
   const { data: trackingEvent, error } = await supabase
     .from('tracking_events')
     .update({
@@ -447,6 +475,7 @@ async function putHandler(request: NextRequest) {
       updated_at: new Date().toISOString(),
     })
     .eq('id', eventId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .select()
     .single()
 
@@ -455,8 +484,9 @@ async function putHandler(request: NextRequest) {
   }
 
   // Si se cambió el estado, actualizar el envío
+  // ⚡ MULTITENANT: Pasar tenantId
   if (validatedData.status && validatedData.status !== existingEvent.status) {
-    await updateShipmentStatus(supabase, existingEvent.shipment_id, validatedData.status)
+    await updateShipmentStatus(supabase, existingEvent.shipment_id, validatedData.status, tenantId)
   }
 
   // Log de auditoría
@@ -478,12 +508,11 @@ async function putHandler(request: NextRequest) {
   return NextResponse.json(response)
 }
 
-async function deleteHandler(request: NextRequest) {
-  // Validar autenticación
-  const authError = await validateAdminAuth(request)
-  if (authError) {
-    return authError
-  }
+async function deleteHandler(
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) {
+  const { tenantId } = guardResult
 
   const session = await auth()
   const { searchParams } = new URL(request.url)
@@ -495,22 +524,24 @@ async function deleteHandler(request: NextRequest) {
 
   const supabase = createClient()
 
-  // Verificar que el evento existe
+  // ⚡ MULTITENANT: Verificar que el evento existe y pertenece al tenant
   const { data: existingEvent, error: fetchError } = await supabase
     .from('tracking_events')
     .select('*')
     .eq('id', eventId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .single()
 
   if (fetchError || !existingEvent) {
     throw new NotFoundError('Evento de tracking no encontrado')
   }
 
-  // Verificar que no es el último evento del envío
+  // ⚡ MULTITENANT: Verificar que no es el último evento del envío (filtrar por tenant)
   const { data: eventCount, error: countError } = await supabase
     .from('tracking_events')
     .select('id', { count: 'exact' })
     .eq('shipment_id', existingEvent.shipment_id)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (countError) {
     throw new ApiError('Error al verificar eventos del envío', 500, 'DATABASE_ERROR', countError)
@@ -521,23 +552,29 @@ async function deleteHandler(request: NextRequest) {
   }
 
   // Eliminar evento
-  const { error } = await supabase.from('tracking_events').delete().eq('id', eventId)
+  // ⚡ MULTITENANT: Filtrar por tenant_id
+  const { error } = await supabase
+    .from('tracking_events')
+    .delete()
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
   if (error) {
     throw new ApiError('Error al eliminar evento de tracking', 500, 'DATABASE_ERROR', error)
   }
 
-  // Obtener el último evento restante para actualizar el estado del envío
+  // ⚡ MULTITENANT: Obtener el último evento restante para actualizar el estado del envío
   const { data: lastEvent } = await supabase
     .from('tracking_events')
     .select('status')
     .eq('shipment_id', existingEvent.shipment_id)
+    .eq('tenant_id', tenantId) // ⚡ MULTITENANT
     .order('event_date', { ascending: false })
     .limit(1)
     .single()
 
   if (lastEvent) {
-    await updateShipmentStatus(supabase, existingEvent.shipment_id, lastEvent.status)
+    await updateShipmentStatus(supabase, existingEvent.shipment_id, lastEvent.status, tenantId)
   }
 
   // Log de auditoría
@@ -550,13 +587,34 @@ async function deleteHandler(request: NextRequest) {
 }
 
 // =====================================================
-// EXPORTS CON MIDDLEWARES
+// EXPORTS CON MULTITENANT
+// ⚡ MULTITENANT: Usar withTenantAdmin para todos los handlers
 // =====================================================
 
-export const GET = composeMiddlewares(withErrorHandler, withApiLogging)(getHandler)
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
+  return getHandler(guardResult, request)
+})
 
-export const POST = composeMiddlewares(withErrorHandler, withApiLogging)(postHandler)
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
+  return postHandler(guardResult, request)
+})
 
-export const PUT = composeMiddlewares(withErrorHandler, withApiLogging)(putHandler)
+export const PUT = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
+  return putHandler(guardResult, request)
+})
 
-export const DELETE = composeMiddlewares(withErrorHandler, withApiLogging)(deleteHandler)
+export const DELETE = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
+  return deleteHandler(guardResult, request)
+})

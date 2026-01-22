@@ -46,6 +46,8 @@ const customJestConfig = {
 
     // Next.js navigation mocks
     '^next/navigation$': '<rootDir>/__mocks__/next/navigation.js',
+    // Next.js headers mock para evitar request store
+    '^next/headers$': '<rootDir>/__mocks__/next/headers.ts',
 
     // Mapeos para assets estáticos
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
@@ -84,6 +86,11 @@ const customJestConfig = {
     '/__mocks__/',
     '/setup/',
     'jest.setup.js',
+    'multitenant/setup.ts',
+    'multitenant/setup-data.ts',
+    'multitenant/helpers.ts',
+    'multitenant/fixtures.ts',
+    'multitenant/e2e/',
     'global-setup.js',
     'global-teardown.js',
     'test-results-processor.js',

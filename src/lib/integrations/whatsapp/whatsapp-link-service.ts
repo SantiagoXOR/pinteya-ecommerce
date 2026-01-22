@@ -1,6 +1,7 @@
 // ===================================
-// PINTEYA E-COMMERCE - WHATSAPP LINK SERVICE
+// E-COMMERCE - WHATSAPP LINK SERVICE (MULTITENANT)
 // Servicio para generar enlaces directos de WhatsApp con datos de orden
+// Soporta configuración por tenant
 // ===================================
 
 import { logger, LogLevel } from '@/lib/enterprise/logger'
@@ -48,12 +49,33 @@ export function normalizeWhatsAppPhoneNumber(raw: string): string {
   }
 }
 
+// Configuración por defecto de WhatsApp (fallback)
+const DEFAULT_WHATSAPP_PHONE = normalizeWhatsAppPhoneNumber(
+  process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'
+)
+
 // Configuración de WhatsApp
 const WHATSAPP_CONFIG = {
-  // Número de Pinteya en formato internacional (solo dígitos)
-  PINTEYA_PHONE: normalizeWhatsAppPhoneNumber(process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'),
   API_BASE: 'https://api.whatsapp.com/send',
   WAME_BASE: 'https://wa.me',
+}
+
+// Tipo para configuración del tenant en WhatsApp
+export interface WhatsAppTenantConfig {
+  phone: string
+  name: string
+}
+
+/**
+ * Obtiene el número de WhatsApp para un tenant
+ * @param tenantPhone - Número del tenant (opcional)
+ * @returns Número normalizado
+ */
+export function getTenantWhatsAppPhone(tenantPhone?: string): string {
+  if (tenantPhone) {
+    return normalizeWhatsAppPhoneNumber(tenantPhone)
+  }
+  return DEFAULT_WHATSAPP_PHONE
 }
 
 // Interfaces para los datos de la orden
@@ -83,12 +105,38 @@ export interface OrderDetails {
 
 export class WhatsAppLinkService {
   private static instance: WhatsAppLinkService
+  private tenantConfig: WhatsAppTenantConfig | null = null
 
   public static getInstance(): WhatsAppLinkService {
     if (!WhatsAppLinkService.instance) {
       WhatsAppLinkService.instance = new WhatsAppLinkService()
     }
     return WhatsAppLinkService.instance
+  }
+
+  /**
+   * Configura el servicio con datos del tenant
+   * @param config - Configuración del tenant
+   */
+  public setTenantConfig(config: WhatsAppTenantConfig): void {
+    this.tenantConfig = config
+  }
+
+  /**
+   * Obtiene el número de WhatsApp actual (tenant o default)
+   */
+  private getPhoneNumber(): string {
+    if (this.tenantConfig?.phone) {
+      return normalizeWhatsAppPhoneNumber(this.tenantConfig.phone)
+    }
+    return DEFAULT_WHATSAPP_PHONE
+  }
+
+  /**
+   * Obtiene el nombre del negocio actual (tenant o default)
+   */
+  private getBusinessName(): string {
+    return this.tenantConfig?.name || 'E-commerce'
   }
 
   /**
@@ -106,8 +154,10 @@ export class WhatsAppLinkService {
       createdAt
     } = orderDetails
 
+    const businessName = this.getBusinessName()
+
     const lines: string[] = [
-      `*Nueva Orden Confirmada - Pinteya*`,
+      `*Nueva Orden Confirmada - ${businessName}*`,
       '',
       `*Detalle de Orden:*`,
       `${EMOJIS.bullet} Número: #${orderNumber}`,
@@ -148,14 +198,16 @@ export class WhatsAppLinkService {
    */
   public generateOrderWhatsAppLink(orderDetails: OrderDetails): string {
     try {
+      const phone = this.getPhoneNumber()
       const message = this.formatOrderMessage(orderDetails)
       const encodedMessage = encodeURIComponent(message)
-      const whatsappLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedMessage}`
+      const whatsappLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${phone}&text=${encodedMessage}`
       
       logger.info(LogLevel.INFO, 'WhatsApp link generated successfully', {
         orderNumber: orderDetails.orderNumber,
         linkLength: whatsappLink.length,
-        messageLength: message.length
+        messageLength: message.length,
+        tenant: this.tenantConfig?.name || 'default'
       })
       
       return whatsappLink
@@ -167,9 +219,10 @@ export class WhatsAppLinkService {
       })
       
       // Enlace de fallback simple
+      const phone = this.getPhoneNumber()
       const fallbackMessage = `Nueva orden confirmada: #${orderDetails.orderNumber} - Total: ${orderDetails.total}`
       const encodedFallback = encodeURIComponent(fallbackMessage)
-      return `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedFallback}`
+      return `${WHATSAPP_CONFIG.API_BASE}?phone=${phone}&text=${encodedFallback}`
     }
   }
 
@@ -178,14 +231,16 @@ export class WhatsAppLinkService {
    */
   public generateOrderWhatsApp(orderDetails: OrderDetails): { link: string; message: string } {
     try {
+      const phone = this.getPhoneNumber()
       const message = this.formatOrderMessage(orderDetails)
       const encodedMessage = encodeURIComponent(message)
-      const whatsappLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedMessage}`
+      const whatsappLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${phone}&text=${encodedMessage}`
 
       logger.info(LogLevel.INFO, 'WhatsApp link+message generated successfully', {
         orderNumber: orderDetails.orderNumber,
         linkLength: whatsappLink.length,
-        messageLength: message.length
+        messageLength: message.length,
+        tenant: this.tenantConfig?.name || 'default'
       })
 
       return { link: whatsappLink, message }
@@ -196,9 +251,10 @@ export class WhatsAppLinkService {
         error: error instanceof Error ? error.message : 'Unknown error'
       })
 
+      const phone = this.getPhoneNumber()
       const fallbackMessage = `Nueva orden confirmada: #${orderDetails.orderNumber} - Total: ${orderDetails.total}`
       const encodedFallback = encodeURIComponent(fallbackMessage)
-      const fallbackLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedFallback}`
+      const fallbackLink = `${WHATSAPP_CONFIG.API_BASE}?phone=${phone}&text=${encodedFallback}`
       return { link: fallbackLink, message: fallbackMessage }
     }
   }
@@ -207,9 +263,11 @@ export class WhatsAppLinkService {
    * Genera un enlace de WhatsApp simple para notificaciones rápidas
    */
   public generateSimpleNotificationLink(orderNumber: string, total: string): string {
-    const message = sanitizeForWhatsApp(`${EMOJIS.info} Nueva orden: #${orderNumber} - Total: ${total} - Revisar sistema Pinteya`)
+    const phone = this.getPhoneNumber()
+    const businessName = this.getBusinessName()
+    const message = sanitizeForWhatsApp(`${EMOJIS.info} Nueva orden: #${orderNumber} - Total: ${total} - Revisar sistema ${businessName}`)
     const encodedMessage = encodeURIComponent(message)
-    return `${WHATSAPP_CONFIG.API_BASE}?phone=${WHATSAPP_CONFIG.PINTEYA_PHONE}&text=${encodedMessage}`
+    return `${WHATSAPP_CONFIG.API_BASE}?phone=${phone}&text=${encodedMessage}`
   }
 
   /**
@@ -217,13 +275,30 @@ export class WhatsAppLinkService {
    */
   public validateWhatsAppLink(link: string): boolean {
     try {
+      const phone = this.getPhoneNumber()
       const url = new URL(link)
-      const isWaMe = url.hostname === 'wa.me' && url.pathname.includes(WHATSAPP_CONFIG.PINTEYA_PHONE)
-      const isApi = url.hostname === 'api.whatsapp.com' && url.pathname.includes('send') && url.searchParams.get('phone') === WHATSAPP_CONFIG.PINTEYA_PHONE
+      const isWaMe = url.hostname === 'wa.me' && url.pathname.includes(phone)
+      const isApi = url.hostname === 'api.whatsapp.com' && url.pathname.includes('send') && url.searchParams.get('phone') === phone
       return isWaMe || isApi
     } catch {
       return false
     }
+  }
+
+  /**
+   * Genera un enlace directo wa.me para un número específico
+   * Útil para componentes cliente que tienen el tenant config
+   */
+  public static generateDirectLink(phone: string, message?: string): string {
+    const normalizedPhone = normalizeWhatsAppPhoneNumber(phone)
+    const baseLink = `${WHATSAPP_CONFIG.WAME_BASE}/${normalizedPhone}`
+    
+    if (message) {
+      const encodedMessage = encodeURIComponent(sanitizeForWhatsApp(message))
+      return `${baseLink}?text=${encodedMessage}`
+    }
+    
+    return baseLink
   }
 }
 

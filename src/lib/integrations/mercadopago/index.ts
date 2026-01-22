@@ -15,9 +15,12 @@ import {
 } from './circuit-breaker'
 
 // ✅ MEJORADO: Función para crear cliente con IdempotencyKey dinámico
-export function createMercadoPagoClient(transactionId?: string) {
+// MULTITENANT: Ahora acepta accessToken como parámetro para soportar credenciales por tenant
+export function createMercadoPagoClient(
+  accessToken: string,
+  transactionId?: string
+) {
   const isProduction = process.env.NODE_ENV === 'production'
-  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN!
 
   // ✅ NUEVO: Detectar automáticamente si es sandbox
   const isSandbox = accessToken.includes('TEST') || accessToken.includes('APP_USR')
@@ -36,10 +39,24 @@ export function createMercadoPagoClient(transactionId?: string) {
   })
 }
 
-// Cliente por defecto (para compatibilidad)
-const client = createMercadoPagoClient()
+// Función helper para compatibilidad hacia atrás (deprecated)
+// Usa variables de entorno como fallback solo para desarrollo
+export function createMercadoPagoClientLegacy(transactionId?: string) {
+  const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
+  if (!accessToken) {
+    console.warn('[MercadoPago] MERCADOPAGO_ACCESS_TOKEN no configurado, usando fallback vacío')
+  }
+  return createMercadoPagoClient(accessToken, transactionId)
+}
 
-// Instancias de los servicios
+// Cliente por defecto (para compatibilidad - deprecated)
+// ⚠️ ADVERTENCIA: Este cliente usa variables de entorno globales
+// En producción, usar createMercadoPagoClient() con credenciales del tenant
+const client = createMercadoPagoClientLegacy()
+
+// Instancias de los servicios (para compatibilidad - deprecated)
+// ⚠️ ADVERTENCIA: Estas instancias usan credenciales globales
+// En producción, crear nuevas instancias con credenciales del tenant
 export const preference = new Preference(client)
 export const payment = new Payment(client)
 
@@ -119,8 +136,12 @@ export interface CreatePreferenceData {
 
 /**
  * Crea una preferencia de pago en MercadoPago con retry automático y circuit breaker
+ * MULTITENANT: Ahora requiere accessToken como parámetro para soportar credenciales por tenant
  */
-export async function createPaymentPreference(data: CreatePreferenceData) {
+export async function createPaymentPreference(
+  data: CreatePreferenceData,
+  accessToken: string
+) {
   // ✅ NUEVO: Verificar si el modo mock está habilitado
   if (isMockEnabled()) {
     console.log('🧪 Usando MercadoPago Mock para desarrollo')
@@ -140,8 +161,8 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
     // ✅ NUEVO: Usar retry logic para operación crítica
     const retryResult = await retryMercadoPagoOperation(
       async () => {
-        // ✅ MEJORADO: Usar cliente con IdempotencyKey dinámico
-        const dynamicClient = createMercadoPagoClient(data.external_reference)
+        // ✅ MEJORADO: Usar cliente con IdempotencyKey dinámico y credenciales del tenant
+        const dynamicClient = createMercadoPagoClient(accessToken, data.external_reference)
         const dynamicPreference = new Preference(dynamicClient)
 
         // ✅ MEJORADO: Configuración avanzada de métodos de pago
@@ -183,8 +204,7 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
         // ✅ MEJORADO: URLs dinámicas según entorno
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-        // ✅ NUEVO: Detectar entorno sandbox
-        const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN!
+        // ✅ NUEVO: Detectar entorno sandbox (usar accessToken del parámetro)
         const isSandbox = accessToken.includes('TEST') || accessToken.includes('APP_USR')
 
         const preferenceData = {
@@ -300,8 +320,9 @@ export async function createPaymentPreference(data: CreatePreferenceData) {
 
 /**
  * Obtiene información de un pago por su ID con cache, retry automático y circuit breaker
+ * MULTITENANT: Ahora requiere accessToken como parámetro para soportar credenciales por tenant
  */
-export async function getPaymentInfo(paymentId: string) {
+export async function getPaymentInfo(paymentId: string, accessToken: string) {
   // ✅ NUEVO: Usar cache para evitar llamadas repetidas a MercadoPago
   return CacheUtils.cachePaymentInfo(paymentId, async () => {
     // ✅ ENTERPRISE: Usar circuit breaker para consultas (menos crítico)
@@ -309,7 +330,10 @@ export async function getPaymentInfo(paymentId: string) {
       // ✅ NUEVO: Usar retry logic para consulta (menos crítica)
       const retryResult = await retryMercadoPagoOperation(
         async () => {
-          const paymentInfo = await payment.get({ id: paymentId })
+          // MULTITENANT: Crear cliente con credenciales del tenant
+          const client = createMercadoPagoClient(accessToken)
+          const paymentService = new Payment(client)
+          const paymentInfo = await paymentService.get({ id: paymentId })
 
           return {
             success: true,
@@ -363,15 +387,14 @@ export async function getPaymentInfo(paymentId: string) {
 /**
  * Obtiene detalles completos de un pago desde MercadoPago
  * Usado para mostrar comprobantes de pago en el panel admin
+ * MULTITENANT: Ahora requiere accessToken como parámetro para soportar credenciales por tenant
  */
-export async function getPaymentDetails(paymentId: string) {
+export async function getPaymentDetails(paymentId: string, accessToken: string) {
   try {
-    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN
-
     if (!accessToken) {
       return {
         success: false,
-        error: 'MercadoPago access token not configured',
+        error: 'MercadoPago access token not provided',
       }
     }
 
@@ -407,22 +430,23 @@ export async function getPaymentDetails(paymentId: string) {
 
 /**
  * Valida la firma del webhook de MercadoPago con seguridad mejorada
+ * MULTITENANT: Ahora requiere webhookSecret como parámetro para soportar credenciales por tenant
  */
 export function validateWebhookSignature(
   xSignature: string,
   xRequestId: string,
   dataId: string,
   ts: string,
+  webhookSecret: string,
   rawBody?: string
 ): { isValid: boolean; error?: string } {
   try {
     const crypto = require('crypto')
-    const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET
 
-    if (!secret) {
-      console.error('[SECURITY] MERCADOPAGO_WEBHOOK_SECRET not configured')
+    if (!webhookSecret) {
+      console.error('[SECURITY] Webhook secret not provided')
       // En producción, si no hay secret configurado, permitir temporalmente con warning
-      console.warn('[SECURITY] ⚠️ Webhook secret not configured - allowing webhook temporarily')
+      console.warn('[SECURITY] ⚠️ Webhook secret not provided - allowing webhook temporarily')
       return { isValid: true, error: undefined }
     }
 
@@ -468,7 +492,7 @@ export function validateWebhookSignature(
     const manifest = `id:${dataId};request-id:${xRequestId};ts:${signatureTs};`
 
     // Generar HMAC
-    const hmac = crypto.createHmac('sha256', secret)
+    const hmac = crypto.createHmac('sha256', webhookSecret)
     hmac.update(manifest)
     const sha = hmac.digest('hex')
 

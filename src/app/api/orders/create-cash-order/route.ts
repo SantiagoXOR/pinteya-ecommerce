@@ -10,6 +10,8 @@ import { metricsCollector } from '@/lib/enterprise/metrics';
 import crypto from 'crypto';
 import { normalizeWhatsAppPhoneNumber } from '@/lib/integrations/whatsapp/whatsapp-link-service';
 import { sanitizeForWhatsApp, EMOJIS } from '@/lib/integrations/whatsapp/whatsapp-utils';
+// MULTITENANT: Importar configuración del tenant
+import { getTenantConfig } from '@/lib/tenant';
 
 // Tipo para productos desde la base de datos
 interface ProductFromDB {
@@ -429,9 +431,15 @@ export async function POST(request: NextRequest) {
       throw new Error(`Total inválido: ${totalAmount}. El total debe ser mayor a 0.`);
     }
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant actual
+    // ===================================
+    const tenant = await getTenantConfig();
+    
     // Preparar datos para insertar en orders (sin order_number, se actualiza después con el ID)
     const orderData = {
       user_id: userId,
+      tenant_id: tenant.id, // MULTITENANT: Asociar orden al tenant actual
       total: totalAmount, // Columna total (NOT NULL) - único campo de total en la tabla
       status: 'pending',
       payment_status: 'cash_on_delivery',
@@ -514,7 +522,8 @@ export async function POST(request: NextRequest) {
     // Crear items de la orden
     const orderItemsWithOrderId = orderItems.map(item => ({
       ...item,
-      order_id: order.id
+      order_id: order.id,
+      tenant_id: tenant.id // ⚡ MULTITENANT: Asignar tenant_id
     }));
 
     console.log('🔍 DEBUG: Insertando order_items:', JSON.stringify(orderItemsWithOrderId, null, 2));
@@ -660,8 +669,8 @@ export async function POST(request: NextRequest) {
     // caracteres especiales (espacios, $, *, :, etc.) que son necesarios para URLs válidas.
     // El error anterior era solo reemplazar \n por %0A sin codificar el resto del mensaje.
     const whatsappMessage = encodeURIComponent(message);
-    // Número de WhatsApp de Pinteya en formato internacional (solo dígitos)
-    const rawPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
+    // MULTITENANT: Usar número de WhatsApp del tenant actual
+    const rawPhone = tenant.whatsappNumber || process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
     const whatsappNumber = normalizeWhatsAppPhoneNumber(rawPhone);
     // Usamos api.whatsapp.com para preservar saltos de línea y formato
     const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${whatsappMessage}`;

@@ -9,7 +9,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSecurityStats, securityMonitor } from '@/lib/security/security-monitor'
 import { generateCorsHeaders } from '@/lib/security/cors-config'
-import { logger, LogLevel } from '@/lib/enterprise/logger'
+import { logger, LogCategory } from '@/lib/enterprise/logger'
 
 // ===================================
 // GET - Obtener estadísticas de seguridad
@@ -50,25 +50,27 @@ export async function GET(request: NextRequest) {
     }
 
     // Log del acceso al monitoreo
-    logger.info(LogLevel.INFO, 'Security monitoring accessed', {
+    logger.info(LogCategory.SECURITY, 'Security monitoring accessed', {
       timeRange,
       includeEvents,
       statsCount: stats.totalEvents,
     })
 
     const origin = request.headers.get('origin')
-    const corsHeaders = generateCorsHeaders(origin, 'admin')
+    const corsHeaders = generateCorsHeaders(origin ?? undefined, 'admin')
 
     return NextResponse.json(response, {
       headers: corsHeaders,
     })
   } catch (error) {
-    logger.error(LogLevel.ERROR, 'Error accessing security monitoring', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
+    logger.error(
+      LogCategory.SECURITY,
+      'Error accessing security monitoring',
+      error instanceof Error ? error : new Error(String(error))
+    )
 
     const origin = request.headers.get('origin')
-    const corsHeaders = generateCorsHeaders(origin, 'admin')
+    const corsHeaders = generateCorsHeaders(origin ?? undefined, 'admin')
 
     return NextResponse.json(
       {
@@ -94,7 +96,7 @@ export async function POST(request: NextRequest) {
     // Validar datos requeridos
     if (!type || !severity || !details) {
       const origin = request.headers.get('origin')
-      const corsHeaders = generateCorsHeaders(origin, 'admin')
+      const corsHeaders = generateCorsHeaders(origin ?? undefined, 'admin')
 
       return NextResponse.json(
         {
@@ -118,7 +120,7 @@ export async function POST(request: NextRequest) {
       userAgent: request.headers.get('user-agent') || 'unknown',
     })
 
-    logger.info(LogLevel.INFO, 'Manual security event reported', {
+    logger.info(LogCategory.SECURITY, 'Manual security event reported', {
       type,
       severity,
       source,
@@ -126,7 +128,7 @@ export async function POST(request: NextRequest) {
     })
 
     const origin = request.headers.get('origin')
-    const corsHeaders = generateCorsHeaders(origin, 'admin')
+    const corsHeaders = generateCorsHeaders(origin ?? undefined, 'admin')
 
     return NextResponse.json(
       {
@@ -138,12 +140,14 @@ export async function POST(request: NextRequest) {
       }
     )
   } catch (error) {
-    logger.error(LogLevel.ERROR, 'Error reporting security event', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    })
+    logger.error(
+      LogCategory.SECURITY,
+      'Error reporting security event',
+      error instanceof Error ? error : new Error(String(error))
+    )
 
     const origin = request.headers.get('origin')
-    const corsHeaders = generateCorsHeaders(origin, 'admin')
+    const corsHeaders = generateCorsHeaders(origin ?? undefined, 'admin')
 
     return NextResponse.json(
       {
@@ -163,7 +167,7 @@ export async function POST(request: NextRequest) {
 // ===================================
 export async function OPTIONS(request: NextRequest) {
   const origin = request.headers.get('origin')
-  const corsHeaders = generateCorsHeaders(origin, 'admin')
+  const corsHeaders = generateCorsHeaders(origin ?? undefined, 'admin')
 
   return new NextResponse(null, {
     status: 200,

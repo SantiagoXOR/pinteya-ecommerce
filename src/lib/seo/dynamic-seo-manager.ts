@@ -101,13 +101,17 @@ export interface DynamicSEOConfig {
 // CONFIGURACIÓN POR DEFECTO
 // ===================================
 
+// URL base dinámica por tenant o default
+const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://pinteya.com'
+const DEFAULT_SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'E-commerce'
+
 const DEFAULT_SEO_CONFIG: DynamicSEOConfig = {
   defaultLanguage: 'es',
   supportedLanguages: ['es', 'en'],
-  baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://pinteya.com',
-  siteName: 'Pinteya E-commerce',
-  defaultImage: '/images/og-default.jpg',
-  twitterHandle: '@pinteya',
+  baseUrl: DEFAULT_BASE_URL,
+  siteName: DEFAULT_SITE_NAME,
+  defaultImage: '/tenants/pinteya/og-image.png',
+  twitterHandle: process.env.NEXT_PUBLIC_TWITTER_HANDLE || '@ecommerce',
   enableAutoGeneration: true,
   enableAnalytics: true,
   cacheEnabled: true,
@@ -923,23 +927,23 @@ export class EnhancedDynamicSEOManager {
 
 export const enhancedDynamicSEOManager = EnhancedDynamicSEOManager.getInstance()
 
-// Configuración base del sitio (mantenida para compatibilidad)
+// Configuración base del sitio (dinámica por tenant/env)
 const SITE_CONFIG = {
-  name: 'Pinteya E-commerce',
-  description: 'Tu pinturería online especializada en productos de pintura, ferretería y corralón',
-  url: 'https://pinteya-ecommerce.vercel.app',
-  logo: '/images/logo/LOGO POSITIVO.svg',
-  defaultImage: '/images/hero/hero-bg.jpg',
+  name: process.env.NEXT_PUBLIC_SITE_NAME || 'E-commerce',
+  description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Tu tienda online especializada',
+  url: process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://pinteya.com',
+  logo: '/tenants/pinteya/logo.svg',
+  defaultImage: '/tenants/pinteya/hero/hero1.webp',
   locale: 'es_AR',
   currency: 'ARS',
-  themeColor: '#ea5a17',
-  twitterHandle: '@pinteya_ecommerce',
+  themeColor: process.env.NEXT_PUBLIC_PRIMARY_COLOR || '#ea5a17',
+  twitterHandle: process.env.NEXT_PUBLIC_TWITTER_HANDLE || '@ecommerce',
 }
 
-// Plantillas de SEO optimizadas (mantenidas para compatibilidad)
+// Plantillas de SEO optimizadas (dinámicas por tenant)
 const SEO_TEMPLATES = {
   product: {
-    title: (product: ProductSEOData) => `${product.name} - ${product.brand} | Pinteya E-commerce`,
+    title: (product: ProductSEOData) => `${product.name} - ${product.brand} | ${SITE_CONFIG.name}`,
     description: async (product: ProductSEOData) => await generateProductSEOText(product),
     keywords: (product: ProductSEOData) => [
       product.name.toLowerCase(),
@@ -954,9 +958,9 @@ const SEO_TEMPLATES = {
   },
   category: {
     title: (category: CategorySEOData) =>
-      `${category.name} | Pinteya E-commerce - Tu Pinturería Online`,
+      `${category.name} | ${SITE_CONFIG.name} - Tu Pinturería Online`,
     description: (category: CategorySEOData) =>
-      `Descubre nuestra selección de ${category.name.toLowerCase()} en Pinteya. ${category.description} ${category.productCount} productos disponibles. Envío gratis en compras superiores a $50.000.`,
+      `Descubre nuestra selección de ${category.name.toLowerCase()} en ${SITE_CONFIG.name}. ${category.description} ${category.productCount} productos disponibles. Envío gratis en compras superiores a $50.000.`,
     keywords: (category: CategorySEOData) => [
       category.name.toLowerCase(),
       'pinturería online',
@@ -968,7 +972,7 @@ const SEO_TEMPLATES = {
     ],
   },
   page: {
-    title: (page: PageSEOData) => `${page.title} | Pinteya E-commerce`,
+    title: (page: PageSEOData) => `${page.title} | ${SITE_CONFIG.name}`,
     description: (page: PageSEOData) => page.description,
     keywords: () => ['pinturería online', 'pinturas', 'ferretería', 'corralón', 'argentina'],
   },

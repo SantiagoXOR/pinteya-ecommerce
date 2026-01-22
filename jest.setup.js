@@ -2,6 +2,15 @@
 // PINTEYA E-COMMERCE - SETUP DE JEST
 // ===================================
 
+// Mock de React cache ANTES de cualquier import
+jest.mock('react', () => {
+  const actual = jest.requireActual('react')
+  return {
+    ...actual,
+    cache: (fn) => fn, // cache simplemente retorna la función sin cachear
+  }
+})
+
 // Importar fake-indexeddb antes que cualquier otra cosa para que IndexedDB esté disponible
 import 'fake-indexeddb/auto'
 
@@ -187,10 +196,15 @@ jest.mock('next/link', () => ({
 // Mock environment variables
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
 process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = 'test-clerk-key'
 process.env.CLERK_SECRET_KEY = 'test-clerk-secret'
 process.env.MERCADOPAGO_ACCESS_TOKEN = 'test-mp-token'
 process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY = 'test-mp-public-key'
+process.env.AUTH_GOOGLE_ID = process.env.AUTH_GOOGLE_ID || 'test-google-id'
+process.env.AUTH_GOOGLE_SECRET = process.env.AUTH_GOOGLE_SECRET || 'test-google-secret'
+process.env.NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || 'test-nextauth-secret'
+process.env.NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000'
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {

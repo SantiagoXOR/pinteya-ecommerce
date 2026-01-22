@@ -43,7 +43,7 @@ const VERCEL_ENV_VARS_TEMPLATE = {
 
 class VercelEnvSetup {
   constructor() {
-    this.projectName = 'pinteya-ecommerce'
+    this.projectName = 'pintureria-digital'
     this.dryRun = false
   }
 
@@ -95,7 +95,7 @@ class VercelEnvSetup {
   generateManualInstructions() {
     this.log('\n🔧 INSTRUCCIONES MANUALES PARA CONFIGURAR VERCEL:', 'config')
     this.log('1. Ir a https://vercel.com/dashboard')
-    this.log('2. Seleccionar proyecto: pinteya-ecommerce')
+    this.log('2. Seleccionar proyecto: pintureria-digital')
     this.log('3. Ir a Settings > Environment Variables')
     this.log('4. Agregar las siguientes variables para PRODUCTION:\n')
 

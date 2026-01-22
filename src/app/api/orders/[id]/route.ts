@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
+// ⚡ MULTITENANT: Importar configuración del tenant
+import { getTenantConfig } from '@/lib/tenant'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -8,6 +10,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!orderId) {
       return NextResponse.json({ success: false, error: 'ID de orden requerido' }, { status: 400 })
     }
+
+    // ⚡ MULTITENANT: Obtener configuración del tenant actual
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
 
     const supabase = getSupabaseClient(true)
 
@@ -35,6 +41,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Obtener orden CON order_items para mostrar datos correctos
+    // ⚡ MULTITENANT: Filtrar por tenant_id para asegurar aislamiento de datos
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select(
@@ -67,6 +74,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       `
       )
       .eq(searchField, searchValue)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
       .single()
 
     if (orderError) {

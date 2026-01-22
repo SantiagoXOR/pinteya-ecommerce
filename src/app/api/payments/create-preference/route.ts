@@ -2,7 +2,7 @@
 export const runtime = 'nodejs'
 
 // ===================================
-// PINTEYA E-COMMERCE - CREATE PAYMENT PREFERENCE API
+// PINTURERÍA DIGITAL - CREATE PAYMENT PREFERENCE API (MULTITENANT)
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -24,6 +24,8 @@ import { ENTERPRISE_RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/enterprise-ra
 import { metricsCollector } from '@/lib/enterprise/metrics'
 import { whatsappLinkService } from '@/lib/integrations/whatsapp/whatsapp-link-service'
 import crypto from 'crypto'
+// MULTITENANT: Importar configuración del tenant
+import { getTenantConfig } from '@/lib/tenant'
 
 // Schema de validación para la entrada
 const CreatePreferenceSchema = z.object({
@@ -526,6 +528,24 @@ export async function POST(request: NextRequest) {
     const totalAmount = itemsTotal + shippingCost
 
     // ===================================
+    // MULTITENANT: Obtener configuración del tenant actual
+    // ===================================
+    const tenant = await getTenantConfig()
+    
+    // Validar que el tenant tenga credenciales de MercadoPago configuradas
+    if (!tenant.mercadopagoAccessToken) {
+      logger.error(LogCategory.PAYMENT, 'MercadoPago no configurado para este tenant', {
+        tenantId: tenant.id,
+        tenantSlug: tenant.slug,
+      }, { clientIP })
+      
+      return NextResponse.json({
+        success: false,
+        error: 'MercadoPago no configurado para este tenant',
+      }, { status: 400 })
+    }
+    
+    // ===================================
     // CREAR ORDEN EN BASE DE DATOS
     // ===================================
     // Primero insertamos sin order_number, luego actualizamos con el ID
@@ -533,6 +553,7 @@ export async function POST(request: NextRequest) {
       .from('orders')
       .insert({
         user_id: userId,
+        tenant_id: tenant.id, // MULTITENANT: Asociar orden al tenant actual
         status: 'pending',
         payment_status: 'pending',
         payment_method: 'mercadopago',
@@ -695,7 +716,8 @@ export async function POST(request: NextRequest) {
 
     const message = lines.join('\n');
     const whatsappMessage = encodeURIComponent(message);
-    const businessPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
+    // MULTITENANT: Usar número de WhatsApp del tenant actual
+    const businessPhone = tenant.whatsappNumber || process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796';
     const whatsappLink = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${whatsappMessage}`;
 
     console.log('[WHATSAPP] Mensaje generado con datos reales')
@@ -822,7 +844,8 @@ export async function POST(request: NextRequest) {
         price: finalPrice,
         unit_price: finalPrice,
         total_price: itemTotal,
-        product_snapshot: productSnapshot
+        product_snapshot: productSnapshot,
+        tenant_id: tenant.id // ⚡ MULTITENANT: Asignar tenant_id
       }
     })
 
@@ -1000,7 +1023,7 @@ export async function POST(request: NextRequest) {
       externalReference: order.id.toString()
     })
 
-    // ✅ MEJORADO: Usar nueva función con configuración avanzada
+    // ✅ MEJORADO: Usar nueva función con configuración avanzada y credenciales del tenant
     const preferenceResult = await createPaymentPreference({
       items: mercadoPagoItems,
       payer: {
@@ -1026,7 +1049,7 @@ export async function POST(request: NextRequest) {
       external_reference: order.external_reference || orderNumber || order.id.toString(),
       // ✅ NUEVO: No enviar shipments para que el envío no aparezca como ítem separado
       // shipments: undefined // Comentado intencionalmente
-    })
+    }, tenant.mercadopagoAccessToken)
 
     // ✅ MEJORADO: Manejar resultado de la nueva función
     if (!preferenceResult.success) {
@@ -1056,7 +1079,8 @@ export async function POST(request: NextRequest) {
     // ✅ NUEVO: Generar WhatsApp link al crear la orden (similar a pago al recibir)
     try {
       const whatsappMessage = generateMercadoPagoWhatsAppMessage(order, orderData, typedProducts)
-      const businessPhone = process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'
+      // MULTITENANT: Usar número de WhatsApp del tenant actual
+      const businessPhone = tenant.whatsappNumber || process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'
       const whatsappUrl = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${encodeURIComponent(whatsappMessage)}`
       
       console.log('[WHATSAPP] Generando link de WhatsApp:', {

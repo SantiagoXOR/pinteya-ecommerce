@@ -10,6 +10,8 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/integrations/supabase/server'
 import { auth } from '@/lib/auth/config'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // =====================================================
 // INTERFACES
@@ -76,16 +78,17 @@ async function validateAdmin() {
 
 // =====================================================
 // GET: OBTENER DRIVERS
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
+    const { tenantId } = guardResult
 
-    const supabase = validation.supabase
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
 
     // Parámetros de consulta
@@ -96,10 +99,13 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Construir consulta
+    // ⚡ MULTITENANT: Filtrar por tenant_id
+    // Nota: Puede ser 'drivers' o 'logistics_drivers' dependiendo de la BD
     let query = supabase
-      .from('drivers')
+      .from('logistics_drivers')
       .select('*')
-      .order('first_name', { ascending: true })
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
+      .order('name', { ascending: true })
       .range(offset, offset + limit - 1)
 
     // Aplicar filtros
@@ -150,18 +156,19 @@ export async function GET(request: NextRequest) {
     console.error('Error en GET /api/admin/logistics/drivers:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // =====================================================
 // POST: CREAR NUEVO DRIVER
+// ⚡ MULTITENANT: Asigna tenant_id al crear
 // =====================================================
 
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
+    const { tenantId } = guardResult
 
     const body = await request.json()
     const {
@@ -194,11 +201,12 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Verificar que la placa no esté duplicada
+    // ⚡ MULTITENANT: Verificar que la placa no esté duplicada en el mismo tenant
     const { data: existingDriver, error: checkError } = await supabase
       .from('logistics_drivers')
       .select('id')
       .eq('license_plate', license_plate)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (existingDriver) {
@@ -206,6 +214,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear el driver
+    // ⚡ MULTITENANT: Asignar tenant_id al crear
     const { data: driver, error: createError } = await supabase
       .from('logistics_drivers')
       .insert({
@@ -219,6 +228,7 @@ export async function POST(request: NextRequest) {
         max_capacity,
         license_number: license_number || null,
         hire_date: hire_date || new Date().toISOString().split('T')[0],
+        tenant_id: tenantId, // ⚡ MULTITENANT
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -235,18 +245,19 @@ export async function POST(request: NextRequest) {
     console.error('Error en POST /api/admin/logistics/drivers:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // =====================================================
 // PATCH: ACTUALIZAR DRIVER
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
+    const { tenantId } = guardResult
 
     const body = await request.json()
     const { id, ...updates } = body
@@ -257,23 +268,25 @@ export async function PATCH(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Verificar que el driver existe
+    // ⚡ MULTITENANT: Verificar que el driver existe y pertenece al tenant
     const { data: existingDriver, error: checkError } = await supabase
       .from('logistics_drivers')
       .select('id')
       .eq('id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (checkError || !existingDriver) {
       return NextResponse.json({ error: 'Driver no encontrado' }, { status: 404 })
     }
 
-    // Si se actualiza la placa, verificar que no esté duplicada
+    // ⚡ MULTITENANT: Si se actualiza la placa, verificar que no esté duplicada en el mismo tenant
     if (updates.license_plate) {
       const { data: duplicateDriver } = await supabase
         .from('logistics_drivers')
         .select('id')
         .eq('license_plate', updates.license_plate)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .neq('id', id)
         .single()
 
@@ -283,6 +296,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Actualizar el driver
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: driver, error: updateError } = await supabase
       .from('logistics_drivers')
       .update({
@@ -290,6 +304,7 @@ export async function PATCH(request: NextRequest) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .select()
       .single()
 
@@ -303,18 +318,19 @@ export async function PATCH(request: NextRequest) {
     console.error('Error en PATCH /api/admin/logistics/drivers:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // =====================================================
 // DELETE: ELIMINAR DRIVER
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
+    const { tenantId } = guardResult
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
@@ -325,22 +341,24 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Verificar que el driver existe
+    // ⚡ MULTITENANT: Verificar que el driver existe y pertenece al tenant
     const { data: existingDriver, error: checkError } = await supabase
       .from('logistics_drivers')
       .select('id, status')
       .eq('id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (checkError || !existingDriver) {
       return NextResponse.json({ error: 'Driver no encontrado' }, { status: 404 })
     }
 
-    // Verificar que no tenga rutas activas
+    // ⚡ MULTITENANT: Verificar que no tenga rutas activas del mismo tenant
     const { data: activeRoutes, error: routesError } = await supabase
       .from('optimized_routes')
       .select('id')
       .eq('driver_id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .eq('status', 'active')
 
     if (routesError) {
@@ -355,11 +373,20 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Limpiar driver_id de rutas planificadas
-    await supabase.from('optimized_routes').update({ driver_id: null }).eq('driver_id', id)
+    // ⚡ MULTITENANT: Limpiar driver_id de rutas planificadas del mismo tenant
+    await supabase
+      .from('optimized_routes')
+      .update({ driver_id: null })
+      .eq('driver_id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
     // Eliminar el driver
-    const { error: deleteError } = await supabase.from('logistics_drivers').delete().eq('id', id)
+    // ⚡ MULTITENANT: Filtrar por tenant_id
+    const { error: deleteError } = await supabase
+      .from('logistics_drivers')
+      .delete()
+      .eq('id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
     if (deleteError) {
       console.error('Error al eliminar driver:', deleteError)
@@ -371,4 +398,4 @@ export async function DELETE(request: NextRequest) {
     console.error('Error en DELETE /api/admin/logistics/drivers:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})

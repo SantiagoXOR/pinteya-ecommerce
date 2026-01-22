@@ -1,9 +1,12 @@
 // ===================================
-// PINTEYA E-COMMERCE - LISTA DE TIPOS DE PRODUCTOS
+// PINTURERÍADIGITAL - LISTA DE TIPOS DE PRODUCTOS
 // ===================================
+// ACTUALIZADO: Migrado de useCategoryData (deprecated) a useCategories
+
+'use client'
 
 import React from 'react'
-import { useCategoryData } from '@/hooks/useCategoryData'
+import { useCategories } from '@/lib/categories/hooks'
 
 interface ProductType {
   name: string
@@ -21,11 +24,9 @@ const ProductTypesList: React.FC<ProductTypesListProps> = ({
   onCategorySelect,
   selectedCategory,
 }) => {
-  // Obtener categorías dinámicas desde la API
-  const { categories: apiCategories, loading } = useCategoryData({
+  // Obtener categorías dinámicas desde la API (usando nuevo hook unificado)
+  const { categories: apiCategories, isLoading: loading } = useCategories({
     autoFetch: true,
-    fallbackCategories: [],
-    enableAnalytics: false,
   })
 
   // Transformar categorías de la API al formato esperado
@@ -33,7 +34,7 @@ const ProductTypesList: React.FC<ProductTypesListProps> = ({
     name: category.name,
     slug: category.slug || category.id,
     description: category.description || `Productos de ${category.name.toLowerCase()}`,
-    products: category.products_count || 0,
+    products: category.count || 0,
   }))
 
   // Mostrar estado de carga si las categorías están cargando

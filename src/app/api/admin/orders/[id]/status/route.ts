@@ -11,6 +11,7 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -111,10 +112,18 @@ async function validateAdminAuth() {
 // ===================================
 // POST - Cambiar estado de orden
 // ===================================
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
+    const { id } = await context.params
+    const orderId = id
+
     // Rate limiting
     const rateLimitResult = await checkRateLimit(
       request,
@@ -128,14 +137,6 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       addRateLimitHeaders(response, rateLimitResult)
       return response
     }
-
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status })
-    }
-
-    const orderId = params.id
 
     // Validar datos de entrada
     const body = await request.json()
@@ -157,7 +158,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       estimated_delivery,
     } = validationResult.data
 
-    // Obtener orden actual
+    // ===================================
+    // MULTITENANT: Obtener orden del tenant
+    // ===================================
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
       .from('orders')
       .select(
@@ -166,6 +169,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         status,
         payment_status,
         order_number,
+        tenant_id,
         user_profiles!orders_user_id_fkey (
           id,
           name,
@@ -174,6 +178,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       `
       )
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .single()
 
     if (fetchError) {
@@ -218,11 +223,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       updateData.payment_status = 'refunded'
     }
 
-    // Actualizar orden
+    // ===================================
+    // MULTITENANT: Actualizar orden del tenant
+    // ===================================
     const { data: updatedOrder, error: updateError } = await supabaseAdmin
       .from('orders')
       .update(updateData)
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .select()
       .single()
 
@@ -240,7 +248,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         order_id: orderId,
         previous_status: currentOrder.status,
         new_status: newStatus,
-        changed_by: authResult.user.id,
+        changed_by: guardResult.userId, // ⚡ MULTITENANT: Usar userId del guard
         reason: reason,
         metadata: JSON.stringify({
           tracking_number,
@@ -260,7 +268,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     try {
       await supabaseAdmin.from('order_notes').insert({
         order_id: orderId,
-        admin_id: authResult.user.id,
+        admin_id: guardResult.userId, // ⚡ MULTITENANT: Usar userId del guard
         note_type: 'internal',
         content: `Estado cambiado de "${statusDescriptions[currentOrder.status]}" a "${statusDescriptions[newStatus]}". Razón: ${reason}`,
         is_visible_to_customer: false,
@@ -318,7 +326,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       previousStatus: currentOrder.status,
       newStatus,
       reason,
-      adminId: authResult.user.id,
+      adminId: guardResult.userId, // ⚡ MULTITENANT: Usar userId del guard
       responseTime,
     })
 
@@ -329,33 +337,36 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en POST /api/admin/orders/[id]/status', {
       error,
-      orderId: params.id,
+      orderId: id,
     })
 
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // ===================================
 // GET - Obtener estados disponibles
 // ===================================
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   const startTime = Date.now()
+  const { tenantId } = guardResult
 
   try {
-    // Validar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ error: authResult.error }, { status: authResult.status })
-    }
+    const { id } = await context.params
+    const orderId = id
 
-    const orderId = params.id
-
-    // Obtener estado actual de la orden
+    // ===================================
+    // MULTITENANT: Obtener orden del tenant
+    // ===================================
     const { data: order, error } = await supabaseAdmin
       .from('orders')
       .select('status')
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .single()
 
     if (error) {
@@ -400,9 +411,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error en GET /api/admin/orders/[id]/status', {
       error,
-      orderId: params.id,
+      orderId: id,
     })
 
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})

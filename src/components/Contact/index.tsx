@@ -10,6 +10,7 @@ import { Mail, Phone, MapPin, Clock, Send } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { WhatsAppQR } from '@/components/ui/whatsapp-qr'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 // ===================================
 // INTERFACES
@@ -44,25 +45,32 @@ const Contact: React.FC = () => {
   })
 
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  
+  // Obtener datos de contacto del tenant
+  const tenant = useTenantSafe()
+  const contactPhone = tenant?.contactPhone || tenant?.whatsappNumber || '5493513411796'
+  const displayPhone = contactPhone.replace(/^549(\d{3})(\d{3})(\d{4})$/, '+54 9 $1 $2-$3')
+  const supportEmail = tenant?.name ? `info@${tenant.slug}.com.ar` : 'info@pinteya.com.ar'
+  const contactAddress = tenant?.contactAddress || 'Córdoba Capital, Argentina'
 
-  // Información de contacto
+  // Información de contacto (dinámica por tenant)
   const contactInfo: ContactInfo[] = [
     {
       icon: <Phone className='w-6 h-6' />,
       title: 'Teléfono',
-      content: '+54 9 351 341-1796',
-      link: 'tel:+5493513411796',
+      content: displayPhone,
+      link: `tel:+${contactPhone}`,
     },
     {
       icon: <Mail className='w-6 h-6' />,
       title: 'Email',
-      content: 'info@pinteya.com.ar',
-      link: 'mailto:info@pinteya.com.ar',
+      content: supportEmail,
+      link: `mailto:${supportEmail}`,
     },
     {
       icon: <MapPin className='w-6 h-6' />,
       title: 'Dirección',
-      content: 'Córdoba Capital, Argentina',
+      content: contactAddress,
     },
     {
       icon: <Clock className='w-6 h-6' />,

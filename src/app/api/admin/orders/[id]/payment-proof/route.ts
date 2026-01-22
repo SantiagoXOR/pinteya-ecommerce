@@ -1,27 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth/config'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
 import { getPaymentDetails } from '@/lib/integrations/mercadopago'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
+import { getTenantById } from '@/lib/tenant/tenant-service'
 
-export async function GET(
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    const { id: orderId } = await params
+    const { tenantId } = guardResult
+    const { id: orderId } = await context.params
 
-    // 1. Verificar autenticación admin
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 })
-    }
-
-    // 2. Obtener orden con payment_id
+    // ⚡ MULTITENANT: Obtener orden con payment_id, filtrando por tenant_id
     const { data: order, error: orderError } = await supabaseAdmin!
       .from('orders')
       .select('id, payment_id, total, status, payment_status')
       .eq('id' as any, orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (orderError || !order) {
@@ -37,8 +35,17 @@ export async function GET(
       )
     }
 
-    // 4. Obtener detalles del pago desde MercadoPago
-    const paymentResult = await getPaymentDetails(paymentId)
+    // ⚡ MULTITENANT: Obtener credenciales del tenant
+    const tenant = await getTenantById(tenantId)
+    if (!tenant || !tenant.mercadopagoAccessToken) {
+      return NextResponse.json(
+        { success: false, error: 'MercadoPago no configurado para este tenant' },
+        { status: 400 }
+      )
+    }
+
+    // 4. Obtener detalles del pago desde MercadoPago usando credenciales del tenant
+    const paymentResult = await getPaymentDetails(paymentId, tenant.mercadopagoAccessToken)
 
     if (!paymentResult.success || !paymentResult.data) {
       return NextResponse.json(
@@ -73,7 +80,8 @@ export async function GET(
     })
   } catch (error) {
     logger.log(LogLevel.ERROR, LogCategory.API, 'Error getting payment proof', {
-      orderId: (await params).id,
+      orderId,
+      tenantId,
       error,
     })
 
@@ -82,5 +90,5 @@ export async function GET(
       { status: 500 }
     )
   }
-}
+})
 

@@ -2,13 +2,14 @@
 export const runtime = 'nodejs'
 
 // ===================================
-// PINTEYA E-COMMERCE - DYNAMIC SITEMAP API
-// API para generar y servir sitemaps dinámicos
+// PINTURERÍADIGITAL - DYNAMIC SITEMAP API (MULTITENANT)
+// API para generar y servir sitemaps dinámicos por tenant
 // ===================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { enhancedDynamicSitemapGenerator } from '@/lib/seo/dynamic-sitemap-generator'
 import { logger, LogCategory, LogLevel } from '@/lib/enterprise/logger'
+import { getTenantConfig, getTenantBaseUrl } from '@/lib/tenant'
 
 // ===================================
 // GET /api/sitemap - Generar y servir sitemap
@@ -142,9 +143,12 @@ export async function POST(request: NextRequest) {
 
 /**
  * Generar XML de ejemplo para demostración
+ * MULTITENANT: Usa el dominio del tenant actual
  */
 async function generateSampleSitemapXML(): Promise<string> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pinteya-ecommerce.vercel.app'
+  // MULTITENANT: Obtener URL base del tenant actual
+  const tenant = await getTenantConfig()
+  const baseUrl = getTenantBaseUrl(tenant)
   const now = new Date().toISOString().split('T')[0]
 
   return `<?xml version="1.0" encoding="UTF-8"?>

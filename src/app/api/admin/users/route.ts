@@ -14,6 +14,7 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -161,8 +162,11 @@ async function validateAdminAuth() {
 // FUNCIONES AUXILIARES
 // ===================================
 
-async function getUsersWithStats(filters: any, pagination: any) {
+async function getUsersWithStats(filters: any, pagination: any, tenantId: string) {
   try {
+    // ===================================
+    // MULTITENANT: Filtrar usuarios por tenant_id
+    // ===================================
     let query = supabaseAdmin.from('user_profiles').select(
       `
         id,
@@ -174,6 +178,7 @@ async function getUsersWithStats(filters: any, pagination: any) {
         metadata,
         created_at,
         updated_at,
+        tenant_id,
         user_roles (
           role_name,
           permissions
@@ -181,6 +186,7 @@ async function getUsersWithStats(filters: any, pagination: any) {
       `,
       { count: 'exact' }
     )
+    .eq('tenant_id', tenantId)
 
     // Aplicar filtros
     if (filters.search) {
@@ -227,12 +233,15 @@ async function getUsersWithStats(filters: any, pagination: any) {
     if (users && users.length > 0) {
       const userIds = users.map(user => user.id)
 
-      // Obtener estadísticas de órdenes
+      // ===================================
+      // MULTITENANT: Filtrar órdenes por tenant_id
+      // ===================================
       const { data: orderStats } = await supabaseAdmin
         .from('orders')
         .select('user_id, total')
         .in('user_id', userIds)
         .eq('status', 'completed')
+        .eq('tenant_id', tenantId)
 
       // Calcular estadísticas por usuario
       const statsMap =
@@ -303,6 +312,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: authResult.status })
     }
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Validar parámetros
     const { searchParams } = new URL(request.url)
     const validationResult = UserFiltersSchema.safeParse({
@@ -327,7 +342,7 @@ export async function GET(request: NextRequest) {
     }
 
     const filters = validationResult.data
-    const { users, total } = await getUsersWithStats(filters, filters)
+    const { users, total } = await getUsersWithStats(filters, filters, tenantId)
 
     const totalPages = Math.ceil(total / filters.limit)
 
@@ -488,17 +503,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 500 })
     }
 
-    // Crear perfil de usuario en la tabla users
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
+    // Crear perfil de usuario en la tabla users (con tenant_id)
     const { data: newUser, error: profileError } = await supabaseAdmin
-      .from('users')
+      .from('user_profiles')
       .insert({
         id: authUser.user.id,
         email: userData.email,
-        name: userData.name,
-        role: userData.role,
+        first_name: userData.name.split(' ')[0] || userData.name,
+        last_name: userData.name.split(' ').slice(1).join(' ') || '',
+        role_id: userData.role === 'admin' ? 1 : userData.role === 'moderator' ? 2 : 3, // Ajustar según tu esquema
         is_active: userData.is_active,
         phone: userData.phone,
-        address: userData.address,
+        metadata: userData.address ? { address: userData.address } : null,
+        tenant_id: tenantId, // =================================== MULTITENANT: Asignar tenant_id
       })
       .select()
       .single()

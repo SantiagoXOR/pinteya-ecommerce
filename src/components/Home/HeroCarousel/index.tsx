@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface HeroSlide {
   id: string
@@ -11,24 +12,28 @@ interface HeroSlide {
   alt: string
 }
 
-// ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia
-// ⚡ FASE 23: hero1.webp NO se incluye aquí porque ya está renderizado como imagen estática
-// ⚡ FASE 23: Solo usar hero2 y hero3 - eliminar hero4, hero5, hero6 para reducir carga
-// El carousel empezará en hero2.webp para evitar duplicación de requests
-const heroSlides: HeroSlide[] = [
-  {
-    id: 'hero-2',
-    image: '/images/hero/hero2/hero2.webp',
-    alt: 'Envío express en 24HS - Pinteya'
-  },
-  {
-    id: 'hero-3',
-    image: '/images/hero/hero2/hero3.webp',
-    alt: 'Pagá con Mercado Pago - Pinteya'
-  }
-]
-
 const HeroCarousel = () => {
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const tenantSlug = tenant?.slug || 'pinteya'
+  const tenantName = tenant?.name || 'Pinteya'
+  
+  // ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia
+  // ⚡ FASE 23: hero1.webp NO se incluye aquí porque ya está renderizado como imagen estática
+  // ⚡ FASE 23: Solo usar hero2 y hero3 - eliminar hero4, hero5, hero6 para reducir carga
+  // El carousel empezará en hero2.webp para evitar duplicación de requests
+  const heroSlides: HeroSlide[] = useMemo(() => [
+    {
+      id: 'hero-2',
+      image: `/tenants/${tenantSlug}/hero/hero2.webp`,
+      alt: `Envío express en 24HS - ${tenantName}`
+    },
+    {
+      id: 'hero-3',
+      image: `/tenants/${tenantSlug}/hero/hero3.webp`,
+      alt: `Pagá con Mercado Pago - ${tenantName}`
+    }
+  ], [tenantSlug, tenantName])
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para deshabilitar auto-play en dispositivos de bajo rendimiento
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
@@ -55,7 +60,7 @@ const HeroCarousel = () => {
     heroSlides[heroSlides.length - 1], // Clone de la última (hero3.webp)
     ...heroSlides,                       // Slides originales (hero2, hero3)
     heroSlides[0]                        // Clone de la primera (hero2.webp)
-  ], [])
+  ], [heroSlides])
 
   // Callbacks de navegación
   const goToSlide = useCallback((index: number) => {

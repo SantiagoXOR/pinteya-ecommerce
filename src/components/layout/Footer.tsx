@@ -2,26 +2,17 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTenantSafe, useTenantContact, useTenantAssets } from '@/contexts/TenantContext'
 
-const socials = [
+// Fallback por defecto para cuando no hay tenant (sin URLs específicas de marca)
+const DEFAULT_SOCIALS = [
   {
     label: 'Google',
     href: '/api/auth/signin',
     wrapperClass: 'bg-white',
     imageSrc: '/images/icons/Google.svg',
   },
-  {
-    label: 'Facebook',
-    href: 'https://facebook.com/pinteya',
-    wrapperClass: 'bg-white',
-    imageSrc: '/images/icons/fb.svg',
-  },
-  {
-    label: 'Instagram',
-    href: 'https://www.instagram.com/pinteya.app/',
-    wrapperClass: 'bg-white',
-    imageSrc: '/images/icons/instagram.svg',
-  },
+  // Facebook e Instagram se agregan dinámicamente si el tenant tiene socialLinks configurados
 ]
 
 const navLinks = [
@@ -33,9 +24,46 @@ const navLinks = [
 
 const Footer = () => {
   const year = new Date().getFullYear()
+  
+  // Obtener configuración del tenant (con fallback seguro)
+  const tenant = useTenantSafe()
+  
+  // Assets del tenant (con fallback a la estructura de tenants)
+  const tenantAssets = tenant ? {
+    logo: tenant.logoUrl || `/tenants/${tenant.slug}/logo.svg`,
+  } : {
+    logo: '/tenants/pinteya/logo.svg', // Usar estructura de tenant por defecto
+  }
+  
+  // Información del tenant
+  const tenantName = tenant?.name || 'Pinteya'
+  const tenantCity = tenant?.contactCity || 'Córdoba'
+  const tenantProvince = tenant?.contactProvince || 'Argentina'
+  
+  // Redes sociales del tenant (con fallback)
+  const socials = tenant?.socialLinks ? [
+    {
+      label: 'Google',
+      href: '/api/auth/signin',
+      wrapperClass: 'bg-white',
+      imageSrc: '/images/icons/Google.svg',
+    },
+    ...(tenant.socialLinks.facebook ? [{
+      label: 'Facebook',
+      href: tenant.socialLinks.facebook,
+      wrapperClass: 'bg-white',
+      imageSrc: '/images/icons/fb.svg',
+    }] : []),
+    ...(tenant.socialLinks.instagram ? [{
+      label: 'Instagram',
+      href: tenant.socialLinks.instagram,
+      wrapperClass: 'bg-white',
+      imageSrc: '/images/icons/instagram.svg',
+    }] : []),
+  ] : DEFAULT_SOCIALS
 
   return (
-    <footer className='bg-[#eb6313] text-white'>
+    <footer className='bg-tenant-primary text-white'>
       <div className='max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 pb-24 space-y-8'>
         <div className='grid gap-4 md:grid-cols-3'>
           <article className='rounded-2xl bg-white/10 p-5 sm:p-6 shadow-lg shadow-black/10 backdrop-blur'>
@@ -130,20 +158,20 @@ const Footer = () => {
         <div className='border-t border-white/15 pt-6 flex flex-col gap-4 text-sm text-white/80 md:flex-row md:items-center md:justify-between'>
           <div className='flex items-center gap-3'>
             <Image
-              src='/images/logo/LOGO POSITIVO.svg'
-              alt='Pinteya'
+              src={tenantAssets.logo}
+              alt={tenantName}
               width={150}
               height={45}
               className='h-9 w-auto drop-shadow-[0_6px_18px_rgba(0,0,0,0.25)]'
               loading="lazy"
             />
             <div>
-              <p className='font-semibold text-white'>Córdoba, Argentina</p>
+              <p className='font-semibold text-white'>{tenantCity}, {tenantProvince}</p>
               <p className='text-xs text-white/70'>SSL Seguro • Envíos rápidos • Atención humana</p>
             </div>
           </div>
 
-          <div className='text-xs text-white/70'>© {year} Pinteya — Desarrollado por XOR</div>
+          <div className='text-xs text-white/70'>© {year} {tenantName} — Desarrollado por XOR</div>
         </div>
       </div>
     </footer>

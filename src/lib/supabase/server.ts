@@ -4,5 +4,11 @@
 // Este archivo proporciona un alias para mantener compatibilidad
 // con imports que esperan @/lib/supabase/server
 
-export { createClient, createAdminClient } from '@/lib/integrations/supabase/server'
+export { 
+  createClient, 
+  createAdminClient,
+  createPublicClient,
+  createTenantClient,
+  createTenantClientFromContext,
+} from '@/lib/integrations/supabase/server'
 

@@ -101,10 +101,12 @@ async function deleteImageFromStorage(path: string) {
 /**
  * POST /api/admin/products/[id]/images
  * Upload new image for product
+ * ⚡ MULTITENANT: Verifica que el producto pertenece al tenant
  */
 const postHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   // ✅ CORREGIDO: Usar supabaseAdmin directamente
   const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { getTenantConfig } = await import('@/lib/tenant')
   
   // ✅ CRÍTICO: Verificar Content-Type ANTES de leer el body para diagnóstico en producción
   // En producción (Vercel), el Content-Type puede no estar presente o estar modificado
@@ -173,6 +175,21 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
 
   // Convert productId to number if it's numeric
   const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
+
+  // ⚡ MULTITENANT: Obtener tenantId y verificar que el producto pertenece al tenant
+  const tenant = await getTenantConfig()
+  const tenantId = tenant.id
+
+  const { data: tenantProduct } = await supabaseAdmin
+    .from('tenant_products')
+    .select('product_id')
+    .eq('product_id', numericProductId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!tenantProduct) {
+    throw new NotFoundError('Producto')
+  }
 
   // Check if product exists
   const { data: product, error: productError } = await supabaseAdmin
@@ -251,10 +268,12 @@ const postHandler = async (request: NextRequest, context: { params: Promise<{ id
 /**
  * GET /api/admin/products/[id]/images
  * Get all images for product
+ * ⚡ MULTITENANT: Verifica que el producto pertenece al tenant
  */
 const getHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   // ✅ CORREGIDO: Usar supabaseAdmin directamente en lugar de request.supabase
   const { supabaseAdmin } = await import('@/lib/integrations/supabase')
+  const { getTenantConfig } = await import('@/lib/tenant')
   const { id } = await context.params
   const productId = id
 
@@ -266,6 +285,21 @@ const getHandler = async (request: NextRequest, context: { params: Promise<{ id:
 
   // Convert productId to number if it's numeric
   const numericProductId = /^\d+$/.test(productId) ? parseInt(productId, 10) : productId
+
+  // ⚡ MULTITENANT: Verificar que el producto pertenece al tenant
+  const tenant = await getTenantConfig()
+  const tenantId = tenant.id
+
+  const { data: tenantProduct } = await supabaseAdmin
+    .from('tenant_products')
+    .select('product_id')
+    .eq('product_id', numericProductId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!tenantProduct) {
+    throw new NotFoundError('Producto')
+  }
 
   // Get images
   const { data: images, error } = await supabaseAdmin

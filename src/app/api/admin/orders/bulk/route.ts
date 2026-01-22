@@ -14,6 +14,7 @@ import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { checkRateLimit } from '@/lib/auth/rate-limiting'
 import { addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
 import { metricsCollector } from '@/lib/enterprise/metrics'
+import { getTenantConfig } from '@/lib/tenant'
 
 // ===================================
 // SCHEMAS DE VALIDACIÓN
@@ -131,14 +132,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Obtener tipo de operación
     const { searchParams } = new URL(request.url)
     const operation = searchParams.get('operation')
 
     if (operation === 'status_update') {
-      return await handleBulkStatusUpdate(request, authResult)
+      return await handleBulkStatusUpdate(request, authResult, tenantId)
     } else if (operation === 'export') {
-      return await handleBulkExport(request, authResult)
+      return await handleBulkExport(request, authResult, tenantId)
     } else {
       return NextResponse.json(
         { error: 'Operación no válida. Operaciones disponibles: status_update, export' },
@@ -158,7 +165,7 @@ export async function POST(request: NextRequest) {
 // ===================================
 // ACTUALIZACIÓN MASIVA DE ESTADOS
 // ===================================
-async function handleBulkStatusUpdate(request: NextRequest, authResult: any) {
+async function handleBulkStatusUpdate(request: NextRequest, authResult: any, tenantId: string) {
   const startTime = Date.now()
 
   try {
@@ -176,10 +183,12 @@ async function handleBulkStatusUpdate(request: NextRequest, authResult: any) {
     const { order_ids, status: newStatus, reason, notify_customers } = validationResult.data
 
     // Obtener órdenes actuales para validar transiciones
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: currentOrders, error: fetchError } = await supabaseAdmin
       .from('orders')
       .select('id, status, order_number')
       .in('id', order_ids)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
     if (fetchError) {
       logger.log(
@@ -226,6 +235,7 @@ async function handleBulkStatusUpdate(request: NextRequest, authResult: any) {
     }
 
     // Actualizar órdenes válidas
+    // ⚡ MULTITENANT: Asegurar que solo se actualizan órdenes del tenant
     const validOrderIds = validOrders.map(order => order.id)
     const { data: updatedOrders, error: updateError } = await supabaseAdmin
       .from('orders')
@@ -234,6 +244,7 @@ async function handleBulkStatusUpdate(request: NextRequest, authResult: any) {
         updated_at: new Date().toISOString(),
       })
       .in('id', validOrderIds)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenecen al tenant
       .select()
 
     if (updateError) {
@@ -312,7 +323,7 @@ async function handleBulkStatusUpdate(request: NextRequest, authResult: any) {
 // ===================================
 // EXPORTACIÓN MASIVA DE DATOS
 // ===================================
-async function handleBulkExport(request: NextRequest, authResult: any) {
+async function handleBulkExport(request: NextRequest, authResult: any, tenantId: string) {
   const startTime = Date.now()
 
   try {
@@ -330,6 +341,7 @@ async function handleBulkExport(request: NextRequest, authResult: any) {
     const { format, filters, include_items } = validationResult.data
 
     // Construir query base
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     let query = supabaseAdmin.from('orders').select(`
         id,
         order_number,
@@ -361,6 +373,7 @@ async function handleBulkExport(request: NextRequest, authResult: any) {
             : ''
         }
       `)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Filtrar por tenant
 
     // Aplicar filtros
     if (filters?.status) {

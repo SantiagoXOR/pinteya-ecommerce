@@ -255,42 +255,103 @@ export interface SchemaConfig {
 // CONFIGURACIÓN POR DEFECTO
 // ===================================
 
-const DEFAULT_SCHEMA_CONFIG: SchemaConfig = {
-  baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://pinteya-ecommerce.vercel.app',
-  siteName: 'Pinteya E-commerce',
-  organization: {
-    name: 'Pinteya E-commerce',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'https://pinteya-ecommerce.vercel.app',
-    logo: '/images/logo/LOGO POSITIVO.svg',
-    description:
-      'Tu pinturería online especializada en productos de pintura, ferretería y corralón',
-    contactPoint: {
-      telephone: '+54-11-1234-5678',
-      contactType: 'customer service',
-      email: 'contacto@pinteya.com',
-      availableLanguage: ['Spanish', 'English'],
-    },
-    address: {
-      streetAddress: 'Av. Corrientes 1234',
-      addressLocality: 'Buenos Aires',
-      addressRegion: 'CABA',
-      postalCode: '1043',
-      addressCountry: 'AR',
-    },
-    sameAs: [
-      'https://www.facebook.com/pinteya',
-      'https://www.instagram.com/pinteya.app/',
-      'https://twitter.com/pinteya',
-    ],
-    foundingDate: '2020-01-01',
-    numberOfEmployees: '10-50',
-  },
-  defaultImage: '/images/hero/hero-bg.jpg',
-  enableCache: true,
-  cacheTTL: 3600,
-  enableValidation: true,
-  enableAnalytics: true,
+/**
+ * Obtiene la configuración del schema desde el tenant
+ */
+async function getSchemaConfigFromTenant(): Promise<SchemaConfig> {
+  try {
+    const { getTenantConfig, getTenantBaseUrl } = await import('@/lib/tenant')
+    const tenant = await getTenantConfig()
+    const baseUrl = getTenantBaseUrl(tenant)
+    
+    return {
+      baseUrl,
+      siteName: tenant.siteTitle || tenant.name || 'E-commerce',
+      organization: {
+        name: tenant.name,
+        url: baseUrl,
+        logo: tenant.logoUrl || '/tenants/pinteya/logo.svg',
+        description: tenant.siteDescription || 'Tu tienda online especializada en productos de calidad',
+        contactPoint: {
+          telephone: tenant.contactPhone || '+54-11-1234-5678',
+          contactType: 'customer service',
+          email: tenant.supportEmail || tenant.fromEmail || 'contacto@ecommerce.com',
+          availableLanguage: ['Spanish', 'English'],
+        },
+        address: {
+          streetAddress: tenant.contactAddress || 'Av. Corrientes 1234',
+          addressLocality: tenant.contactCity || 'Córdoba',
+          addressRegion: tenant.contactProvince || 'Córdoba',
+          postalCode: tenant.contactPostalCode || '5000',
+          addressCountry: tenant.contactCountry || 'AR',
+        },
+        sameAs: [
+          tenant.socialLinks?.facebook || '',
+          tenant.socialLinks?.instagram || '',
+          tenant.socialLinks?.twitter || '',
+        ].filter(Boolean),
+        foundingDate: '2020-01-01',
+        numberOfEmployees: '10-50',
+      },
+      defaultImage: tenant.ogImageUrl || '/tenants/pinteya/hero/hero1.webp',
+      enableCache: true,
+      cacheTTL: 3600,
+      enableValidation: true,
+      enableAnalytics: true,
+    }
+  } catch (error) {
+    // Fallback a configuración por defecto si hay error
+    logger.warn(LogLevel.WARN, 'Error obteniendo configuración del tenant para schema, usando defaults', {}, LogCategory.SEO)
+    return getDefaultSchemaConfig()
+  }
 }
+
+/**
+ * Configuración por defecto (fallback)
+ */
+function getDefaultSchemaConfig(): SchemaConfig {
+  const SCHEMA_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://pinteya.com'
+  const SCHEMA_SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || 'E-commerce'
+  
+  return {
+    baseUrl: SCHEMA_BASE_URL,
+    siteName: SCHEMA_SITE_NAME,
+    organization: {
+      name: SCHEMA_SITE_NAME,
+      url: SCHEMA_BASE_URL,
+      logo: '/tenants/pinteya/logo.svg',
+      description:
+        process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Tu tienda online especializada en productos de calidad',
+      contactPoint: {
+        telephone: process.env.NEXT_PUBLIC_CONTACT_PHONE || '+54-11-1234-5678',
+        contactType: 'customer service',
+        email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'contacto@ecommerce.com',
+        availableLanguage: ['Spanish', 'English'],
+      },
+      address: {
+        streetAddress: process.env.NEXT_PUBLIC_ADDRESS_STREET || 'Av. Corrientes 1234',
+        addressLocality: process.env.NEXT_PUBLIC_ADDRESS_CITY || 'Córdoba',
+        addressRegion: process.env.NEXT_PUBLIC_ADDRESS_PROVINCE || 'Córdoba',
+        postalCode: process.env.NEXT_PUBLIC_ADDRESS_POSTAL || '5000',
+        addressCountry: 'AR',
+      },
+      sameAs: [
+        process.env.NEXT_PUBLIC_FACEBOOK_URL || '',
+        process.env.NEXT_PUBLIC_INSTAGRAM_URL || '',
+        process.env.NEXT_PUBLIC_TWITTER_URL || '',
+      ].filter(Boolean),
+      foundingDate: '2020-01-01',
+      numberOfEmployees: '10-50',
+    },
+    defaultImage: '/tenants/pinteya/hero/hero1.webp',
+    enableCache: true,
+    cacheTTL: 3600,
+    enableValidation: true,
+    enableAnalytics: true,
+  }
+}
+
+const DEFAULT_SCHEMA_CONFIG = getDefaultSchemaConfig()
 
 // ===================================
 // ENHANCED ADVANCED SCHEMA MARKUP CLASS
@@ -323,6 +384,19 @@ export class EnhancedAdvancedSchemaMarkup {
       EnhancedAdvancedSchemaMarkup.instance = new EnhancedAdvancedSchemaMarkup(config)
     }
     return EnhancedAdvancedSchemaMarkup.instance
+  }
+
+  /**
+   * Actualiza la configuración desde el tenant (útil para server components)
+   */
+  public async updateConfigFromTenant(): Promise<void> {
+    try {
+      const tenantConfig = await getSchemaConfigFromTenant()
+      this.config = { ...this.config, ...tenantConfig }
+      logger.info(LogLevel.INFO, 'Schema config actualizado desde tenant', { baseUrl: this.config.baseUrl }, LogCategory.SEO)
+    } catch (error) {
+      logger.warn(LogLevel.WARN, 'Error actualizando config desde tenant', {}, LogCategory.SEO)
+    }
   }
 
   private async initializeRedis(): Promise<void> {
@@ -596,7 +670,7 @@ export class EnhancedAdvancedSchemaMarkup {
       '@type': 'CollectionPage',
       name: category.name,
       description: category.description,
-      url: `${this.baseUrl}/categories/${category.slug}`,
+      url: `${this.config.baseUrl}/categories/${category.slug}`,
       mainEntity: {
         '@type': 'ItemList',
         name: category.name,
@@ -613,8 +687,8 @@ export class EnhancedAdvancedSchemaMarkup {
         item: {
           '@type': 'Product',
           name: product.name,
-          url: `${this.baseUrl}/products/${product.slug}`,
-          image: product.images[0] ? `${this.baseUrl}${product.images[0]}` : undefined,
+          url: `${this.config.baseUrl}/products/${product.slug}`,
+          image: product.images[0] ? `${this.config.baseUrl}${product.images[0]}` : undefined,
           offers: {
             '@type': 'Offer',
             price: product.price,
@@ -660,7 +734,7 @@ export class EnhancedAdvancedSchemaMarkup {
       },
       telephone: business.telephone,
       email: business.email,
-      url: this.baseUrl,
+      url: this.config.baseUrl,
       openingHours: business.openingHours,
       priceRange: business.priceRange,
       paymentAccepted: business.paymentAccepted,
@@ -675,7 +749,7 @@ export class EnhancedAdvancedSchemaMarkup {
       '@type': 'Article',
       headline: article.headline,
       description: article.description,
-      image: `${this.baseUrl}${article.image}`,
+      image: `${this.config.baseUrl}${article.image}`,
       author: {
         '@type': 'Person',
         name: article.author,
@@ -685,7 +759,7 @@ export class EnhancedAdvancedSchemaMarkup {
         name: article.publisher,
         logo: {
           '@type': 'ImageObject',
-          url: `${this.baseUrl}/images/logo/LOGO POSITIVO.svg`,
+          url: `${this.config.baseUrl}${this.config.organization.logo}`,
         },
       },
       datePublished: article.datePublished,
@@ -703,40 +777,40 @@ export class EnhancedAdvancedSchemaMarkup {
     return {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      url: this.baseUrl,
+      url: this.config.baseUrl,
       potentialAction: {
         '@type': 'SearchAction',
         target: {
           '@type': 'EntryPoint',
-          urlTemplate: `${this.baseUrl}/shop?search={search_term_string}`,
+          urlTemplate: `${this.config.baseUrl}/shop?search={search_term_string}`,
         },
         'query-input': 'required name=search_term_string',
       },
     }
   }
 
-  // Schema para Organization con información completa
+  // Schema para Organization con información completa (dinámico por tenant)
   generateOrganizationSchema() {
+    const org = this.config.organization
     return {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: 'Pinteya E-commerce',
-      alternateName: 'Pinteya',
-      description:
-        'Tu pinturería online especializada en productos de pintura, ferretería y corralón',
-      url: this.baseUrl,
-      logo: `${this.baseUrl}/images/logo/LOGO POSITIVO.svg`,
-      image: `${this.baseUrl}/images/hero/hero-bg.jpg`,
-      foundingDate: '2024',
+      name: org.name,
+      alternateName: org.name,
+      description: org.description,
+      url: this.config.baseUrl,
+      logo: `${this.baseUrl}${org.logo}`,
+      image: `${this.baseUrl}${this.config.defaultImage}`,
+      foundingDate: org.foundingDate || '2024',
       contactPoint: [
         {
           '@type': 'ContactPoint',
-          contactType: 'customer service',
+          contactType: org.contactPoint.contactType,
           availableLanguage: 'Spanish',
           areaServed: 'AR',
         },
       ],
-      sameAs: [this.baseUrl],
+      sameAs: org.sameAs || [this.config.baseUrl],
       hasOfferCatalog: {
         '@type': 'OfferCatalog',
         name: 'Productos de Pinturería',
@@ -782,13 +856,13 @@ export class EnhancedAdvancedSchemaMarkup {
       url: `${this.baseUrl}${url}`,
       isPartOf: {
         '@type': 'WebSite',
-        name: 'Pinteya E-commerce',
-        url: this.baseUrl,
+        name: this.config.siteName,
+        url: this.config.baseUrl,
       },
       inLanguage: 'es-AR',
       potentialAction: {
         '@type': 'ReadAction',
-        target: `${this.baseUrl}${url}`,
+        target: `${this.config.baseUrl}${url}`,
       },
     }
   }
@@ -837,7 +911,7 @@ export class EnhancedAdvancedSchemaMarkup {
 }
 
 // Exportar instancia singleton
-export const advancedSchemaMarkup = AdvancedSchemaMarkup.getInstance()
+export const advancedSchemaMarkup = EnhancedAdvancedSchemaMarkup.getInstance()
 
 // Exportar clase y tipos
-export { AdvancedSchemaMarkup }
+export { EnhancedAdvancedSchemaMarkup as AdvancedSchemaMarkup }

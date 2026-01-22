@@ -362,6 +362,7 @@ const getHandler = async (request: NextRequest, context: { params: Promise<{ id:
 /**
  * PUT /api/admin/products/[id] - Enterprise Handler
  * Actualizar producto específico con middleware enterprise
+ * ⚡ MULTITENANT: Verifica que el producto pertenece al tenant
  */
 const putHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const { user, validatedData } = request as any
@@ -372,6 +373,23 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
     throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
+  }
+
+  // ⚡ MULTITENANT: Obtener tenantId
+  const { getTenantConfig } = await import('@/lib/tenant')
+  const tenant = await getTenantConfig()
+  const tenantId = tenant.id
+
+  // ⚡ MULTITENANT: Verificar que el producto pertenece al tenant
+  const { data: tenantProduct } = await supabaseAdmin
+    .from('tenant_products')
+    .select('product_id')
+    .eq('product_id', parseInt(productId, 10))
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!tenantProduct) {
+    throw new NotFoundError('Producto')
   }
 
   // Verificar que el producto existe - Usar supabaseAdmin directamente
@@ -705,6 +723,7 @@ const putHandler = async (request: NextRequest, context: { params: Promise<{ id:
 /**
  * DELETE /api/admin/products/[id] - Enterprise Handler
  * Eliminar producto específico con middleware enterprise
+ * ⚡ MULTITENANT: Verifica que el producto pertenece al tenant
  */
 const deleteHandler = async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   const { user } = request as any
@@ -715,6 +734,23 @@ const deleteHandler = async (request: NextRequest, context: { params: Promise<{ 
   const paramsValidation = ProductParamsSchema.safeParse({ id: productId })
   if (!paramsValidation.success) {
     throw ValidationError('ID de producto inválido', paramsValidation.error.errors)
+  }
+
+  // ⚡ MULTITENANT: Obtener tenantId
+  const { getTenantConfig } = await import('@/lib/tenant')
+  const tenant = await getTenantConfig()
+  const tenantId = tenant.id
+
+  // ⚡ MULTITENANT: Verificar que el producto pertenece al tenant
+  const { data: tenantProduct } = await supabaseAdmin
+    .from('tenant_products')
+    .select('product_id')
+    .eq('product_id', parseInt(productId, 10))
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!tenantProduct) {
+    throw new NotFoundError('Producto')
   }
 
   // Verificar que el producto existe - Usar supabaseAdmin directamente
@@ -784,29 +820,36 @@ const deleteHandler = async (request: NextRequest, context: { params: Promise<{ 
   })
 }
 
-// Export GET handler - Completamente simplificado
-export async function GET(
+// Export GET handler - Completamente simplificado con MULTITENANT
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
+
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-) {
+) => {
   try {
-    console.log('🔥🔥🔥 GET SIMPLIFICADO - Iniciando')
-    
-    // ✅ CORREGIDO: Pasar request para que auth() pueda leer las cookies
-    const authResult = await checkAdminPermissionsForProducts('read', request)
-    if (!authResult.allowed) {
-      console.error('❌ [GET Product] Acceso denegado:', authResult.error)
-      return NextResponse.json({ 
-        error: authResult.error || 'Acceso denegado',
-        code: 'AUTH_ERROR'
-      }, { status: 403 })
-    }
+    const { tenantId } = guardResult
+    console.log('🔥🔥🔥 GET SIMPLIFICADO - Iniciando (MULTITENANT)')
     
     const { id } = await context.params
     console.log('🔥🔥🔥 ID recibido:', id)
     
     const productId = parseInt(id, 10)
     console.log('🔥🔥🔥 ID parseado:', productId)
+    
+    // ⚡ MULTITENANT: Verificar que el producto pertenece al tenant usando tenant_products
+    const { data: tenantProduct } = await supabaseAdmin
+      .from('tenant_products')
+      .select('product_id')
+      .eq('product_id', productId)
+      .eq('tenant_id', tenantId)
+      .single()
+    
+    if (!tenantProduct) {
+      console.log('🔥🔥🔥 Producto no pertenece al tenant, retornando 404')
+      return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 })
+    }
     
     // Query directa - ✅ AGREGADO: aikon_id en el select
     const { data, error } = await supabaseAdmin
@@ -1014,7 +1057,7 @@ export async function GET(
     console.error('🔥🔥🔥 Error en GET:', err)
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
-}
+})
 
 export const PUT = composeMiddlewares(
   withErrorHandler,

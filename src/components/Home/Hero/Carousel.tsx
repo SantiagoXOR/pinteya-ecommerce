@@ -1,6 +1,7 @@
 /**
  * Componente HeroCarousel refactorizado y optimizado
  * Usa componentes modulares y hooks para mejor performance
+ * Soporta multitenancy - usa rutas de assets del tenant
  */
 
 'use client'
@@ -8,33 +9,57 @@
 import React, { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useSwipeGestures } from '@/hooks/useSwipeGestures'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantHeroSlides } from '@/utils/imageOptimization'
 import Slide from './Slide'
 import NavigationButtons from './NavigationButtons'
 import Indicators from './Indicators'
 import type { HeroCarouselProps, HeroSlide } from './types'
 
 // ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia
-// ⚡ FIX: Incluir las 3 imágenes del hero (hero1, hero2, hero3)
-const DEFAULT_SLIDES: HeroSlide[] = [
+// Fallback slides para cuando no hay tenant context
+const FALLBACK_SLIDES: HeroSlide[] = [
   {
     id: 'hero-1',
     image: '/images/hero/hero2/hero1.webp',
-    alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad - Pinteya',
+    alt: 'Pintá rápido, fácil y cotiza al instante - Productos de pinturería de calidad',
   },
   {
     id: 'hero-2',
     image: '/images/hero/hero2/hero2.webp',
-    alt: 'Envío express en 24HS - Pinteya',
+    alt: 'Envío express en 24HS',
   },
   {
     id: 'hero-3',
     image: '/images/hero/hero2/hero3.webp',
-    alt: 'Pagá con Mercado Pago - Pinteya',
+    alt: 'Pagá con Mercado Pago',
   },
 ]
 
 const HeroCarousel: React.FC<HeroCarouselProps> = memo(
-  ({ slides = DEFAULT_SLIDES, autoPlayInterval = 5000, startIndex = 1 }) => {
+  ({ slides: propSlides, autoPlayInterval = 5000, startIndex = 1 }) => {
+    // Obtener tenant para rutas de assets dinámicas
+    const tenant = useTenantSafe()
+    
+    // Generar slides basados en el tenant o usar los proporcionados/fallback
+    const DEFAULT_SLIDES = useMemo(() => {
+      if (propSlides && propSlides.length > 0) {
+        return propSlides
+      }
+      
+      if (tenant) {
+        // Usar rutas del tenant con alt text dinámico
+        const tenantSlides = getTenantHeroSlides(tenant.slug, 3)
+        return tenantSlides.map((slide, index) => ({
+          ...slide,
+          alt: `${tenant.name} - Hero ${index + 1}`,
+        }))
+      }
+      
+      return FALLBACK_SLIDES
+    }, [tenant, propSlides])
+    
+    const slides = DEFAULT_SLIDES
     // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento para deshabilitar auto-play
     const performanceLevel = useDevicePerformance()
     const isLowPerformance = performanceLevel === 'low'

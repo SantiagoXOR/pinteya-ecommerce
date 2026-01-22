@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth/config'
 import { createAdminClient } from '@/lib/integrations/supabase/server'
 import { logger, LogLevel, LogCategory } from '@/lib/enterprise/logger'
 import { MercadoPagoConfig, PaymentRefund } from 'mercadopago'
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
+import { getTenantById } from '@/lib/tenant/tenant-service'
 
 // ===================================
 // MIDDLEWARE DE AUTENTICACIÓN ADMIN
@@ -104,36 +106,36 @@ async function restoreStockForOrder(orderId: string, supabase: any): Promise<{ s
  * POST /api/admin/orders/[id]/refund
  * Procesa un reembolso real para una orden usando MercadoPago API
  */
-export async function POST(
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   let orderId: string | undefined
+  const { tenantId } = guardResult
   try {
     const { id } = await context.params
     orderId = id
     const body = await request.json()
     const { amount, reason = 'Reembolso solicitado por administrador' } = body
 
-    // Verificar autenticación admin
-    const authResult = await validateAdminAuth()
-    if ('error' in authResult) {
-      return NextResponse.json({ success: false, error: authResult.error }, { status: authResult.status || 401 })
-    }
-
     logger.log(LogLevel.INFO, LogCategory.API, 'Processing refund for order', {
       orderId,
-      userId: authResult.userId,
+      userId: guardResult.userId,
+      tenantId,
       amount,
       reason,
     })
 
-    // Obtener datos actuales de la orden
+    // ===================================
+    // MULTITENANT: Obtener orden del tenant
+    // ===================================
     const supabase = createAdminClient()
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('id, status, payment_status, total, payment_id, payment_preference_id, payment_method')
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
       .single()
 
     if (orderError || !order) {
@@ -168,14 +170,15 @@ export async function POST(
       console.log('[REFUND] Procesando reembolso con MercadoPago para payment_id:', order.payment_id)
       
       try {
-        // Verificar que tenemos el access token
-        if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
-          throw new Error('MERCADOPAGO_ACCESS_TOKEN no configurado')
+        // ⚡ MULTITENANT: Obtener credenciales del tenant
+        const tenant = await getTenantById(tenantId)
+        if (!tenant || !tenant.mercadopagoAccessToken) {
+          throw new Error('MercadoPago no configurado para este tenant')
         }
 
-        // Crear cliente de MercadoPago
+        // Crear cliente de MercadoPago con credenciales del tenant
         const client = new MercadoPagoConfig({
-          accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
+          accessToken: tenant.mercadopagoAccessToken,
         })
         const paymentRefund = new PaymentRefund(client)
 
@@ -263,10 +266,12 @@ export async function POST(
       updated_at: new Date().toISOString(),
     }
 
+    // ⚡ MULTITENANT: Actualizar orden del tenant
     const { error: updateError } = await supabase
       .from('orders')
       .update(updateData)
       .eq('id', orderId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT: Verificar que pertenece al tenant
 
     if (updateError) {
       logger.log(LogLevel.ERROR, LogCategory.API, 'Error updating order after refund', {
@@ -300,14 +305,14 @@ export async function POST(
         order_id: orderId,
         previous_status: order.status,
         new_status: 'refunded',
-        changed_by: authResult.userId,
+        changed_by: guardResult.userId, // ⚡ MULTITENANT: Usar userId del guard
         reason: `Reembolso procesado: ${reason}`,
         metadata: JSON.stringify({
           refund_id: refundResult.refund_id,
           refund_amount: refundResult.amount,
           refund_reason: reason,
           refund_source: refundResult.source,
-          processed_by: authResult.userId,
+          processed_by: guardResult.userId, // ⚡ MULTITENANT: Usar userId del guard
         }),
       })
     } catch (historyError) {
@@ -353,4 +358,4 @@ export async function POST(
       { status: 500 }
     )
   }
-}
+})

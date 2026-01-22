@@ -204,7 +204,7 @@ h-12 md:h-14               /* Botones adaptativos */
 // Variables de entorno preservadas
 NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=your_public_key
 MERCADOPAGO_ACCESS_TOKEN=your_access_token
-NEXT_PUBLIC_BASE_URL=https://pinteya-ecommerce.vercel.app
+NEXT_PUBLIC_BASE_URL=https://www.pinteya.com
 ```
 
 ---
@@ -278,7 +278,7 @@ npm run test:conversion
 # Producción
 NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=prod_key
 MERCADOPAGO_ACCESS_TOKEN=prod_token
-NEXT_PUBLIC_BASE_URL=https://pinteya-ecommerce.vercel.app
+NEXT_PUBLIC_BASE_URL=https://www.pinteya.com
 
 # Analytics
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX

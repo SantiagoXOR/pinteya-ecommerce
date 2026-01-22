@@ -5,6 +5,7 @@ import React, { useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence, useAnimation, useMotionValue } from '@/lib/framer-motion-lazy'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface CheckoutTransitionAnimationProps {
   isActive: boolean
@@ -37,6 +38,11 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
   const progressValue = useMotionValue(0)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const animationStartTimeRef = useRef<number | null>(null)
+  
+  // Obtener logo del tenant
+  const tenant = useTenantSafe()
+  const tenantLogo = tenant?.logoUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo.svg`
+  const tenantName = tenant?.name || 'Pinteya'
 
   // Configuración de duración optimizada
   const animationDuration = useMemo(() => {
@@ -278,10 +284,10 @@ export const CheckoutTransitionAnimation: React.FC<CheckoutTransitionAnimationPr
               />
             )}
 
-            {/* Logo principal con optimizaciones */}
+            {/* Logo principal con optimizaciones - dinámico por tenant */}
             <Image
-              src='/images/logo/LOGO POSITIVO.svg'
-              alt='Pinteya Logo'
+              src={tenantLogo}
+              alt={`${tenantName} Logo`}
               width={enablePerformanceMode ? 80 : 120}
               height={enablePerformanceMode ? 80 : 120}
               className='relative z-10 checkout-transition-logo'

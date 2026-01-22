@@ -18,6 +18,16 @@ export * from '../analytics-optimized'
 export * from '../google-analytics'
 
 // =====================================================
+// EXTERNAL ANALYTICS APIs
+// =====================================================
+// Google Analytics 4 Data API
+export * from './google-analytics-api'
+// Meta Marketing API
+export * from './meta-marketing-api'
+// Meta Pixel Analytics (legacy - local data)
+export * from './meta-pixel-analytics'
+
+// =====================================================
 // DATABASE INTEGRATION
 // =====================================================
 export * from '../supabase'

@@ -9,12 +9,17 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useAppDispatch } from '@/redux/store'
 import { removeAllItemsFromCart } from '@/redux/features/cart-slice'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 export default function MercadoPagoSuccessPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const dispatch = useAppDispatch()
   const [countdown, setCountdown] = useState(10)
+  
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const tenantName = tenant?.name || 'Pinteya'
 
   // Extraer datos de la URL de MercadoPago
   const orderId = searchParams.get('order_id')
@@ -28,8 +33,8 @@ export default function MercadoPagoSuccessPage() {
   const [whatsappMessage, setWhatsappMessage] = useState<string>('')
   const [phoneNumber, setPhoneNumber] = useState<string>('')
 
-  // Número de WhatsApp del negocio
-  const businessPhone = '5493513411796'
+  // Número de WhatsApp del negocio (dinámico por tenant)
+  const businessPhone = tenant?.whatsappNumber || '5493513411796'
 
   // Helper: resuelve el mejor endpoint de WhatsApp según dispositivo
   const resolveWhatsAppLink = (
@@ -76,7 +81,7 @@ export default function MercadoPagoSuccessPage() {
   }) => {
     // Usar el mismo formato que whatsappLinkService para consistencia
     const lines = [
-      `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+      `✨ *¡Gracias por tu compra en ${tenantName}!* 🛍`,
       `💳 Tu pago con MercadoPago ha sido procesado exitosamente`,
       '',
       `*Detalle de Orden:*`,

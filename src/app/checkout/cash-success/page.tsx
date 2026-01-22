@@ -11,6 +11,7 @@ import { trackPurchase as trackGA4Purchase } from '@/lib/google-analytics'
 import { trackPurchase as trackMetaPurchase } from '@/lib/meta-pixel'
 import { trackGoogleAdsPurchase } from '@/lib/google-ads'
 import { Separator } from '@/components/ui/separator'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 export default function CashSuccessPage() {
   const searchParams = useSearchParams()
@@ -18,6 +19,10 @@ export default function CashSuccessPage() {
   const { trackEvent, trackConversion } = useAnalytics()
   const [purchaseTracked, setPurchaseTracked] = useState(false)
   const [hasRedirected, setHasRedirected] = useState(false)
+  
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const businessPhone = tenant?.whatsappNumber || '5493513411796'
 
   // Extraer datos de la URL
   const orderId = searchParams.get('orderId')
@@ -134,9 +139,8 @@ export default function CashSuccessPage() {
         }
       } catch {}
 
-      // Fallback a número de negocio conocido
-      const fallbackPhone = '5493513411796'
-      const phoneToUse = extractedPhone || fallbackPhone
+      // Fallback a número de negocio del tenant
+      const phoneToUse = extractedPhone || businessPhone
       setPhoneNumber(phoneToUse)
 
       // Intentar obtener el mensaje de WhatsApp desde localStorage primero

@@ -6,7 +6,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/integrations/supabase/server'
-import { auth } from '@/auth'
+import { auth } from '@/lib/auth/config'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // =====================================================
 // VALIDACIÓN DE ADMIN
@@ -53,16 +55,17 @@ async function validateAdmin() {
 
 // =====================================================
 // PATCH: ASIGNAR DRIVER A RUTA
+// ⚡ MULTITENANT: Verifica pertenencia al tenant
 // =====================================================
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export const PATCH = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
-
-    const routeId = params.id
+    const { tenantId } = guardResult
+    const { id: routeId } = await context.params
     const body = await request.json()
     const { driver_id } = body
 
@@ -72,11 +75,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const supabase = await createClient()
 
-    // Verificar que la ruta existe
+    // ⚡ MULTITENANT: Verificar que la ruta existe y pertenece al tenant
     const { data: route, error: routeError } = await supabase
       .from('optimized_routes')
-      .select('id, status, shipments, total_distance, estimated_time')
+      .select('id, status, shipments, total_distance, estimated_time, driver_id')
       .eq('id', routeId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (routeError || !route) {
@@ -85,11 +89,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     // Si se está asignando un driver
     if (driver_id) {
-      // Verificar que el driver existe y está disponible
+      // ⚡ MULTITENANT: Verificar que el driver existe, está disponible y pertenece al tenant
       const { data: driver, error: driverError } = await supabase
         .from('logistics_drivers')
-        .select('id, name, status, max_capacity, vehicle_type')
+        .select('id, name, status, max_capacity, vehicle_type, tenant_id')
         .eq('id', driver_id)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .single()
 
       if (driverError || !driver) {
@@ -111,11 +116,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         )
       }
 
-      // Verificar que el driver no tenga otras rutas activas
+      // ⚡ MULTITENANT: Verificar que el driver no tenga otras rutas activas del mismo tenant
       const { data: activeRoutes, error: activeRoutesError } = await supabase
         .from('optimized_routes')
         .select('id')
         .eq('driver_id', driver_id)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .eq('status', 'active')
 
       if (activeRoutesError) {
@@ -134,6 +140,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       }
 
       // Asignar driver a la ruta
+      // ⚡ MULTITENANT: Filtrar por tenant_id
       const { data: updatedRoute, error: updateError } = await supabase
         .from('optimized_routes')
         .update({
@@ -141,6 +148,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           updated_at: new Date().toISOString(),
         })
         .eq('id', routeId)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .select(
           `
           *,
@@ -162,8 +170,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       }
 
       // Actualizar estado del driver a busy si la ruta está activa
+      // ⚡ MULTITENANT: Filtrar por tenant_id
       if (route.status === 'active') {
-        await supabase.from('logistics_drivers').update({ status: 'busy' }).eq('id', driver_id)
+        await supabase
+          .from('logistics_drivers')
+          .update({ status: 'busy' })
+          .eq('id', driver_id)
+          .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       }
 
       return NextResponse.json({
@@ -177,6 +190,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       const currentDriverId = route.driver_id
 
       // Desasignar driver de la ruta
+      // ⚡ MULTITENANT: Filtrar por tenant_id
       const { data: updatedRoute, error: updateError } = await supabase
         .from('optimized_routes')
         .update({
@@ -184,6 +198,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           updated_at: new Date().toISOString(),
         })
         .eq('id', routeId)
+        .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         .select()
         .single()
 
@@ -194,19 +209,22 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
       // Si había un driver asignado, verificar si puede volver a available
       if (currentDriverId) {
-        // Verificar si el driver tiene otras rutas activas
+        // ⚡ MULTITENANT: Verificar si el driver tiene otras rutas activas del mismo tenant
         const { data: otherActiveRoutes } = await supabase
           .from('optimized_routes')
           .select('id')
           .eq('driver_id', currentDriverId)
+          .eq('tenant_id', tenantId) // ⚡ MULTITENANT
           .eq('status', 'active')
 
         // Si no tiene otras rutas activas, marcarlo como available
+        // ⚡ MULTITENANT: Filtrar por tenant_id
         if (!otherActiveRoutes || otherActiveRoutes.length === 0) {
           await supabase
             .from('logistics_drivers')
             .update({ status: 'available' })
             .eq('id', currentDriverId)
+            .eq('tenant_id', tenantId) // ⚡ MULTITENANT
         }
       }
 
@@ -219,20 +237,21 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     console.error('Error en PATCH /api/admin/logistics/routes/[id]/assign-driver:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // =====================================================
 // GET: OBTENER DRIVERS DISPONIBLES PARA LA RUTA
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
-
-    const routeId = params.id
+    const { tenantId } = guardResult
+    const { id: routeId } = await context.params
 
     if (!routeId) {
       return NextResponse.json({ error: 'ID de ruta requerido' }, { status: 400 })
@@ -240,11 +259,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const supabase = await createClient()
 
-    // Obtener información de la ruta
+    // ⚡ MULTITENANT: Obtener información de la ruta filtrando por tenant_id
     const { data: route, error: routeError } = await supabase
       .from('optimized_routes')
       .select('id, shipments, total_distance, estimated_time')
       .eq('id', routeId)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (routeError || !route) {
@@ -253,7 +273,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const shipmentsCount = Array.isArray(route.shipments) ? route.shipments.length : 0
 
-    // Obtener drivers disponibles con capacidad suficiente
+    // ⚡ MULTITENANT: Obtener drivers disponibles con capacidad suficiente del tenant
     const { data: availableDrivers, error: driversError } = await supabase
       .from('logistics_drivers')
       .select(
@@ -268,6 +288,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         current_location
       `
       )
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .eq('status', 'available')
       .gte('max_capacity', shipmentsCount)
       .order('name', { ascending: true })
@@ -306,4 +327,4 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     console.error('Error en GET /api/admin/logistics/routes/[id]/assign-driver:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})

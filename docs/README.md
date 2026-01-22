@@ -145,8 +145,8 @@
 ### 🌐 **Producción**
 
 - **App en Vivo**: [pinteya.com](https://pinteya.com)
-- **Repositorio**: [GitHub](https://github.com/SantiagoXOR/pinteya-ecommerce)
-- **Dashboard Vercel**: [Vercel Dashboard](https://vercel.com/santiagoxor/pinteya-ecommerce)
+- **Repositorio**: [GitHub](https://github.com/SantiagoXOR/pintureria-digital)
+- **Dashboard Vercel**: [Vercel Dashboard](https://vercel.com/santiagoxor/pintureria-digital)
 
 ### 🛠️ **Desarrollo**
 

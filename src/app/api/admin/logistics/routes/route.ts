@@ -10,6 +10,8 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/integrations/supabase/server'
 import { auth } from '@/lib/auth/config'
+// ⚡ MULTITENANT: Importar guard de tenant admin
+import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 
 // =====================================================
 // INTERFACES
@@ -83,14 +85,15 @@ async function validateAdmin() {
 
 // =====================================================
 // GET: OBTENER RUTAS
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function GET(request: NextRequest) {
+export const GET = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
+    const { tenantId } = guardResult
 
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
@@ -102,6 +105,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Construir consulta
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     let query = supabase
       .from('optimized_routes')
       .select(
@@ -117,6 +121,7 @@ export async function GET(request: NextRequest) {
         )
       `
       )
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -150,18 +155,19 @@ export async function GET(request: NextRequest) {
     console.error('Error en GET /api/admin/logistics/routes:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // =====================================================
 // POST: CREAR NUEVA RUTA
+// ⚡ MULTITENANT: Asigna tenant_id al crear
 // =====================================================
 
-export async function POST(request: NextRequest) {
+export const POST = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
+    const { tenantId } = guardResult
 
     const body = await request.json()
     const {
@@ -188,7 +194,43 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
+    // ⚡ MULTITENANT: Verificar que los shipments pertenecen al tenant
+    if (shipments.length > 0) {
+      const shipmentIds = shipments.map(s => s.id).filter(Boolean)
+      if (shipmentIds.length > 0) {
+        const { data: shipmentTenants } = await supabase
+          .from('shipments')
+          .select('id, tenant_id')
+          .in('id', shipmentIds)
+        
+        const invalidShipments = shipmentTenants?.filter(s => s.tenant_id !== tenantId)
+        if (invalidShipments && invalidShipments.length > 0) {
+          return NextResponse.json(
+            { error: 'Algunos envíos no pertenecen a este tenant' },
+            { status: 403 }
+          )
+        }
+      }
+    }
+
+    // ⚡ MULTITENANT: Verificar que el driver pertenece al tenant si se asigna
+    if (driver_id) {
+      const { data: driver } = await supabase
+        .from('logistics_drivers')
+        .select('id, tenant_id')
+        .eq('id', driver_id)
+        .single()
+      
+      if (!driver || driver.tenant_id !== tenantId) {
+        return NextResponse.json(
+          { error: 'El conductor no pertenece a este tenant' },
+          { status: 403 }
+        )
+      }
+    }
+
     // Crear la ruta
+    // ⚡ MULTITENANT: Asignar tenant_id al crear
     const { data: route, error: routeError } = await supabase
       .from('optimized_routes')
       .insert({
@@ -202,6 +244,7 @@ export async function POST(request: NextRequest) {
         start_location: start_location || null,
         waypoints: waypoints || [],
         optimization_score: optimization_score || 0,
+        tenant_id: tenantId, // ⚡ MULTITENANT
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -214,6 +257,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Si hay envíos, actualizar su route_id
+    // ⚡ MULTITENANT: Filtrar por tenant_id al actualizar
     if (shipments.length > 0) {
       const shipmentIds = shipments.map(s => s.id).filter(Boolean)
 
@@ -222,6 +266,7 @@ export async function POST(request: NextRequest) {
           .from('shipments')
           .update({ route_id: route.id })
           .in('id', shipmentIds)
+          .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
         if (updateError) {
           console.error('Error al actualizar envíos con route_id:', updateError)
@@ -235,18 +280,19 @@ export async function POST(request: NextRequest) {
     console.error('Error en POST /api/admin/logistics/routes:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // =====================================================
 // PATCH: ACTUALIZAR RUTA
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
+    const { tenantId } = guardResult
 
     const body = await request.json()
     const { id, ...updates } = body
@@ -257,7 +303,36 @@ export async function PATCH(request: NextRequest) {
 
     const supabase = await createClient()
 
+    // ⚡ MULTITENANT: Verificar que la ruta pertenece al tenant antes de actualizar
+    const { data: existingRoute } = await supabase
+      .from('optimized_routes')
+      .select('id, tenant_id')
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (!existingRoute) {
+      return NextResponse.json({ error: 'Ruta no encontrada' }, { status: 404 })
+    }
+
+    // ⚡ MULTITENANT: Verificar que el driver pertenece al tenant si se actualiza
+    if (updates.driver_id) {
+      const { data: driver } = await supabase
+        .from('logistics_drivers')
+        .select('id, tenant_id')
+        .eq('id', updates.driver_id)
+        .single()
+      
+      if (!driver || driver.tenant_id !== tenantId) {
+        return NextResponse.json(
+          { error: 'El conductor no pertenece a este tenant' },
+          { status: 403 }
+        )
+      }
+    }
+
     // Actualizar la ruta
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: route, error } = await supabase
       .from('optimized_routes')
       .update({
@@ -265,6 +340,7 @@ export async function PATCH(request: NextRequest) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .select()
       .single()
 
@@ -278,18 +354,19 @@ export async function PATCH(request: NextRequest) {
     console.error('Error en PATCH /api/admin/logistics/routes:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})
 
 // =====================================================
 // DELETE: ELIMINAR RUTA
+// ⚡ MULTITENANT: Filtra por tenant_id
 // =====================================================
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = withTenantAdmin(async (
+  guardResult: TenantAdminGuardResult,
+  request: NextRequest
+) => {
   try {
-    const validation = await validateAdmin()
-    if (validation.error) {
-      return NextResponse.json({ error: validation.error }, { status: validation.status })
-    }
+    const { tenantId } = guardResult
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
@@ -300,11 +377,13 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = await createClient()
 
-    // Verificar que la ruta existe y no está activa
+    // Verificar que la ruta existe, no está activa y pertenece al tenant
+    // ⚡ MULTITENANT: Filtrar por tenant_id
     const { data: existingRoute, error: checkError } = await supabase
       .from('optimized_routes')
       .select('id, status, shipments')
       .eq('id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       .single()
 
     if (checkError || !existingRoute) {
@@ -316,16 +395,26 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Limpiar route_id de los envíos
+    // ⚡ MULTITENANT: Filtrar por tenant_id al actualizar
     if (existingRoute.shipments && Array.isArray(existingRoute.shipments)) {
       const shipmentIds = existingRoute.shipments.map((s: any) => s.id).filter(Boolean)
 
       if (shipmentIds.length > 0) {
-        await supabase.from('shipments').update({ route_id: null }).in('id', shipmentIds)
+        await supabase
+          .from('shipments')
+          .update({ route_id: null })
+          .in('id', shipmentIds)
+          .eq('tenant_id', tenantId) // ⚡ MULTITENANT
       }
     }
 
     // Eliminar la ruta
-    const { error: deleteError } = await supabase.from('optimized_routes').delete().eq('id', id)
+    // ⚡ MULTITENANT: Filtrar por tenant_id
+    const { error: deleteError } = await supabase
+      .from('optimized_routes')
+      .delete()
+      .eq('id', id)
+      .eq('tenant_id', tenantId) // ⚡ MULTITENANT
 
     if (deleteError) {
       console.error('Error al eliminar ruta:', deleteError)
@@ -337,4 +426,4 @@ export async function DELETE(request: NextRequest) {
     console.error('Error en DELETE /api/admin/logistics/routes:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
-}
+})

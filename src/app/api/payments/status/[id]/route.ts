@@ -7,6 +7,7 @@ import { auth } from '@/auth'
 import { getPaymentInfo } from '@/lib/integrations/mercadopago'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { ApiResponse } from '@/types/api'
+import { getTenantById } from '@/lib/tenant/tenant-service'
 
 interface RouteParams {
   params: Promise<{
@@ -49,6 +50,7 @@ export async function GET(request: NextRequest, context: RouteParams) {
       .select(
         `
         *,
+        tenant_id,
         order_items (
           id,
           quantity,
@@ -79,23 +81,41 @@ export async function GET(request: NextRequest, context: RouteParams) {
 
     // Si hay un payment_id, obtener información de MercadoPago
     if (order.payment_id) {
-      const paymentResult = await getPaymentInfo(order.payment_id)
+      // ⚡ MULTITENANT: Obtener credenciales del tenant
+      let accessToken: string | null = null
+      if (order.tenant_id) {
+        const tenant = await getTenantById(order.tenant_id)
+        if (tenant?.mercadopagoAccessToken) {
+          accessToken = tenant.mercadopagoAccessToken
+        }
+      }
+      
+      // Fallback a variable de entorno si no hay tenant configurado
+      if (!accessToken) {
+        accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
+      }
 
-      if (paymentResult.success && 'data' in paymentResult) {
-        paymentInfo = paymentResult.data
-        mercadoPagoStatus = {
-          id: paymentInfo.id,
-          status: paymentInfo.status,
-          status_detail: paymentInfo.status_detail,
-          transaction_amount: paymentInfo.transaction_amount,
-          currency_id: paymentInfo.currency_id,
-          date_created: paymentInfo.date_created,
-          date_approved: paymentInfo.date_approved,
-          payment_method: {
-            id: paymentInfo.payment_method_id,
-            type: paymentInfo.payment_type_id,
-          },
-          installments: paymentInfo.installments,
+      if (!accessToken) {
+        console.warn('No hay credenciales de MercadoPago disponibles para obtener información del pago')
+      } else {
+        const paymentResult = await getPaymentInfo(order.payment_id, accessToken)
+
+        if (paymentResult.success && 'data' in paymentResult) {
+          paymentInfo = paymentResult.data
+          mercadoPagoStatus = {
+            id: paymentInfo.id,
+            status: paymentInfo.status,
+            status_detail: paymentInfo.status_detail,
+            transaction_amount: paymentInfo.transaction_amount,
+            currency_id: paymentInfo.currency_id,
+            date_created: paymentInfo.date_created,
+            date_approved: paymentInfo.date_approved,
+            payment_method: {
+              id: paymentInfo.payment_method_id,
+              type: paymentInfo.payment_type_id,
+            },
+            installments: paymentInfo.installments,
+          }
         }
       }
     }
@@ -193,7 +213,7 @@ export async function POST(request: NextRequest, context: RouteParams) {
     // Verificar que la orden pertenece al usuario
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('*')
+      .select('*, tenant_id')
       .eq('id', orderId)
       .eq('user_id', userId)
       .single()
@@ -209,53 +229,71 @@ export async function POST(request: NextRequest, context: RouteParams) {
 
     // Si se proporciona payment_id, obtener información actualizada
     if (payment_id) {
-      const paymentResult = await getPaymentInfo(payment_id)
-
-      if (paymentResult.success && 'data' in paymentResult) {
-        const payment = paymentResult.data
-
-        // Mapear estado de MercadoPago
-        let newStatus: string
-        switch (payment.status) {
-          case 'approved':
-            newStatus = 'paid'
-            break
-          case 'pending':
-          case 'in_process':
-            newStatus = 'pending'
-            break
-          case 'rejected':
-          case 'cancelled':
-            newStatus = 'cancelled'
-            break
-          default:
-            newStatus = order.status // Mantener estado actual
+      // ⚡ MULTITENANT: Obtener credenciales del tenant
+      let accessToken: string | null = null
+      if (order.tenant_id) {
+        const tenant = await getTenantById(order.tenant_id)
+        if (tenant?.mercadopagoAccessToken) {
+          accessToken = tenant.mercadopagoAccessToken
         }
+      }
+      
+      // Fallback a variable de entorno si no hay tenant configurado
+      if (!accessToken) {
+        accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || ''
+      }
 
-        // Actualizar orden si el estado cambió
-        if (newStatus !== order.status) {
-          await supabase
-            .from('orders')
-            .update({
+      if (!accessToken) {
+        console.warn('No hay credenciales de MercadoPago disponibles para obtener información del pago')
+      } else {
+        const paymentResult = await getPaymentInfo(payment_id, accessToken)
+
+        if (paymentResult.success && 'data' in paymentResult) {
+          const payment = paymentResult.data
+
+          // Mapear estado de MercadoPago
+          let newStatus: string
+          switch (payment.status) {
+            case 'approved':
+              newStatus = 'paid'
+              break
+            case 'pending':
+            case 'in_process':
+              newStatus = 'pending'
+              break
+            case 'rejected':
+            case 'cancelled':
+              newStatus = 'cancelled'
+              break
+            default:
+              newStatus = order.status // Mantener estado actual
+          }
+
+          // Actualizar orden si el estado cambió
+          if (newStatus !== order.status) {
+            await supabase
+              .from('orders')
+              .update({
+                status: newStatus,
+                payment_id: payment_id,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', orderId)
+          }
+
+          const successResponse: ApiResponse<any> = {
+            data: {
+              order_id: orderId,
               status: newStatus,
-              payment_id: payment_id,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', orderId)
-        }
+              payment_status: payment.status,
+              amount: payment.transaction_amount,
+            },
+            success: true,
+            message: 'Estado actualizado exitosamente',
+          }
 
-        const successResponse: ApiResponse<any> = {
-          data: {
-            order_id: orderId,
-            status: newStatus,
-            payment_status: payment.status,
-            amount: payment.transaction_amount,
-          },
-          success: true,
-          message: 'Estado actualizado exitosamente',
+          return NextResponse.json(successResponse, { status: 200 })
         }
-
-        return NextResponse.json(successResponse, { status: 200 })
       }
     }
 

@@ -69,8 +69,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ```bash
 # Clonar repositorio
-git clone https://github.com/SantiagoXOR/pinteya-ecommerce.git
-cd pinteya-ecommerce
+git clone https://github.com/SantiagoXOR/pintureria-digital.git
+cd pintureria-digital
 
 # Instalar dependencias
 npm install
@@ -914,7 +914,7 @@ Para soporte técnico:
 - **Email**: dev@pinteya.com
 - **Slack**: #pinteya-dev
 - **Documentación**: [docs.pinteya.com](https://docs.pinteya.com)
-- **Issues**: [GitHub Issues](https://github.com/SantiagoXOR/pinteya-ecommerce/issues)
+- **Issues**: [GitHub Issues](https://github.com/SantiagoXOR/pintureria-digital/issues)
 
 ## 📋 Guías de Desarrollo
 

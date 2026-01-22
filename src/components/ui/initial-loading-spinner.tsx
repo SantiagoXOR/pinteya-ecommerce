@@ -3,21 +3,35 @@
 import { useEffect, useState, useId } from 'react'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface InitialLoadingSpinnerProps {
   /** Duración mínima de visualización en ms (para evitar parpadeo) */
   minDisplayTime?: number
   /** Ocultar automáticamente cuando el contenido esté listo */
   autoHide?: boolean
+  /** Override del logo (tiene prioridad sobre tenant) */
+  logoSrc?: string
+  /** Override del nombre/alt */
+  logoAlt?: string
 }
 
 export function InitialLoadingSpinner({
   minDisplayTime = 300, // Reducido de 800ms a 300ms para respuesta más rápida
   autoHide = true,
+  logoSrc,
+  logoAlt,
 }: InitialLoadingSpinnerProps) {
   const [isVisible, setIsVisible] = useState(true)
   const [progress, setProgress] = useState(0)
   const gradientId = useId()
+  
+  // Obtener tenant del context (si está disponible)
+  const tenant = useTenantSafe()
+  
+  // Determinar logo y nombre
+  const displayLogo = logoSrc || tenant?.logoUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo.svg`
+  const displayAlt = logoAlt || tenant?.name || 'Cargando'
 
   useEffect(() => {
     if (!autoHide) return
@@ -136,7 +150,7 @@ export function InitialLoadingSpinner({
         background: 'linear-gradient(180deg, #ffd549 0%, #fff4c6 50%, #ffffff 100%)',
         backgroundAttachment: 'fixed',
       }}
-      aria-label="Cargando Pinteya"
+      aria-label={`Cargando ${displayAlt}`}
       role="status"
       data-z-index="10000"
     >
@@ -160,7 +174,7 @@ export function InitialLoadingSpinner({
               fill="none"
               className="text-gray-200"
             />
-            {/* Círculo de progreso del spinner con gradiente */}
+            {/* Círculo de progreso del spinner con gradiente dinámico por tenant */}
             <circle
               cx="100"
               cy="100"
@@ -173,29 +187,30 @@ export function InitialLoadingSpinner({
               strokeDashoffset={offset}
               className="transition-all duration-300 ease-out"
             />
-            {/* Definir gradiente con colores de Pinteya */}
+            {/* Definir gradiente con colores del tenant */}
             <defs>
               <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f27a1d" /> {/* blaze-orange-500 */}
-                <stop offset="50%" stopColor="#00f269" /> {/* fun-green-500 */}
-                <stop offset="100%" stopColor="#f9a007" /> {/* bright-sun-500 */}
+                <stop offset="0%" stopColor={tenant?.primaryColor || '#f27a1d'} />
+                <stop offset="50%" stopColor={tenant?.accentColor || '#00f269'} />
+                <stop offset="100%" stopColor={tenant?.secondaryColor || '#f9a007'} />
               </linearGradient>
             </defs>
           </svg>
 
-          {/* Círculo naranja con el logo dentro */}
+          {/* Círculo con el logo dentro (color dinámico por tenant) */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div
-              className="rounded-full bg-blaze-orange-500 flex items-center justify-center shadow-lg"
+              className="rounded-full flex items-center justify-center shadow-lg"
               style={{
                 width: `${innerRadius * 2}px`,
                 height: `${innerRadius * 2}px`,
+                backgroundColor: tenant?.primaryColor || '#f27a1d',
               }}
             >
-              {/* Logo positivo sin filtros */}
+              {/* Logo dinámico del tenant */}
               <Image
-                src="/images/logo/LOGO POSITIVO.svg"
-                alt="Pinteya"
+                src={displayLogo}
+                alt={displayAlt}
                 width={100}
                 height={40}
                 priority
