@@ -1770,3 +1770,23 @@ El sistema multitenant de PintureríaDigital está **completamente implementado 
    - Cache de configuración de tenant en Redis (opcional)
    - Prefetch de configuración de tenant en middleware
    - Más índices parciales según patrones de queries reales
+
+---
+
+## 📚 Referencias
+
+### Documentación Principal
+- `docs/MULTITENANCY.md` - Este documento (documentación completa del sistema multitenant)
+- `docs/GUIA_DEPLOY_PRODUCCION_MULTITENANT.md` - Guía completa de deployment a producción
+- `docs/VERIFICACION_PRODUCCION_PINTEMAS.md` - **NUEVO**: Guía de verificación de Pintemas en producción con herramientas MCP
+
+### Configuración
+- `docs/MERCADOPAGO_TENANT_SETUP.md` - Configuración de MercadoPago por tenant
+- `docs/VARIABLES_ENTORNO_MULTITENANT.md` - Variables de entorno multitenant
+
+### Scripts y Herramientas
+- `scripts/verify-tenant-pintemas.js` - Script de verificación del tenant Pintemas
+- `.cursor/plans/verificacion_produccion_pintemas_mcp.plan.md` - Plan de verificación con MCP
+
+### Migraciones
+- `supabase/migrations/20260121000010_create_tenant_pintemas.sql` - Migración de creación de Pintemas
