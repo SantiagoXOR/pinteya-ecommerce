@@ -9,6 +9,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import { authOptions } from '@/auth'
 import { getTenantConfig } from '@/lib/tenant'
 import { checkSuperAdmin } from './super-admin-guard'
+import { isUserAdmin } from '@/lib/auth/role-service'
 
 export type TenantUserRole = 'super_admin' | 'tenant_owner' | 'tenant_admin' | 'tenant_staff' | 'customer'
 
@@ -103,6 +104,25 @@ export async function checkTenantAdmin(): Promise<TenantAdminGuardResult> {
     .single()
   
   if (error || !userRole) {
+    // Fallback: usuarios con role admin en user_profiles (legacy) tienen acceso al tenant actual.
+    // Las tablas super_admins y tenant_user_roles pueden estar vacías tras el deploy multitenant.
+    try {
+      const legacyAdmin = await isUserAdmin(session.user.id)
+      if (legacyAdmin) {
+        return {
+          isAuthorized: true,
+          userId: session.user.id,
+          userEmail: session.user.email || null,
+          tenantId: tenant.id,
+          tenantSlug: tenant.slug,
+          role: 'tenant_admin' as TenantUserRole,
+          permissions: FULL_PERMISSIONS,
+          isSuperAdmin: false,
+        }
+      }
+    } catch {
+      // isUserAdmin falló; seguir con no autorizado
+    }
     return {
       ...baseResult,
       userId: session.user.id,

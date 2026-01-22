@@ -624,6 +624,17 @@ LIMIT 10;
 2. Verificar en Network tab que los scripts se cargan
 3. Verificar en consola que no hay errores de CORS
 
+#### Error 403: "Error al cargar las órdenes" en Admin → Órdenes
+
+**Causa:** La API `/api/admin/orders` usa `withTenantAdmin`, que exige que el usuario esté en `super_admins` o en `tenant_user_roles` para el tenant actual. Tras el deploy multitenant, esas tablas pueden estar vacías y los admins existentes (con `user_profiles.role = 'admin'`) no tenían acceso.
+
+**Solución aplicada (Ene 2026):** Se añadió un **fallback** en `checkTenantAdmin` (`tenant-admin-guard`): si no hay match en `super_admins` ni `tenant_user_roles`, se verifica si el usuario tiene `role = 'admin'` en `user_profiles` vía `isUserAdmin()`. Si es admin legacy, se le otorga acceso al tenant actual con permisos completos.
+
+**Pasos si persiste el 403:**
+1. Verificar que el usuario con el que inicias sesión tiene `role_id` → `user_roles.role_name = 'admin'` en `user_profiles`.
+2. Opcional: poblar `super_admins` o `tenant_user_roles` para el tenant (ver migración `20260121000006_create_tenant_roles`).
+3. Redesplegar tras cualquier cambio en guards o BD.
+
 ---
 
 ## 📋 Checklist Final Pre-Producción
