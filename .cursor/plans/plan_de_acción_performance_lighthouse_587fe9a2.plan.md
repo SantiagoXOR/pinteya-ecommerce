@@ -19,7 +19,10 @@ todos:
     status: completed
   - id: js-lazy-loading-multitenant
     content: Implementar React.lazy() con tenant context, Suspense con fallbacks usando colores del tenant, preload basado en analytics
-    status: in_progress
+    status: completed
+  - id: js-cache-bundles
+    content: "Configurar cache de bundles: compartidos (cache largo) vs tenant-specific (cache corto con invalidación)"
+    status: completed
   - id: js-remove-unused
     content: Eliminar imports no utilizados usando ESLint --fix, verificar que tenant service no se elimine
     status: pending

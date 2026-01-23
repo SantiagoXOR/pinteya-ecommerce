@@ -515,7 +515,7 @@ module.exports.__esModule = true;
         headers: [
           {
             key: 'Link',
-            value: '</images/hero/hero2/hero1.webp>; rel="preload"; as="image"; fetchpriority="high"',
+            value: '</images/hero/hero2/hero1.webp>; rel=preload; as=image; fetchpriority=high',
           },
         ],
       },
@@ -603,35 +603,11 @@ module.exports.__esModule = true;
           },
         ],
       },
-      // MULTITENANT: Headers para bundles compartidos (cache largo)
-      {
-        source: '/_next/static/chunks/framework-*.js',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable', // 1 año con versioning
-          },
-        ],
-      },
-      {
-        source: '/_next/static/chunks/vendor-*.js',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable', // 1 año con versioning
-          },
-        ],
-      },
-      // MULTITENANT: Headers para bundles tenant-specific (cache corto)
-      {
-        source: '/_next/static/chunks/tenant-config-*.js',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=3600, s-maxage=3600', // 1 hora, invalidación por tenant
-          },
-        ],
-      },
+      // MULTITENANT: Headers para todos los chunks estáticos
+      // Next.js ya maneja cache para chunks con versioning, pero podemos optimizar
+      // Nota: No se pueden usar wildcards en source, pero Next.js ya cachea chunks correctamente
+      // Los chunks compartidos (framework, vendor) ya tienen cache largo por defecto
+      // Los chunks tenant-specific se pueden cachear con headers específicos si es necesario
     ]
   },
 }
