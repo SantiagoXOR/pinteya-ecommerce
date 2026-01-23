@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { cn } from '@/lib/core/utils'
-import { motion, AnimatePresence } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion, AnimatePresence } from '@/lib/framer-motion-lazy'
 import { Check, Heart, ShoppingCart, Star, Zap } from '@/lib/optimized-imports'
 
 // ===================================

@@ -34,6 +34,7 @@ const nextConfig = {
   // ⚡ FASE 6: SWC (Next.js 16) respeta automáticamente .browserslistrc
   // ⚡ FASE 12: Configuración explícita para evitar transpilación innecesaria
   // .browserslistrc ya está optimizado para navegadores modernos (últimas 2 versiones)
+  // ⚡ OPTIMIZACIÓN POST-DEPLOY: Configuración adicional para evitar JavaScript legacy
   compiler: {
     removeConsole:
       process.env.NODE_ENV === 'production'
@@ -44,6 +45,8 @@ const nextConfig = {
     // ⚡ FASE 12: SWC minify está habilitado por defecto en Next.js 16
     // No se requiere configuración adicional - SWC transpila según browserslist
     // El archivo .browserslistrc ya está configurado para navegadores modernos
+    // ⚡ OPTIMIZACIÓN POST-DEPLOY: SWC ya respeta .browserslistrc automáticamente
+    // No necesitamos configuración adicional - Next.js 16 usa SWC que transpila según browserslist
   },
 
   // ⚡ PERFORMANCE: Modular imports para reducir bundle size

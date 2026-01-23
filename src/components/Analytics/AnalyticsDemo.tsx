@@ -6,7 +6,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion } from '@/lib/framer-motion-lazy'
 import { BarChart3, MousePointer, Eye, ShoppingCart, TrendingUp, Activity, Zap } from '@/lib/optimized-imports'
 import { useOptimizedAnalytics } from '@/components/Analytics/OptimizedAnalyticsProvider'
 import { useAnalytics } from '@/hooks/useAnalytics'

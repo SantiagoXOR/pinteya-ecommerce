@@ -40,6 +40,33 @@ Habilidad para testing:
 
 **Cuándo usar**: Al escribir o mantener tests, mejorar cobertura o debuggear tests.
 
+### 5. [build-start/](./build-start/)
+Habilidad para build y start:
+- Construir aplicación Next.js
+- Iniciar servidores de desarrollo
+- Manejar errores de build
+- Verificar builds de producción
+
+**Cuándo usar**: Al construir la aplicación, iniciar servidores, solucionar problemas de build o verificar producción.
+
+### 6. [bundle-optimization/](./bundle-optimization/)
+Habilidad para análisis de bundle:
+- Analizar tamaños de bundle JavaScript
+- Identificar oportunidades de optimización
+- Detectar código no utilizado
+- Monitorear presupuestos de performance
+
+**Cuándo usar**: Cuando el tamaño del bundle excede límites, analizar code splitting, identificar dependencias pesadas o optimizar JavaScript.
+
+### 7. [lighthouse-audit/](./lighthouse-audit/)
+Habilidad para auditorías Lighthouse:
+- Ejecutar auditorías Lighthouse
+- Analizar Core Web Vitals
+- Identificar oportunidades de performance
+- Generar reportes de performance
+
+**Cuándo usar**: Al auditar performance, analizar métricas de Lighthouse, optimizar Core Web Vitals o generar reportes.
+
 ## Cómo Usar Skills
 
 Los skills se invocan automáticamente cuando el agente detecta que son relevantes para la tarea, o puedes invocarlos manualmente usando `/` en el chat:

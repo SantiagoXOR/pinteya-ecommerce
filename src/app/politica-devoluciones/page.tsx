@@ -6,7 +6,8 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion } from '@/lib/framer-motion-lazy'
 import {
   RefreshCw,
   PackageCheck,

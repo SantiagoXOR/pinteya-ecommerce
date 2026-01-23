@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion, AnimatePresence } from '@/lib/framer-motion-lazy'
 import { Upload, X, ZoomIn, AlertCircle } from '@/lib/optimized-imports'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'

@@ -9,7 +9,8 @@ import React from 'react'
 import { AnalyticsComparison, ComparisonMetrics } from '@/types/analytics'
 import AnalyticsSourceIndicator from './AnalyticsSourceIndicator'
 import { BarChart3, TrendingUp, TrendingDown, Minus } from '@/lib/optimized-imports'
-import { motion } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion } from '@/lib/framer-motion-lazy'
 
 interface ComparisonViewProps {
   comparison: AnalyticsComparison

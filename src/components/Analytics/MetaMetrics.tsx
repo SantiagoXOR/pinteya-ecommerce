@@ -9,7 +9,8 @@ import React, { useEffect, useState, useRef, useMemo } from 'react'
 import { getMetaEventsManagerUrl } from '@/lib/integrations/meta-pixel-analytics'
 import { MetaPixelMetrics } from '@/types/analytics'
 import { ShoppingCart, CreditCard, CheckCircle, Eye, Search, ExternalLink, TrendingUp } from '@/lib/optimized-imports'
-import { motion } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion } from '@/lib/framer-motion-lazy'
 
 interface MetaMetricsProps {
   pixelId?: string

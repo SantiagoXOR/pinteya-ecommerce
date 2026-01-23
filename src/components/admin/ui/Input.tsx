@@ -1,7 +1,8 @@
 import { forwardRef, InputHTMLAttributes } from 'react'
 import { cn } from '@/lib/core/utils'
 import { LucideIcon, AlertCircle, CheckCircle2 } from '@/lib/optimized-imports'
-import { motion, AnimatePresence } from 'framer-motion'
+// ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
+import { motion, AnimatePresence } from '@/lib/framer-motion-lazy'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
