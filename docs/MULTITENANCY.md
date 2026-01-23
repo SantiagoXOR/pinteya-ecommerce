@@ -36,10 +36,10 @@ PintureríaDigital es una plataforma e-commerce multitenant que permite operar m
 
 ### Tenants Iniciales
 
-| Tenant | Subdominio | Dominio Custom | Color Principal |
-|--------|------------|----------------|-----------------|
-| Pinteya | `pinteya.pintureriadigital.com` | `www.pinteya.com` | #f27a1d (naranja) |
-| Pintemas | `pintemas.pintureriadigital.com` | `www.pintemas.com` | #1e88e5 (azul) |
+| Tenant | Subdominio | Dominio Custom | Color Principal | Gradiente Background |
+|--------|------------|----------------|-----------------|---------------------|
+| Pinteya | `pinteya.pintureriadigital.com` | `www.pinteya.com` | #f27a1d (naranja) | Negro → Naranja |
+| Pintemas | `pintemas.pintureriadigital.com` | `www.pintemas.com` | #841468 (morado) | Morado → Amarillo |
 
 ---
 
@@ -233,15 +233,31 @@ function MyComponent() {
 
 ### CSS Variables Dinámicas
 
-El componente `TenantThemeStyles` inyecta CSS variables:
+El componente `TenantThemeStyles` inyecta CSS variables dinámicamente basadas en la configuración del tenant:
 
 ```css
 :root {
-  --tenant-primary: #f27a1d;
-  --tenant-primary-dark: #bd4811;
-  --tenant-secondary: #1f2937;
-  --tenant-accent: #10b981;
+  /* Colores HEX */
+  --tenant-primary: #841468;
+  --tenant-primary-dark: #6a0f54;
+  --tenant-primary-light: #a01a7c;
+  --tenant-secondary: #00f269;
+  --tenant-accent: #ffe200;
+  --tenant-header-bg: #841468;
+  --tenant-gradient-start: #841468;  /* Color superior del gradiente */
+  --tenant-gradient-end: #ffe200;    /* Color inferior del gradiente */
+  
+  /* Colores HSL (para compatibilidad con Tailwind) */
+  --tenant-primary-hsl: 320 60% 32%;
+  --tenant-accent-hsl: 52 100% 50%;
+  
+  /* Colores RGB (para uso en rgba()) */
+  --tenant-primary-rgb: 132, 20, 104;
+  --tenant-accent-rgb: 255, 226, 0;
+  
+  /* Variables de tema */
   --tenant-border-radius: 0.5rem;
+  --tenant-font-family: "Plus Jakarta Sans", sans-serif;
 }
 ```
 
@@ -252,6 +268,45 @@ Uso en Tailwind:
   Comprar
 </button>
 ```
+
+Uso en CSS inline:
+
+```tsx
+<div style={{ backgroundColor: 'var(--tenant-primary)' }}>
+  Contenido
+</div>
+```
+
+### Favicon y Theme-Color Dinámicos
+
+Cada tenant puede tener su propio favicon y theme-color configurados:
+
+**Favicon:**
+- Ruta: `/tenants/{slug}/favicon.svg`
+- Se carga automáticamente en el `<head>` del layout
+- Incluye query string con `tenant.id` para evitar caché del navegador
+
+**Theme-Color:**
+- Meta tag `theme-color` usa el `primaryColor` del tenant
+- Controla el color del header del navegador en dispositivos móviles
+- Se actualiza dinámicamente en `generateMetadata()`
+
+### Gradiente de Background Configurable
+
+El gradiente del background es completamente configurable por tenant:
+
+- **`background_gradient_start`**: Color superior del gradiente
+- **`background_gradient_end`**: Color inferior del gradiente
+
+**Ejemplo - Pintemas:**
+- Start: `#841468` (morado) - arriba
+- End: `#ffe200` (amarillo) - abajo
+
+**Ejemplo - Pinteya:**
+- Start: `#000000` (negro) - arriba
+- End: `#eb6313` (naranja) - abajo
+
+Cada tenant puede tener su propio orden de gradiente configurado independientemente en la base de datos.
 
 ### Estructura de Assets
 

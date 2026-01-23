@@ -1,15 +1,16 @@
 # ScrollingBanner
 
-Componente de banner con animación de scroll infinito que muestra mensajes promocionales en el header de la aplicación.
+Componente de banner con animación de scroll infinito que muestra mensajes promocionales en el header de la aplicación. **Configurable por tenant** con textos y colores personalizables.
 
-> **Última actualización**: 15 de Diciembre, 2025 - Optimizado con altura reducida y tamaño tipográfico ajustado.
+> **Última actualización**: 23 de Enero, 2026 - Migrado a sistema multitenant con configuración dinámica.
 
 ## 🎯 Características
 
+- **Configuración por tenant** - Textos y colores personalizables desde la base de datos
 - **Animación infinita suave** - Scroll continuo sin cortes
-- **Altura optimizada** - 22px de altura total (reducida desde versión anterior)
+- **Altura optimizada** - 22px de altura total
 - **Tipografía ajustada** - Texto de 10px con tracking amplio para legibilidad
-- **Colores de marca** - Fondo naranja (#EA5A17) con badges verde y amarillo
+- **Colores dinámicos** - Fondo y badges usan colores del tenant actual
 - **Pausa en hover** - La animación se pausa al pasar el mouse
 - **Gradientes laterales** - Efecto de fade en los bordes para transición suave
 - **Performance optimizada** - Usa `will-change` y `backface-visibility` para animaciones fluidas
@@ -46,20 +47,36 @@ function Header() {
 }
 ```
 
-## 🎨 Contenido del Banner
+## 🎨 Contenido del Banner (Configurable por Tenant)
 
-El banner muestra dos mensajes principales:
+El banner muestra dos mensajes principales que se configuran desde la base de datos:
 
-1. **Envío Gratis** (Badge verde)
-   - Texto: "ENVÍO GRATIS EN 24HS EN CÓRDOBA"
-   - Color: `bg-green-600`
+### Campos de Configuración en BD
+
+| Campo | Descripción | Ejemplo Pintemas |
+|-------|-------------|------------------|
+| `scrolling_banner_location_text` | Texto de ubicación | "ESPAÑA 375 - ALTA GRACIA" |
+| `scrolling_banner_shipping_text` | Texto de envío | "ENVIO GRATIS EN 24HS ALTA GRACIA Y ALREDEDORES" |
+| `scrolling_banner_location_bg_color` | Color de fondo del badge de ubicación | `#ffffff` (blanco) |
+| `scrolling_banner_shipping_bg_color` | Color de fondo del badge de envío | `#ffe200` (amarillo Pintemas) |
+
+### Estructura del Banner
+
+1. **Badge de Ubicación** (configurable)
+   - Texto: `scrolling_banner_location_text`
+   - Color de fondo: `scrolling_banner_location_bg_color`
+   - Ícono: MapPin
+   - Color de texto: Automático (negro si fondo blanco, blanco si fondo oscuro)
+
+2. **Badge de Envío** (configurable)
+   - Texto: `scrolling_banner_shipping_text`
+   - Color de fondo: `scrolling_banner_shipping_bg_color` (fallback a `accentColor`)
    - Ícono: Truck
+   - Color de texto: Negro (para mejor contraste con amarillo)
 
-2. **Tienda #1** (Badge amarillo)
-   - Texto: "TIENDA DE PINTURAS ONLINE N°1 EN CÓRDOBA"
-   - Color: `bg-bright-sun-300` (amarillo claro)
-   - Ícono: Star
-   - Texto: Negro para mejor contraste
+### Fondo del Banner
+
+El fondo del banner usa el color del header del tenant (`--tenant-header-bg`), que se configura en `header_bg_color` de la tabla `tenants`.
 
 ## ⚙️ Configuración de Animación
 
@@ -130,14 +147,23 @@ La animación se pausa automáticamente cuando el usuario pasa el mouse sobre el
 
 ## 🔧 Personalización
 
-### Cambiar el Contenido
+### Configurar desde la Base de Datos
 
-Para modificar los mensajes, edita las constantes en `ScrollingBanner.tsx`:
+Para modificar los textos y colores del banner, actualiza los campos en la tabla `tenants`:
 
-```tsx
-const envioText = 'TU MENSAJE PERSONALIZADO'
-const tiendaText = 'OTRO MENSAJE PERSONALIZADO'
+```sql
+UPDATE tenants
+SET
+  scrolling_banner_location_text = 'TU TEXTO DE UBICACIÓN',
+  scrolling_banner_shipping_text = 'TU TEXTO DE ENVÍO',
+  scrolling_banner_location_bg_color = '#ffffff',  -- Color del badge de ubicación
+  scrolling_banner_shipping_bg_color = '#ffe200'   -- Color del badge de envío
+WHERE slug = 'pintemas';
 ```
+
+### Migración de Ejemplo
+
+Ver `supabase/migrations/20260122221440_update_pintemas_colors.sql` para un ejemplo completo de configuración.
 
 ### Ajustar la Velocidad
 
