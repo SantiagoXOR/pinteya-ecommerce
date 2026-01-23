@@ -9,6 +9,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+// ⚡ MULTITENANT: Usar sistema optimizado de analytics con batching
+import { optimizedAnalytics } from '@/lib/integrations/analytics/analytics-optimized'
 import { sendStrategies, AnalyticsEvent } from '@/lib/analytics/send-strategies'
 import { eventPersistence } from '@/lib/analytics/event-persistence'
 import { adBlockDetector } from '@/lib/analytics/adblock-detector'
@@ -158,7 +160,7 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
     [user, sessionId]
   )
 
-  // Función principal de tracking
+  // ⚡ MULTITENANT: Función principal de tracking usando sistema optimizado
   const trackEvent = useCallback(
     (
       event: string,
@@ -172,8 +174,16 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
         return
       }
 
-      const analyticsEvent = createBaseEvent(event, category, action, label, value, metadata)
-      sendStrategies.sendEvent(analyticsEvent).catch(console.warn)
+      // ⚡ MULTITENANT: Usar sistema optimizado con batching por tenant
+      // Esto reduce requests de 50+ a 1-2 por página
+      optimizedAnalytics.trackEvent(event, category, action, label, value, metadata).catch((error) => {
+        // Fallback al sistema legacy si el optimizado falla
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Analytics] Fallback a sistema legacy:', error)
+        }
+        const analyticsEvent = createBaseEvent(event, category, action, label, value, metadata)
+        sendStrategies.sendEvent(analyticsEvent).catch(console.warn)
+      })
     },
     [isEnabled, enableCustomAnalytics, createBaseEvent]
   )
