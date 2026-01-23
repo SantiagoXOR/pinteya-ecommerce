@@ -1,6 +1,7 @@
 /**
- * SISTEMA DE ANALYTICS OPTIMIZADO - PINTEYA E-COMMERCE
+ * SISTEMA DE ANALYTICS OPTIMIZADO MULTITENANT - PINTEYA E-COMMERCE
  * Reducción de 485 bytes/evento a ~50 bytes/evento (90% menos)
+ * Optimizado para sistemas multitenant con batching separado por tenant
  */
 
 export interface OptimizedAnalyticsEvent {
@@ -13,30 +14,49 @@ export interface OptimizedAnalyticsEvent {
   sessionId: string
   page: string
   userAgent?: string
+  tenantId?: string // MULTITENANT: ID del tenant
 }
 
 export interface AnalyticsBatch {
   events: OptimizedAnalyticsEvent[]
   timestamp: number
   compressed: boolean
+  tenantId?: string // MULTITENANT: ID del tenant para el batch
 }
 
+// MULTITENANT: Tipos para cola de eventos por tenant
+interface EventQueue {
+  events: OptimizedAnalyticsEvent[]
+  lastFlush: number
+  flushTimer: NodeJS.Timeout | null
+}
+
+// MULTITENANT: Eventos críticos que requieren flush rápido
+const CRITICAL_EVENTS = new Set(['purchase', 'checkout', 'payment', 'order_complete'])
+const NON_CRITICAL_EVENTS = new Set(['view', 'scroll', 'hover', 'impression'])
+
 /**
- * Manager de Analytics Optimizado
+ * Manager de Analytics Optimizado Multitenant
+ * Separa eventos por tenant_id para mejor escalabilidad
  */
 class OptimizedAnalyticsManager {
-  private events: OptimizedAnalyticsEvent[] = []
+  // MULTITENANT: Map de colas por tenant_id
+  private tenantQueues: Map<string, EventQueue> = new Map()
   private sessionId: string = ''
+  private tenantId: string | null = null // Cache del tenant_id actual
   private isEnabled: boolean = true
-  private batchSize: number = 50 // Enviar en lotes
-  private flushInterval: number = 30000 // 30 segundos
+  private batchSize: number = 100 // MULTITENANT: Aumentado a 100 eventos por tenant
+  private flushIntervalCritical: number = 10000 // 10s para eventos críticos
+  private flushIntervalNonCritical: number = 30000 // 30s para eventos no críticos
   private compressionEnabled: boolean = true
   private samplingRate: number = 1.0 // 100% por defecto
-  private flushTimer: NodeJS.Timeout | null = null
+  // MULTITENANT: Debouncing por tipo de evento y tenant
+  private eventDebounceMap: Map<string, number> = new Map()
+  private debounceWindow: number = 1000 // 1 segundo
 
   constructor() {
     this.initializeSession()
-    this.startFlushTimer()
+    this.initializeTenantId()
   }
 
   /**
@@ -57,20 +77,69 @@ class OptimizedAnalyticsManager {
   }
 
   /**
-   * Timer para flush automático
+   * MULTITENANT: Obtener tenant_id desde el DOM o variable global
    */
-  private startFlushTimer(): void {
+  private initializeTenantId(): void {
     if (typeof window === 'undefined') {
       return
     }
 
-    this.flushTimer = setInterval(() => {
-      this.flushEvents()
-    }, this.flushInterval)
+    // Intentar obtener desde data attribute del body
+    const bodyTenantId = document.body?.dataset?.tenantId
+    if (bodyTenantId) {
+      this.tenantId = bodyTenantId
+      return
+    }
+
+    // Intentar obtener desde variable global (inyectada por layout)
+    const globalTenant = (window as any).__TENANT_CONFIG__
+    if (globalTenant?.id) {
+      this.tenantId = globalTenant.id
+      return
+    }
+
+    // Fallback: intentar obtener desde meta tag
+    const metaTenant = document.querySelector('meta[name="tenant-id"]')
+    if (metaTenant) {
+      this.tenantId = metaTenant.getAttribute('content') || null
+      return
+    }
+
+    // Si no se encuentra, se intentará obtener en cada evento
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Analytics] Tenant ID no encontrado, se intentará obtener en cada evento')
+    }
   }
 
   /**
-   * Trackear evento optimizado
+   * MULTITENANT: Obtener tenant_id (con cache)
+   */
+  private getTenantId(): string | null {
+    if (this.tenantId) {
+      return this.tenantId
+    }
+
+    // Reintentar obtener si no estaba cacheado
+    this.initializeTenantId()
+    return this.tenantId
+  }
+
+  /**
+   * MULTITENANT: Obtener o crear cola de eventos para un tenant
+   */
+  private getTenantQueue(tenantId: string): EventQueue {
+    if (!this.tenantQueues.has(tenantId)) {
+      this.tenantQueues.set(tenantId, {
+        events: [],
+        lastFlush: Date.now(),
+        flushTimer: null,
+      })
+    }
+    return this.tenantQueues.get(tenantId)!
+  }
+
+  /**
+   * MULTITENANT: Trackear evento optimizado con soporte multitenant
    */
   public async trackEvent(
     event: string,
@@ -84,6 +153,21 @@ class OptimizedAnalyticsManager {
       return
     }
 
+    // MULTITENANT: Obtener tenant_id
+    const tenantId = this.getTenantId() || 'unknown'
+
+    // MULTITENANT: Debouncing por tipo de evento y tenant
+    const debounceKey = `${tenantId}:${event}:${category}:${action}`
+    const now = Date.now()
+    const lastEventTime = this.eventDebounceMap.get(debounceKey) || 0
+
+    if (now - lastEventTime < this.debounceWindow) {
+      // Evento duplicado dentro de la ventana de debounce, ignorar
+      return
+    }
+
+    this.eventDebounceMap.set(debounceKey, now)
+
     // Crear evento optimizado (sin user_agent completo)
     const optimizedEvent: OptimizedAnalyticsEvent = {
       event: this.truncateString(event, 20),
@@ -93,15 +177,25 @@ class OptimizedAnalyticsManager {
       value,
       sessionId: this.sessionId,
       page: this.getOptimizedPage(),
-      // Solo incluir user agent si es crítico
       userAgent: this.getOptimizedUserAgent(),
+      tenantId, // MULTITENANT: Incluir tenant_id
     }
 
-    this.events.push(optimizedEvent)
+    // MULTITENANT: Agregar a la cola del tenant correspondiente
+    const queue = this.getTenantQueue(tenantId)
+    queue.events.push(optimizedEvent)
 
-    // Flush si alcanzamos el batch size
-    if (this.events.length >= this.batchSize) {
-      await this.flushEvents()
+    // MULTITENANT: Determinar si es evento crítico para flush rápido
+    const isCritical = CRITICAL_EVENTS.has(event) || CRITICAL_EVENTS.has(action)
+
+    // Flush inmediato si:
+    // 1. Alcanzamos el batch size
+    // 2. Es un evento crítico
+    if (queue.events.length >= this.batchSize || isCritical) {
+      await this.flushTenantEvents(tenantId, isCritical)
+    } else {
+      // Programar flush automático con intervalo apropiado
+      this.scheduleTenantFlush(tenantId, isCritical)
     }
   }
 
@@ -179,15 +273,42 @@ class OptimizedAnalyticsManager {
   }
 
   /**
-   * Flush eventos al servidor
+   * MULTITENANT: Programar flush automático para un tenant
    */
-  public async flushEvents(): Promise<void> {
-    if (this.events.length === 0) {
+  private scheduleTenantFlush(tenantId: string, isCritical: boolean): void {
+    const queue = this.getTenantQueue(tenantId)
+
+    // Cancelar timer anterior si existe
+    if (queue.flushTimer) {
+      clearTimeout(queue.flushTimer)
+    }
+
+    // Programar flush con intervalo apropiado
+    const interval = isCritical ? this.flushIntervalCritical : this.flushIntervalNonCritical
+    queue.flushTimer = setTimeout(() => {
+      this.flushTenantEvents(tenantId, isCritical)
+    }, interval)
+  }
+
+  /**
+   * MULTITENANT: Flush eventos de un tenant específico
+   */
+  private async flushTenantEvents(tenantId: string, isCritical: boolean = false): Promise<void> {
+    const queue = this.getTenantQueue(tenantId)
+
+    if (queue.events.length === 0) {
       return
     }
 
-    const eventsToSend = [...this.events]
-    this.events = [] // Limpiar buffer
+    // Limpiar timer si existe
+    if (queue.flushTimer) {
+      clearTimeout(queue.flushTimer)
+      queue.flushTimer = null
+    }
+
+    const eventsToSend = [...queue.events]
+    queue.events = [] // Limpiar buffer
+    queue.lastFlush = Date.now()
 
     try {
       // Comprimir batch si está habilitado
@@ -195,6 +316,7 @@ class OptimizedAnalyticsManager {
         events: eventsToSend,
         timestamp: Date.now(),
         compressed: this.compressionEnabled,
+        tenantId, // MULTITENANT: Incluir tenant_id en el batch
       }
 
       const response = await fetch('/api/analytics/events/optimized', {
@@ -206,15 +328,27 @@ class OptimizedAnalyticsManager {
       })
 
       if (!response.ok) {
-        console.warn('Failed to send analytics batch:', response.status)
+        console.warn(`[Analytics] Failed to send batch for tenant ${tenantId}:`, response.status)
         // Re-agregar eventos al buffer en caso de error
-        this.events.unshift(...eventsToSend)
+        queue.events.unshift(...eventsToSend)
+      } else if (process.env.NODE_ENV === 'development') {
+        console.log(`[Analytics] ✅ Batch sent for tenant ${tenantId}: ${eventsToSend.length} events`)
       }
     } catch (error) {
-      console.warn('Analytics flush error:', error)
+      console.warn(`[Analytics] Flush error for tenant ${tenantId}:`, error)
       // Re-agregar eventos al buffer en caso de error
-      this.events.unshift(...eventsToSend)
+      queue.events.unshift(...eventsToSend)
     }
+  }
+
+  /**
+   * MULTITENANT: Flush todos los eventos de todos los tenants
+   */
+  public async flushAllEvents(): Promise<void> {
+    const flushPromises = Array.from(this.tenantQueues.keys()).map(tenantId =>
+      this.flushTenantEvents(tenantId, false)
+    )
+    await Promise.all(flushPromises)
   }
 
   /**
@@ -232,14 +366,17 @@ class OptimizedAnalyticsManager {
   }
 
   /**
-   * Cleanup al destruir
+   * MULTITENANT: Cleanup al destruir
    */
   public destroy(): void {
-    if (this.flushTimer) {
-      clearInterval(this.flushTimer)
-      this.flushTimer = null
+    // Limpiar todos los timers de todos los tenants
+    for (const [tenantId, queue] of this.tenantQueues.entries()) {
+      if (queue.flushTimer) {
+        clearTimeout(queue.flushTimer)
+        queue.flushTimer = null
+      }
     }
-    this.flushEvents() // Flush final
+    this.flushAllEvents() // Flush final de todos los tenants
   }
 }
 

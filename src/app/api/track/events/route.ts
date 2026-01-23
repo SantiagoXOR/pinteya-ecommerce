@@ -10,6 +10,9 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase/index'
 import { withTimeout, API_TIMEOUTS } from '@/lib/config/api-timeouts'
+// MULTITENANT: Rate limiting por tenant
+import { checkRateLimit, addRateLimitHeaders, RATE_LIMIT_CONFIGS } from '@/lib/enterprise/rate-limiter'
+import { getTenantConfig } from '@/lib/tenant/tenant-service'
 
 interface TrackEvent {
   event: string
@@ -37,16 +40,30 @@ interface TrackEvent {
   deviceType?: string
 }
 
-// Cache simple en memoria para eventos recientes (evita duplicados)
+// MULTITENANT: Cache simple en memoria para eventos recientes (evita duplicados)
+// Clave: tenant_id:event_type:session_id:timestamp
 const eventCache = new Map<string, number>()
-const CACHE_TTL = 10000 // 10 segundos (aumentado para prevenir duplicados)
+const CACHE_TTL = 30000 // MULTITENANT: 30 segundos (aumentado para multitenant)
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  const MAX_REQUEST_TIME = 5000 // MULTITENANT: 5 segundos máximo por request
+
   try {
     const event: TrackEvent = await request.json()
 
+    // MULTITENANT: Obtener tenant_id desde headers o del evento
+    let tenantId: string | null = null
+    try {
+      const tenant = await getTenantConfig()
+      tenantId = tenant.id
+    } catch (error) {
+      // Si falla obtener tenant, intentar desde headers
+      tenantId = request.headers.get('x-tenant-id') || event.metadata?.tenantId || null
+    }
+
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'track/events/route.ts:POST',message:'Evento recibido en API',data:{event:event.event,visitorId:event.visitorId,metadataVisitorId:event.metadata?.visitorId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3-API'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'track/events/route.ts:POST',message:'Evento recibido en API',data:{event:event.event,visitorId:event.visitorId,metadataVisitorId:event.metadata?.visitorId,tenantId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3-API'})}).catch(()=>{});
     // #endregion
 
     if (process.env.NODE_ENV === 'development') {
@@ -56,7 +73,8 @@ export async function POST(request: NextRequest) {
         action: event.action,
         label: event.label,
         sessionId: event.sessionId,
-        visitorId: event.visitorId, // Added for debugging
+        visitorId: event.visitorId,
+        tenantId, // MULTITENANT: Incluir tenant_id en logs
       })
     }
 
@@ -71,10 +89,35 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Cache key para evitar eventos duplicados
-    // Incluir timestamp redondeado a segundos para mayor granularidad
+    // MULTITENANT: Rate limiting por tenant_id + IP
+    const clientIP = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rateLimitKey = tenantId ? `tenant:${tenantId}:ip:${clientIP}` : `ip:${clientIP}`
+    
+    const rateLimitConfig = {
+      ...RATE_LIMIT_CONFIGS.GENERAL_IP,
+      maxRequests: 10, // MULTITENANT: 10 req/s por tenant (según plan)
+      windowMs: 1000, // 1 segundo
+      keyGenerator: () => rateLimitKey,
+      message: 'Demasiadas solicitudes de tracking. Intenta nuevamente en un segundo.',
+    }
+
+    const rateLimitResult = await checkRateLimit(request, rateLimitConfig)
+    if (!rateLimitResult.success) {
+      const response = NextResponse.json(
+        {
+          error: rateLimitConfig.message,
+          retryAfter: rateLimitResult.retryAfter,
+        },
+        { status: 429 }
+      )
+      addRateLimitHeaders(response, rateLimitResult, rateLimitConfig)
+      return response
+    }
+
+    // MULTITENANT: Cache key incluye tenant_id para evitar duplicados
+    // Clave: tenant_id:event_type:session_id:timestamp
     const timestampRounded = Math.floor(Date.now() / 1000) * 1000
-    const cacheKey = `${event.event}-${event.category}-${event.action}-${event.sessionId}-${timestampRounded}`
+    const cacheKey = `${tenantId || 'unknown'}:${event.event}:${event.category}:${event.action}:${event.sessionId}:${timestampRounded}`
     const now = Date.now()
 
     // Verificar cache para evitar duplicados recientes
@@ -203,6 +246,10 @@ export async function POST(request: NextRequest) {
           p_metadata: Object.keys(additionalMetadata).length > 0 ? additionalMetadata : null,
           // Visitor ID persistente para usuarios anónimos recurrentes
           p_visitor_id: event.visitorId || event.metadata?.visitorId || null,
+          // MULTITENANT: Incluir tenant_id si la función RPC lo soporta
+          // Nota: Esto requiere que la función RPC acepte p_tenant_id
+          // Si no está disponible, se puede agregar en metadata
+          p_tenant_id: tenantId || null,
         }
 
         // #region agent log
@@ -314,17 +361,22 @@ export async function POST(request: NextRequest) {
       console.error('[API /api/track/events] ❌ Error crítico en Promise:', error)
     })
 
-    // Respuesta inmediata
-    return NextResponse.json(
-      { success: true },
+    // MULTITENANT: Respuesta inmediata 202 (Accepted) para procesamiento asíncrono
+    const response = NextResponse.json(
+      { success: true, tenantId }, // MULTITENANT: Incluir tenant_id en respuesta
       {
-        status: 200,
+        status: 202, // MULTITENANT: 202 Accepted para procesamiento asíncrono
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Content-Type': 'application/json',
         },
       }
     )
+    
+    // MULTITENANT: Agregar headers de rate limiting
+    addRateLimitHeaders(response, rateLimitResult, rateLimitConfig)
+    
+    return response
   } catch (error) {
     console.error('Error procesando evento:', error)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })

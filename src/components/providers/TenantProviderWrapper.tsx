@@ -7,7 +7,6 @@
 import { type ReactNode } from 'react'
 import { getTenantPublicConfig, getTenantConfig } from '@/lib/tenant'
 import { TenantProvider } from '@/contexts/TenantContext'
-import { TenantThemeStyles } from '@/components/theme/TenantThemeStyles'
 import { TenantAnalytics } from '@/components/Analytics/TenantAnalytics'
 
 interface TenantProviderWrapperProps {
@@ -16,14 +15,16 @@ interface TenantProviderWrapperProps {
 
 /**
  * Server Component que carga la configuración del tenant
- * y provee el contexto + estilos + analytics a los children
+ * y provee el contexto + analytics a los children
+ * 
+ * NOTA: TenantThemeStyles se renderiza en el <head> del layout
+ * para que las variables CSS estén disponibles antes del CSS inline
  */
 export async function TenantProviderWrapper({ children }: TenantProviderWrapperProps) {
   const tenant = await getTenantPublicConfig()
   
   return (
     <TenantProvider tenant={tenant}>
-      <TenantThemeStyles tenant={tenant} />
       {/* MULTITENANT: Analytics dinámicos por tenant (GA4 + Meta Pixel) */}
       <TenantAnalytics />
       {children}

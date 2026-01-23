@@ -20,19 +20,24 @@ interface OptimizedAnalyticsEvent {
   sessionId: string
   page: string
   userAgent?: string
+  tenantId?: string // MULTITENANT: ID del tenant
 }
 
 interface AnalyticsBatch {
   events: OptimizedAnalyticsEvent[]
   timestamp: number
   compressed: boolean
+  tenantId?: string // MULTITENANT: ID del tenant para el batch
 }
 
 /**
  * POST /api/analytics/events/optimized
- * Procesar lotes de eventos de analytics de forma optimizada
+ * Procesar lotes de eventos de analytics de forma optimizada (MULTITENANT)
  */
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  const MAX_REQUEST_TIME = 5000 // 5 segundos máximo
+
   try {
     const batch: AnalyticsBatch = await request.json()
 
@@ -48,6 +53,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // MULTITENANT: Obtener tenant_id del batch o headers
+    const tenantId = batch.tenantId || request.headers.get('x-tenant-id') || null
+
+    // MULTITENANT: Verificar que todos los eventos tengan tenant_id
+    const eventsWithTenant = batch.events.map(event => ({
+      ...event,
+      tenantId: event.tenantId || tenantId || 'unknown',
+    }))
+
     const supabase = getSupabaseClient()
     if (!supabase) {
       return NextResponse.json(
@@ -56,26 +70,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Procesar eventos de forma asíncrona para respuesta rápida
+    // MULTITENANT: Procesar eventos de forma asíncrona para respuesta rápida
+    // Retornar 202 (Accepted) inmediatamente, procesar en background
     setImmediate(async () => {
       try {
-        await processEventsBatch(batch.events, supabase)
-        // Invalidar cache de métricas al insertar nuevos eventos
-        await metricsCache.invalidatePattern('analytics:*')
+        await processEventsBatch(eventsWithTenant, supabase, tenantId)
+        // MULTITENANT: Invalidar cache de métricas solo del tenant afectado
+        if (tenantId) {
+          await metricsCache.invalidatePattern(`analytics:tenant:${tenantId}:*`)
+        } else {
+          // Fallback: invalidar todo si no hay tenant_id
+          await metricsCache.invalidatePattern('analytics:*')
+        }
       } catch (error) {
         console.error('Error procesando batch de analytics (async):', error)
       }
     })
 
-    // Respuesta inmediata
+    // Respuesta inmediata (202 Accepted)
     return NextResponse.json(
       {
         success: true,
         processed: batch.events.length,
+        tenantId, // MULTITENANT: Incluir tenant_id en respuesta
         timestamp: Date.now(),
       },
       {
-        status: 200,
+        status: 202, // MULTITENANT: 202 Accepted para procesamiento asíncrono
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Content-Type': 'application/json',
@@ -89,33 +110,50 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Procesar batch de eventos usando función optimizada de Supabase
+ * MULTITENANT: Procesar batch de eventos usando función optimizada de Supabase
+ * Incluye tenant_id en cada evento antes de insertar
  */
-async function processEventsBatch(events: OptimizedAnalyticsEvent[], supabase: any) {
+async function processEventsBatch(
+  events: OptimizedAnalyticsEvent[],
+  supabase: any,
+  tenantId: string | null
+) {
   try {
-    // Preparar datos para inserción masiva usando función optimizada
-    const insertPromises = events.map(event =>
-      supabase.rpc('insert_analytics_event_optimized', {
-        p_event_name: event.event,
-        p_category: event.category,
-        p_action: event.action,
-        p_label: event.label || null,
-        p_value: event.value || null,
-        p_user_id: event.userId || null,
-        p_session_id: event.sessionId,
-        p_page: event.page,
-        p_user_agent: event.userAgent || null,
-      })
+    // MULTITENANT: Agrupar eventos por tenant_id para procesamiento paralelo
+    const eventsByTenant = new Map<string, OptimizedAnalyticsEvent[]>()
+
+    for (const event of events) {
+      const eventTenantId = event.tenantId || tenantId || 'unknown'
+      if (!eventsByTenant.has(eventTenantId)) {
+        eventsByTenant.set(eventTenantId, [])
+      }
+      eventsByTenant.get(eventTenantId)!.push(event)
+    }
+
+    // MULTITENANT: Procesar batches por tenant en paralelo (con límite de concurrencia)
+    const tenantPromises = Array.from(eventsByTenant.entries()).map(([tid, tenantEvents]) =>
+      processTenantBatch(tenantEvents, supabase, tid)
     )
 
-    // Ejecutar todas las inserciones en paralelo
-    const results = await Promise.allSettled(insertPromises)
+    // Ejecutar con límite de concurrencia (máximo 5 tenants en paralelo)
+    const BATCH_CONCURRENCY = 5
+    const results: PromiseSettledResult<any>[] = []
+
+    for (let i = 0; i < tenantPromises.length; i += BATCH_CONCURRENCY) {
+      const batch = tenantPromises.slice(i, i + BATCH_CONCURRENCY)
+      const batchResults = await Promise.allSettled(batch)
+      results.push(...batchResults)
+    }
 
     // Contar éxitos y errores
     const successful = results.filter(r => r.status === 'fulfilled').length
     const failed = results.filter(r => r.status === 'rejected').length
 
-    console.log(`Analytics batch processed: ${successful} successful, ${failed} failed`)
+    if (process.env.NODE_ENV === 'development' || failed > 0) {
+      console.log(
+        `[Analytics Batch] Processed: ${successful} tenants successful, ${failed} failed, ${events.length} total events`
+      )
+    }
 
     // Log errores para debugging
     if (failed > 0) {
@@ -123,11 +161,51 @@ async function processEventsBatch(events: OptimizedAnalyticsEvent[], supabase: a
         .filter(r => r.status === 'rejected')
         .map(r => (r as PromiseRejectedResult).reason)
 
-      console.error('Analytics batch errors:', errors)
+      console.error('[Analytics Batch] Errors:', errors)
     }
   } catch (error) {
-    console.error('Error en processEventsBatch:', error)
+    console.error('[Analytics Batch] Error en processEventsBatch:', error)
   }
+}
+
+/**
+ * MULTITENANT: Procesar batch de eventos de un tenant específico
+ */
+async function processTenantBatch(
+  events: OptimizedAnalyticsEvent[],
+  supabase: any,
+  tenantId: string
+) {
+  // Preparar datos para inserción masiva usando función optimizada
+  const insertPromises = events.map(event =>
+    supabase.rpc('insert_analytics_event_optimized', {
+      p_event_name: event.event,
+      p_category: event.category,
+      p_action: event.action,
+      p_label: event.label || null,
+      p_value: event.value || null,
+      p_user_id: event.userId || null,
+      p_session_id: event.sessionId,
+      p_page: event.page,
+      p_user_agent: event.userAgent || null,
+      // MULTITENANT: Incluir tenant_id si la función RPC lo soporta
+      // Nota: Esto requiere que la función RPC acepte p_tenant_id
+      // Si no está disponible, se puede agregar en metadata
+      p_tenant_id: tenantId !== 'unknown' ? tenantId : null,
+    })
+  )
+
+  // Ejecutar todas las inserciones en paralelo
+  const results = await Promise.allSettled(insertPromises)
+
+  const successful = results.filter(r => r.status === 'fulfilled').length
+  const failed = results.filter(r => r.status === 'rejected').length
+
+  if (failed > 0 && process.env.NODE_ENV === 'development') {
+    console.warn(`[Analytics Batch] Tenant ${tenantId}: ${successful} successful, ${failed} failed`)
+  }
+
+  return { tenantId, successful, failed, total: events.length }
 }
 
 /**

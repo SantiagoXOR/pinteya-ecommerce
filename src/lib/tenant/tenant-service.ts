@@ -57,6 +57,11 @@ function mapDBRowToTenantConfig(row: TenantDBRow): TenantConfig {
     backgroundGradientEnd: row.background_gradient_end || DEFAULT_COLORS.backgroundGradientEnd,
     headerBgColor: row.header_bg_color || DEFAULT_COLORS.headerBgColor,
     
+    scrollingBannerLocationText: row.scrolling_banner_location_text,
+    scrollingBannerShippingText: row.scrolling_banner_shipping_text,
+    scrollingBannerLocationBgColor: row.scrolling_banner_location_bg_color,
+    scrollingBannerShippingBgColor: row.scrolling_banner_shipping_bg_color,
+    
     themeConfig: row.theme_config || { borderRadius: '0.5rem', fontFamily: 'Plus Jakarta Sans' },
     
     ga4MeasurementId: row.ga4_measurement_id,
@@ -125,6 +130,10 @@ function extractPublicConfig(config: TenantConfig): TenantPublicConfig {
     backgroundGradientStart: config.backgroundGradientStart,
     backgroundGradientEnd: config.backgroundGradientEnd,
     headerBgColor: config.headerBgColor,
+    scrollingBannerLocationText: config.scrollingBannerLocationText,
+    scrollingBannerShippingText: config.scrollingBannerShippingText,
+    scrollingBannerLocationBgColor: config.scrollingBannerLocationBgColor,
+    scrollingBannerShippingBgColor: config.scrollingBannerShippingBgColor,
     themeConfig: config.themeConfig,
     ga4MeasurementId: config.ga4MeasurementId,
     metaPixelId: config.metaPixelId,
@@ -156,10 +165,18 @@ function extractPublicConfig(config: TenantConfig): TenantPublicConfig {
  * - pinteya.pintureriadigital.com → 'pinteya'
  * - www.pinteya.com → busca por custom_domain
  * - localhost:3000 → 'pinteya' (default)
+ * - En desarrollo: puede usar NEXT_PUBLIC_TENANT_SLUG para forzar un tenant
  */
 function detectTenantFromHost(hostname: string): { subdomain: string | null; customDomain: string | null } {
   // Remover puerto si existe
   const host = hostname.split(':')[0]
+  
+  // ⚡ DESARROLLO: Permitir forzar tenant con variable de entorno
+  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TENANT_SLUG) {
+    const forcedSlug = process.env.NEXT_PUBLIC_TENANT_SLUG
+    console.log(`[TenantService] 🔧 DESARROLLO: Forzando tenant desde NEXT_PUBLIC_TENANT_SLUG: ${forcedSlug}`)
+    return { subdomain: forcedSlug, customDomain: null }
+  }
   
   // Localhost → tenant por defecto
   if (host === 'localhost' || host === '127.0.0.1') {

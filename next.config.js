@@ -256,12 +256,23 @@ const nextConfig = {
               maxSize: 100000, // 100 KB máximo
               reuseExistingChunk: true,
             },
+            // ⚡ MULTITENANT: Chunk separado para código específico por tenant
+            // Configuraciones de tema, logos, colores (cargados dinámicamente)
+            tenantConfig: {
+              test: /[\\/]src[\\/](lib[\\/]tenant|components[\\/]theme|contexts[\\/]TenantContext)[\\/]/,
+              name: 'tenant-config',
+              priority: 30,
+              chunks: 'async', // MULTITENANT: Lazy loaded - solo cargar cuando se necesita
+              maxSize: 50000, // MULTITENANT: 50 KB máximo para configuraciones de tenant
+              minSize: 5000, // MULTITENANT: 5 KB mínimo
+              reuseExistingChunk: true,
+            },
             // ⚡ Vendor libraries - Chunks balanceados para mejor tree shaking
             vendor: {
               test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts|@tanstack|redux)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: 150 KB máximo (balance)
+              maxSize: 100000, // MULTITENANT: Reducido de 150KB a 100KB según plan
               minSize: 20000, // ⚡ OPTIMIZACIÓN: 20 KB mínimo
               reuseExistingChunk: true,
             },
@@ -589,6 +600,35 @@ module.exports.__esModule = true;
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // MULTITENANT: Headers para bundles compartidos (cache largo)
+      {
+        source: '/_next/static/chunks/framework-*.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable', // 1 año con versioning
+          },
+        ],
+      },
+      {
+        source: '/_next/static/chunks/vendor-*.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable', // 1 año con versioning
+          },
+        ],
+      },
+      // MULTITENANT: Headers para bundles tenant-specific (cache corto)
+      {
+        source: '/_next/static/chunks/tenant-config-*.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, s-maxage=3600', // 1 hora, invalidación por tenant
           },
         ],
       },

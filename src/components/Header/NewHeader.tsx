@@ -86,8 +86,8 @@ const NewHeader = () => {
           stickyMenu && 'shadow-md'
         )}
         style={{ 
-          backgroundColor: 'var(--tenant-header-bg, #EA5A17)',
-          borderBottomColor: 'var(--tenant-primary-dark, #c2410b)',
+          backgroundColor: 'var(--tenant-header-bg, #841468)',
+          borderBottomColor: 'var(--tenant-primary-dark, #6a0f54)',
           borderBottomWidth: '1px',
           borderBottomStyle: 'solid'
         }}

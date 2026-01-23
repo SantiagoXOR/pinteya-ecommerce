@@ -124,12 +124,12 @@ const HeaderNextAuth = () => {
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
       `}
-        style={{ backgroundColor: 'var(--tenant-header-bg, #EA5A17)' }}
+        style={{ backgroundColor: 'var(--tenant-header-bg, #841468)' }}
       >
         {/* Topbar con ubicación y promociones */}
         <div 
           className='py-1'
-          style={{ backgroundColor: 'var(--tenant-primary-dark, #c2410b)' }}
+          style={{ backgroundColor: 'var(--tenant-primary-dark, #6a0f54)' }}
         >
           <div className='max-w-[1200px] mx-auto px-4 flex items-center justify-center text-xs min-h-[24px] gap-6'>
             {/* Ubicación compacta */}

@@ -11,6 +11,22 @@ interface TenantThemeStylesProps {
 }
 
 /**
+ * Convierte un color HEX a RGB para uso en CSS variables rgba()
+ */
+function hexToRGB(hex: string): string {
+  // Remover # si existe
+  const cleanHex = hex.replace('#', '')
+  
+  // Convertir a RGB
+  const r = parseInt(cleanHex.substring(0, 2), 16)
+  const g = parseInt(cleanHex.substring(2, 4), 16)
+  const b = parseInt(cleanHex.substring(4, 6), 16)
+  
+  // Retornar en formato "r, g, b" para uso en rgba()
+  return `${r}, ${g}, ${b}`
+}
+
+/**
  * Convierte un color HEX a HSL para uso en CSS variables
  */
 function hexToHSL(hex: string): string {
@@ -53,6 +69,16 @@ function hexToHSL(hex: string): string {
  * Server Component que inyecta CSS variables del tenant
  */
 export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
+  // ⚡ DEBUG: Log para verificar valores del tenant
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[TenantThemeStyles] Generando variables CSS:', {
+      slug: tenant.slug,
+      headerBgColor: tenant.headerBgColor,
+      primaryColor: tenant.primaryColor,
+      accentColor: tenant.accentColor
+    })
+  }
+  
   // Generar CSS variables
   const cssVariables = `
     :root {
@@ -77,6 +103,14 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
       --tenant-primary-light-hsl: ${hexToHSL(tenant.primaryLight)};
       --tenant-secondary-hsl: ${hexToHSL(tenant.secondaryColor)};
       --tenant-accent-hsl: ${hexToHSL(tenant.accentColor)};
+      
+      /* =================================
+         COLORES DEL TENANT - RGB
+         Para uso en rgba() y funciones CSS
+         ================================= */
+      --tenant-primary-rgb: ${hexToRGB(tenant.primaryColor)};
+      --tenant-primary-dark-rgb: ${hexToRGB(tenant.primaryDark)};
+      --tenant-accent-rgb: ${hexToRGB(tenant.accentColor)};
       
       /* =================================
          VARIABLES DE ACCENT (amarillo)
@@ -143,9 +177,26 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
        ESTILOS GLOBALES DEL TENANT
        ================================= */
     
-    /* Header dinámico */
-    header,
-    .header-bg {
+    /* Header dinámico - Mayor especificidad para sobrescribir estilos inline */
+    /* Usar selector más específico para sobrescribir estilos inline */
+    header[style],
+    header[style*="background"],
+    header[style*="backgroundColor"],
+    header.header-bg,
+    header {
+      background-color: var(--tenant-header-bg) !important;
+    }
+    
+    /* Topbar dentro del header - Sobrescribir estilos inline */
+    header > div[style],
+    header > div[style*="background"],
+    header > div[style*="backgroundColor"],
+    header > div.py-1 {
+      background-color: var(--tenant-primary-dark) !important;
+    }
+    
+    /* Forzar aplicación inmediata con mayor especificidad */
+    body header[style] {
       background-color: var(--tenant-header-bg) !important;
     }
     
@@ -278,6 +329,7 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
   return (
     <style
       id="tenant-theme-styles"
+      data-tenant-slug={tenant.slug}
       dangerouslySetInnerHTML={{ __html: cssVariables }}
     />
   )

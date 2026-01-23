@@ -17,6 +17,7 @@ import type { Metadata } from 'next'
 // ⚡ MULTITENANT: Imports para sistema de tenants
 import { getTenantPublicConfig, getTenantBaseUrl } from '@/lib/tenant'
 import { TenantProviderWrapper } from '@/components/providers/TenantProviderWrapper'
+import { TenantThemeStyles } from '@/components/theme/TenantThemeStyles'
 
 // ⚡ CRITICAL: Lazy load de componentes no críticos para reducir Script Evaluation
 // Estos componentes se cargan después del FCP para no bloquear la carga inicial
@@ -71,11 +72,46 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export { viewport } from './viewport'
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // ⚡ MULTITENANT: Cargar tenant para inyectar estilos en el head
+  const tenant = await getTenantPublicConfig()
+  
+  // ⚡ DEBUG: Log para verificar tenant cargado
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Layout] Tenant cargado:', {
+      slug: tenant.slug,
+      name: tenant.name,
+      headerBgColor: tenant.headerBgColor,
+      primaryColor: tenant.primaryColor,
+      accentColor: tenant.accentColor
+    })
+  }
+  
   // ⚡ DEBUG: Simplificar layout para identificar el problema
   return (
     <html lang='es' className={plusJakartaSans.variable} suppressHydrationWarning>
       <head>
+        {/* ⚡ MULTITENANT: Inyectar variables CSS del tenant ANTES del CSS inline */}
+        <TenantThemeStyles tenant={tenant} />
+        {/* ⚡ MULTITENANT: Inyectar tenant_id para analytics (Fase 1 - Performance) */}
+        <meta name="tenant-id" content={tenant.id} />
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              // MULTITENANT: Inyectar configuración del tenant para analytics
+              if (typeof window !== 'undefined') {
+                window.__TENANT_CONFIG__ = {
+                  id: '${tenant.id}',
+                  slug: '${tenant.slug}',
+                  name: '${tenant.name}',
+                };
+              }
+            })();
+            `,
+          }}
+        />
         {/* ⚡ DIAGNÓSTICO: Script INMEDIATO para capturar recargas desde el inicio */}
         {/* ⚡ DEBE estar PRIMERO antes de cualquier otro script */}
         <script
@@ -352,8 +388,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* El preconnect al dominio del tenant debe ser dinámico (ver TODO MULTITENANT arriba) */}
         
         {/* ⚡ CRITICAL CSS - Inline para FCP rápido (-0.2s) */}
+        {/* NOTA: Las variables CSS del tenant se definen ANTES en TenantThemeStyles */}
         <style dangerouslySetInnerHTML={{__html: `
           /* CSS Variables - Inline para eliminar archivo bloqueante */
+          /* ⚠️ IMPORTANTE: Las variables --tenant-* se definen en TenantThemeStyles arriba */
           :root{
             --background:0 0% 100%;
             --foreground:222.2 84% 4.9%;
@@ -421,7 +459,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           button,input,select,textarea{font:inherit}
           h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2}
           a{text-decoration:none;color:inherit}
-          header{background-color:var(--tenant-header-bg,#bd4811);position:fixed;top:env(safe-area-inset-top, 0px);left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.5);border-radius:0 0 1.5rem 1.5rem}
+          header{background-color:${tenant.headerBgColor};position:fixed;top:env(safe-area-inset-top, 0px);left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.5);border-radius:0 0 1.5rem 1.5rem}
           
           /* Critical Hero Styles - Con variables CSS tenant */
           .hero-section{min-height:320px;background:linear-gradient(135deg,var(--tenant-primary-dark,#bd4811),var(--tenant-gradient-start,#000000));position:relative;overflow:hidden}
@@ -521,7 +559,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* ⚡ MULTITENANT: Structured data dinámico basado en tenant */}
         <TenantStructuredData />
       </head>
-      <body>
+      <body data-tenant-id={tenant.id}>
         {/* Suspense global para componentes compartidos que usan useSearchParams (Header/Search) */}
         <Suspense fallback={null}>
           <div className="overflow-x-hidden max-w-full w-full">

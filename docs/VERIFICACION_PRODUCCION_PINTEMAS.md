@@ -24,22 +24,46 @@ node scripts/verify-tenant-pintemas.js
 
 ### 2. Verificación de Assets en Git
 
+**Script automático**:
+```bash
+node scripts/verify-assets-git.js
+```
+
+**Comando manual**:
 ```bash
 git ls-files public/tenants/pintemas/
 ```
 
 **Archivos que deben existir:**
-- `public/tenants/pintemas/logo.svg`
-- `public/tenants/pintemas/logo-dark.svg`
-- `public/tenants/pintemas/favicon.svg`
-- `public/tenants/pintemas/og-image.png`
-- `public/tenants/pintemas/hero/hero1.webp`
-- `public/tenants/pintemas/hero/hero2.webp`
-- `public/tenants/pintemas/hero/hero3.webp`
+- ✅ `public/tenants/pintemas/logo.svg` (4.85 KB)
+- ✅ `public/tenants/pintemas/logo-dark.svg` (6.94 KB)
+- ✅ `public/tenants/pintemas/favicon.svg` (601.95 KB)
+- ✅ `public/tenants/pintemas/og-image.png` (709.64 KB)
+- ✅ `public/tenants/pintemas/hero/hero1.webp` (36.69 KB)
+- ✅ `public/tenants/pintemas/hero/hero2.webp` (39.69 KB)
+- ✅ `public/tenants/pintemas/hero/hero3.webp` (42.33 KB)
+
+**Estado actual**: ✅ Todos los assets están correctamente en git (verificado el 22/01/2026)
 
 ---
 
 ## 🔍 Verificación Post-Deploy con Herramientas MCP
+
+> **Nota importante**: Los logs `[TenantService] Detecting tenant:` solo se muestran en desarrollo (`process.env.NODE_ENV === 'development'`). En producción, estos logs no aparecerán en la consola del navegador porque se ejecutan en el servidor. Para verificar la detección del tenant en producción, usa los headers HTTP o el script de verificación.
+
+### Script de Verificación Automática
+
+Ejecuta el script de verificación en producción:
+
+```bash
+node scripts/verify-production-pintemas.js
+```
+
+Este script verifica:
+- ✅ Status de la página principal
+- ✅ Headers HTTP del tenant (`x-tenant-domain`, `x-tenant-custom-domain`)
+- ✅ Accesibilidad de assets (logo, favicon, og-image)
+- ✅ Resumen de problemas encontrados
 
 ### FASE 1: Verificación de Dominio y Detección de Tenant
 
@@ -65,27 +89,18 @@ x-tenant-subdomain: null
 
 #### 1.2. Verificar Detección en Consola del Navegador
 
-**Herramienta**: MCP Browser - Console Logs
+> **⚠️ IMPORTANTE**: Los logs `[TenantService]` solo aparecen en desarrollo. En producción, estos logs no se muestran en la consola del navegador porque se ejecutan en el servidor.
 
-**Pasos**:
+**Herramienta**: MCP Browser - Console Logs (solo en desarrollo)
+
+**Pasos** (solo para desarrollo local):
 1. Abrir DevTools → Console
 2. Buscar logs que contengan `[TenantService]`
 3. Verificar logs de detección:
    - `[TenantService] Detecting tenant: { hostname, subdomain, customDomain }`
    - `[TenantService] Tenant found: { slug, name }`
 
-**Resultado esperado**:
-```
-[TenantService] Detecting tenant: { 
-  hostname: 'www.pintemas.com', 
-  subdomain: null, 
-  customDomain: 'www.pintemas.com' 
-}
-[TenantService] Tenant found: { 
-  slug: 'pintemas', 
-  name: 'Pintemas' 
-}
-```
+**Para producción**: Usa los headers HTTP (ver sección 1.1) o el script de verificación automática.
 
 #### 1.3. Verificar Metadata del Tenant
 
@@ -245,18 +260,30 @@ x-tenant-subdomain: null
 ls -la .next/static/public/tenants/pintemas/
 ```
 
-#### 4.3. Verificar Caché de Vercel
+#### 4.3. Verificar y Purgar Caché de Vercel
 
 **Herramienta**: Vercel Dashboard
 
-**Pasos**:
-1. Verificar configuración de caché en `vercel.json`
-2. Verificar headers de caché para assets estáticos
-3. Considerar invalidar caché si es necesario
+**Pasos para purgar caché**:
+1. Ir a Vercel Dashboard → Tu Proyecto → Settings
+2. Navegar a la sección **"Caches"** en el menú lateral
+3. En **"CDN Cache"**:
+   - Hacer clic en **"Purge CDN Cache"**
+   - Esto invalidará todas las respuestas cacheadas usando headers `Cache-Control` o revalidación (ISR, PPR, Image Optimization, etc.)
+4. En **"Data Cache"** (si es necesario):
+   - Hacer clic en **"Purge Data Cache"**
+   - Esto eliminará el contenido de la caché de datos de Vercel Functions
 
-**Solución temporal**:
-- Hacer un redeploy forzado
-- Agregar query parameter `?v=timestamp` a los assets
+**Cuándo purgar caché**:
+- ✅ Después de actualizar assets estáticos (logos, imágenes, favicons)
+- ✅ Cuando los cambios no se reflejan en producción
+- ✅ Después de cambios en configuración de `next.config.js` que afecten assets
+- ✅ Si los assets están en git pero retornan 404 en producción
+
+**Alternativas**:
+- Hacer un redeploy forzado en Vercel
+- Agregar query parameter `?v=timestamp` a los assets temporalmente
+- Verificar configuración de caché en `vercel.json` o `next.config.js`
 
 #### 4.4. Verificar Rutas de Assets
 
@@ -412,6 +439,8 @@ Si el dominio no detecta el tenant:
 node scripts/verify-tenant-pintemas.js
 
 # Verificar assets en git
+node scripts/verify-assets-git.js
+# O manualmente:
 git ls-files public/tenants/pintemas/
 
 # Verificar último commit incluye assets
@@ -420,11 +449,23 @@ git log --oneline -5 --name-only | grep pintemas
 
 ### Verificación en Producción (Manual)
 
-1. Abrir `https://www.pintemas.com` en navegador
-2. Abrir DevTools (F12)
-3. Ir a Console y buscar: `[TenantService]`
-4. Ir a Network y filtrar por "pintemas" o "logo"
-5. Verificar status codes de los requests
+1. **Ejecutar script automático**:
+   ```bash
+   node scripts/verify-production-pintemas.js
+   ```
+
+2. **Verificación manual en navegador**:
+   - Abrir `https://www.pintemas.com` en navegador
+   - Abrir DevTools (F12)
+   - Ir a Network y filtrar por "pintemas" o "logo"
+   - Verificar status codes de los requests (deben ser 200)
+   - Inspeccionar headers de la request principal:
+     - `x-tenant-domain`: debe ser `www.pintemas.com`
+     - `x-tenant-custom-domain`: debe ser `www.pintemas.com`
+   - Inspeccionar elemento del header en Elements
+   - Verificar en Computed Styles que `--tenant-primary` es `#1e88e5`
+
+> **Nota**: Los logs `[TenantService]` no aparecen en producción porque solo se muestran en desarrollo.
 
 ---
 
@@ -434,15 +475,30 @@ git log --oneline -5 --name-only | grep pintemas
 
 **Causas posibles**:
 1. Assets no incluidos en el build de Vercel
-2. Problema de caché
+2. Problema de caché de CDN
 3. Ruta incorrecta en el código
 4. Dominio no configurado correctamente
 
-**Soluciones**:
-1. Verificar que los assets están en git
-2. Forzar nuevo build en Vercel
-3. Invalidar caché del navegador
-4. Verificar configuración de `next.config.js`
+**Soluciones (en orden de prioridad)**:
+1. **Verificar que los assets están en git**:
+   ```bash
+   node scripts/verify-assets-git.js
+   ```
+
+2. **Purgar caché de CDN en Vercel**:
+   - Vercel Dashboard → Settings → Caches → "Purge CDN Cache"
+   - Esto es especialmente importante si los assets están en git pero no se ven en producción
+
+3. **Forzar nuevo build en Vercel**:
+   - Vercel Dashboard → Deployments → "Redeploy"
+
+4. **Invalidar caché del navegador**:
+   - Ctrl+Shift+R (hard refresh)
+   - O abrir en modo incógnito
+
+5. **Verificar configuración de `next.config.js`**:
+   - Asegurar que `public/` está correctamente configurado
+   - Verificar que no hay configuración que excluya `public/tenants/`
 
 ### Problema: Tenant no se detecta
 
@@ -467,9 +523,15 @@ git log --oneline -5 --name-only | grep pintemas
 ## 📝 Notas Importantes
 
 1. **Assets en Git**: Los assets deben estar en git para que Vercel los incluya en el build
-2. **Caché**: Vercel puede cachear assets estáticos, puede ser necesario invalidar caché
+2. **Caché de CDN**: Vercel cachea assets estáticos en su CDN. Si los assets están en git pero no se ven en producción:
+   - **Solución rápida**: Purgar caché de CDN en Vercel Dashboard → Settings → Caches → "Purge CDN Cache"
+   - Esto es especialmente importante después de actualizar assets
 3. **Build Time**: Los assets en `public/` se copian automáticamente en el build de Next.js
 4. **Dominios**: Ambos dominios (`www.pintemas.com` y `www.pintemas.com.ar`) deben estar configurados en Vercel
+5. **Verificación de Caché**: Si después de purgar la caché los assets aún no aparecen, verificar:
+   - Que el build de Vercel incluyó los assets (revisar build logs)
+   - Que no hay errores en el build
+   - Que las rutas en el código son correctas
 
 ---
 

@@ -128,6 +128,12 @@ export interface TenantPublicConfig {
   backgroundGradientEnd: string
   headerBgColor: string
   
+  // ScrollingBanner configuración
+  scrollingBannerLocationText: string | null
+  scrollingBannerShippingText: string | null
+  scrollingBannerLocationBgColor: string | null
+  scrollingBannerShippingBgColor: string | null
+  
   // Tema
   themeConfig: {
     borderRadius: string
@@ -194,6 +200,10 @@ export interface TenantDBRow {
   background_gradient_start: string
   background_gradient_end: string
   header_bg_color: string
+  scrolling_banner_location_text: string | null
+  scrolling_banner_shipping_text: string | null
+  scrolling_banner_location_bg_color: string | null
+  scrolling_banner_shipping_bg_color: string | null
   theme_config: Record<string, string>
   ga4_measurement_id: string | null
   ga4_property_id: string | null
