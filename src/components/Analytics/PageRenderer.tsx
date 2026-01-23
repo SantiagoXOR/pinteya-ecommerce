@@ -14,9 +14,6 @@ interface PageRendererProps {
 }
 
 export const PageRenderer: React.FC<PageRendererProps> = ({ route, device, children }) => {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PageRenderer.tsx:16',message:'PageRenderer render',data:{route,device,hasChildren:!!children},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-  // #endregion
   // Determinar dimensiones según dispositivo
   const getDimensions = () => {
     if (device === 'mobile') {
@@ -29,9 +26,6 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ route, device, child
 
   // Renderizar estructura básica según ruta
   const renderPageContent = () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PageRenderer.tsx:31',message:'renderPageContent called',data:{route,device},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'F'})}).catch(()=>{});
-    // #endregion
     if (route === '/') {
       return (
         <div className='space-y-4'>
@@ -94,9 +88,6 @@ export const PageRenderer: React.FC<PageRendererProps> = ({ route, device, child
   }
 
   const pageContent = renderPageContent()
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PageRenderer.tsx:93',message:'PageRenderer return',data:{route,device,hasPageContent:!!pageContent,hasChildren:!!children},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'F'})}).catch(()=>{});
-  // #endregion
 
   return (
     <div

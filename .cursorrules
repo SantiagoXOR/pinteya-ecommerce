@@ -1,0 +1,57 @@
+# Cursor Rules - Pinteya E-commerce
+
+## Proyecto
+Sistema e-commerce multitenant especializado en productos de pinturería, ferretería y corralón. Next.js 15, TypeScript, Supabase, NextAuth.js, MercadoPago.
+
+## Reglas Principales
+
+### Sistema Multitenant
+- SIEMPRE verificar tenant con `getTenantFromRequest()` en APIs y middleware
+- NUNCA hacer queries sin filtrar por `tenant_id`
+- TODAS las tablas deben tener RLS policies con verificación de tenant_id
+- Assets por tenant en `public/tenants/{tenant_slug}/`
+
+### Seguridad
+- SIEMPRE usar NextAuth.js para autenticación
+- TODAS las APIs públicas deben tener rate limiting
+- SIEMPRE validar inputs con Zod
+- NUNCA exponer detalles técnicos en errores al cliente
+- SIEMPRE usar parámetros preparados (Supabase client)
+
+### TypeScript
+- NUNCA usar `any` types
+- SIEMPRE tipar props, parámetros y valores de retorno
+- Usar tipos generados de Supabase cuando estén disponibles
+
+### Performance
+- First Load JS < 500KB
+- API Response Time < 300ms
+- SIEMPRE usar `next/image` para imágenes
+- Lazy load componentes pesados con `dynamic()`
+- NUNCA importar librerías completas si solo necesitas una función
+
+### Código
+- Mobile-first approach obligatorio
+- Componentes en PascalCase
+- Hooks en camelCase con prefijo 'use'
+- Early returns para reducir anidación
+- Usar optional chaining y nullish coalescing
+
+### Testing
+- Mantener cobertura > 70%
+- Tests unitarios para lógica pura
+- Tests E2E para flujos críticos (checkout, pagos)
+- Tests de accesibilidad con jest-axe
+
+## Stack Tecnológico
+- Next.js 15.5.3 + React 18.3.1
+- TypeScript 5.2.2
+- Supabase PostgreSQL
+- NextAuth.js 5.0.0-beta.29
+- MercadoPago
+- Tailwind CSS + shadcn/ui
+
+## Colores y Diseño
+- Color primario: Blaze Orange (#ea5a17)
+- Mobile-first obligatorio
+- Botones principales: `bg-yellow-400 text-2xl rounded-xl`

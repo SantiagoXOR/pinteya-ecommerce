@@ -197,13 +197,14 @@ const nextConfig = {
               reuseExistingChunk: true,
             },
             // ⚡ OPTIMIZACIÓN LCP: Separar chunk principal en chunks más pequeños
-            main: {
-              name: 'main',
-              minChunks: 2,
-              priority: 20,
-              maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: Limitar tamaño del chunk principal a 150 KB
-              reuseExistingChunk: true,
-            },
+            // ⚡ FIX: Removido cache group "main" - causa conflicto con entrypoint "main" de webpack
+            // main: {
+            //   name: 'main',
+            //   minChunks: 2,
+            //   priority: 20,
+            //   maxSize: 150000,
+            //   reuseExistingChunk: true,
+            // },
             // ⚡ React Query - Separado para mejor code splitting
             reactQuery: {
               test: /[\\/]node_modules[\\/]@tanstack[\\/]react-query[\\/]/,
@@ -248,11 +249,12 @@ const nextConfig = {
               maxSize: 20000, // ⚡ FASE 3.2: REDUCIDO a 20 KB
               reuseExistingChunk: true,
             },
-            // ⚡ Recharts - Separado para lazy loading
+            // ⚡ Recharts - Separado para lazy loading async
             recharts: {
               test: /[\\/]node_modules[\\/]recharts[\\/]/,
               name: 'recharts',
               priority: 30,
+              chunks: 'async', // ⚡ CRITICAL: Solo cargar cuando se necesita (async)
               maxSize: 100000, // 100 KB máximo
               reuseExistingChunk: true,
             },

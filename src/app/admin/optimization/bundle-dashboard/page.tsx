@@ -6,7 +6,6 @@
 // Dashboard administrativo para monitoreo de optimización de bundles
 
 import React, { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,19 +13,22 @@ import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
-// ⚡ PERFORMANCE: Lazy load Recharts (~60KB) - Solo carga en admin
-const BarChart = dynamic(() => import('recharts').then(mod => ({ default: mod.BarChart })), { ssr: false })
-const Bar = dynamic(() => import('recharts').then(mod => ({ default: mod.Bar })), { ssr: false })
-const XAxis = dynamic(() => import('recharts').then(mod => ({ default: mod.XAxis })), { ssr: false })
-const YAxis = dynamic(() => import('recharts').then(mod => ({ default: mod.YAxis })), { ssr: false })
-const CartesianGrid = dynamic(() => import('recharts').then(mod => ({ default: mod.CartesianGrid })), { ssr: false })
-const Tooltip = dynamic(() => import('recharts').then(mod => ({ default: mod.Tooltip })), { ssr: false })
-const ResponsiveContainer = dynamic(() => import('recharts').then(mod => ({ default: mod.ResponsiveContainer })), { ssr: false })
-const LineChart = dynamic(() => import('recharts').then(mod => ({ default: mod.LineChart })), { ssr: false })
-const Line = dynamic(() => import('recharts').then(mod => ({ default: mod.Line })), { ssr: false })
-const PieChart = dynamic(() => import('recharts').then(mod => ({ default: mod.PieChart })), { ssr: false })
-const Pie = dynamic(() => import('recharts').then(mod => ({ default: mod.Pie })), { ssr: false })
-const Cell = dynamic(() => import('recharts').then(mod => ({ default: mod.Cell })), { ssr: false })
+// ⚡ PERFORMANCE: Lazy load Recharts usando wrapper centralizado
+// El wrapper asegura carga async consistente y reduce duplicación de código
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+} from '@/lib/recharts-lazy'
 
 import {
   Package,

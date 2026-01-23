@@ -60,9 +60,6 @@ export const RouteVisualizer: React.FC<RouteVisualizerProps> = ({ startDate, end
   }, [])
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:62',message:'useEffect triggered',data:{selectedRoute,device,startDate,endDate},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     if (selectedRoute) {
       fetchElementMetrics()
     }
@@ -93,41 +90,17 @@ export const RouteVisualizer: React.FC<RouteVisualizerProps> = ({ startDate, end
   }
 
   const fetchElementMetrics = async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:87',message:'fetchElementMetrics START',data:{selectedRoute,device,startDate,endDate},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
     try {
       setLoading(true)
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:90',message:'loading set to true',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       const url = `/api/analytics/elements?route=${encodeURIComponent(selectedRoute)}&device=${device}&startDate=${startDate}&endDate=${endDate}`
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:93',message:'fetching API',data:{url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       const response = await fetch(url)
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:96',message:'response received',data:{status:response.status,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       const data = await response.json()
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:99',message:'data parsed',data:{hasElements:!!data.elements,elementsCount:data.elements?.length||0,error:data.error},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       setElements(data.elements || [])
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:100',message:'elements set',data:{elementsCount:data.elements?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:102',message:'fetchElementMetrics ERROR',data:{error:String(error)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       console.error('Error fetching element metrics:', error)
       setElements([])
     } finally {
       setLoading(false)
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RouteVisualizer.tsx:106',message:'loading set to false',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
     }
   }
 

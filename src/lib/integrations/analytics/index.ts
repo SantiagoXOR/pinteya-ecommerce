@@ -76,12 +76,6 @@ class AnalyticsManager {
     this.sessionId = this.generateSessionId()
     this.visitorId = this.getOrCreateVisitorId()
     
-    // #region agent log
-    if (typeof window !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'analytics/index.ts:constructor',message:'AnalyticsManager inicializado',data:{sessionId:this.sessionId,visitorId:this.visitorId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H1-INIT'})}).catch(()=>{});
-    }
-    // #endregion
-    
     // No inicializar automáticamente - usar lazy initialization
   }
 
@@ -358,10 +352,6 @@ class AnalyticsManager {
     }
 
     this.events.push(analyticsEvent)
-    
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'analytics/index.ts:trackEvent',message:'Evento creado en cliente',data:{event:analyticsEvent.event,visitorId:this.visitorId,eventVisitorId:analyticsEvent.visitorId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H2-CLIENT'})}).catch(()=>{});
-    // #endregion
     
     this.sendToAnalytics(analyticsEvent)
   }

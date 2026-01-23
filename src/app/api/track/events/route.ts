@@ -62,9 +62,6 @@ export async function POST(request: NextRequest) {
       tenantId = request.headers.get('x-tenant-id') || event.metadata?.tenantId || null
     }
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'track/events/route.ts:POST',message:'Evento recibido en API',data:{event:event.event,visitorId:event.visitorId,metadataVisitorId:event.metadata?.visitorId,tenantId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H3-API'})}).catch(()=>{});
-    // #endregion
 
     if (process.env.NODE_ENV === 'development') {
       console.log('[API /api/track/events] Evento recibido:', {
@@ -252,9 +249,6 @@ export async function POST(request: NextRequest) {
           p_tenant_id: tenantId || null,
         }
 
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'track/events/route.ts:rpcParams',message:'RPC params preparados',data:{p_event_name:rpcParams.p_event_name,p_visitor_id:rpcParams.p_visitor_id},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'H4-RPC'})}).catch(()=>{});
-        // #endregion
 
         // Función para intentar insertar el evento con reintentos
         const insertEventWithRetry = async (maxRetries = 3): Promise<void> => {

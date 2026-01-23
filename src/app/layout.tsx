@@ -624,43 +624,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* ⚡ OPTIMIZACIÓN: Movido al final del body para no bloquear renderizado inicial */}
         <ClientAnalytics />
         
-        {/* ⚡ FASE 1.4: Script de debugging removido para reducir Script Evaluation */}
-        {/* Script de agent log eliminado - ejecutándose solo en desarrollo local */}
-        {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ENABLE_DEBUG_LOGS === 'true' && (
-          <script
-            defer
-            dangerouslySetInnerHTML={{
-              __html: `
-              (function() {
-                if (typeof window === 'undefined') return;
-                function logData() {
-                  const logData = {
-                    location: 'layout.tsx:body',
-                    message: 'HTML initial size measurement',
-                    data: {
-                      htmlSize: document.documentElement.outerHTML.length,
-                      headSize: document.head ? document.head.innerHTML.length : 0,
-                    },
-                    timestamp: Date.now(),
-                  };
-                  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(logData)
-                  }).catch(function() {});
-                }
-                if (document.readyState === 'loading') {
-                  document.addEventListener('DOMContentLoaded', function() {
-                    setTimeout(logData, 1000);
-                  }, { once: true });
-                } else {
-                  setTimeout(logData, 1000);
-                }
-              })();
-              `,
-            }}
-          />
-        )}
+        {/* ⚡ Script de debugging removido - causaba popup de permiso de red local */}
         
         {/* ⚡ FASE 1.4: Script optimizado para long tasks - Reducido tamaño para menor Script Evaluation */}
         <script

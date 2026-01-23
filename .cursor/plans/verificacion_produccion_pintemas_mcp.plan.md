@@ -37,19 +37,22 @@ Verificar que el tenant Pintemas funciona correctamente en producción después 
 
 2. **Verificar detección de tenant**:
 
-   > **⚠️ IMPORTANTE**: Los logs `[TenantService]` solo aparecen en desarrollo. En producción, usa los headers HTTP o el script de verificación.
-   
-   **Opción A - Script automático**:
+> **⚠️ IMPORTANTE**: Los logs `[TenantService]` solo aparecen en desarrollo. En producción, usa los headers HTTP o el script de verificación.
+
+**Opción A - Script automático**:
+
    ```bash
    node scripts/verify-production-pintemas.js
    ```
-   
-   **Opción B - Headers HTTP**:
+
+**Opción B - Headers HTTP**:
+
    - Abrir DevTools → Network
    - Seleccionar request principal (document)
    - Verificar headers de respuesta (ver sección 1.3)
-   
-   **Opción C - Solo en desarrollo local**:
+
+**Opción C - Solo en desarrollo local**:
+
    - Abrir DevTools → Console
    - Buscar logs: `[TenantService] Detecting tenant:`
    - Verificar que muestra: `{ hostname: 'www.pintemas.com', customDomain: 'www.pintemas.com' }`
