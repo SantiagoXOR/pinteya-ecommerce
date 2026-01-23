@@ -194,8 +194,8 @@
     width: 100%;
     height: auto; /* ⚡ FIX: Altura automática, no min-height para evitar scroll duplicado */
     /* ⚡ FIX: No usar transform en body para que position:fixed funcione correctamente */
-    /* Fondo degradado dinámico por tenant - morado/amarillo para Pintemas, negro/naranja para Pinteya */
-    background: linear-gradient(to bottom, var(--tenant-gradient-end, #eb6313) 0%, var(--tenant-gradient-end, #eb6313) 40%, var(--tenant-gradient-start, #000000) 100%) !important;
+    /* Fondo degradado dinámico por tenant - orden independiente por tenant */
+    background: linear-gradient(to bottom, var(--tenant-gradient-start, #000000) 0%, var(--tenant-gradient-start, #000000) 40%, var(--tenant-gradient-end, #eb6313) 100%) !important;
     background-attachment: fixed !important;
     background-size: cover !important;
     background-position: center !important;
