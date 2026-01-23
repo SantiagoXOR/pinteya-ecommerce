@@ -301,7 +301,7 @@ const ProductCard = React.memo(
                 <div className='flex items-center gap-2 w-full'>
                   <span
                     className='font-bold text-lg sm:text-xl leading-tight truncate'
-                    style={{ color: '#EA5A17' }}
+                    style={{ color: 'var(--tenant-primary, #EA5A17)' }}
                   >
                     {formatCurrency(price)}
                   </span>
@@ -310,7 +310,7 @@ const ProductCard = React.memo(
                   {discount && (
                     <div
                       className='inline-flex flex-col items-center justify-center px-1 py-0.5 rounded shadow-sm'
-                      style={{ backgroundColor: '#EA5A17' }}
+                      style={{ backgroundColor: 'var(--tenant-primary, #EA5A17)' }}
                     >
                       <span className='font-extrabold text-[9px] sm:text-[10px] text-white leading-none'>
                         {discount}

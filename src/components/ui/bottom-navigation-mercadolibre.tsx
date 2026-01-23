@@ -215,7 +215,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               className={cn(
                                 'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
                               )}
-                              style={{ color: 'var(--tenant-icon-color, #EA5A17)' }}
+                              style={{ color: 'var(--tenant-primary, #EA5A17)' }}
                             />
                           </div>
                           {/* Badge del carrito */}
@@ -224,10 +224,13 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               className={cn(
                                 'absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
                                 'flex items-center justify-center shadow-lg ring-2 ring-white z-10',
-                                'text-white text-[10px] sm:text-xs font-bold px-1',
+                                'text-[10px] sm:text-xs font-bold px-1',
                                 isAnimating && 'animate-bounce'
                               )}
-                              style={{ backgroundColor: 'var(--tenant-icon-color, #EA5A17)' }}
+                              style={{ 
+                                backgroundColor: 'var(--tenant-primary, #EA5A17)',
+                                color: 'var(--tenant-accent, #facc15)'
+                              }}
                             >
                               {item.badge && item.badge > 99 ? '99+' : item.badge}
                             </span>
@@ -333,7 +336,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               className={cn(
                                 'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
                               )}
-                              style={{ color: 'var(--tenant-icon-color, #EA5A17)' }}
+                              style={{ color: 'var(--tenant-primary, #EA5A17)' }}
                             />
                           </div>
                           {/* Badge del carrito */}
@@ -342,10 +345,13 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               className={cn(
                                 'absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
                                 'flex items-center justify-center shadow-lg ring-2 ring-white z-10',
-                                'text-white text-[10px] sm:text-xs font-bold px-1',
+                                'text-[10px] sm:text-xs font-bold px-1',
                                 isAnimating && 'animate-bounce'
                               )}
-                              style={{ backgroundColor: 'var(--tenant-icon-color, #EA5A17)' }}
+                              style={{ 
+                                backgroundColor: 'var(--tenant-primary, #EA5A17)',
+                                color: 'var(--tenant-accent, #facc15)'
+                              }}
                             >
                               {item.badge && item.badge > 99 ? '99+' : item.badge}
                             </span>
@@ -529,7 +535,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                     className={cn(
                                       'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
                                     )}
-                                    style={{ color: 'var(--tenant-icon-color, #EA5A17)' }}
+                                    style={{ color: 'var(--tenant-primary, #EA5A17)' }}
                                   />
                                 </div>
                                 {/* Badge del carrito */}
@@ -538,10 +544,13 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                     className={cn(
                                       'absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
                                       'flex items-center justify-center shadow-lg ring-2 ring-white z-10',
-                                      'text-white text-[10px] sm:text-xs font-bold px-1',
+                                      'text-[10px] sm:text-xs font-bold px-1',
                                       isAnimating && 'animate-bounce'
                                     )}
-                                    style={{ backgroundColor: 'var(--tenant-icon-color, #EA5A17)' }}
+                                    style={{ 
+                                      backgroundColor: 'var(--tenant-primary, #EA5A17)',
+                                      color: 'var(--tenant-accent, #facc15)'
+                                    }}
                                   >
                                     {item.badge && item.badge > 99 ? '99+' : item.badge}
                                   </span>

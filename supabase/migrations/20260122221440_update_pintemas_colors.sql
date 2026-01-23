@@ -18,9 +18,9 @@ SET
   -- Header con morado
   header_bg_color = '#841468',      -- Morado Pintemas
   
-  -- Gradientes con tonos morados
-  background_gradient_start = '#841468',  -- Morado base
-  background_gradient_end = '#a01a7c',   -- Morado claro
+  -- Gradientes: amarillo arriba, morado abajo
+  background_gradient_start = '#ffe200',  -- Amarillo Pintemas (arriba)
+  background_gradient_end = '#841468',   -- Morado Pintemas (abajo)
   
   updated_at = NOW()
 WHERE slug = 'pintemas';

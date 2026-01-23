@@ -2,12 +2,20 @@
 
 import React from 'react'
 import { Truck, MapPin, Star, Shield } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const ScrollingBanner = () => {
-  const envioText = 'ENVÍO GRATIS EN 24HS EN CÓRDOBA'
-  const tiendaText = 'TIENDA DE PINTURAS ONLINE N°1 EN CÓRDOBA'
+  const tenant = useTenantSafe()
+  
+  // Textos configurables por tenant (con fallbacks)
+  const envioText = tenant?.name === 'Pintemas' 
+    ? 'ENVÍO GRATIS EN 24HS EN CÓRDOBA'
+    : 'ENVÍO GRATIS EN 24HS EN CÓRDOBA'
+  const tiendaText = tenant?.name === 'Pintemas'
+    ? 'TIENDA DE PINTURAS ONLINE N°1 EN CÓRDOBA'
+    : 'TIENDA DE PINTURAS ONLINE N°1 EN CÓRDOBA'
 
-  // Contenido del banner optimizado con colores específicos
+  // Contenido del banner optimizado con colores del tenant
   const bannerContent = (
     <>
       {/* Primer conjunto - Envío en verde */}
@@ -19,8 +27,11 @@ const ScrollingBanner = () => {
       {/* Separador */}
       <div className='w-px h-3 bg-white/40 mx-4'></div>
 
-      {/* Segundo conjunto - Tienda en amarillo claro con texto negro */}
-      <div className='inline-flex items-center gap-1.5 bg-bright-sun-300 px-2 py-0 rounded-full h-[16px]'>
+      {/* Segundo conjunto - Tienda en amarillo del tenant con texto negro */}
+      <div 
+        className='inline-flex items-center gap-1.5 px-2 py-0 rounded-full h-[16px]'
+        style={{ backgroundColor: 'var(--tenant-accent, #facc15)' }}
+      >
         <Star className='w-3 h-3 text-black' />
         <span className='text-[10px] font-semibold tracking-widest text-black'>{tiendaText}</span>
       </div>
@@ -31,7 +42,10 @@ const ScrollingBanner = () => {
   )
 
   return (
-    <div className='w-full lg:w-auto bg-blaze-orange-600 text-white overflow-hidden relative h-[22px] flex items-center rounded-lg mx-2 lg:mx-0 my-0.5'>
+    <div 
+      className='w-full lg:w-auto text-white overflow-hidden relative h-[22px] flex items-center rounded-lg mx-2 lg:mx-0 my-0.5'
+      style={{ backgroundColor: 'var(--tenant-header-bg, #EA5A17)' }}
+    >
       {/* Contenedor de animación mejorado para loop infinito */}
       <div className='whitespace-nowrap animate-scroll-banner-infinite'>
         <div className='inline-flex items-center px-3'>
@@ -43,9 +57,15 @@ const ScrollingBanner = () => {
         </div>
       </div>
 
-      {/* Gradientes laterales en naranja del header */}
-      <div className='absolute top-0 left-0 w-12 h-full bg-gradient-to-r from-blaze-orange-600 to-transparent pointer-events-none z-10 rounded-l-lg'></div>
-      <div className='absolute top-0 right-0 w-12 h-full bg-gradient-to-l from-blaze-orange-600 to-transparent pointer-events-none z-10 rounded-r-lg'></div>
+      {/* Gradientes laterales usando color del tenant */}
+      <div 
+        className='absolute top-0 left-0 w-12 h-full bg-gradient-to-r to-transparent pointer-events-none z-10 rounded-l-lg'
+        style={{ background: `linear-gradient(to right, var(--tenant-header-bg, #EA5A17), transparent)` }}
+      ></div>
+      <div 
+        className='absolute top-0 right-0 w-12 h-full bg-gradient-to-l to-transparent pointer-events-none z-10 rounded-r-lg'
+        style={{ background: `linear-gradient(to left, var(--tenant-header-bg, #EA5A17), transparent)` }}
+      ></div>
 
       {/* Estilos CSS mejorados para animación infinita suave */}
       <style jsx global>{`
