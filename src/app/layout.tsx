@@ -40,6 +40,10 @@ export async function generateMetadata(): Promise<Metadata> {
     const tenant = await getTenantPublicConfig()
     const baseUrl = getTenantBaseUrl(tenant)
     
+    // ⚡ MULTITENANT: Favicon dinámico por tenant con versión para evitar caché
+    const faviconPath = `/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`
+    const fallbackFavicon = '/favicon.svg'
+    
     return {
       ...defaultMetadata,
       title: {
@@ -48,6 +52,15 @@ export async function generateMetadata(): Promise<Metadata> {
       },
       description: tenant.siteDescription || defaultMetadata.description,
       keywords: tenant.siteKeywords?.length > 0 ? tenant.siteKeywords : defaultMetadata.keywords,
+      // ⚡ MULTITENANT: Favicon dinámico por tenant
+      icons: {
+        icon: [
+          { url: faviconPath, type: 'image/svg+xml' },
+          { url: fallbackFavicon, type: 'image/svg+xml' }, // Fallback
+        ],
+        shortcut: faviconPath,
+        apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+      },
       openGraph: {
         ...defaultMetadata.openGraph,
         title: tenant.siteTitle || defaultMetadata.openGraph?.title,
@@ -62,6 +75,12 @@ export async function generateMetadata(): Promise<Metadata> {
         description: tenant.siteDescription || defaultMetadata.twitter?.description,
       },
       metadataBase: new URL(baseUrl),
+      // ⚡ MULTITENANT: Theme-color dinámico por tenant (color primario)
+      other: {
+        ...defaultMetadata.other,
+        'theme-color': tenant.primaryColor || '#ea5a17',
+        'msapplication-TileColor': tenant.primaryColor || '#ea5a17',
+      },
     }
   } catch (error) {
     // Fallback a metadata por defecto si hay error
@@ -95,6 +114,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <TenantThemeStyles tenant={tenant} />
         {/* ⚡ MULTITENANT: Inyectar tenant_id para analytics (Fase 1 - Performance) */}
         <meta name="tenant-id" content={tenant.id} />
+        {/* ⚡ MULTITENANT: Theme-color dinámico para header del navegador (mobile) */}
+        <meta name="theme-color" content={tenant.primaryColor || '#841468'} />
+        {/* ⚡ MULTITENANT: Favicon dinámico por tenant con versión para evitar caché */}
+        <link rel="icon" type="image/svg+xml" href={`/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`} />
+        <link rel="shortcut icon" type="image/svg+xml" href={`/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`} />
+        {/* ⚡ MULTITENANT: Apple touch icon puede ser tenant-specific en el futuro */}
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{

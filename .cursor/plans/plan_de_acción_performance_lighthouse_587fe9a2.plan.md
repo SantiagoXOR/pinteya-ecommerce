@@ -26,9 +26,6 @@ todos:
   - id: js-remove-unused
     content: Eliminar imports no utilizados usando ESLint --fix, verificar que tenant service no se elimine
     status: pending
-  - id: js-cache-bundles
-    content: "Configurar cache de bundles: compartidos (cache largo) vs tenant-specific (cache corto con invalidación)"
-    status: pending
   - id: images-lazy-verify-multitenant
     content: "Verificar lazy loading con cache por tenant: productos (compartido) vs logos/hero (específico por tenant)"
     status: completed
