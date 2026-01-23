@@ -118,15 +118,19 @@ const HeaderNextAuth = () => {
       <header
         className={`
         fixed left-0 top-0 w-full z-header
-        bg-blaze-orange-600 rounded-b-3xl shadow-lg
+        rounded-b-3xl shadow-lg
         header-sticky-transition
         ${isSticky ? 'shadow-2xl backdrop-blur-sm' : 'shadow-lg'}
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
       `}
+        style={{ backgroundColor: 'var(--tenant-header-bg, #EA5A17)' }}
       >
         {/* Topbar con ubicación y promociones */}
-        <div className='bg-blaze-orange-700 py-1'>
+        <div 
+          className='py-1'
+          style={{ backgroundColor: 'var(--tenant-primary-dark, #c2410b)' }}
+        >
           <div className='max-w-[1200px] mx-auto px-4 flex items-center justify-center text-xs min-h-[24px] gap-6'>
             {/* Ubicación compacta */}
             <div

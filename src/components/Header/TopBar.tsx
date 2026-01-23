@@ -36,7 +36,15 @@ const TopBar = () => {
   const currentZone = detectedZone || deliveryZones.find(zone => zone.id === 'cordoba-capital')
 
   return (
-    <div className='bg-blaze-orange text-white border-b border-blaze-orange-600 hidden lg:block topbar-slide relative z-topbar transition-all duration-300 hover:bg-blaze-orange-500'>
+    <div 
+      className='text-white hidden lg:block topbar-slide relative z-topbar transition-all duration-300'
+      style={{ 
+        backgroundColor: 'var(--tenant-header-bg, #EA5A17)',
+        borderBottomColor: 'var(--tenant-primary-dark, #c2410b)',
+        borderBottomWidth: '1px',
+        borderBottomStyle: 'solid'
+      }}
+    >
       <div className='max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex items-center justify-between py-2'>
           {/* Información de contacto - Izquierda */}

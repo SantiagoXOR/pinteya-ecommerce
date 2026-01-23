@@ -79,6 +79,26 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
       --tenant-accent-hsl: ${hexToHSL(tenant.accentColor)};
       
       /* =================================
+         VARIABLES DE ACCENT (amarillo)
+         ================================= */
+      --tenant-accent-dark: ${tenant.accentColor.replace('#', '')}cc;
+      --tenant-accent-light: ${tenant.accentColor.replace('#', '')}ff;
+      
+      /* =================================
+         VARIABLES PARA ICONOS
+         ================================= */
+      --tenant-icon-color: ${tenant.primaryColor};
+      --tenant-icon-color-dark: ${tenant.primaryDark};
+      --tenant-icon-color-on-accent: ${tenant.primaryColor};
+      
+      /* =================================
+         VARIABLES PARA BOTONES AMARILLOS
+         ================================= */
+      --tenant-accent-button-bg: ${tenant.accentColor};
+      --tenant-accent-button-hover: ${tenant.accentColor}cc;
+      --tenant-accent-button-active: ${tenant.accentColor}99;
+      
+      /* =================================
          MAPEO A BLAZE-ORANGE (compatibilidad)
          ================================= */
       --blaze-orange-50: ${tenant.primaryLight}1a;
@@ -91,6 +111,20 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
       --blaze-orange-700: ${tenant.primaryDark};
       --blaze-orange-800: ${tenant.primaryDark}cc;
       --blaze-orange-900: ${tenant.primaryDark}99;
+      
+      /* =================================
+         MAPEO A YELLOW (compatibilidad con accent)
+         ================================= */
+      --yellow-50: ${tenant.accentColor}0d;
+      --yellow-100: ${tenant.accentColor}1a;
+      --yellow-200: ${tenant.accentColor}33;
+      --yellow-300: ${tenant.accentColor}4d;
+      --yellow-400: ${tenant.accentColor};
+      --yellow-500: ${tenant.accentColor}cc;
+      --yellow-600: ${tenant.accentColor}99;
+      --yellow-700: ${tenant.accentColor}80;
+      --yellow-800: ${tenant.accentColor}66;
+      --yellow-900: ${tenant.accentColor}4d;
       
       /* =================================
          VARIABLES DEL TEMA
@@ -160,6 +194,85 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
         var(--tenant-gradient-end) 100%
       ) !important;
     }
+    
+    /* =================================
+       ESTILOS PARA BOTONES AMARILLOS (ACCENT)
+       ================================= */
+    .bg-yellow-400,
+    .bg-yellow-500,
+    .bg-yellow-400\\/90,
+    .bg-yellow-500\\/90 {
+      background-color: var(--tenant-accent) !important;
+    }
+    
+    .bg-yellow-400\\/80,
+    .from-yellow-400\\/80 {
+      background-color: var(--tenant-accent)cc !important;
+    }
+    
+    .hover\\:bg-yellow-500\\/90:hover,
+    .hover\\:bg-yellow-500:hover {
+      background-color: var(--tenant-accent-button-hover) !important;
+    }
+    
+    /* Gradientes con accent */
+    .from-yellow-400,
+    .from-yellow-400\\/80,
+    .via-yellow-300,
+    .to-yellow-500,
+    .to-yellow-500\\/80 {
+      --tw-gradient-from: var(--tenant-accent) !important;
+      --tw-gradient-to: var(--tenant-accent)cc !important;
+      --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+    }
+    
+    /* Textos amarillos */
+    .text-yellow-400,
+    .text-yellow-500,
+    .text-yellow-600 {
+      color: var(--tenant-accent) !important;
+    }
+    
+    /* Bordes amarillos */
+    .border-yellow-400,
+    .border-yellow-500 {
+      border-color: var(--tenant-accent) !important;
+    }
+    
+    /* =================================
+       ESTILOS PARA ICONOS
+       ================================= */
+    .icon-primary,
+    [style*="color: #c2410b"],
+    [style*="color: #EA5A17"] {
+      color: var(--tenant-icon-color) !important;
+    }
+    
+    /* =================================
+       ESTILOS ADICIONALES BLAZE-ORANGE
+       ================================= */
+    .bg-blaze-orange-100,
+    .bg-blaze-orange-200,
+    .bg-blaze-orange-300,
+    .bg-blaze-orange-400,
+    .bg-blaze-orange-700 {
+      background-color: var(--tenant-primary) !important;
+    }
+    
+    .text-blaze-orange-100,
+    .text-blaze-orange-200,
+    .text-blaze-orange-300,
+    .text-blaze-orange-400 {
+      color: var(--tenant-primary) !important;
+    }
+    
+    .border-blaze-orange-100,
+    .border-blaze-orange-200,
+    .border-blaze-orange-300,
+    .border-blaze-orange-400,
+    .border-blaze-orange-700 {
+      border-color: var(--tenant-primary) !important;
+    }
   `
   
   return (
@@ -185,6 +298,9 @@ export function getTenantThemeCSS(tenant: TenantPublicConfig): string {
       --tenant-gradient-start: ${tenant.backgroundGradientStart};
       --tenant-gradient-end: ${tenant.backgroundGradientEnd};
       --tenant-primary-hsl: ${hexToHSL(tenant.primaryColor)};
+      --tenant-accent-hsl: ${hexToHSL(tenant.accentColor)};
+      --tenant-icon-color: ${tenant.primaryColor};
+      --tenant-accent-button-bg: ${tenant.accentColor};
       --primary: ${hexToHSL(tenant.primaryColor)};
       --primary-foreground: 0 0% 100%;
     }

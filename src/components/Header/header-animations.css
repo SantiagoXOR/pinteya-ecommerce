@@ -41,7 +41,7 @@
 
 .search-focus-ring:hover {
   transform: scale(1.01);
-  box-shadow: 0 4px 12px rgba(242, 122, 29, 0.15);
+  box-shadow: 0 4px 12px rgba(var(--tenant-primary-rgb, 242, 122, 29), 0.15);
 }
 
 /* Search input expansion animation */
@@ -260,7 +260,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background-color: #f27a1d;
+  background-color: var(--tenant-primary, #f27a1d);
   transition: width 0.3s ease-in-out;
 }
 
@@ -466,7 +466,7 @@
 
 /* Focus states for accessibility */
 .focus-ring:focus {
-  outline: 2px solid #f27a1d;
+  outline: 2px solid var(--tenant-primary, #f27a1d);
   outline-offset: 2px;
 }
 

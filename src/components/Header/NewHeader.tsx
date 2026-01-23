@@ -82,9 +82,15 @@ const NewHeader = () => {
       {/* Header principal */}
       <header
         className={cn(
-          'sticky top-0 z-50 w-full bg-blaze-orange-600 border-b border-blaze-orange-700 transition-all duration-300',
+          'sticky top-0 z-50 w-full transition-all duration-300',
           stickyMenu && 'shadow-md'
         )}
+        style={{ 
+          backgroundColor: 'var(--tenant-header-bg, #EA5A17)',
+          borderBottomColor: 'var(--tenant-primary-dark, #c2410b)',
+          borderBottomWidth: '1px',
+          borderBottomStyle: 'solid'
+        }}
       >
         <div className='max-w-[1170px] mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='flex items-center justify-between h-16 lg:h-20'>
