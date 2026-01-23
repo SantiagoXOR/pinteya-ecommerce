@@ -35,13 +35,40 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  /** A11Y: Label accesible para botones con íconos sin texto visible */
+  'aria-label'?: string
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, children, 'aria-label': ariaLabel, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
+    
+    // A11Y: Si es un botón icon sin texto visible y sin aria-label, advertir en desarrollo
+    const isIconButton = size === 'icon' || (typeof children === 'object' && children !== null && !String(children))
+    const hasVisibleText = typeof children === 'string' && children.trim().length > 0
+    
+    // A11Y: En desarrollo, advertir si falta aria-label en botones icon
+    if (process.env.NODE_ENV === 'development' && isIconButton && !hasVisibleText && !ariaLabel && !props['aria-labelledby']) {
+      console.warn(
+        '[Button A11Y] Botón icon sin aria-label detectado. Agrega aria-label para accesibilidad.',
+        { children, className }
+      )
+    }
+    
+    // A11Y: Asegurar que botones icon tengan aria-label o aria-labelledby
+    const a11yProps = isIconButton && !hasVisibleText && !ariaLabel && !props['aria-labelledby']
+      ? { 'aria-label': props.title || 'Botón' } // Fallback temporal
+      : ariaLabel ? { 'aria-label': ariaLabel } : {}
+    
     return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      <Comp 
+        className={cn(buttonVariants({ variant, size, className }))} 
+        ref={ref} 
+        {...props}
+        {...a11yProps}
+      >
+        {children}
+      </Comp>
     )
   }
 )

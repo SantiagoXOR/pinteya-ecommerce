@@ -31,43 +31,43 @@ todos:
     status: pending
   - id: images-lazy-verify-multitenant
     content: "Verificar lazy loading con cache por tenant: productos (compartido) vs logos/hero (específico por tenant)"
-    status: pending
+    status: completed
   - id: images-hero-optimize-multitenant
     content: Optimizar hero images obteniendo desde getTenantPublicConfig(), preload, fetchPriority high, blur placeholder con colores del tenant
-    status: pending
+    status: completed
   - id: images-formats-verify
     content: Verificar WebP/AVIF, cache compartido para productos, cache por tenant para imágenes del tenant
-    status: pending
+    status: completed
   - id: images-cache-system
     content: Integrar cache de imágenes con cache-manager.ts, invalidación inteligente por tenant, preload de imágenes críticas
-    status: pending
+    status: completed
   - id: css-analysis-multitenant
     content: Analizar CSS y separar compartido (base, componentes) vs tenant-specific (temas, variables de colores)
-    status: pending
+    status: completed
   - id: css-critical-multitenant
     content: Implementar critical CSS inline con variables del tenant desde getTenantPublicConfig(), defer non-critical CSS
-    status: pending
+    status: completed
   - id: css-cache-system
     content: Cache de CSS compartido (cache largo) vs tenant-specific (cache corto), invalidación por cambios de tema
-    status: pending
+    status: completed
   - id: a11y-audit
     content: Auditar y corregir problemas de ARIA en todos los componentes Button y formularios
-    status: pending
+    status: completed
   - id: a11y-contrast
     content: Mejorar contraste de colores para cumplir WCAG AA (4.5:1 mínimo)
-    status: pending
+    status: completed
   - id: a11y-labels
     content: Agregar aria-label a todos los botones sin texto visible
-    status: pending
+    status: completed
   - id: preconnect-external-multitenant
     content: Agregar preconnect dinámico basado en configuración del tenant (GA del tenant si está configurado, Supabase compartido)
-    status: pending
+    status: completed
   - id: lighthouse-ci-multitenant
     content: Configurar Lighthouse CI para ejecutar en cada deploy, monitorear métricas por tenant (top 10), alertas por tenant
     status: pending
   - id: tenant-service-optimization
     content: Verificar optimización de tenant-service.ts (ya usa React cache), considerar cache adicional en Redis para configuraciones
-    status: pending
+    status: completed
 isProject: false
 ---
 

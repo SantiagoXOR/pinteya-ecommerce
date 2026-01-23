@@ -301,14 +301,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
 
-        {/* ⚡ CRITICAL: Preload de imagen hero LCP - MÁXIMA PRIORIDAD */}
+        {/* ⚡ MULTITENANT: Preload de imagen hero LCP del tenant actual */}
         {/* ⚡ DEBE estar PRIMERO para descubrimiento inmediato sin esperar CSS o JS */}
-        {/* ⚡ OPTIMIZACIÓN LCP: Preload con ruta relativa para funcionar en dev y prod */}
+        {/* ⚡ OPTIMIZACIÓN LCP: Preload dinámico basado en tenant */}
         <link
           rel="preload"
           as="image"
-          href="/images/hero/hero2/hero1.webp"
+          href={`/tenants/${tenant.slug}/hero/hero1.webp`}
           fetchPriority="high"
+          type="image/webp"
+        />
+        {/* ⚡ MULTITENANT: Preload de segunda imagen hero para mejor UX (no bloquea LCP) */}
+        <link
+          rel="preload"
+          as="image"
+          href={`/tenants/${tenant.slug}/hero/hero2.webp`}
+          fetchPriority="low"
           type="image/webp"
         />
         
@@ -449,7 +457,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           /* Reset y base styles - Con variables CSS tenant y fallbacks */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;overflow-y:auto!important;max-width:100vw;width:100%;height:100%}
-          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,var(--tenant-gradient-start,#000000) 0%,var(--tenant-gradient-start,#000000) 40%,var(--tenant-gradient-end,#eb6313) 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
+          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,var(--tenant-gradient-end,#eb6313) 0%,var(--tenant-gradient-end,#eb6313) 40%,var(--tenant-gradient-start,#000000) 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
           #__next{overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;height:auto;position:relative}
           main{overflow-x:hidden!important;overflow-y:hidden!important;position:relative}
           header[class*="fixed"],nav[class*="fixed"]{position:fixed!important;z-index:1100!important}
@@ -532,18 +540,33 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         
         {/* ⚡ OPTIMIZACIÓN: Script de long tasks movido al final del body para no bloquear render inicial */}
         
-        {/* ⚡ FASE 13: Preconnect a dominios externos - Agregar crossorigin para recursos CORS */}
+        {/* ⚡ MULTITENANT: Preconnect dinámico basado en configuración del tenant */}
         {/* Orden optimizado: primero los más críticos para LCP */}
-        {/* ⚡ FASE 13: DNS-prefetch para recursos de terceros (mejora latencia) */}
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        <link rel="dns-prefetch" href="https://www.googleadservices.com" />
-        <link rel="dns-prefetch" href="https://connect.facebook.net" />
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://www.googleadservices.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
-        {/* ⚡ NOTA: Supabase preconnect movido arriba (después del dominio propio) para máximo impacto */}
+        {/* ⚡ FASE 6.1: Preconnect a Google Analytics del tenant (si está configurado) */}
+        {tenant.ga4MeasurementId && (
+          <>
+            <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+            <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+            <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+            <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
+          </>
+        )}
+        {/* ⚡ MULTITENANT: Preconnect a Meta Pixel del tenant (si está configurado) */}
+        {tenant.metaPixelId && (
+          <>
+            <link rel="dns-prefetch" href="https://connect.facebook.net" />
+            <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
+          </>
+        )}
+        {/* ⚡ MULTITENANT: Preconnect a Google Ads (si está configurado) */}
+        {tenant.googleMerchantId && (
+          <>
+            <link rel="dns-prefetch" href="https://www.googleadservices.com" />
+            <link rel="preconnect" href="https://www.googleadservices.com" crossOrigin="anonymous" />
+          </>
+        )}
+        {/* ⚡ MULTITENANT: Preconnect compartido - Supabase (crítico para imágenes de productos) */}
+        {/* Ahorro estimado de LCP: 330 ms según Lighthouse */}
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="preconnect" href="https://lh3.googleusercontent.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.clerk.dev" />
