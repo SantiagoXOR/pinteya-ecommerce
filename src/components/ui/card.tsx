@@ -8,6 +8,7 @@ import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShippi
 import { StockIndicator } from './stock-indicator'
 import { ShippingInfo } from './shipping-info'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const cardVariants = cva('rounded-card bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-transform duration-200 ease-out', {
   variants: {
@@ -159,6 +160,12 @@ const ProductCard = React.memo(
       const config = useDesignSystemConfig()
       const legacyAutoFree = price ? dsShouldShowFreeShipping(price, config) : false
       const [isAddingToCart, setIsAddingToCart] = React.useState(false)
+      const tenant = useTenantSafe()
+      
+      // Icono de envío gratis: usar del tenant si existe, sino el default
+      const shippingIconPath = tenant?.slug 
+        ? `/tenants/${tenant.slug}/icons/icon-envio.svg`
+        : '/images/icons/icon-envio.svg'
 
       const handleAddToCart = async () => {
         if (!onAddToCart) {
@@ -194,7 +201,10 @@ const ProductCard = React.memo(
           {isNew && (
             <span
               className='absolute top-2 right-2 md:top-3 md:right-3 text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded z-40 shadow'
-              style={{ backgroundColor: '#FFD600', color: '#EA5A17' }}
+              style={{ 
+                backgroundColor: 'var(--tenant-accent, #FFD600)', 
+                color: 'var(--tenant-primary, #EA5A17)' 
+              }}
             >
               Nuevo
             </span>
@@ -229,9 +239,16 @@ const ProductCard = React.memo(
             {!useNewComponents && (badge === 'Envío gratis' || legacyAutoFree) && (
               <div className='absolute bottom-2 right-2 md:bottom-3 md:right-3 z-30 pointer-events-none'>
                 <img
-                  src='/images/icons/icon-envio.svg'
+                  src={shippingIconPath}
                   alt='Envío gratis'
                   className='h-6 sm:h-8 md:h-10 w-auto object-contain drop-shadow-lg'
+                  onError={(e) => {
+                    // Fallback al icono default si el del tenant no existe
+                    const target = e.target as HTMLImageElement
+                    if (target.src !== '/images/icons/icon-envio.svg') {
+                      target.src = '/images/icons/icon-envio.svg'
+                    }
+                  }}
                 />
               </div>
             )}

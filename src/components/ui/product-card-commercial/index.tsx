@@ -14,6 +14,7 @@ import { selectCartItems } from '@/redux/features/cart-slice'
 import { toast } from 'react-hot-toast'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useScrollActive } from '@/hooks/useScrollActive'
+import { useTenantAssets, useTenantSafe } from '@/contexts/TenantContext'
 
 // Hooks personalizados
 import { useProductVariantSelection } from './hooks/useProductVariantSelection'
@@ -145,6 +146,13 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
     const cartItems = useAppSelector(selectCartItems)
     const { trackCartAction } = useAnalytics()
     const config = useDesignSystemConfig()
+    const tenant = useTenantSafe()
+    const tenantAssets = useTenantAssets()
+    
+    // Icono de envío gratis: usar del tenant si existe, sino el default
+    const shippingIconPath = tenant?.slug 
+      ? `/tenants/${tenant.slug}/icons/icon-envio.svg`
+      : '/images/icons/icon-envio.svg'
     
     // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo
     const performanceLevel = useDevicePerformance()
@@ -441,13 +449,20 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         {shouldShowFreeShipping && (
           <div className='absolute left-2 md:left-3 top-2 md:top-2.5 z-30 pointer-events-none select-none flex items-center'>
             <Image
-              src='/images/icons/icon-envio.svg'
+              src={shippingIconPath}
               alt='Envío gratis'
               width={36}
               height={36}
               className='h-6 sm:h-7 md:h-8 w-auto object-contain drop-shadow'
               priority
               unoptimized
+              onError={(e) => {
+                // Fallback al icono default si el del tenant no existe
+                const target = e.target as HTMLImageElement
+                if (target.src !== '/images/icons/icon-envio.svg') {
+                  target.src = '/images/icons/icon-envio.svg'
+                }
+              }}
             />
           </div>
         )}

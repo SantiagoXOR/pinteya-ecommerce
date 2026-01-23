@@ -95,6 +95,7 @@ export function useTenantAssets() {
     ogImage: tenant.ogImageUrl || `/tenants/${tenant.slug}/og-image.png`,
     heroImage: (index: number) => `/tenants/${tenant.slug}/hero/hero${index}.webp`,
     promoBanner: `/tenants/${tenant.slug}/hero/promo-banner.webp`,
+    shippingIcon: `/tenants/${tenant.slug}/icons/icon-envio.svg`,
   }
 }
 

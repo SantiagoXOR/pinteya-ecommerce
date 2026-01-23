@@ -135,10 +135,13 @@ const HeaderNextAuth = () => {
             {/* Ubicación compacta */}
             <div
               onClick={handleLocationClick}
-              className='flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-105 hover:text-yellow-300 group'
-              style={{ color: '#fff3c5' }}
+              className='flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-105 group'
+              style={{ color: 'var(--tenant-accent, #fff3c5)' }}
             >
-              <MapPin className='w-3 h-3 text-yellow-400 transition-all duration-200 group-hover:scale-110 group-hover:text-yellow-300' />
+              <MapPin 
+                className='w-3 h-3 transition-all duration-200 group-hover:scale-110'
+                style={{ color: 'var(--tenant-accent, #facc15)' }}
+              />
               <span className='font-medium text-xs transition-colors duration-200'>
                 {isLoading ? (
                   <span className='flex items-center gap-1'>
@@ -153,19 +156,33 @@ const HeaderNextAuth = () => {
               </span>
             </div>
 
-            <div className='text-yellow-400 font-light'>|</div>
+            <div 
+              className='font-light'
+              style={{ color: 'var(--tenant-accent, #facc15)' }}
+            >|</div>
 
             {/* Envío gratis */}
-            <div className='flex items-center gap-1' style={{ color: '#fff3c5' }}>
-              <ShoppingCart className='w-3 h-3 text-yellow-400' />
+            <div className='flex items-center gap-1' style={{ color: 'var(--tenant-accent, #fff3c5)' }}>
+              <ShoppingCart 
+                className='w-3 h-3 transition-all duration-200'
+                style={{ color: 'var(--tenant-accent, #facc15)' }}
+              />
               <span className='font-medium text-xs'>Envío gratis desde $50.000</span>
             </div>
 
-            <div className='hidden lg:block text-yellow-400 font-light'>|</div>
+            <div 
+              className='hidden lg:block font-light'
+              style={{ color: 'var(--tenant-accent, #facc15)' }}
+            >|</div>
 
             {/* Teléfono */}
-            <div className='hidden lg:flex items-center gap-1' style={{ color: '#fff3c5' }}>
-              <svg className='w-3 h-3 text-yellow-400' fill='currentColor' viewBox='0 0 20 20'>
+            <div className='hidden lg:flex items-center gap-1' style={{ color: 'var(--tenant-accent, #fff3c5)' }}>
+              <svg 
+                className='w-3 h-3' 
+                fill='currentColor' 
+                viewBox='0 0 20 20'
+                style={{ color: 'var(--tenant-accent, #facc15)' }}
+              >
                 <path d='M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.774a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z' />
               </svg>
               <span className='text-xs'>+54 351 341 1796</span>
@@ -186,7 +203,7 @@ const HeaderNextAuth = () => {
               <form className='relative w-full'>
                 <div
                   className='flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.01] search-focus-ring'
-                  style={{ backgroundColor: '#fff3c5', borderRadius: '8px', padding: '1px' }}
+                  style={{ backgroundColor: 'var(--tenant-accent, #fff3c5)', borderRadius: '8px', padding: '1px' }}
                 >
                   <SearchAutocompleteIntegrated
                     placeholder='latex interior blanco 20lts'
