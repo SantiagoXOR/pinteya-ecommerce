@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
+// ⚡ OPTIMIZACIÓN: Usar lazy loader de framer-motion para reducir bundle inicial
+import { motion } from '@/lib/framer-motion-lazy'
 import Image from 'next/image'
 import { cn } from '@/lib/core/utils'
 import { VariantActions } from './VariantActions'
@@ -194,6 +195,10 @@ export function ExpandableVariantsRow({
                             width={48}
                             height={48}
                             className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-200'
+                            sizes="48px"
+                            loading="lazy"
+                            quality={75}
+                            decoding="async"
                             unoptimized
                           />
                         ) : (

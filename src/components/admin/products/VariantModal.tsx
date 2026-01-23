@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// ⚡ OPTIMIZACIÓN: Usar lazy loader de framer-motion para reducir bundle inicial
+import { motion, AnimatePresence } from '@/lib/framer-motion-lazy'
 import { X, Save, Palette, Package, DollarSign, Hash } from '@/lib/optimized-imports'
 import { Input } from '../ui/Input'
 import { ImageUpload } from '../ui/ImageUpload'

@@ -6,7 +6,8 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
+// ⚡ OPTIMIZACIÓN: Usar lazy loader de framer-motion para reducir bundle inicial
+import { motion } from '@/lib/framer-motion-lazy'
 import { Building2, Users, Target, Award, MapPin, Phone, Mail, Clock } from '@/lib/optimized-imports'
 import { useTenantSafe } from '@/contexts/TenantContext'
 

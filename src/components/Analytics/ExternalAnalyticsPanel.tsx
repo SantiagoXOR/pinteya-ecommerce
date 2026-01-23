@@ -6,7 +6,8 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+// ⚡ OPTIMIZACIÓN: Usar lazy loader de framer-motion para reducir bundle inicial
+import { motion, AnimatePresence } from '@/lib/framer-motion-lazy'
 import {
   Activity,
   CheckCircle2,

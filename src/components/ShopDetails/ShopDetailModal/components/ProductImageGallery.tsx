@@ -28,6 +28,8 @@ export const ProductImageGallery = React.memo<ProductImageGalleryProps>(({
           width={600}
           height={600}
           className='w-full h-full object-cover'
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+          quality={85}
           onError={e => {
             const target = e.currentTarget as HTMLImageElement
             if (target && target.src !== '/images/products/placeholder.svg') {
@@ -50,6 +52,9 @@ export const ProductImageGallery = React.memo<ProductImageGalleryProps>(({
                 height={150}
                 className='w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity'
                 loading='lazy'
+                sizes="(max-width: 640px) 25vw, 150px"
+                quality={75}
+                decoding="async"
               />
             </div>
           ))}

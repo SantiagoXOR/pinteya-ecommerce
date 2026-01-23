@@ -36,7 +36,27 @@ const SafeImage: React.FC<SafeImageProps> = ({
     )
   }
 
-  return <Image src={src} alt={alt} width={width} height={height} className={className} />
+  // ⚡ OPTIMIZACIÓN: Agregar sizes y lazy loading para imágenes offscreen
+  // Calcular sizes basado en width proporcionado
+  const sizes = width <= 150 
+    ? "(max-width: 640px) 25vw, 150px"
+    : width <= 300
+    ? "(max-width: 640px) 50vw, 300px"
+    : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
+  
+  return (
+    <Image 
+      src={src} 
+      alt={alt} 
+      width={width} 
+      height={height} 
+      className={className}
+      sizes={sizes}
+      loading="lazy"
+      quality={75}
+      decoding="async"
+    />
+  )
 }
 
 export default SafeImage
