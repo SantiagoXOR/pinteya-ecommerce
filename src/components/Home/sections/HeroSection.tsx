@@ -28,23 +28,11 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
-  // Debug: Verificar si el tenant está disponible
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[HeroSection] Tenant disponible:', {
-        hasTenant: !!tenant,
-        slug: tenant?.slug,
-        name: tenant?.name
-      })
-    }
-  }, [tenant])
-
   // ⚡ OPTIMIZACIÓN: Obtener URL de imagen hero del tenant
   const heroImageUrl = useMemo(() => {
     if (tenant?.slug) {
       return `/tenants/${tenant.slug}/hero/hero1.webp`
     }
-    console.warn('[HeroSection] Tenant no disponible, usando fallback image')
     return '/images/hero/hero2/hero1.webp'
   }, [tenant?.slug])
 
@@ -60,13 +48,8 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
 
   // ⚡ OPTIMIZACIÓN: Cargar carousel después del LCP (3s)
   // Lighthouse evalúa LCP típicamente en ~2.5s, así que 3s es seguro
-  // ⚡ FIX: Solo cargar el carousel si el tenant está disponible
   useEffect(() => {
     if (!isMounted) return
-    if (!tenant) {
-      console.warn('[HeroSection] Tenant no disponible, manteniendo imagen estática visible')
-      return
-    }
 
     const carouselTimeout = setTimeout(() => {
       setShouldLoadCarousel(true)
@@ -75,8 +58,7 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
     return () => {
       clearTimeout(carouselTimeout)
     }
-  }, [isMounted, tenant])
-
+  }, [isMounted])
 
   // Contenedor común para imagen estática y carousel
   const containerClasses = isDesktop
@@ -103,9 +85,8 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
       {/* ⚡ OPTIMIZACIÓN PAGESPEED: Contenedor con dimensiones explícitas para prevenir layout shifts */}
       <div 
         className={`absolute inset-0 z-10 transition-opacity duration-500 ${
-          shouldLoadCarousel && tenant ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          shouldLoadCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
-        style={{ width: '100%', height: '100%', position: 'relative' }}
       >
         <Image
           src={heroImageUrl}
@@ -123,8 +104,7 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
       </div>
 
       {/* ⚡ OPTIMIZACIÓN: Carousel carga después del LCP */}
-      {/* ⚡ FIX: Solo cargar el carousel si el tenant está disponible */}
-      {isMounted && shouldLoadCarousel && tenant && (
+      {isMounted && shouldLoadCarousel && (
         <div 
           className={`relative z-20 transition-opacity duration-500 ${
             shouldLoadCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'

@@ -93,72 +93,21 @@ export { viewport } from './viewport'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // ⚡ MULTITENANT: Cargar tenant para inyectar estilos en el head
-  // Capturar errores para evitar romper el renderizado
-  let tenant
-  try {
-    tenant = await getTenantPublicConfig()
-    
-    // ⚡ DEBUG: Log para verificar tenant cargado
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Layout] Tenant cargado:', {
-        slug: tenant.slug,
-        name: tenant.name,
-        headerBgColor: tenant.headerBgColor,
-        primaryColor: tenant.primaryColor,
-        accentColor: tenant.accentColor
-      })
-    }
-  } catch (error) {
-    // Si hay error, loguear pero usar valores por defecto para no romper el renderizado
-    console.error('[Layout] Error cargando tenant, usando valores por defecto:', error)
-    // Usar tenant hardcodeado como último recurso
-    const { getTenantPublicConfig: getTenantPublicConfigDirect } = await import('@/lib/tenant/tenant-service')
-    try {
-      tenant = await getTenantPublicConfigDirect()
-    } catch (fallbackError) {
-      console.error('[Layout] Error incluso con fallback, usando valores mínimos:', fallbackError)
-      // Valores mínimos para evitar romper el renderizado
-      tenant = {
-        id: '00000000-0000-0000-0000-000000000000',
-        slug: 'pinteya',
-        name: 'Pinteya',
-        subdomain: 'pinteya',
-        customDomain: null,
-        logoUrl: null,
-        logoDarkUrl: null,
-        faviconUrl: null,
-        primaryColor: '#f27a1d',
-        primaryDark: '#bd4811',
-        primaryLight: '#f9be78',
-        secondaryColor: '#00f269',
-        accentColor: '#f9a007',
-        backgroundGradientStart: '#000000',
-        backgroundGradientEnd: '#eb6313',
-        headerBgColor: '#bd4811',
-        scrollingBannerLocationText: null,
-        scrollingBannerShippingText: null,
-        scrollingBannerLocationBgColor: null,
-        scrollingBannerShippingBgColor: null,
-        themeConfig: { borderRadius: '0.5rem', fontFamily: 'Plus Jakarta Sans' },
-        ga4MeasurementId: null,
-        metaPixelId: null,
-        whatsappNumber: null,
-        whatsappMessageTemplate: null,
-        siteTitle: null,
-        siteDescription: null,
-        siteKeywords: [],
-        ogImageUrl: null,
-        socialLinks: { facebook: null, instagram: null, twitter: null, youtube: null },
-        contactPhone: null,
-        contactAddress: null,
-        contactCity: null,
-        contactProvince: null,
-        currency: 'ARS',
-        locale: 'es_AR',
-        businessHours: {},
-      } as any
-    }
+  const tenant = await getTenantPublicConfig()
+  
+  // ⚡ DEBUG: Log para verificar tenant cargado
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Layout] Tenant cargado:', {
+      slug: tenant.slug,
+      name: tenant.name,
+      headerBgColor: tenant.headerBgColor,
+      primaryColor: tenant.primaryColor,
+      accentColor: tenant.accentColor
+    })
   }
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'layout.tsx:96',message:'Tenant loaded in layout (server)',data:{tenantSlug:tenant.slug,tenantName:tenant.name,headerBgColor:tenant.headerBgColor,primaryColor:tenant.primaryColor,faviconUrl:tenant.faviconUrl,gradientStart:tenant.backgroundGradientStart,gradientEnd:tenant.backgroundGradientEnd},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+  // #endregion
   
   // ⚡ DEBUG: Simplificar layout para identificar el problema
   return (
@@ -169,8 +118,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* ⚡ MULTITENANT: Inyectar tenant_id para analytics (Fase 1 - Performance) */}
         <meta name="tenant-id" content={tenant.id} />
         {/* ⚡ MULTITENANT: Theme-color dinámico para header del navegador (mobile) */}
-        <meta name="theme-color" content={tenant.primaryColor} />
+        <meta name="theme-color" content={tenant.primaryColor || '#841468'} />
         {/* ⚡ MULTITENANT: Favicon dinámico por tenant con versión para evitar caché */}
+        {/* #region agent log */}
+        {(() => {
+          const faviconPath = `/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`;
+          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'layout.tsx:120',message:'Favicon path generated',data:{tenantSlug:tenant.slug,faviconPath,faviconUrl:tenant.faviconUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+          return null;
+        })()}
+        {/* #endregion */}
         <link rel="icon" type="image/svg+xml" href={`/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`} />
         <link rel="shortcut icon" type="image/svg+xml" href={`/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`} />
         {/* ⚡ MULTITENANT: Apple touch icon puede ser tenant-specific en el futuro */}

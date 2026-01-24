@@ -21,38 +21,12 @@ const DEFAULT_COLORS = {
   primaryColor: '#f27a1d',
   primaryDark: '#bd4811',
   primaryLight: '#f9be78',
-  secondaryColor: '#00f269',
-  accentColor: '#f9a007',
+  secondaryColor: '#007638', // ⚡ FIX: Verde correcto para Pinteya
+  accentColor: '#ffd549', // ⚡ FIX: Amarillo correcto para banner de Pinteya
   backgroundGradientStart: '#000000',
   backgroundGradientEnd: '#eb6313',
-  headerBgColor: '#bd4811',
-}
-
-// ============================================================================
-// VALIDACIÓN
-// ============================================================================
-
-/**
- * Valida que todos los campos de color requeridos estén presentes
- * @throws Error si faltan campos críticos
- */
-function validateTenantConfig(row: TenantDBRow): void {
-  const missingFields: string[] = []
-  
-  if (!row.primary_color) missingFields.push('primary_color')
-  if (!row.header_bg_color) missingFields.push('header_bg_color')
-  if (!row.background_gradient_start) missingFields.push('background_gradient_start')
-  if (!row.background_gradient_end) missingFields.push('background_gradient_end')
-  if (!row.accent_color) missingFields.push('accent_color')
-  // primary_dark, primary_light y secondary_color son opcionales pero recomendados
-  // No los validamos como críticos para no romper el renderizado
-  
-  if (missingFields.length > 0) {
-    throw new Error(
-      `[TenantService] Tenant "${row.slug}" (${row.name}) está faltando campos de color requeridos en la base de datos: ${missingFields.join(', ')}. ` +
-      `Por favor, actualiza la tabla tenants con los valores correctos.`
-    )
-  }
+  // ⚡ FIX: Blaze Orange (#ea5a17) para header de Pinteya, no el naranja oscuro
+  headerBgColor: '#ea5a17',
 }
 
 // ============================================================================
@@ -61,24 +35,8 @@ function validateTenantConfig(row: TenantDBRow): void {
 
 /**
  * Convierte los datos de la DB al formato TenantConfig
- * @throws Error si faltan campos de color requeridos
  */
 function mapDBRowToTenantConfig(row: TenantDBRow): TenantConfig {
-  // Validar que todos los campos requeridos estén presentes
-  validateTenantConfig(row)
-  
-  // Debug logging para verificar valores mapeados
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[TenantService] Mapping tenant config:', {
-      slug: row.slug,
-      name: row.name,
-      headerBgColor: row.header_bg_color,
-      primaryColor: row.primary_color,
-      gradientStart: row.background_gradient_start,
-      gradientEnd: row.background_gradient_end
-    })
-  }
-  
   return {
     id: row.id,
     slug: row.slug,
@@ -91,14 +49,14 @@ function mapDBRowToTenantConfig(row: TenantDBRow): TenantConfig {
     logoDarkUrl: row.logo_dark_url,
     faviconUrl: row.favicon_url,
     
-    primaryColor: row.primary_color,
-    primaryDark: row.primary_dark,
-    primaryLight: row.primary_light,
-    secondaryColor: row.secondary_color,
-    accentColor: row.accent_color,
-    backgroundGradientStart: row.background_gradient_start,
-    backgroundGradientEnd: row.background_gradient_end,
-    headerBgColor: row.header_bg_color,
+    primaryColor: row.primary_color || DEFAULT_COLORS.primaryColor,
+    primaryDark: row.primary_dark || DEFAULT_COLORS.primaryDark,
+    primaryLight: row.primary_light || DEFAULT_COLORS.primaryLight,
+    secondaryColor: row.secondary_color || DEFAULT_COLORS.secondaryColor,
+    accentColor: row.accent_color || DEFAULT_COLORS.accentColor,
+    backgroundGradientStart: row.background_gradient_start || DEFAULT_COLORS.backgroundGradientStart,
+    backgroundGradientEnd: row.background_gradient_end || DEFAULT_COLORS.backgroundGradientEnd,
+    headerBgColor: row.header_bg_color || DEFAULT_COLORS.headerBgColor,
     
     scrollingBannerLocationText: row.scrolling_banner_location_text,
     scrollingBannerShippingText: row.scrolling_banner_shipping_text,
@@ -353,19 +311,12 @@ export const getTenantConfig = cache(async (): Promise<TenantConfig> => {
   // Buscar en DB
   let tenantRow = await fetchTenantFromDB(subdomain, customDomain)
   
-  // Debug logging para verificar resultado y valores de colores
+  // Debug logging para verificar resultado
   if (process.env.NODE_ENV === 'development') {
     console.log('[TenantService] Tenant found:', { 
       found: !!tenantRow, 
       slug: tenantRow?.slug, 
-      name: tenantRow?.name,
-      colors: tenantRow ? {
-        headerBgColor: tenantRow.header_bg_color,
-        primaryColor: tenantRow.primary_color,
-        gradientStart: tenantRow.background_gradient_start,
-        gradientEnd: tenantRow.background_gradient_end,
-        accentColor: tenantRow.accent_color
-      } : null
+      name: tenantRow?.name 
     })
   }
   
@@ -380,15 +331,7 @@ export const getTenantConfig = cache(async (): Promise<TenantConfig> => {
     return getHardcodedDefaultTenant()
   }
   
-  // Intentar mapear el tenant, capturando errores de validación
-  try {
-    return mapDBRowToTenantConfig(tenantRow)
-  } catch (error) {
-    // Si la validación falla, loguear el error pero usar el tenant hardcodeado para no romper el renderizado
-    console.error('[TenantService] Error validando tenant config:', error)
-    console.error('[TenantService] Usando tenant hardcodeado como fallback para evitar romper el renderizado')
-    return getHardcodedDefaultTenant()
-  }
+  return mapDBRowToTenantConfig(tenantRow)
 })
 
 /**
@@ -466,8 +409,6 @@ export async function getAllTenants(): Promise<TenantConfig[]> {
 
 /**
  * Configuración por defecto hardcodeada (último recurso)
- * ⚠️ SOLO para casos de emergencia cuando la DB no está disponible
- * En producción, esto NO debería ejecutarse nunca
  */
 function getHardcodedDefaultTenant(): TenantConfig {
   return {
@@ -479,15 +420,7 @@ function getHardcodedDefaultTenant(): TenantConfig {
     logoUrl: '/images/logo/LOGO POSITIVO.svg',
     logoDarkUrl: '/images/logo/LOGO NEGATIVO.svg',
     faviconUrl: '/favicon.svg',
-    // Valores hardcodeados directamente (sin usar DEFAULT_COLORS)
-    primaryColor: '#f27a1d',
-    primaryDark: '#bd4811',
-    primaryLight: '#f9be78',
-    secondaryColor: '#00f269',
-    accentColor: '#f9a007',
-    backgroundGradientStart: '#000000',
-    backgroundGradientEnd: '#eb6313',
-    headerBgColor: '#bd4811',
+    ...DEFAULT_COLORS,
     themeConfig: { borderRadius: '0.5rem', fontFamily: 'Plus Jakarta Sans' },
     ga4MeasurementId: process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID || null,
     ga4PropertyId: process.env.GA4_PROPERTY_ID || null,

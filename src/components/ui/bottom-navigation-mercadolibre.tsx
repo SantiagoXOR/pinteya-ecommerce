@@ -215,7 +215,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               className={cn(
                                 'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
                               )}
-                              style={{ color: 'var(--tenant-primary)' }}
+                              style={{ color: 'var(--tenant-primary, #EA5A17)' }}
                             />
                           </div>
                           {/* Badge del carrito */}
@@ -228,8 +228,8 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                 isAnimating && 'animate-bounce'
                               )}
                               style={{ 
-                                backgroundColor: 'var(--tenant-primary)',
-                                color: 'var(--tenant-accent)'
+                                backgroundColor: 'var(--tenant-primary, #EA5A17)',
+                                color: 'var(--tenant-accent, #facc15)'
                               }}
                             >
                               {item.badge && item.badge > 99 ? '99+' : item.badge}
@@ -336,7 +336,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               className={cn(
                                 'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
                               )}
-                              style={{ color: 'var(--tenant-primary)' }}
+                              style={{ color: 'var(--tenant-primary, #EA5A17)' }}
                             />
                           </div>
                           {/* Badge del carrito */}
@@ -349,8 +349,8 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                 isAnimating && 'animate-bounce'
                               )}
                               style={{ 
-                                backgroundColor: 'var(--tenant-primary)',
-                                color: 'var(--tenant-accent)'
+                                backgroundColor: 'var(--tenant-primary, #EA5A17)',
+                                color: 'var(--tenant-accent, #facc15)'
                               }}
                             >
                               {item.badge && item.badge > 99 ? '99+' : item.badge}
@@ -535,7 +535,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                     className={cn(
                                       'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
                                     )}
-                                    style={{ color: 'var(--tenant-primary)' }}
+                                    style={{ color: 'var(--tenant-primary, #EA5A17)' }}
                                   />
                                 </div>
                                 {/* Badge del carrito */}
@@ -548,8 +548,8 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                       isAnimating && 'animate-bounce'
                                     )}
                                     style={{ 
-                                      backgroundColor: 'var(--tenant-primary)',
-                                      color: 'var(--tenant-accent)'
+                                      backgroundColor: 'var(--tenant-primary, #EA5A17)',
+                                      color: 'var(--tenant-accent, #facc15)'
                                     }}
                                   >
                                     {item.badge && item.badge > 99 ? '99+' : item.badge}

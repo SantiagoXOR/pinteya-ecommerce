@@ -195,6 +195,7 @@
     height: auto; /* ⚡ FIX: Altura automática, no min-height para evitar scroll duplicado */
     /* ⚡ FIX: No usar transform en body para que position:fixed funcione correctamente */
     /* Fondo degradado dinámico por tenant - orden independiente por tenant */
+    /* ⚡ FIX: Usar solo variable CSS sin fallback hardcodeado - el fallback debe venir de TenantThemeStyles */
     background: linear-gradient(to bottom, var(--tenant-gradient-start) 0%, var(--tenant-gradient-start) 40%, var(--tenant-gradient-end) 100%) !important;
     background-attachment: fixed !important;
     background-size: cover !important;

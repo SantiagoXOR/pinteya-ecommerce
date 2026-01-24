@@ -14,6 +14,11 @@ import { useTenantAssets, useTenantSafe } from '@/contexts/TenantContext'
 const NewHeader = () => {
   // Obtener assets del tenant (con fallback seguro)
   const tenant = useTenantSafe()
+  // #region agent log
+  if (typeof window !== 'undefined') {
+    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'NewHeader.tsx:16',message:'Tenant loaded in NewHeader',data:{tenantSlug:tenant?.slug,tenantName:tenant?.name,headerBgColor:tenant?.headerBgColor,primaryColor:tenant?.primaryColor,hasTenant:!!tenant},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+  }
+  // #endregion
   const tenantAssets = tenant ? {
     logo: tenant.logoUrl || `/tenants/${tenant.slug}/logo.svg`,
     logoDark: tenant.logoDarkUrl || `/tenants/${tenant.slug}/logo-dark.svg`,
@@ -40,6 +45,18 @@ const NewHeader = () => {
     window.addEventListener('scroll', handleStickyMenu)
     return () => window.removeEventListener('scroll', handleStickyMenu)
   }, [])
+  
+  // #region agent log
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const root = document.documentElement;
+      const cssVarHeaderBg = getComputedStyle(root).getPropertyValue('--tenant-header-bg').trim();
+      const cssVarGradientStart = getComputedStyle(root).getPropertyValue('--tenant-gradient-start').trim();
+      const cssVarGradientEnd = getComputedStyle(root).getPropertyValue('--tenant-gradient-end').trim();
+      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'NewHeader.tsx:42',message:'CSS variables from root',data:{cssVarHeaderBg,cssVarGradientStart,cssVarGradientEnd,tenantHeaderBg:tenant?.headerBgColor,tenantGradientStart:tenant?.backgroundGradientStart,tenantGradientEnd:tenant?.backgroundGradientEnd},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    }
+  }, [tenant])
+  // #endregion
 
   const handleSearch = (query: string) => {
     // Implementar lógica de búsqueda
@@ -86,8 +103,9 @@ const NewHeader = () => {
           stickyMenu && 'shadow-md'
         )}
         style={{ 
-          backgroundColor: 'var(--tenant-header-bg)',
-          borderBottomColor: 'var(--tenant-primary-dark)',
+          // ⚡ FIX: Usar valor del tenant directamente si está disponible, sino usar variable CSS
+          backgroundColor: tenant?.headerBgColor || 'var(--tenant-header-bg)',
+          borderBottomColor: tenant?.primaryDark || 'var(--tenant-primary-dark)',
           borderBottomWidth: '1px',
           borderBottomStyle: 'solid'
         }}

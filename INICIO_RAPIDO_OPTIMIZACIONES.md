@@ -5,6 +5,13 @@
 
 ---
 
+## ⚠️ Hero Banner – NO MODIFICAR
+
+**Ver**: `HERO_BANNER_NO_MODIFICAR.md`, `FIX_HERO_BANNER.md`  
+No tocar `HeroSection.tsx` ni `SimpleHeroCarousel.tsx` (contenedor, `fetchPriority`). Ya se corrigió una regresión.
+
+---
+
 ## ✅ Optimización Inmediata Aplicada
 
 ### Code Splitting Más Agresivo

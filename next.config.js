@@ -609,6 +609,16 @@ module.exports.__esModule = true;
           },
         ],
       },
+      // ⚡ OPTIMIZACIÓN PAGESPEED: Caché para assets de tenants (hero, logos, etc.)
+      {
+        source: '/tenants/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000, s-maxage=31536000, immutable',
+          },
+        ],
+      },
       // MULTITENANT: Headers para todos los chunks estáticos
       // Next.js ya maneja cache para chunks con versioning, pero podemos optimizar
       // Nota: No se pueden usar wildcards en source, pero Next.js ya cachea chunks correctamente

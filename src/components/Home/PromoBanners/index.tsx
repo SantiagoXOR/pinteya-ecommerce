@@ -155,7 +155,7 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                     className='object-cover z-10'
                     sizes='(max-width: 768px) 100vw, 1200px'
                     loading='lazy'
-                    fetchPriority="low" // ⚡ OPTIMIZACIÓN PAGESPEED: Low para banners below-fold
+                    fetchPriority="auto" // ⚡ Mantener 'auto' (no 'low') para evitar problemas de carga
                     quality={65} // ⚡ OPTIMIZACIÓN: Reducido de 75 a 65 para ahorrar tamaño
                     decoding="async" // ⚡ OPTIMIZACIÓN PAGESPEED: Async para no bloquear render
                     style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito

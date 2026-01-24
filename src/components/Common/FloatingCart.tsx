@@ -113,7 +113,7 @@ const FloatingCart = () => {
             </span>
           )}
         </div>
-        <span className='text-sm font-semibold' style={{ color: 'var(--tenant-icon-color)' }}>
+        <span className='text-sm font-semibold' style={{ color: 'var(--tenant-icon-color, #c2410b)' }}>
           Carrito
         </span>
       </button>

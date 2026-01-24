@@ -382,27 +382,26 @@ const Header = () => {
         className={`
         fixed left-0 right-0 z-header hidden lg:block
         safe-area-top
+        ${isSticky ? 'glass-header-sticky' : 'glass-header'}
+        ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
+        transition-all duration-300 ease-in-out
       `}
         style={{
           top: 'env(safe-area-inset-top, 0px)',
+          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+          // ⚡ FIX: Asegurar que el color del header use el tenant directamente
+          backgroundColor: tenant?.headerBgColor || 'var(--tenant-header-bg)',
         }}
       >
         <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8'>
-          <div
-            className={`
-            rounded-b-3xl
-            header-sticky-transition
-            ${isSticky ? 'glass-header-sticky' : 'glass-header'}
-            ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
-            transition-all duration-300 ease-in-out
-            overflow-x-hidden overflow-y-visible
-          `}
+          <ScrollingBanner />
+          <div 
+            className='px-3 sm:px-4 py-1.5 sm:py-2'
             style={{
-              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+              // ⚡ FIX: Asegurar que el div interno use el color del header del tenant (morado para Pintemas)
+              backgroundColor: tenant?.headerBgColor || 'var(--tenant-header-bg)',
             }}
           >
-            <ScrollingBanner />
-            <div className='px-3 sm:px-4 py-1.5 sm:py-2'>
               <div className='flex items-center justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px]'>
                 {/* 1. Logo - Ocultar cuando search está expandido */}
             {/* ⚡ FIX: Remover contenedor innecesario que causa el div rectangular */}
@@ -511,7 +510,6 @@ const Header = () => {
               </div>
             )}
               </div>
-            </div>
           </div>
         </div>
       </header>

@@ -15,6 +15,7 @@ import { useGeolocation } from '@/hooks/useGeolocation'
 import { useTenantSafe } from '@/contexts/TenantContext'
 
 const TopBar = () => {
+  const tenant = useTenantSafe()
   const {
     detectedZone,
     isLoading,
@@ -39,8 +40,8 @@ const TopBar = () => {
     <div 
       className='text-white hidden lg:block topbar-slide relative z-topbar transition-all duration-300'
       style={{ 
-        backgroundColor: 'var(--tenant-header-bg)',
-        borderBottomColor: 'var(--tenant-primary-dark)',
+        backgroundColor: tenant?.headerBgColor || 'var(--tenant-header-bg)',
+        borderBottomColor: tenant?.primaryDark || 'var(--tenant-primary-dark)',
         borderBottomWidth: '1px',
         borderBottomStyle: 'solid'
       }}

@@ -209,8 +209,9 @@ npm run bundle-optimization:check
 - [ ] Optimizar chunks grandes
 
 ### Fase 2: Imágenes
-- [x] Optimizar imagen hero
-- [ ] Auditoría completa
+- [x] Optimizar imagen hero (fix aplicado)
+- [ ] **NO modificar hero** – ver `HERO_BANNER_NO_MODIFICAR.md`
+- [ ] Auditoría completa (excluir hero)
 - [ ] Optimizar lazy loading
 - [ ] Verificar formatos
 

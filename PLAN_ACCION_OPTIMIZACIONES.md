@@ -126,11 +126,21 @@ pages: {
 
 ---
 
+### ⚠️ Hero banner – EXCLUIDO de optimizaciones
+
+**No modificar**: `HeroSection.tsx`, `SimpleHeroCarousel.tsx` (contenedor estático, `fetchPriority`).  
+Ver **`HERO_BANNER_NO_MODIFICAR.md`** y **`FIX_HERO_BANNER.md`**.  
+Cambios en posicionamiento o `fetchPriority` ya rompieron la carga del hero.
+
+---
+
 ### FASE 2: Optimización de Imágenes (Prioridad Alta) 🔴
 
 **Objetivo**: Reducir 418 KiB en entrega de imágenes  
 **Impacto esperado**: Mejora significativa en LCP y FCP  
-**Duración estimada**: 1-2 horas
+**Duración estimada**: 1-2 horas  
+
+**Excluir**: Hero (ver `HERO_BANNER_NO_MODIFICAR.md`).
 
 #### 2.1 Auditoría de Imágenes
 
@@ -149,19 +159,17 @@ grep -r "Image.*fill" src/components
 grep -r "loading=" src/components
 ```
 
-**Archivos a revisar**:
+**Archivos a revisar** (excluir HeroSection y SimpleHeroCarousel):
 - `src/components/Home/Hero/HeroSlide.tsx`
 - `src/components/Home/HeroCarousel/index.tsx`
 - `src/components/Home/PromoBanners/index.tsx`
 - `src/components/ui/product-card-commercial/components/ProductCardImage.tsx`
 
-#### 2.2 Optimizar Imágenes Hero
+#### 2.2 Optimizar Imágenes Hero – ⚠️ NO TOCAR
 
-**Acciones**:
-- [x] ✅ Agregado `decoding="sync"` a imagen hero
-- [x] ✅ Contenedor con dimensiones explícitas
-- [ ] Verificar que todas las imágenes hero tienen `priority` correcto
-- [ ] Optimizar `sizes` attribute según uso real
+**Estado**: Hero funcionando. Ver **`HERO_BANNER_NO_MODIFICAR.md`**.  
+- [x] ✅ Fix aplicado (sin style conflictivo, `fetchPriority` auto)
+- [ ] No modificar contenedor ni `fetchPriority` en hero/carousel
 
 #### 2.3 Optimizar Lazy Loading
 
