@@ -52,19 +52,19 @@ export const ProductCardActions = React.memo(function ProductCardActions({
         {isAddingToCart ? (
           <div 
             className='w-4 h-4 md:w-5 md:h-5 border-2 border-t-transparent rounded-full animate-spin'
-            style={{ borderColor: 'var(--tenant-primary, #EA5A17)' }}
+            style={{ borderColor: 'var(--tenant-primary)' }}
           />
         ) : cartAddCount > 0 ? (
           <span 
             className='font-bold text-xs sm:text-sm md:text-base'
-            style={{ color: 'var(--tenant-primary, #EA5A17)' }}
+            style={{ color: 'var(--tenant-primary)' }}
           >
             +{cartAddCount}
           </span>
         ) : (
           <ShoppingCart 
             className='w-4 h-4 md:w-5 md:h-5'
-            style={{ color: 'var(--tenant-primary, #EA5A17)' }}
+            style={{ color: 'var(--tenant-primary)' }}
           />
         )}
       </button>

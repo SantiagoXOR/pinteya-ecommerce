@@ -483,7 +483,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           /* Reset y base styles - Con variables CSS tenant y fallbacks */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;overflow-y:auto!important;max-width:100vw;width:100%;height:100%}
-          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,var(--tenant-gradient-start,#000000) 0%,var(--tenant-gradient-start,#000000) 40%,var(--tenant-gradient-end,#eb6313) 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
+          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,var(--tenant-gradient-start) 0%,var(--tenant-gradient-start) 40%,var(--tenant-gradient-end) 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
           #__next{overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;height:auto;position:relative}
           main{overflow-x:hidden!important;overflow-y:hidden!important;position:relative}
           header[class*="fixed"],nav[class*="fixed"]{position:fixed!important;z-index:1100!important}
@@ -496,7 +496,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           header{background-color:${tenant.headerBgColor};position:fixed;top:env(safe-area-inset-top, 0px);left:0;right:0;z-index:100;box-shadow:0 4px 6px -1px rgba(0,0,0,0.5);border-radius:0 0 1.5rem 1.5rem}
           
           /* Critical Hero Styles - Con variables CSS tenant */
-          .hero-section{min-height:320px;background:linear-gradient(135deg,var(--tenant-primary-dark,#bd4811),var(--tenant-gradient-start,#000000));position:relative;overflow:hidden}
+          .hero-section{min-height:320px;background:linear-gradient(135deg,var(--tenant-primary-dark),var(--tenant-gradient-start));position:relative;overflow:hidden}
           @media(min-width:1024px){.hero-section{min-height:500px}}
           
           /* Critical Hero Carousel Styles - Mínimos para evitar layout shift mientras carga CSS diferido */
@@ -517,11 +517,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
           
           /* Gradient backgrounds - Con variables CSS tenant */
-          .bg-gradient-hero{background:linear-gradient(135deg,var(--tenant-primary-dark,#bd4811) 0%,var(--tenant-gradient-start,#000000) 100%)}
+          .bg-gradient-hero{background:linear-gradient(135deg,var(--tenant-primary-dark) 0%,var(--tenant-gradient-start) 100%)}
           
           /* Critical button styles - Con variables CSS tenant */
-          .btn-primary{background:var(--tenant-primary,#eb6313);color:#fff;padding:1rem 2rem;border-radius:0.5rem;font-weight:600;transition:background-color 0.2s ease,transform 0.2s ease;border:2px solid var(--tenant-primary-dark,#bd4811)}
-          .btn-primary:hover{background:var(--tenant-primary-dark,#bd4811);transform:scale(1.05);border-color:var(--tenant-primary,#ea5a17)}
+          .btn-primary{background:var(--tenant-primary);color:#fff;padding:1rem 2rem;border-radius:0.5rem;font-weight:600;transition:background-color 0.2s ease,transform 0.2s ease;border:2px solid var(--tenant-primary-dark)}
+          .btn-primary:hover{background:var(--tenant-primary-dark);transform:scale(1.05);border-color:var(--tenant-primary)}
           
           /* Prevent layout shift */
           .aspect-video{aspect-ratio:16/9}

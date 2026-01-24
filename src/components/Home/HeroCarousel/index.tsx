@@ -170,11 +170,11 @@ const HeroCarousel = () => {
                 fill
                 priority={false} // ⚡ FASE 23: NO usar priority - imagen estática ya tiene priority
                 loading="lazy" // ⚡ FASE 23: Lazy loading para todas las imágenes del carousel
-                fetchPriority="auto" // ⚡ FASE 23: Auto priority - no competir con imagen estática
+                fetchPriority="low" // ⚡ OPTIMIZACIÓN PAGESPEED: Low para imágenes below-fold del carousel
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
                 quality={75}
-                decoding="async"
+                decoding="async" // ⚡ OPTIMIZACIÓN PAGESPEED: Async para no bloquear render
               />
             </div>
           )

@@ -39,8 +39,8 @@ const TopBar = () => {
     <div 
       className='text-white hidden lg:block topbar-slide relative z-topbar transition-all duration-300'
       style={{ 
-        backgroundColor: 'var(--tenant-header-bg, #841468)',
-        borderBottomColor: 'var(--tenant-primary-dark, #6a0f54)',
+        backgroundColor: 'var(--tenant-header-bg)',
+        borderBottomColor: 'var(--tenant-primary-dark)',
         borderBottomWidth: '1px',
         borderBottomStyle: 'solid'
       }}

@@ -9,6 +9,8 @@ import type { Category } from '@/lib/categories/types'
 import type { Product } from '@/types/product'
 
 // ⚡ OPTIMIZACIÓN: Imports estáticos de componentes críticos (sin lazy loading)
+// CategorySection y BestSellerSection son Server Components críticos que deben mantener SSR
+// para SEO y datos pre-fetched - NO hacerlos lazy
 import { HeroSection } from './sections/HeroSection'
 import { CategorySection } from './sections/CategorySection'
 import { BestSellerSection } from './sections/BestSellerSection'

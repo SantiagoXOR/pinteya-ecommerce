@@ -472,8 +472,8 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           <span
             className='absolute top-10 md:top-14 right-2 md:right-3 text-[10px] sm:text-xs font-bold px-1 py-0.5 md:px-2 md:py-1 rounded z-40 shadow'
             style={{ 
-              backgroundColor: 'var(--tenant-accent, #FFD600)', 
-              color: 'var(--tenant-primary, #EA5A17)' 
+              backgroundColor: 'var(--tenant-accent)', 
+              color: 'var(--tenant-primary)' 
             }}
           >
             Nuevo

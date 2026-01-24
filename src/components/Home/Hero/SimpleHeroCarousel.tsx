@@ -158,11 +158,12 @@ const SimpleHeroCarousel: React.FC = () => {
                   alt={slide.alt}
                   fill
                   priority={index === 1} // MULTITENANT: Solo primera imagen tiene priority
-                  fetchPriority={index === 1 ? 'high' : 'auto'} // MULTITENANT: High solo para LCP candidate
+                  fetchPriority={index === 1 ? 'high' : 'low'} // ⚡ OPTIMIZACIÓN PAGESPEED: Low para imágenes below-fold
                   className="object-cover rounded-3xl"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px" // MULTITENANT: Sizes optimizado
                   quality={80} // MULTITENANT: Balance tamaño/calidad
                   loading={index === 1 ? 'eager' : 'lazy'} // MULTITENANT: Lazy loading para imágenes no críticas
+                  decoding={index === 1 ? 'sync' : 'async'} // ⚡ OPTIMIZACIÓN PAGESPEED: Sync para LCP, async para otras
                   onLoad={() => {
                     setLoadedImagesCount(prev => prev + 1)
                   }}

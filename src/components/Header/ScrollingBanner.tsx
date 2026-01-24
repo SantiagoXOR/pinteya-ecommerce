@@ -57,7 +57,7 @@ const ScrollingBanner = () => {
   return (
     <div 
       className='w-full lg:w-auto text-white overflow-hidden relative h-[22px] flex items-center rounded-lg mx-2 lg:mx-0 my-0.5'
-      style={{ backgroundColor: 'var(--tenant-header-bg, #841468)' }}
+      style={{ backgroundColor: 'var(--tenant-header-bg)' }}
     >
       {/* Contenedor de animación mejorado para loop infinito */}
       <div className='whitespace-nowrap animate-scroll-banner-infinite'>
@@ -73,11 +73,11 @@ const ScrollingBanner = () => {
       {/* Gradientes laterales usando color del tenant */}
       <div 
         className='absolute top-0 left-0 w-12 h-full bg-gradient-to-r to-transparent pointer-events-none z-10 rounded-l-lg'
-        style={{ background: `linear-gradient(to right, var(--tenant-header-bg, #841468), transparent)` }}
+        style={{ background: `linear-gradient(to right, var(--tenant-header-bg), transparent)` }}
       ></div>
       <div 
         className='absolute top-0 right-0 w-12 h-full bg-gradient-to-l to-transparent pointer-events-none z-10 rounded-r-lg'
-        style={{ background: `linear-gradient(to left, var(--tenant-header-bg, #841468), transparent)` }}
+        style={{ background: `linear-gradient(to left, var(--tenant-header-bg), transparent)` }}
       ></div>
 
       {/* Estilos CSS mejorados para animación infinita suave */}

@@ -82,10 +82,12 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
     <>
       {/* ⚡ OPTIMIZACIÓN LCP: Imagen estática inicial (sin JavaScript) */}
       {/* Se oculta cuando el carousel se carga para evitar superposición */}
+      {/* ⚡ OPTIMIZACIÓN PAGESPEED: Contenedor con dimensiones explícitas para prevenir layout shifts */}
       <div 
         className={`absolute inset-0 z-10 transition-opacity duration-500 ${
           shouldLoadCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
+        style={{ width: '100%', height: '100%', position: 'relative' }}
       >
         <Image
           src={heroImageUrl}
@@ -97,6 +99,7 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
           quality={80}
           loading="eager"
+          decoding="sync"
           aria-hidden={shouldLoadCarousel ? 'true' : 'false'}
         />
       </div>

@@ -124,23 +124,23 @@ const HeaderNextAuth = () => {
         ${isScrollingUp ? 'translate-y-0' : isSticky ? '-translate-y-2' : 'translate-y-0'}
         transition-all duration-300 ease-in-out
       `}
-        style={{ backgroundColor: 'var(--tenant-header-bg, #841468)' }}
+        style={{ backgroundColor: 'var(--tenant-header-bg)' }}
       >
         {/* Topbar con ubicación y promociones */}
         <div 
           className='py-1'
-          style={{ backgroundColor: 'var(--tenant-primary-dark, #6a0f54)' }}
+          style={{ backgroundColor: 'var(--tenant-primary-dark)' }}
         >
           <div className='max-w-[1200px] mx-auto px-4 flex items-center justify-center text-xs min-h-[24px] gap-6'>
             {/* Ubicación compacta */}
             <div
               onClick={handleLocationClick}
               className='flex items-center gap-1 cursor-pointer transition-all duration-200 hover:scale-105 group'
-              style={{ color: 'var(--tenant-accent, #fff3c5)' }}
+              style={{ color: 'var(--tenant-accent)' }}
             >
               <MapPin 
                 className='w-3 h-3 transition-all duration-200 group-hover:scale-110'
-                style={{ color: 'var(--tenant-accent, #facc15)' }}
+                style={{ color: 'var(--tenant-accent)' }}
               />
               <span className='font-medium text-xs transition-colors duration-200'>
                 {isLoading ? (
@@ -158,30 +158,30 @@ const HeaderNextAuth = () => {
 
             <div 
               className='font-light'
-              style={{ color: 'var(--tenant-accent, #facc15)' }}
+              style={{ color: 'var(--tenant-accent)' }}
             >|</div>
 
             {/* Envío gratis */}
-            <div className='flex items-center gap-1' style={{ color: 'var(--tenant-accent, #fff3c5)' }}>
+            <div className='flex items-center gap-1' style={{ color: 'var(--tenant-accent)' }}>
               <ShoppingCart 
                 className='w-3 h-3 transition-all duration-200'
-                style={{ color: 'var(--tenant-accent, #facc15)' }}
+                style={{ color: 'var(--tenant-accent)' }}
               />
               <span className='font-medium text-xs'>Envío gratis desde $50.000</span>
             </div>
 
             <div 
               className='hidden lg:block font-light'
-              style={{ color: 'var(--tenant-accent, #facc15)' }}
+              style={{ color: 'var(--tenant-accent)' }}
             >|</div>
 
             {/* Teléfono */}
-            <div className='hidden lg:flex items-center gap-1' style={{ color: 'var(--tenant-accent, #fff3c5)' }}>
+            <div className='hidden lg:flex items-center gap-1' style={{ color: 'var(--tenant-accent)' }}>
               <svg 
                 className='w-3 h-3' 
                 fill='currentColor' 
                 viewBox='0 0 20 20'
-                style={{ color: 'var(--tenant-accent, #facc15)' }}
+                style={{ color: 'var(--tenant-accent)' }}
               >
                 <path d='M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.774a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z' />
               </svg>
@@ -203,7 +203,7 @@ const HeaderNextAuth = () => {
               <form className='relative w-full'>
                 <div
                   className='flex items-center transition-all duration-300 hover:shadow-lg hover:scale-[1.01] search-focus-ring'
-                  style={{ backgroundColor: 'var(--tenant-accent, #fff3c5)', borderRadius: '8px', padding: '1px' }}
+                  style={{ backgroundColor: 'var(--tenant-accent)', borderRadius: '8px', padding: '1px' }}
                 >
                   <SearchAutocompleteIntegrated
                     placeholder='latex interior blanco 20lts'
