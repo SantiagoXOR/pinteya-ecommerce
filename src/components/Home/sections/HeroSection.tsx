@@ -60,8 +60,13 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
 
   // ⚡ OPTIMIZACIÓN: Cargar carousel después del LCP (3s)
   // Lighthouse evalúa LCP típicamente en ~2.5s, así que 3s es seguro
+  // ⚡ FIX: Solo cargar el carousel si el tenant está disponible
   useEffect(() => {
     if (!isMounted) return
+    if (!tenant) {
+      console.warn('[HeroSection] Tenant no disponible, manteniendo imagen estática visible')
+      return
+    }
 
     const carouselTimeout = setTimeout(() => {
       setShouldLoadCarousel(true)
@@ -70,7 +75,8 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
     return () => {
       clearTimeout(carouselTimeout)
     }
-  }, [isMounted])
+  }, [isMounted, tenant])
+
 
   // Contenedor común para imagen estática y carousel
   const containerClasses = isDesktop
@@ -97,7 +103,7 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
       {/* ⚡ OPTIMIZACIÓN PAGESPEED: Contenedor con dimensiones explícitas para prevenir layout shifts */}
       <div 
         className={`absolute inset-0 z-10 transition-opacity duration-500 ${
-          shouldLoadCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          shouldLoadCarousel && tenant ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
         style={{ width: '100%', height: '100%', position: 'relative' }}
       >
@@ -117,7 +123,8 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
       </div>
 
       {/* ⚡ OPTIMIZACIÓN: Carousel carga después del LCP */}
-      {isMounted && shouldLoadCarousel && (
+      {/* ⚡ FIX: Solo cargar el carousel si el tenant está disponible */}
+      {isMounted && shouldLoadCarousel && tenant && (
         <div 
           className={`relative z-20 transition-opacity duration-500 ${
             shouldLoadCarousel ? 'opacity-100' : 'opacity-0 pointer-events-none'
