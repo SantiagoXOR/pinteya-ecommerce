@@ -28,11 +28,23 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
+  // Debug: Verificar si el tenant está disponible
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[HeroSection] Tenant disponible:', {
+        hasTenant: !!tenant,
+        slug: tenant?.slug,
+        name: tenant?.name
+      })
+    }
+  }, [tenant])
+
   // ⚡ OPTIMIZACIÓN: Obtener URL de imagen hero del tenant
   const heroImageUrl = useMemo(() => {
     if (tenant?.slug) {
       return `/tenants/${tenant.slug}/hero/hero1.webp`
     }
+    console.warn('[HeroSection] Tenant no disponible, usando fallback image')
     return '/images/hero/hero2/hero1.webp'
   }, [tenant?.slug])
 

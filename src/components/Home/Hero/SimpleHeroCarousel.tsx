@@ -24,9 +24,23 @@ const SimpleHeroCarousel: React.FC = () => {
   const tenant = useTenantSafe()
   const tenantName = tenant?.name || 'PinteYa'
   
+  // Debug: Verificar si el tenant está disponible
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[SimpleHeroCarousel] Tenant disponible:', {
+        hasTenant: !!tenant,
+        slug: tenant?.slug,
+        name: tenant?.name
+      })
+    }
+  }, [tenant])
+  
   // Generar slides basados en el tenant
   const slides = useMemo<Slide[]>(() => {
-    if (!tenant) return FALLBACK_SLIDES
+    if (!tenant) {
+      console.warn('[SimpleHeroCarousel] Tenant no disponible, usando FALLBACK_SLIDES')
+      return FALLBACK_SLIDES
+    }
     
     return [
       { id: 'hero-1', image: `/tenants/${tenant.slug}/hero/hero1.webp`, alt: `${tenantName} - Pintá rápido, fácil y cotiza al instante` },

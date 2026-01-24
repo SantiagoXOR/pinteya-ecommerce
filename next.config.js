@@ -272,30 +272,31 @@ const nextConfig = {
               minSize: 5000, // MULTITENANT: 5 KB mínimo
               reuseExistingChunk: true,
             },
-            // ⚡ Vendor libraries - Chunks balanceados para mejor tree shaking
+            // ⚡ OPTIMIZACIÓN PAGESPEED: Vendor libraries - Reducido maxSize para forzar más chunks pequeños
+            // Esto ayuda a dividir el chunk de 670 KB identificado en el análisis
             vendor: {
               test: /[\\/]node_modules[\\/](?!(react|react-dom|scheduler|next|framer-motion|@radix-ui|swiper|recharts|@tanstack|redux)[\\/])/,
               name: 'vendor',
               priority: 10,
-              maxSize: 100000, // MULTITENANT: Reducido de 150KB a 100KB según plan
+              maxSize: 50000, // ⚡ OPTIMIZACIÓN PAGESPEED: Reducido de 100KB a 50KB para dividir chunks grandes
               minSize: 20000, // ⚡ OPTIMIZACIÓN: 20 KB mínimo
               reuseExistingChunk: true,
             },
-            // ⚡ Chunk separado para componentes de HomeV3
+            // ⚡ OPTIMIZACIÓN PAGESPEED: Chunk separado para componentes de HomeV3 - Reducido maxSize
             homeV3: {
               test: /[\\/]src[\\/]components[\\/]Home-v3[\\/]/,
               name: 'home-v3',
               priority: 25,
-              maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: 150 KB máximo
+              maxSize: 80000, // ⚡ OPTIMIZACIÓN PAGESPEED: Reducido de 150KB a 80KB para mejor code splitting
               minSize: 20000, // ⚡ OPTIMIZACIÓN: 20 KB mínimo
               reuseExistingChunk: true,
             },
-            // ⚡ Chunk separado para componentes de página (Home, etc.)
+            // ⚡ OPTIMIZACIÓN PAGESPEED: Chunk separado para componentes de página - Reducido maxSize
             pages: {
               test: /[\\/]src[\\/](app|components[\\/]Home)[\\/]/,
               name: 'pages',
               priority: 20,
-              maxSize: 150000, // ⚡ OPTIMIZACIÓN LCP: 150 KB máximo
+              maxSize: 80000, // ⚡ OPTIMIZACIÓN PAGESPEED: Reducido de 150KB a 80KB para mejor code splitting
               minSize: 20000, // ⚡ OPTIMIZACIÓN: 20 KB mínimo
               reuseExistingChunk: true,
             },

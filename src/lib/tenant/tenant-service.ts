@@ -44,6 +44,8 @@ function validateTenantConfig(row: TenantDBRow): void {
   if (!row.background_gradient_start) missingFields.push('background_gradient_start')
   if (!row.background_gradient_end) missingFields.push('background_gradient_end')
   if (!row.accent_color) missingFields.push('accent_color')
+  // primary_dark, primary_light y secondary_color son opcionales pero recomendados
+  // No los validamos como críticos para no romper el renderizado
   
   if (missingFields.length > 0) {
     throw new Error(
@@ -378,7 +380,15 @@ export const getTenantConfig = cache(async (): Promise<TenantConfig> => {
     return getHardcodedDefaultTenant()
   }
   
-  return mapDBRowToTenantConfig(tenantRow)
+  // Intentar mapear el tenant, capturando errores de validación
+  try {
+    return mapDBRowToTenantConfig(tenantRow)
+  } catch (error) {
+    // Si la validación falla, loguear el error pero usar el tenant hardcodeado para no romper el renderizado
+    console.error('[TenantService] Error validando tenant config:', error)
+    console.error('[TenantService] Usando tenant hardcodeado como fallback para evitar romper el renderizado')
+    return getHardcodedDefaultTenant()
+  }
 })
 
 /**
