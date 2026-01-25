@@ -19,10 +19,10 @@ import { getTenantPublicConfig, getTenantBaseUrl } from '@/lib/tenant'
 import { TenantProviderWrapper } from '@/components/providers/TenantProviderWrapper'
 import { TenantThemeStyles } from '@/components/theme/TenantThemeStyles'
 
-// ⚡ CRITICAL: Lazy load de componentes no críticos para reducir Script Evaluation
-// Estos componentes se cargan después del FCP para no bloquear la carga inicial
-// ⚡ FIX: Renombrado para evitar conflicto con export const dynamic
-import dynamicImport from 'next/dynamic'
+// ⚡ MULTITENANT: Layout dinámico porque detecta tenant desde headers
+// Esto es necesario porque getTenantPublicConfig() usa headers() para detectar el tenant
+// ⚡ FIX: Debe estar antes de los imports para evitar conflictos con Turbopack
+export const dynamic = 'force-dynamic'
 
 // ⚡ NOTA: StructuredData estático reemplazado por TenantStructuredData dinámico
 // El componente TenantStructuredData es un Server Component que genera
@@ -34,10 +34,6 @@ import ClientAnalytics from '@/components/Performance/ClientAnalytics'
 
 // ⚡ MULTITENANT: Structured data dinámico basado en tenant
 import TenantStructuredData from '@/components/SEO/TenantStructuredData'
-
-// ⚡ MULTITENANT: Layout dinámico porque detecta tenant desde headers
-// Esto es necesario porque getTenantPublicConfig() usa headers() para detectar el tenant
-export const dynamic = 'force-dynamic'
 
 // ⚡ MULTITENANT: Metadata dinámico basado en el tenant actual
 export async function generateMetadata(): Promise<Metadata> {
