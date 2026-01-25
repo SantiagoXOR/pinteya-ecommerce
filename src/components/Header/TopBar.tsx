@@ -27,7 +27,6 @@ const TopBar = () => {
   } = useGeolocation()
   
   // Obtener teléfono de contacto del tenant
-  const tenant = useTenantSafe()
   const contactPhone = tenant?.contactPhone || tenant?.whatsappNumber || '5493513411796'
   // Formatear número para mostrar
   const displayPhone = contactPhone.replace(/^549(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3')
