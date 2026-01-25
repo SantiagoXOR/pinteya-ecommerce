@@ -162,6 +162,10 @@ const ProductCard = React.memo(
       const [isAddingToCart, setIsAddingToCart] = React.useState(false)
       const tenant = useTenantSafe()
       
+      // ⚡ MULTITENANT: Colores del tenant para el botón de agregar al carrito
+      const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+      const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+      
       // Icono de envío gratis: usar del tenant si existe, sino el default
       const shippingIconPath = tenant?.slug 
         ? `/tenants/${tenant.slug}/icons/icon-envio.svg`
@@ -318,16 +322,16 @@ const ProductCard = React.memo(
                 <div className='flex items-center gap-2 w-full'>
                   <span
                     className='font-bold text-lg sm:text-xl leading-tight truncate'
-                    style={{ color: 'var(--tenant-primary, #EA5A17)' }}
+                    style={{ color: primaryColor }}
                   >
                     {formatCurrency(price)}
                   </span>
                   
-                  {/* Badge de descuento inline con el precio */}
+                  {/* Badge de descuento inline con el precio - ⚡ MULTITENANT: usar primaryColor */}
                   {discount && (
                     <div
                       className='inline-flex flex-col items-center justify-center px-1 py-0.5 rounded shadow-sm'
-                      style={{ backgroundColor: 'var(--tenant-primary, #EA5A17)' }}
+                      style={{ backgroundColor: primaryColor }}
                     >
                       <span className='font-extrabold text-[9px] sm:text-[10px] text-white leading-none'>
                         {discount}
@@ -373,13 +377,29 @@ const ProductCard = React.memo(
                   'flex items-center justify-center gap-1 md:gap-2 font-semibold py-2 sm:py-2.5 md:py-3 px-3 sm:px-4 rounded-lg transition w-full text-sm sm:text-base',
                   stock === 0
                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-[#FFCB00] to-[#FFD700] hover:from-[#FFB800] hover:to-[#FFCB00] shadow-sm hover:shadow-md'
+                    : 'shadow-sm hover:shadow-md'
                 )}
-                style={stock !== 0 ? { color: '#EA5A17' } : undefined}
+                style={stock !== 0 ? { 
+                  backgroundColor: accentColor,
+                  color: primaryColor
+                } : undefined}
+                onMouseEnter={(e) => {
+                  if (stock !== 0) {
+                    e.currentTarget.style.backgroundColor = `${accentColor}dd`
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (stock !== 0) {
+                    e.currentTarget.style.backgroundColor = accentColor
+                  }
+                }}
               >
                 {isAddingToCart ? (
                   <>
-                    <div className='w-3 h-3 md:w-4 md:h-4 border-2 border-[#EA5A17] border-t-transparent rounded-full animate-spin'></div>
+                    <div 
+                      className='w-3 h-3 md:w-4 md:h-4 border-2 border-t-transparent rounded-full animate-spin'
+                      style={{ borderColor: primaryColor }}
+                    ></div>
                     <span className='truncate hidden sm:inline'>Agregando...</span>
                     <span className='truncate sm:hidden'>...</span>
                   </>
@@ -390,10 +410,11 @@ const ProductCard = React.memo(
                     <svg
                       className='w-3 h-3 md:w-4 md:h-4 fill-current flex-shrink-0'
                       viewBox='0 0 24 24'
+                      style={{ color: primaryColor }}
                     >
                       <path d='M10 20a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm10 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM7.333 5H20l-1.5 6H8.167l-.834-4H4V5h3.333zM6 9h12.5l1-4H7.5l.5 2H6v2z' />
                     </svg>
-                    <span className='truncate'>{cta || 'Agregar al carrito'}</span>
+                    <span className='truncate' style={{ color: primaryColor }}>{cta || 'Agregar al carrito'}</span>
                   </>
                 )}
               </button>

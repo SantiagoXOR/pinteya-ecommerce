@@ -20,6 +20,7 @@ import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 import { useAppSelector } from '@/redux/store'
 import { useSelector } from 'react-redux'
 import { selectTotalPrice } from '@/redux/features/cart-slice'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 // Componente para el icono de Google
 const GoogleIcon = ({ className }: { className?: string }) => (
@@ -49,6 +50,11 @@ interface ActionButtonsProps {
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'header' }) => {
+  // ⚡ MULTITENANT: Colores del tenant para botones de carrito
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+  
   // Integración con NextAuth
   const { data: session, status } = useSession()
   const isSignedIn = !!session
@@ -83,25 +89,26 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
   if (variant === 'mobile') {
     return (
       <div className={cn('flex items-center gap-2', className)}>
-        {/* Carrito móvil */}
+        {/* Carrito móvil - ⚡ MULTITENANT: usar accentColor para fondo y primaryColor para icono */}
         <Button
           variant='ghost'
           size='sm'
           onClick={handleCartClick}
-          className='relative p-2 text-white dark:text-gray-200 hover:text-black dark:hover:text-gray-100 hover:bg-bright-sun dark:hover:bg-gray-800 transition-all duration-200 z-maximum'
+          className='relative p-2 transition-all duration-200 z-maximum rounded-full'
+          style={{
+            backgroundColor: accentColor,
+            color: primaryColor,
+          }}
           data-testid='cart-icon'
         >
-          <Image
-            src='/images/categories/carrito.png'
-            alt='Carrito'
-            width={20}
-            height={20}
-            className='w-5 h-5'
-          />
+          <ShoppingCart className='w-5 h-5' style={{ color: primaryColor }} />
           {cartItemCount > 0 && (
             <Badge
-              className='absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md z-maximum'
-              style={{ backgroundColor: '#007639' }}
+              className='absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold shadow-md z-maximum'
+              style={{ 
+                backgroundColor: primaryColor,
+                color: accentColor
+              }}
             >
               {cartItemCount}
             </Badge>
@@ -180,34 +187,35 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
   // Versión desktop con integración Clerk
   return (
     <div className={cn('flex items-center gap-3', className)}>
-      {/* Carrito desktop */}
+      {/* Carrito desktop - ⚡ MULTITENANT: usar accentColor para fondo y primaryColor para icono */}
       <Button
         variant='ghost'
         size='sm'
         onClick={handleCartClick}
-        className='relative text-white dark:text-gray-200 hover:text-black dark:hover:text-gray-100 hover:bg-bright-sun dark:hover:bg-gray-800 px-3 py-2 transition-all duration-200 z-maximum'
+        className='relative px-3 py-2 transition-all duration-200 z-maximum rounded-full'
+        style={{
+          backgroundColor: accentColor,
+          color: primaryColor,
+        }}
         data-testid='cart-icon'
         aria-label={`Carrito con ${cartItemCount} productos`}
       >
         <div className='flex items-center gap-2'>
           <div className='relative'>
-            <Image
-              src='/images/categories/carrito.png'
-              alt='Carrito'
-              width={20}
-              height={20}
-              className='w-5 h-5'
-            />
+            <ShoppingCart className='w-5 h-5' style={{ color: primaryColor }} />
             {cartItemCount > 0 && (
               <Badge
-                className='absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold text-white shadow-md z-maximum'
-                style={{ backgroundColor: '#007639' }}
+                className='absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs font-bold shadow-md z-maximum'
+                style={{ 
+                  backgroundColor: primaryColor,
+                  color: accentColor
+                }}
               >
                 {cartItemCount}
               </Badge>
             )}
           </div>
-          <span className='text-sm font-medium hidden lg:inline'>
+          <span className='text-sm font-medium hidden lg:inline' style={{ color: primaryColor }}>
             Carrito {cartItemCount > 0 && `(${cartItemCount})`}
           </span>
         </div>

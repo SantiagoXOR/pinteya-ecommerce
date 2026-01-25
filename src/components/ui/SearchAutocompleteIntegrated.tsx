@@ -14,6 +14,7 @@ import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useScrollActive } from '@/hooks/useScrollActive'
 import { useDropdownPosition } from '@/hooks/useDropdownPosition'
 import { SearchDropdown } from './search/SearchDropdown'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 // ===================================
 // TIPOS E INTERFACES
@@ -141,6 +142,11 @@ export const SearchAutocompleteIntegrated = React.memo(
       const isLowPerformance = performanceLevel === 'low'
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
       const { isScrolling } = useScrollActive()
+      
+      // ⚡ MULTITENANT: Colores del tenant para botones de search y close
+      const tenant = useTenantSafe()
+      const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+      const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
 
       // Referencias
       const inputRef = useRef<HTMLInputElement>(null)
@@ -506,19 +512,18 @@ export const SearchAutocompleteIntegrated = React.memo(
                   className='absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-6 h-6 md:w-7 md:h-7'
                   aria-label='Enviar búsqueda'
                 >
-                  {/* Blur amarillo detrás del botón */}
+                  {/* Blur amarillo detrás del botón - ⚡ MULTITENANT: usar accentColor */}
                   <div 
                     className='absolute inset-0 rounded-full pointer-events-none'
                     style={{
-                      background: 'rgba(250, 204, 21, 0.9)',
-                      // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
-                      // El CSS global ya lo deshabilita
+                      backgroundColor: accentColor,
+                      opacity: 0.9,
                     }}
                   />
                   
-                  {/* Botón circular con icono Enter */}
+                  {/* Botón circular con icono Enter - ⚡ MULTITENANT: usar primaryColor */}
                   <div className='relative w-full h-full rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform bg-transparent'>
-                    <Enter className='w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-[#EA5A17]' />
+                    <Enter className='w-2.5 h-2.5 md:w-3.5 md:h-3.5' style={{ color: primaryColor }} />
                   </div>
                 </button>
               )}
@@ -530,30 +535,35 @@ export const SearchAutocompleteIntegrated = React.memo(
                   className='absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-6 h-6 md:w-7 md:h-7'
                   aria-label='Buscar'
                 >
-                  {/* Blur amarillo detrás del botón */}
+                  {/* Blur amarillo detrás del botón - ⚡ MULTITENANT: usar accentColor */}
                   <div 
                     className='absolute inset-0 rounded-full pointer-events-none'
                     style={{
-                      background: 'rgba(250, 204, 21, 0.9)',
+                      backgroundColor: accentColor,
+                      opacity: 0.9,
                     }}
                   />
                   
-                  {/* Botón circular con icono Search */}
+                  {/* Botón circular con icono Search - ⚡ MULTITENANT: usar primaryColor */}
                   <div className='relative w-full h-full rounded-full shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 transform-gpu will-change-transform bg-transparent'>
-                    <Search className='w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-[#EA5A17]' />
+                    <Search className='w-2.5 h-2.5 md:w-3.5 md:h-3.5' style={{ color: primaryColor }} />
                   </div>
                 </button>
               )}
 
-              {/* Botón de borrar con icono Backspace */}
+              {/* Botón de borrar con icono Backspace - ⚡ MULTITENANT: usar accentColor para fondo y primaryColor para icono */}
               {showClearButton && inputValue && (
                 <button
                   type='button'
                   onClick={handleClear}
-                  className='absolute right-10 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors z-20'
+                  className='absolute right-10 top-1/2 transform -translate-y-1/2 p-1 rounded-full transition-colors z-20'
+                  style={{
+                    backgroundColor: accentColor,
+                    opacity: 0.9,
+                  }}
                   aria-label='Borrar búsqueda'
                 >
-                  <Backspace className='w-3 h-3 md:w-4 md:h-4 text-gray-400 dark:text-gray-500' />
+                  <Backspace className='w-3 h-3 md:w-4 md:h-4' style={{ color: primaryColor }} />
                 </button>
               )}
             </div>

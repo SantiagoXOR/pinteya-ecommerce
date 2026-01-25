@@ -4,12 +4,17 @@ import React, { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Percent } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 export interface PromoBannersProps {
   bannerId?: number // Si se proporciona, muestra solo ese banner
 }
 
 const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
+  // ⚡ MULTITENANT: Color del tenant para elementos naranjas
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  
   const scrollRef = useRef<HTMLDivElement>(null)
   const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set())
 
@@ -86,10 +91,10 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                   <div className='relative h-full flex items-center justify-between px-2 md:px-3 z-30' style={{ opacity: banner.id === 2 ? 0.85 : 1, borderRadius: banner.id === 2 ? '0px' : undefined }}>
                     {/* Left Content */}
                     <div className='flex items-center gap-1.5 md:gap-2'>
-                      {/* Badge destacado - Solo para banner Flash Days */}
+                      {/* Badge destacado - Solo para banner Flash Days - ⚡ MULTITENANT: usar accentColor */}
                       {banner.id === 1 ? (
                         <div className={`inline-flex items-center justify-center ${banner.badgeColor} px-2.5 py-1 md:px-3 md:py-1.5 rounded-full font-black text-xs md:text-base shadow-xl ring-2 ring-yellow-300 ring-opacity-70 transform hover:scale-105 transition-transform duration-200`}>
-                          <span className='whitespace-nowrap' style={{ color: 'rgba(235, 99, 19, 1)' }}>{banner.badge}</span>
+                          <span className='whitespace-nowrap' style={{ color: accentColor }}>{banner.badge}</span>
                         </div>
                       ) : (
                         <div className={`inline-flex items-center ${banner.badgeColor} text-white px-1.5 py-0.5 rounded-full font-bold text-[10px] md:text-xs shadow-sm`}>
@@ -132,7 +137,8 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                         }`}
                       />
                       <span className="absolute inset-0 rounded-full shadow-md opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
-                      <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} style={{ color: banner.id === 1 ? 'rgba(235, 99, 19, 1)' : 'rgba(17, 24, 39, 1)' }} />
+                      {/* ⚡ MULTITENANT: usar accentColor para el icono */}
+                      <ArrowRight className='w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform' strokeWidth={2.5} style={{ color: banner.id === 1 ? accentColor : 'rgba(17, 24, 39, 1)' }} />
                     </div>
                   </div>
                 </div>

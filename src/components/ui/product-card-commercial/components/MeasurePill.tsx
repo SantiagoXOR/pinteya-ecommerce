@@ -5,6 +5,7 @@ import { cn } from '@/lib/core/utils'
 import { Check } from '@/lib/optimized-imports'
 import { parseMeasure } from '../utils/measure-utils'
 import type { MeasurePillProps } from '../types'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 /**
  * Componente individual de pill de medida
@@ -15,6 +16,10 @@ export const MeasurePill = React.memo(function MeasurePill({
   isSelected,
   onSelect
 }: MeasurePillProps) {
+  // ⚡ MULTITENANT: Color del tenant para pills seleccionados
+  const tenant = useTenantSafe()
+  const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+  
   const { number, unit } = React.useMemo(() => parseMeasure(measure), [measure])
   
   // Formatear la unidad - siempre en mayúsculas
@@ -36,18 +41,30 @@ export const MeasurePill = React.memo(function MeasurePill({
     return 'text-gray-900'
   }, [])
 
-  // Estilos base sin animaciones no compuestas
+  // Estilos base sin animaciones no compuestas - ⚡ MULTITENANT: usar primaryColor
   const baseStyle = React.useMemo(() => ({
     backgroundColor: isSelected ? '#ffffff' : '#f9fafb',
     borderWidth: isSelected ? '1.5px' : '1px',
-    borderColor: isSelected ? '#EA5A17' : 'rgba(229, 231, 235, 1)',
+    borderColor: isSelected ? primaryColor : 'rgba(229, 231, 235, 1)',
     borderStyle: 'solid',
     // ⚡ OPTIMIZACIÓN: Eliminado backdrop-filter completamente
     // El CSS global ya lo deshabilita
-  }), [isSelected])
+  }), [isSelected, primaryColor])
 
   // Box-shadow estático (no animado) - solo cambia opacity del pseudo-elemento
   const shadowOpacity = isSelected ? 1 : 0.6
+  
+  // ⚡ MULTITENANT: Convertir primaryColor hex a rgba para box-shadow
+  const primaryColorRgba = React.useMemo(() => {
+    if (primaryColor.startsWith('#')) {
+      const hex = primaryColor.slice(1)
+      const r = parseInt(hex.slice(0, 2), 16)
+      const g = parseInt(hex.slice(2, 4), 16)
+      const b = parseInt(hex.slice(4, 6), 16)
+      return `rgba(${r}, ${g}, ${b}, 0.3)`
+    }
+    return primaryColor
+  }, [primaryColor])
 
   return (
     <button
@@ -68,12 +85,12 @@ export const MeasurePill = React.memo(function MeasurePill({
         willChange: 'transform',
       }}
     >
-      {/* Pseudo-elemento para box-shadow con opacity animada */}
+      {/* Pseudo-elemento para box-shadow con opacity animada - ⚡ MULTITENANT: usar primaryColor */}
       <span
         className="absolute inset-0 rounded-full pointer-events-none transition-opacity duration-500 ease-in-out"
         style={{
           boxShadow: isSelected 
-            ? '0 2px 8px rgba(234, 90, 23, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+            ? `0 2px 8px ${primaryColorRgba}, 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)`
             : '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
           opacity: shadowOpacity,
         }}

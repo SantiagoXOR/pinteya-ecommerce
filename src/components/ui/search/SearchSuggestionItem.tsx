@@ -7,6 +7,7 @@ import type { SearchSuggestion } from '../SearchAutocompleteIntegrated'
 import { ColorPill } from '@/components/ui/product-card-commercial/components/ColorPill'
 import { MeasurePill } from '@/components/ui/product-card-commercial/components/MeasurePill'
 import { FinishPill } from '@/components/ui/product-card-commercial/components/FinishPill'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 // ===================================
 // COMPONENTE: SearchSuggestionItem
@@ -21,7 +22,8 @@ export interface SearchSuggestionItemProps {
   onMouseEnter: (index: number) => void
 }
 
-const getSuggestionIcon = (type: SearchSuggestion['type']) => {
+const getSuggestionIcon = (type: SearchSuggestion['type'], primaryColor?: string) => {
+  const iconColor = primaryColor || '#f27a1d'
   switch (type) {
     case 'product':
       return <Package className='w-4 h-4 text-gray-500 dark:text-gray-400' />
@@ -30,7 +32,7 @@ const getSuggestionIcon = (type: SearchSuggestion['type']) => {
     case 'recent':
       return <Clock className='w-4 h-4 text-gray-400 dark:text-gray-500' />
     case 'trending':
-      return <TrendingUp className='w-4 h-4 text-orange-500 dark:text-blaze-orange-400' />
+      return <TrendingUp className='w-4 h-4' style={{ color: iconColor }} />
     default:
       return <Search className='w-4 h-4 text-gray-500 dark:text-gray-400' />
   }
@@ -38,6 +40,10 @@ const getSuggestionIcon = (type: SearchSuggestion['type']) => {
 
 export const SearchSuggestionItem = React.memo<SearchSuggestionItemProps>(
   ({ suggestion, index, isSelected, onSelect, onMouseEnter }) => {
+    // ⚡ MULTITENANT: Colores del tenant para iconos del dropdown
+    const tenant = useTenantSafe()
+    const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+    
     return (
       <div
         className={cn(
@@ -59,7 +65,7 @@ export const SearchSuggestionItem = React.memo<SearchSuggestionItemProps>(
             className='w-10 h-10 rounded-md object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0'
           />
         ) : (
-          getSuggestionIcon(suggestion.type)
+          getSuggestionIcon(suggestion.type, primaryColor)
         )}
 
         {/* Texto */}

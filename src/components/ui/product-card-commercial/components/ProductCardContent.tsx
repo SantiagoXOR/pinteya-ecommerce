@@ -4,6 +4,7 @@ import React from 'react'
 import { cleanTitleForIncoloroProduct, isTransparentColor } from '../utils/color-utils'
 import type { ProductCardContentProps } from '../types'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 /**
  * Componente de contenido del ProductCard
@@ -18,6 +19,10 @@ export const ProductCardContent = React.memo(function ProductCardContent({
   variants,
   selectedColorName
 }: ProductCardContentProps) {
+  // ⚡ MULTITENANT: Color del tenant para precio
+  const tenant = useTenantSafe()
+  const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+  
   // Detectar si el producto es incoloro
   const isIncoloro = React.useMemo(() => {
     // Verificar si el color seleccionado es incoloro
@@ -65,11 +70,11 @@ export const ProductCardContent = React.memo(function ProductCardContent({
               <span className='text-gray-400 line-through text-[9px] md:text-[10px]'>
                 {formatCurrency(displayOriginalPrice, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </span>
-              {/* Badge de descuento - al lado del precio tachado */}
+              {/* Badge de descuento - al lado del precio tachado - ⚡ MULTITENANT: usar primaryColor */}
               {discount && (
                 <span
                   className='inline-flex items-center justify-center px-1 py-0.5 rounded-full text-[6px] sm:text-[7px] md:text-[8px] font-bold leading-none tracking-wide whitespace-nowrap'
-                  style={{ backgroundColor: '#EA5A17', color: '#ffffff' }}
+                  style={{ backgroundColor: primaryColor, color: '#ffffff' }}
                 >
                   {discount} OFF
                 </span>
@@ -79,10 +84,10 @@ export const ProductCardContent = React.memo(function ProductCardContent({
           
           {displayPrice !== undefined && (
             <div className='flex items-center gap-1 md:gap-1.5 -mt-0.5'>
-              {/* Precio actual */}
+              {/* Precio actual - ⚡ MULTITENANT: usar primaryColor */}
               <div
                 className='text-sm sm:text-base md:text-xl font-semibold tracking-wide drop-shadow-sm'
-                style={{ color: '#EA5A17' }}
+                style={{ color: primaryColor }}
               >
                 {formatCurrency(displayPrice ?? 0, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </div>

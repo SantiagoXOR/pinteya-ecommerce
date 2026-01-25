@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { TrendingUp, Search } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 // Búsquedas por defecto como fallback
 const defaultTrendingSearches = [
@@ -46,6 +47,10 @@ const getIconForTerm = (term: string): string => {
 }
 
 const TrendingSearchesBase = () => {
+  // ⚡ MULTITENANT: Color del tenant para elementos naranjas
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  
   // ⚡ OPTIMIZACIÓN: Deshabilitar refetch automático para evitar re-renders
   // ⚡ FIX: Manejo robusto de errores para evitar recargas
   const { trendingSearches: dynamicSearches, isLoading, error } = useTrendingSearches({
@@ -127,8 +132,8 @@ const TrendingSearchesBase = () => {
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header */}
         <div className='flex items-center gap-3 mb-5'>
-          <div className='flex items-center gap-2 text-orange-600'>
-            <TrendingUp className='w-5 h-5' />
+          <div className='flex items-center gap-2' style={{ color: accentColor }}>
+            <TrendingUp className='w-5 h-5' style={{ color: accentColor }} />
             <h2 className='font-bold text-lg text-white'>
               Búsquedas Populares
             </h2>
@@ -182,9 +187,15 @@ const TrendingSearchesBase = () => {
                 if (text) text.style.opacity = '0.7'
               }}
             >
-              {/* ⚡ FASE 8: Overlays para hover effects usando opacity (compositable) */}
-              <span className="absolute inset-0 rounded-full bg-orange-50 opacity-0 hover-bg transition-opacity duration-300 pointer-events-none" />
-              <span className="absolute inset-0 rounded-full border border-orange-300 opacity-0 hover-border transition-opacity duration-300 pointer-events-none" />
+              {/* ⚡ FASE 8: Overlays para hover effects usando opacity (compositable) - ⚡ MULTITENANT: usar accentColor */}
+              <span 
+                className="absolute inset-0 rounded-full opacity-0 hover-bg transition-opacity duration-300 pointer-events-none" 
+                style={{ backgroundColor: `${accentColor}20` }}
+              />
+              <span 
+                className="absolute inset-0 rounded-full border opacity-0 hover-border transition-opacity duration-300 pointer-events-none" 
+                style={{ borderColor: `${accentColor}80` }}
+              />
               <span className="absolute inset-0 rounded-full shadow-md opacity-0 hover-shadow transition-opacity duration-300 pointer-events-none" />
               
               {/* Icon */}
@@ -197,8 +208,8 @@ const TrendingSearchesBase = () => {
                 {search.term}
               </span>
 
-              {/* Search icon on hover */}
-              <Search className='w-4 h-4 text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity ml-1 flex-shrink-0' />
+              {/* Search icon on hover - ⚡ MULTITENANT: usar accentColor */}
+              <Search className='w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity ml-1 flex-shrink-0' style={{ color: accentColor }} />
 
               {/* Shimmer effect */}
               <div className='absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity -translate-x-full group-hover:translate-x-full duration-1000'></div>
@@ -207,14 +218,14 @@ const TrendingSearchesBase = () => {
           </div>
         )}
 
-        {/* CTA secundario */}
+        {/* CTA secundario - ⚡ MULTITENANT: usar accentColor */}
         <div className='mt-6 text-center'>
           <Link
             href='/products'
             className='inline-flex items-center gap-2 text-sm text-white/80 font-medium group relative'
             style={{
-              // ⚡ FASE 8: Usar opacity en lugar de color animado
-              color: 'rgba(234, 90, 23, 0.8)', // orange-600 con opacity
+              color: accentColor,
+              opacity: 0.8,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.opacity = '1'
@@ -223,7 +234,7 @@ const TrendingSearchesBase = () => {
               e.currentTarget.style.opacity = '0.8'
             }}
           >
-            <Search className='w-4 h-4' />
+            <Search className='w-4 h-4' style={{ color: accentColor }} />
             Ver todos los productos
             <span className='group-hover:translate-x-1 transition-transform'>→</span>
           </Link>

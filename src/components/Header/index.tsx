@@ -37,6 +37,10 @@ const Header = () => {
   const tenant = useTenantSafe()
   const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
   
+  // ⚡ MULTITENANT: Colores del tenant para botones
+  const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+  
   // ⚡ OPTIMIZACIÓN: Detectar nivel de rendimiento del dispositivo
   const performanceLevel = useDevicePerformance()
   const isLowPerformance = performanceLevel === 'low'
@@ -470,13 +474,22 @@ const Header = () => {
                       onClose={handleSearchClose}
                     />
                     
-                    {/* Botón X para cerrar */}
+                    {/* Botón X para cerrar - ⚡ MULTITENANT: usar accentColor para fondo y primaryColor para icono */}
                     <button
                       onClick={handleSearchCollapse}
-                      className='absolute right-2 w-7 h-7 rounded-full bg-orange-500 hover:bg-orange-600 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg z-10'
+                      className='absolute right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg z-10'
+                      style={{
+                        backgroundColor: accentColor,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = `${accentColor}dd`
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = accentColor
+                      }}
                       aria-label='Cerrar búsqueda'
                     >
-                      <X className='w-4 h-4 text-white' strokeWidth={2.5} />
+                      <X className='w-4 h-4' style={{ color: primaryColor }} strokeWidth={2.5} />
                     </button>
                   </div>
                 </div>

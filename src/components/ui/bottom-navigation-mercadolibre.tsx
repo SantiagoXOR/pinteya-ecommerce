@@ -27,6 +27,10 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
     // Obtener número de WhatsApp del tenant
     const tenant = useTenantSafe()
     const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+    
+    // ⚡ MULTITENANT: Colores del tenant para el botón de carrito
+    const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+    const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
 
     // Detectar cuando se agrega un producto al carrito para activar la microinteracción
     React.useEffect(() => {
@@ -200,7 +204,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               isAnimating && 'animate-pulse scale-110'
                             )}
                             style={{
-                              background: 'var(--tenant-accent)e6',
+                              backgroundColor: accentColor,
                             }}
                           />
                           {/* Icono del carrito */}
@@ -215,7 +219,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               className={cn(
                                 'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
                               )}
-                              style={{ color: 'var(--tenant-primary, #EA5A17)' }}
+                              style={{ color: primaryColor }}
                             />
                           </div>
                           {/* Badge del carrito */}
@@ -228,8 +232,8 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                 isAnimating && 'animate-bounce'
                               )}
                               style={{ 
-                                backgroundColor: 'var(--tenant-primary, #EA5A17)',
-                                color: 'var(--tenant-accent, #facc15)'
+                                backgroundColor: primaryColor,
+                                color: accentColor
                               }}
                             >
                               {item.badge && item.badge > 99 ? '99+' : item.badge}

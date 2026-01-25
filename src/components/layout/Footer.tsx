@@ -63,7 +63,7 @@ const Footer = () => {
   ] : DEFAULT_SOCIALS
 
   return (
-    <footer className='bg-tenant-primary text-white'>
+    <footer className='text-white'>
       <div className='max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 pb-24 space-y-8'>
         <div className='grid gap-4 md:grid-cols-3'>
           <article className='rounded-2xl bg-white/10 p-5 sm:p-6 shadow-lg shadow-black/10 backdrop-blur'>

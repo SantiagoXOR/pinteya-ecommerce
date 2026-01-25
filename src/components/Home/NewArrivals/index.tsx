@@ -10,8 +10,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Sparkles } from '@/lib/optimized-imports'
 import { ProductGridSkeleton } from '@/components/ui/skeletons'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const NewArrival: React.FC = () => {
+  // ⚡ MULTITENANT: Color del tenant para el icono circular
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  
   const { filters } = useProductFilters({ syncWithUrl: true })
 
   const { data, isLoading, error } = useFilteredProducts({
@@ -32,9 +37,12 @@ const NewArrival: React.FC = () => {
   return (
     <section className='overflow-hidden pt-0 pb-6 sm:pb-10 bg-transparent'>
       <div className='max-w-[1170px] w-full mx-auto px-4 sm:px-8 overflow-hidden'>
-        {/* Header simplificado - Paleta Pinteya */}
+        {/* Header simplificado - ⚡ MULTITENANT: usar accentColor */}
         <div className='mb-4 sm:mb-6 flex items-center gap-3'>
-          <div className='w-10 h-10 rounded-full flex items-center justify-center shadow-md' style={{ background: 'linear-gradient(135deg, rgba(235, 99, 19, 0.42) 0%, rgba(242, 122, 29, 1) 100%)' }}>
+          <div 
+            className='w-10 h-10 rounded-full flex items-center justify-center shadow-md' 
+            style={{ backgroundColor: accentColor }}
+          >
             <Sparkles className='w-5 h-5 text-white' />
           </div>
           <h2 className='text-xl md:text-2xl font-normal text-white' style={{ fontSize: '23px', letterSpacing: 'normal' }}>

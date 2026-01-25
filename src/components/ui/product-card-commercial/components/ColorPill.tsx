@@ -10,6 +10,7 @@ import {
   isTransparentColor,
 } from '@/lib/textures'
 import type { ColorPillProps } from '../types'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 /**
  * Componente individual de pill de color
@@ -23,6 +24,10 @@ export const ColorPill = React.memo(function ColorPill({
   isImpregnante,
   selectedFinish
 }: ColorPillProps) {
+  // ⚡ MULTITENANT: Color del tenant para pills seleccionados
+  const tenant = useTenantSafe()
+  const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+  
   // Resolver textura usando función centralizada
   const textureType = React.useMemo(() => resolveTextureType({
     colorName: colorData.name,
@@ -49,27 +54,31 @@ export const ColorPill = React.memo(function ColorPill({
     return getTextColorForBackground(colorData.hex, false, colorData.name)
   }, [isTransparent, colorData.hex, colorData.name])
 
-  // Usar siempre el color original, sin cambios por selección
-  const backgroundColor = React.useMemo(() => {
-    if (colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff') {
-      return '#F5F5F5'
-    }
-    return colorData.hex
-  }, [colorData.hex])
-
   const handleClick = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     onSelect(colorData.hex)
   }, [onSelect, colorData.hex])
 
-  // Estilos base combinando textura del sistema unificado con estilos de selección
+  // ⚡ MULTITENANT: Convertir primaryColor hex a rgba para box-shadow
+  const primaryColorRgba = React.useMemo(() => {
+    if (primaryColor.startsWith('#')) {
+      const hex = primaryColor.slice(1)
+      const r = parseInt(hex.slice(0, 2), 16)
+      const g = parseInt(hex.slice(2, 4), 16)
+      const b = parseInt(hex.slice(4, 6), 16)
+      return `rgba(${r}, ${g}, ${b}, 0.3)`
+    }
+    return primaryColor
+  }, [primaryColor])
+
+  // Estilos base combinando textura del sistema unificado con estilos de selección - ⚡ MULTITENANT: usar primaryColor
   const baseStyle = React.useMemo(() => ({
     ...textureStyle,
     // Sobrescribir backgroundColor si es blanco puro
     backgroundColor: colorData.hex === '#FFFFFF' || colorData.hex === '#ffffff' ? '#F5F5F5' : textureStyle.backgroundColor,
     borderWidth: isSelected ? '1.5px' : '1px',
-    borderColor: isSelected ? '#EA5A17' : 'rgba(229, 231, 235, 1)',
-  }), [textureStyle, colorData.hex, isSelected])
+    borderColor: isSelected ? primaryColor : 'rgba(229, 231, 235, 1)',
+  }), [textureStyle, colorData.hex, isSelected, primaryColor])
 
   // Box-shadow estático (no animado) - solo cambia opacity del pseudo-elemento
   const shadowOpacity = isSelected ? 1 : 0.6
@@ -95,12 +104,12 @@ export const ColorPill = React.memo(function ColorPill({
         willChange: 'transform',
       }}
     >
-      {/* Pseudo-elemento para box-shadow con opacity animada */}
+      {/* Pseudo-elemento para box-shadow con opacity animada - ⚡ MULTITENANT: usar primaryColor */}
       <span
         className="absolute inset-0 rounded-full pointer-events-none transition-opacity duration-500 ease-in-out"
         style={{
           boxShadow: isSelected 
-            ? '0 2px 8px rgba(234, 90, 23, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+            ? `0 2px 8px ${primaryColorRgba}, 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)`
             : '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
           opacity: shadowOpacity,
         }}
@@ -124,6 +133,7 @@ export const ColorPill = React.memo(function ColorPill({
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.colorData.hex === nextProps.colorData.hex &&
     prevProps.colorData.name === nextProps.colorData.name &&
+  // ⚡ MULTITENANT: No comparar tenant aquí ya que el hook useTenantSafe maneja los cambios
     prevProps.colorData.textureType === nextProps.colorData.textureType &&
     prevProps.colorData.finish === nextProps.colorData.finish &&
     prevProps.isImpregnante === nextProps.isImpregnante &&

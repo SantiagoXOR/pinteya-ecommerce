@@ -9,12 +9,14 @@ import { useAppSelector } from '@/redux/store'
 import { useSelector } from 'react-redux'
 import { selectTotalPrice } from '@/redux/features/cart-slice'
 import { useCartAnimation } from '@/hooks/useCartAnimation'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface FloatingCartButtonProps {
   className?: string
 }
 
 const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) => {
+  const tenant = useTenantSafe()
   const [cartShake, setCartShake] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { openCartModal } = useCartModalContext()
@@ -24,6 +26,10 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
 
   const cartItemCount = cartItems.length
   const hasCartItems = cartItemCount > 0
+  
+  // ⚡ MULTITENANT: Colores del tenant para el botón de carrito
+  const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
 
   // Efecto para evitar error de hidratación
   useEffect(() => {
@@ -42,13 +48,13 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
       <div 
         className='absolute inset-0 rounded-full backdrop-blur-xl border border-white/20 shadow-2xl'
         style={{
-          background: `linear-gradient(to right, var(--tenant-accent)cc, var(--tenant-accent)99, var(--tenant-accent)cc)`
+          background: `linear-gradient(to right, ${accentColor}cc, ${accentColor}99, ${accentColor}cc)`
         }}
       ></div>
       <div className='absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent'></div>
       <div 
         className='absolute inset-0 rounded-full bg-gradient-to-tl via-transparent to-white/10'
-        style={{ background: `linear-gradient(to top left, var(--tenant-accent)33, transparent, rgba(255,255,255,0.1))` }}
+        style={{ background: `linear-gradient(to top left, ${accentColor}33, transparent, rgba(255,255,255,0.1))` }}
       ></div>
 
       {/* Main Button */}
@@ -72,14 +78,14 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
           className
         )}
         style={{
-          backgroundColor: 'var(--tenant-accent)e6',
-          background: 'linear-gradient(to right, var(--tenant-accent)cc, var(--tenant-accent)cc)'
+          backgroundColor: `${accentColor}e6`,
+          background: `linear-gradient(to right, ${accentColor}cc, ${accentColor}cc)`
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--tenant-accent-button-hover)'
+          e.currentTarget.style.backgroundColor = `${accentColor}dd`
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--tenant-accent)e6'
+          e.currentTarget.style.backgroundColor = `${accentColor}e6`
         }}
       >
         {/* Icono del carrito - tamaño más pequeño y proporcional */}
@@ -89,17 +95,21 @@ const FloatingCartButton: React.FC<FloatingCartButtonProps> = ({ className }) =>
             height={32}
             className='w-8 h-8 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg'
             alt='Carrito de compras'
+            style={{ color: primaryColor }}
           />
           {mounted && cartItemCount > 0 && (
             <span
               className='absolute -top-1 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center z-badge shadow-lg transition-all duration-200 group-hover:scale-125 animate-pulse'
-              style={{ backgroundColor: '#007639', color: '#fbbf24' }}
+              style={{ 
+                backgroundColor: primaryColor,
+                color: accentColor
+              }}
             >
               {cartItemCount > 99 ? '99+' : cartItemCount}
             </span>
           )}
         </div>
-        <span className='text-sm font-semibold' style={{ color: 'var(--tenant-icon-color)' }}>
+        <span className='text-sm font-semibold' style={{ color: primaryColor }}>
           Carrito
         </span>
       </button>

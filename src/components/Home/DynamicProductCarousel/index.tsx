@@ -13,6 +13,7 @@ import { DynamicCarouselSkeleton } from '@/components/ui/skeletons'
 import { updateProductWithMostExpensiveVariant } from '@/lib/products/utils/variant-utils'
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/products/constants'
 import { getCategoryImage } from '@/lib/categories/adapters'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface DynamicProductCarouselProps {
   maxProducts?: number
@@ -23,6 +24,10 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   maxProducts = 12,
   freeShippingOnly = false,
 }) => {
+  // ⚡ MULTITENANT: Color del tenant para "Envío Gratis"
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  
   const scrollRef = useRef<HTMLDivElement>(null)
   const { selectedCategory, categoryConfig: contextCategoryConfig } = useCategoryFilter()
   
@@ -31,7 +36,7 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     enableDynamicCounts: false,
   })
   
-  // Configuración para modo Envío Gratis
+  // Configuración para modo Envío Gratis - ⚡ MULTITENANT: usar accentColor
   const freeShippingConfig = {
     title: 'Envío Gratis',
     subtitle: 'Productos seleccionados con envío sin costo',
@@ -187,7 +192,8 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
             </div>
             
             <div className='flex flex-col justify-center' style={{maxHeight: '3.5rem'}}>
-              <h2 className={`text-xl md:text-2xl font-medium ${categoryConfig.textColor || 'text-white'} leading-tight line-clamp-1`} style={freeShippingOnly ? { color: 'rgba(242, 122, 29, 1)' } : {}}>
+              {/* ⚡ MULTITENANT: usar accentColor para "Envío Gratis" */}
+              <h2 className={`text-xl md:text-2xl font-medium ${categoryConfig.textColor || 'text-white'} leading-tight line-clamp-1`} style={freeShippingOnly ? { color: accentColor } : {}}>
                 {categoryConfig.title}
               </h2>
               <p className={`text-xs md:text-sm leading-tight line-clamp-1 ${freeShippingOnly ? 'text-white' : 'text-white/70'}`}>

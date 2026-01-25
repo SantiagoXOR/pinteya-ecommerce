@@ -3,6 +3,7 @@
 import React from 'react'
 import { cn } from '@/lib/core/utils'
 import { Check } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 interface FinishPillProps {
   finish: string
@@ -20,6 +21,10 @@ export const FinishPill = React.memo(function FinishPill({
   isAvailable = true,
   onSelect,
 }: FinishPillProps) {
+  // ⚡ MULTITENANT: Color del tenant para pills seleccionados
+  const tenant = useTenantSafe()
+  const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+  
   const handleClick = React.useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
@@ -30,7 +35,7 @@ export const FinishPill = React.memo(function FinishPill({
     [finish, onSelect, isAvailable]
   )
 
-  // Estilos base sin animaciones no compuestas
+  // Estilos base sin animaciones no compuestas - ⚡ MULTITENANT: usar primaryColor
   const baseStyle = React.useMemo(() => {
     if (!isAvailable) {
       return {
@@ -44,10 +49,10 @@ export const FinishPill = React.memo(function FinishPill({
     return {
       backgroundColor: isSelected ? '#ffffff' : '#f9fafb',
       borderWidth: isSelected ? '1.5px' : '1px',
-      borderColor: isSelected ? '#EA5A17' : 'rgba(229, 231, 235, 1)',
+      borderColor: isSelected ? primaryColor : 'rgba(229, 231, 235, 1)',
       borderStyle: 'solid',
     }
-  }, [isSelected, isAvailable])
+  }, [isSelected, isAvailable, primaryColor])
 
   return (
     <button

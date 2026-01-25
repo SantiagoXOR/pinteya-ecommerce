@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SearchAutocompleteIntegrated } from '@/components/ui/SearchAutocompleteIntegrated'
 import { type SearchSuggestion } from '@/hooks/useSearch'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 // Definición de categorías con iconos y placeholders profesionales
 // Orden de visualización: Paredes, Metales y Maderas, Techos, Complementos, Antihumedad, Piscinas, Reparaciones, Pisos
@@ -95,6 +96,11 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
   size = 'md',
   'data-testid': testId,
 }) => {
+  // ⚡ MULTITENANT: Colores del tenant para botón de búsqueda
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
+  
   const [selectedCategory, setSelectedCategory] = useState(categories[0])
 
   const handleCategorySelect = useCallback((category: (typeof categories)[0]) => {
@@ -196,13 +202,24 @@ const EnhancedSearchBar: React.FC<EnhancedSearchBarProps> = ({
           />
         </div>
 
-        {/* Botón de búsqueda - SIN ícono duplicado */}
+        {/* Botón de búsqueda - ⚡ MULTITENANT: usar accentColor para fondo y primaryColor para texto */}
         <Button
           type='submit'
           className={cn(
-            'rounded-l-none bg-bright-sun dark:bg-blaze-orange-600 hover:bg-bright-sun-600 dark:hover:bg-blaze-orange-500 text-black dark:text-gray-200 border-bright-sun dark:border-blaze-orange-600 hover:border-bright-sun-600 dark:hover:border-blaze-orange-500 flex-shrink-0 button-hover-lift font-bold transition-all duration-200',
+            'rounded-l-none flex-shrink-0 button-hover-lift font-bold transition-all duration-200',
             buttonSizeClasses[size]
           )}
+          style={{
+            backgroundColor: accentColor,
+            color: primaryColor,
+            borderColor: accentColor,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = `${accentColor}dd`
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = accentColor
+          }}
           form='search-autocomplete-form'
         >
           <span className='font-medium'>Buscar</span>
