@@ -34,6 +34,10 @@ import ClientAnalytics from '@/components/Performance/ClientAnalytics'
 // ⚡ MULTITENANT: Structured data dinámico basado en tenant
 import TenantStructuredData from '@/components/SEO/TenantStructuredData'
 
+// ⚡ MULTITENANT: Layout dinámico porque detecta tenant desde headers
+// Esto es necesario porque getTenantPublicConfig() usa headers() para detectar el tenant
+export const dynamic = 'force-dynamic'
+
 // ⚡ MULTITENANT: Metadata dinámico basado en el tenant actual
 export async function generateMetadata(): Promise<Metadata> {
   try {
