@@ -21,7 +21,8 @@ import { TenantThemeStyles } from '@/components/theme/TenantThemeStyles'
 
 // ⚡ CRITICAL: Lazy load de componentes no críticos para reducir Script Evaluation
 // Estos componentes se cargan después del FCP para no bloquear la carga inicial
-import dynamic from 'next/dynamic'
+// ⚡ FIX: Renombrado para evitar conflicto con export const dynamic
+import dynamicImport from 'next/dynamic'
 
 // ⚡ NOTA: StructuredData estático reemplazado por TenantStructuredData dinámico
 // El componente TenantStructuredData es un Server Component que genera
