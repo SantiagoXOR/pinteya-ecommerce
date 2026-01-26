@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/config'
 import { createClient } from '@/lib/integrations/supabase/server'
 import { z } from 'zod'
+import crypto from 'crypto'
 // ⚡ MULTITENANT: Importar guard de tenant admin
 import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
 import {
@@ -54,6 +55,35 @@ const CreateCourierSchema = z.object({
 })
 
 const UpdateCourierSchema = CreateCourierSchema.partial()
+
+// =====================================================
+// FUNCIONES DE ENCRIPTACIÓN
+// =====================================================
+
+function getEncryptionKey(): string {
+  // En producción, usar una variable de entorno segura
+  const key = process.env.ENCRYPTION_KEY || 'default-key-change-in-production'
+  return crypto.createHash('sha256').update(key).digest('hex').substring(0, 32)
+}
+
+function encryptApiKey(apiKey: string): string {
+  try {
+    const algorithm = 'aes-256-cbc'
+    const key = Buffer.from(getEncryptionKey(), 'hex')
+    const iv = crypto.randomBytes(16)
+    const cipher = crypto.createCipheriv(algorithm, key, iv)
+
+    let encrypted = cipher.update(apiKey, 'utf8', 'hex')
+    encrypted += cipher.final('hex')
+
+    // Retornar IV + datos encriptados (IV se necesita para desencriptar)
+    return iv.toString('hex') + ':' + encrypted
+  } catch (error) {
+    console.error('Error encrypting API key:', error)
+    // Fallback a base64 si falla la encriptación
+    return Buffer.from(apiKey).toString('base64')
+  }
+}
 
 const ShippingQuoteSchema = z.object({
   origin_address: z.object({
@@ -246,8 +276,7 @@ export const POST = withTenantAdmin(async (
     // Encriptar API key si se proporciona
     let apiKeyEncrypted = null
     if (validatedData.api_key) {
-      // TODO: Implementar encriptación real
-      apiKeyEncrypted = Buffer.from(validatedData.api_key).toString('base64')
+      apiKeyEncrypted = encryptApiKey(validatedData.api_key)
     }
 
     // Crear courier

@@ -1,24 +1,26 @@
 // =====================================================
 // TENANT ASSETS HELPER
-// Descripción: Helper para obtener rutas de assets específicos por tenant
+// Descripción: Helper para obtener URLs de assets desde Supabase Storage
 // Uso: Client-side y Server-side
 // =====================================================
 
 import type { TenantPublicConfig } from './types'
 
+const BUCKET_NAME = 'tenant-assets'
+
 /**
- * Obtiene la ruta de un asset específico del tenant
- * Si el asset no existe para el tenant, retorna el fallback
+ * Obtiene la URL de Supabase Storage para un asset del tenant
+ * Si no hay tenant, retorna el fallback local
  * 
  * @param tenant - Configuración del tenant (puede ser null)
  * @param assetPath - Ruta relativa del asset (ej: 'icons/icon-envio.svg', 'promo/help.webp')
- * @param fallback - Ruta de fallback si el asset del tenant no existe (opcional)
- * @returns Ruta completa del asset
+ * @param fallback - Ruta de fallback local si no hay tenant o Supabase falla (opcional)
+ * @returns URL de Supabase Storage o fallback local
  * 
  * @example
  * ```ts
  * const iconPath = getTenantAssetPath(tenant, 'icons/icon-envio.svg', '/images/icons/icon-envio.svg')
- * // Retorna: '/tenants/pinteya/icons/icon-envio.svg' o '/images/icons/icon-envio.svg' si no existe
+ * // Retorna: URL de Supabase Storage o '/images/icons/icon-envio.svg' si no hay tenant
  * ```
  */
 export function getTenantAssetPath(
@@ -26,17 +28,26 @@ export function getTenantAssetPath(
   assetPath: string,
   fallback?: string
 ): string {
-  // Si no hay tenant, usar fallback o asset genérico
+  // Si no hay tenant, usar fallback local o asset genérico
   if (!tenant || !tenant.slug) {
     return fallback || `/images/${assetPath}`
   }
 
-  // Construir ruta del tenant: /tenants/{slug}/{assetPath}
-  const tenantAssetPath = `/tenants/${tenant.slug}/${assetPath}`
+  // Generar URL de Supabase Storage
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!supabaseUrl) {
+    // Si no hay URL de Supabase configurada, usar fallback local
+    return fallback || `/tenants/${tenant.slug}/${assetPath}`
+  }
 
-  // Si hay fallback, retornar la ruta del tenant (el componente debe manejar el fallback si la imagen falla)
-  // Si no hay fallback, retornar la ruta del tenant directamente
-  return tenantAssetPath
+  // Construir path para Supabase Storage: tenants/{slug}/{assetPath}
+  const storagePath = `tenants/${tenant.slug}/${assetPath}`
+  
+  // URL pública de Supabase Storage
+  const supabaseUrl_full = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${storagePath}`
+
+  // Retornar URL de Supabase (el componente manejará fallback con onError si falla)
+  return supabaseUrl_full
 }
 
 /**
@@ -67,20 +78,42 @@ export function getTenantAssetPaths(
 /**
  * Obtiene la ruta de un asset de promoción del tenant
  * Helper específico para assets de promoción (help, calculator, 30-off, etc.)
- * 
+ *
  * @param tenant - Configuración del tenant
  * @param promoAssetName - Nombre del asset de promoción (ej: 'help.webp', 'calculator.webp')
  * @param supabaseFallback - URL completa de Supabase como fallback (opcional)
- * @returns Ruta del asset o URL de Supabase
+ * @returns Ruta del asset del tenant
  */
 export function getTenantPromoAsset(
   tenant: TenantPublicConfig | null | undefined,
   promoAssetName: string,
   supabaseFallback?: string
 ): string {
-  const tenantPath = getTenantAssetPath(tenant, `promo/${promoAssetName}`)
+  return getTenantAssetPath(tenant, `promo/${promoAssetName}`)
+}
+
+/**
+ * Obtiene la URL de Supabase Storage para un asset de promoción y su fallback local.
+ * Para usar en <img> con onError: (e) => { (e.target as HTMLImageElement).src = fallback }
+ *
+ * @param tenant - Configuración del tenant
+ * @param promoAssetName - Nombre del asset (ej: 'help.webp', 'calculator.webp', '30-off.webp')
+ * @param localFallback - Ruta local de fallback si Supabase falla
+ * @returns { src, fallback }
+ */
+export function getTenantPromoAssetWithFallback(
+  tenant: TenantPublicConfig | null | undefined,
+  promoAssetName: string,
+  localFallback: string
+): { src: string; fallback: string } {
+  // src será URL de Supabase Storage (o local si no hay tenant)
+  const src = getTenantAssetPath(tenant, `promo/${promoAssetName}`, localFallback)
   
-  // Si hay fallback de Supabase, retornar la ruta del tenant
-  // El componente debe manejar el error y usar el fallback si la imagen falla
-  return tenantPath
+  // fallback será la ruta local
+  const fallback = localFallback || `/tenants/${tenant?.slug || 'pinteya'}/promo/${promoAssetName}`
+  
+  return {
+    src,
+    fallback,
+  }
 }

@@ -16,6 +16,7 @@ import type { Metadata } from 'next'
 
 // ⚡ MULTITENANT: Imports para sistema de tenants
 import { getTenantPublicConfig, getTenantBaseUrl } from '@/lib/tenant'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 import { TenantProviderWrapper } from '@/components/providers/TenantProviderWrapper'
 import { TenantThemeStyles } from '@/components/theme/TenantThemeStyles'
 
@@ -41,8 +42,10 @@ export async function generateMetadata(): Promise<Metadata> {
     const tenant = await getTenantPublicConfig()
     const baseUrl = getTenantBaseUrl(tenant)
     
-    // ⚡ MULTITENANT: Favicon dinámico por tenant con versión para evitar caché
-    const faviconPath = `/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`
+    // ⚡ MULTITENANT: Favicon dinámico por tenant desde Supabase Storage
+    // Usar timestamp además del tenant.id para cache-busting más agresivo
+    const faviconTimestamp = Date.now()
+    const faviconPath = getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`) + `?v=${tenant.id}&t=${faviconTimestamp}`
     const fallbackFavicon = '/favicon.svg'
     
     return {
@@ -120,16 +123,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="tenant-id" content={tenant.id} />
         {/* ⚡ MULTITENANT: Theme-color dinámico para header del navegador (mobile) */}
         <meta name="theme-color" content={tenant.primaryColor || '#841468'} />
-        {/* ⚡ MULTITENANT: Favicon dinámico por tenant con versión para evitar caché */}
-        {/* #region agent log */}
+        {/* ⚡ MULTITENANT: Favicon dinámico por tenant desde Supabase Storage */}
+        {/* Usar timestamp además del tenant.id para cache-busting más agresivo */}
         {(() => {
-          const faviconPath = `/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`;
-          fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'layout.tsx:120',message:'Favicon path generated',data:{tenantSlug:tenant.slug,faviconPath,faviconUrl:tenant.faviconUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          return null;
+          const faviconTimestamp = Date.now()
+          const faviconPath = getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`) + `?v=${tenant.id}&t=${faviconTimestamp}`
+          return (
+            <>
+              <link rel="icon" type="image/svg+xml" href={faviconPath} />
+              <link rel="shortcut icon" type="image/svg+xml" href={faviconPath} />
+            </>
+          )
         })()}
-        {/* #endregion */}
-        <link rel="icon" type="image/svg+xml" href={`/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`} />
-        <link rel="shortcut icon" type="image/svg+xml" href={`/tenants/${tenant.slug}/favicon.svg?v=${tenant.id}`} />
         {/* ⚡ MULTITENANT: Apple touch icon puede ser tenant-specific en el futuro */}
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script

@@ -219,6 +219,7 @@ export interface MetricsQueryParams {
   endDate: string
   userId?: string
   sessionId?: string
+  tenantId?: string // MULTITENANT: ID del tenant
 }
 
 export interface MetricsComparison {
@@ -238,4 +239,120 @@ export interface MetricsComparison {
       averageSessionDuration?: number
     }
   } | null
+}
+
+// Tipos para User Journeys
+export interface JourneyEvent {
+  eventId: string
+  timestamp: number
+  eventType: string
+  category: string
+  action: string
+  page: string
+  label?: string
+  value?: number
+  productId?: number
+  productName?: string
+  price?: number
+  quantity?: number
+  timeSincePrev: number // en segundos
+}
+
+export interface CartState {
+  timestamp: number
+  hasItems: boolean
+  itemCount: number
+  totalValue: number
+  inCheckout: boolean
+  purchased: boolean
+}
+
+export interface ConversionPoint {
+  timestamp: number
+  page: string
+  value: number
+}
+
+export interface AbandonmentPoint {
+  timestamp: number
+  page: string
+  lastAction: string
+  cartValue: number
+}
+
+export interface UserJourney {
+  identifier: string
+  identifierType: 'session' | 'visitor' | 'user'
+  events: JourneyEvent[]
+  timeline: JourneyEvent[]
+  pages: string[]
+  actions: string[]
+  cartState: CartState[]
+  conversionPoints: ConversionPoint[]
+  abandonmentPoints: AbandonmentPoint[]
+  summary: {
+    totalEvents: number
+    totalPages: number
+    totalActions: number
+    hasConversion: boolean
+    hasAbandonment: boolean
+    duration: number // en minutos
+  }
+}
+
+// Tipos para Abandoned Carts
+export interface AbandonedCartProduct {
+  productId?: number
+  productName?: string
+  price?: number
+  quantity?: number
+}
+
+export interface AbandonedCart {
+  identifier: string
+  identifierType: 'session' | 'visitor' | 'user'
+  sessionHash?: number
+  visitorHash?: string
+  userId?: string
+  lastEventAt: number
+  lastPage: string
+  lastAction: string
+  cartValue: number
+  products: AbandonedCartProduct[]
+  timeSinceAbandonment: number // en segundos
+  timeSinceAbandonmentMinutes: number
+  timeSinceAbandonmentHours: number
+  timeSinceAbandonmentDays: number
+}
+
+export interface AbandonmentByPage {
+  page: string
+  count: number
+  percentage: number
+}
+
+export interface AbandonmentByStep {
+  step: string
+  count: number
+  percentage: number
+}
+
+export interface AbandonedCartsAnalysis {
+  summary: {
+    totalCarts: number
+    totalPurchases: number
+    totalAbandoned: number
+    totalAbandonedValue: number
+    abandonmentRate: number
+    averageCartValue: number
+    averageTimeToAbandonment: number
+  }
+  abandonmentByPage: AbandonmentByPage[]
+  abandonmentByStep: AbandonmentByStep[]
+  abandonedCarts: AbandonedCart[]
+  period: {
+    startDate: string
+    endDate: string
+    groupBy: 'session' | 'visitor' | 'user'
+  }
 }

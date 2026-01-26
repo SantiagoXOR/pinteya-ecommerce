@@ -56,6 +56,18 @@ import {
 import { cn } from '@/lib/core/utils'
 import { formatDate, formatCurrency } from '@/lib/utils/consolidated-utils'
 import Link from 'next/link'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 // =====================================================
 // INTERFACES
@@ -375,16 +387,16 @@ export function ShipmentsList({
                                 Editar
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className='text-red-600'
-                              onClick={() => {
-                                // TODO: Implementar confirmación
-                                console.log('Delete shipment', shipment.id)
-                              }}
-                            >
-                              <Trash2 className='w-4 h-4 mr-2' />
-                              Eliminar
-                            </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className='text-red-600'
+                        onClick={() => {
+                          setShipmentToDelete(shipment)
+                          setDeleteDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className='w-4 h-4 mr-2' />
+                        Eliminar
+                      </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -448,5 +460,78 @@ function StatusBadge({ status }: { status: ShipmentStatus }) {
       <Icon className='w-3 h-3' />
       {config.label}
     </Badge>
+  )
+}
+
+// =====================================================
+// COMPONENTE DIALOGO DE CONFIRMACIÓN DE ELIMINACIÓN
+// =====================================================
+
+function DeleteShipmentDialog({
+  shipment,
+  open,
+  onOpenChange,
+  onSuccess,
+}: {
+  shipment: Shipment | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess: () => void
+}) {
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!shipment) return
+
+      const response = await fetch(`/api/admin/logistics/shipments/${shipment.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Error al eliminar envío')
+      }
+
+      return response.json()
+    },
+    onSuccess: () => {
+      toast.success('Envío eliminado exitosamente')
+      onSuccess()
+      onOpenChange(false)
+    },
+    onError: (error: Error) => {
+      toast.error('Error al eliminar envío', { description: error.message })
+    },
+  })
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Eliminar Envío?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer. Se eliminará permanentemente el envío{' '}
+            <strong>#{shipment?.shipment_number || shipment?.id}</strong> y toda su información
+            asociada, incluyendo eventos de tracking.
+            {shipment?.status !== ShipmentStatus.CANCELLED &&
+              shipment?.status !== ShipmentStatus.DELIVERED && (
+                <div className='mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm'>
+                  ⚠️ Este envío está en estado "{statusConfig[shipment.status].label}". Asegúrate
+                  de que realmente deseas eliminarlo.
+                </div>
+              )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => deleteMutation.mutate()}
+            className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

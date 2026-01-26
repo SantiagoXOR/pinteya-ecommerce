@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Shield, Award, Truck, Clock, Users, Star, Headphones } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const metrics = [
   { label: 'Clientes felices', value: '15.000+', icon: Users },
@@ -10,13 +11,17 @@ const metrics = [
   { label: 'Envíos en', value: '24-48h', icon: Truck },
 ]
 
-const benefits = [
-  {
-    title: 'Envíos rápidos',
-    subtitle: 'Córdoba Capital sin cargo',
-    icon: Truck,
-    accent: 'bg-orange-100 text-orange-700',
-  },
+const TrustSection = () => {
+  const tenant = useTenantSafe()
+  const serviceArea = tenant?.contactCity || 'Córdoba Capital'
+  
+  const benefits = [
+    {
+      title: 'Envíos rápidos',
+      subtitle: `${serviceArea} sin cargo`,
+      icon: Truck,
+      accent: 'bg-orange-100 text-orange-700',
+    },
   {
     title: 'Pagos seguros',
     subtitle: 'Mercado Pago y contra entrega',
@@ -37,7 +42,6 @@ const benefits = [
   },
 ]
 
-const TrustSection = () => {
   return (
     <section className='py-10 sm:py-14 bg-gradient-to-br from-[#fff7ed] via-white to-white'>
       <div className='max-w-5xl mx-auto px-4 sm:px-6'>

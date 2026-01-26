@@ -6,12 +6,17 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Table,
   TableBody,
@@ -36,6 +41,32 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Truck,
   Plus,
   Edit,
@@ -51,11 +82,49 @@ import {
   AlertTriangle,
   TrendingUp,
   TrendingDown,
+  Loader2,
 } from '@/lib/optimized-imports'
 import { Courier, ShippingService } from '@/types/logistics'
 import { useCouriers } from '@/hooks/admin/useShippingQuote'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { cn } from '@/lib/core/utils'
 import { formatCurrency, formatDate } from '@/lib/utils/consolidated-utils'
+
+// =====================================================
+// SCHEMAS DE VALIDACIÓN
+// =====================================================
+
+const CourierFormSchema = z.object({
+  name: z.string().min(1, 'Nombre es requerido').max(255),
+  code: z
+    .string()
+    .min(2, 'Código debe tener al menos 2 caracteres')
+    .max(10)
+    .regex(/^[a-z_]+$/, 'Código debe ser lowercase con underscores'),
+  api_endpoint: z.string().url('URL inválida').optional().or(z.literal('')),
+  api_key: z.string().optional(),
+  supported_services: z
+    .array(z.nativeEnum(ShippingService))
+    .min(1, 'Debe soportar al menos un servicio'),
+  coverage_areas: z.array(z.string()).min(1, 'Debe cubrir al menos un área'),
+  base_cost: z.number().min(0, 'Costo base debe ser positivo'),
+  cost_per_kg: z.number().min(0, 'Costo por kg debe ser positivo'),
+  free_shipping_threshold: z.number().positive().optional().or(z.null()),
+  max_weight_kg: z.number().positive().optional().or(z.null()),
+  max_dimensions_cm: z
+    .string()
+    .regex(/^\d+x\d+x\d+$/, 'Formato debe ser LxWxH (ej: 100x80x60)')
+    .optional()
+    .or(z.literal('')),
+  logo_url: z.string().url('URL inválida').optional().or(z.literal('')),
+  website_url: z.string().url('URL inválida').optional().or(z.literal('')),
+  contact_phone: z.string().optional(),
+  contact_email: z.string().email('Email inválido').optional().or(z.literal('')),
+  is_active: z.boolean().default(true),
+})
+
+type CourierFormData = z.infer<typeof CourierFormSchema>
 
 // =====================================================
 // INTERFACES
@@ -76,6 +145,13 @@ interface CourierStatsProps {
   courier: Courier & { stats?: any }
 }
 
+interface CourierFormDialogProps {
+  courier?: Courier
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess: () => void
+}
+
 // =====================================================
 // COMPONENTE PRINCIPAL
 // =====================================================
@@ -84,6 +160,7 @@ export function CourierManager({ className }: CourierManagerProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [showInactive, setShowInactive] = useState(false)
   const [selectedCourier, setSelectedCourier] = useState<Courier | null>(null)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
   // Hooks
   const {
@@ -108,13 +185,30 @@ export function CourierManager({ className }: CourierManagerProps) {
   }
 
   const handleToggleStatus = async (courier: Courier) => {
-    // TODO: Implementar toggle de estado
-    console.log('Toggle status for courier:', courier.id)
+    try {
+      const response = await fetch(`/api/admin/logistics/couriers/${courier.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !courier.is_active }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar estado')
+      }
+
+      toast.success(`Courier ${!courier.is_active ? 'activado' : 'desactivado'}`)
+      refetch()
+    } catch (error) {
+      toast.error('Error al actualizar estado del courier')
+    }
   }
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [courierToDelete, setCourierToDelete] = useState<Courier | null>(null)
+
   const handleDelete = async (courier: Courier) => {
-    // TODO: Implementar eliminación con confirmación
-    console.log('Delete courier:', courier.id)
+    setCourierToDelete(courier)
+    setDeleteDialogOpen(true)
   }
 
   const activeCouriers = filteredCouriers.filter(c => c.is_active)
@@ -136,24 +230,10 @@ export function CourierManager({ className }: CourierManagerProps) {
             Actualizar
           </Button>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className='flex items-center gap-2'>
-                <Plus className='w-4 h-4' />
-                Agregar Courier
-              </Button>
-            </DialogTrigger>
-            <DialogContent className='max-w-2xl'>
-              <DialogHeader>
-                <DialogTitle>Agregar Nuevo Courier</DialogTitle>
-                <DialogDescription>Configure un nuevo proveedor de envío</DialogDescription>
-              </DialogHeader>
-              {/* TODO: Implementar formulario de courier */}
-              <div className='p-4 text-center text-muted-foreground'>
-                Formulario de courier en desarrollo
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button className='flex items-center gap-2' onClick={() => setCreateDialogOpen(true)}>
+            <Plus className='w-4 h-4' />
+            Agregar Courier
+          </Button>
         </div>
       </div>
 
@@ -387,6 +467,40 @@ export function CourierManager({ className }: CourierManagerProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Diálogo de creación */}
+      <CourierFormDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={() => {
+          setCreateDialogOpen(false)
+          refetch()
+        }}
+      />
+
+      {/* Diálogo de edición */}
+      <CourierFormDialog
+        courier={selectedCourier || undefined}
+        open={!!selectedCourier}
+        onOpenChange={(open) => {
+          if (!open) setSelectedCourier(null)
+        }}
+        onSuccess={() => {
+          setSelectedCourier(null)
+          refetch()
+        }}
+      />
+
+      {/* Diálogo de eliminación */}
+      <DeleteCourierDialog
+        courier={courierToDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onSuccess={() => {
+          setCourierToDelete(null)
+          refetch()
+        }}
+      />
     </div>
   )
 }

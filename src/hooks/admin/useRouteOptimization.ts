@@ -8,6 +8,7 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { calculateRouteTotalDistance, calculateDistance } from '@/lib/integrations/google-maps/distance-matrix'
 
 // =====================================================
 // INTERFACES Y TIPOS
@@ -150,7 +151,8 @@ const mockDrivers: Driver[] = [
 // =====================================================
 
 // Calcular distancia entre dos puntos (fórmula de Haversine)
-function calculateDistance(point1: Coordinates, point2: Coordinates): number {
+// Renombrada para evitar conflicto con import
+function calculateHaversineDistance(point1: Coordinates, point2: Coordinates): number {
   const R = 6371 // Radio de la Tierra en km
   const dLat = ((point2.lat - point1.lat) * Math.PI) / 180
   const dLon = ((point2.lng - point1.lng) * Math.PI) / 180
@@ -203,7 +205,7 @@ function clusterShipments(
       let closestCluster = 0
 
       centroids.forEach((centroid, index) => {
-        const distance = calculateDistance(shipment.destination.coordinates!, centroid)
+        const distance = calculateHaversineDistance(shipment.destination.coordinates!, centroid)
         if (distance < minDistance) {
           minDistance = distance
           closestCluster = index
@@ -225,7 +227,7 @@ function clusterShipments(
           cluster.length
 
         const newCentroid = { lat: avgLat, lng: avgLng }
-        const distance = calculateDistance(centroids[index], newCentroid)
+        const distance = calculateHaversineDistance(centroids[index], newCentroid)
 
         if (distance > 0.001) {
           // Umbral de convergencia
@@ -260,7 +262,7 @@ function optimizeRouteOrder(
 
     unvisited.forEach((shipment, index) => {
       if (shipment.destination.coordinates) {
-        const distance = calculateDistance(currentLocation, shipment.destination.coordinates)
+        const distance = calculateHaversineDistance(currentLocation, shipment.destination.coordinates)
         if (distance < nearestDistance) {
           nearestDistance = distance
           nearestIndex = index
@@ -408,21 +410,56 @@ export function useRouteOptimization() {
           // Optimizar orden de la ruta
           const optimizedOrder = optimizeRouteOrder(cluster, startLocation)
 
-          // Calcular métricas de la ruta
-          let totalDistance = 0
-          let currentLocation = startLocation
+          // Calcular métricas de la ruta usando Google Maps Distance Matrix
           const waypoints: Coordinates[] = [startLocation]
-
           optimizedOrder.forEach(shipment => {
             if (shipment.destination.coordinates) {
-              totalDistance += calculateDistance(currentLocation, shipment.destination.coordinates)
               waypoints.push(shipment.destination.coordinates)
-              currentLocation = shipment.destination.coordinates
             }
           })
 
-          // Estimar tiempo (velocidad promedio 30 km/h + 15 min por parada)
-          const estimatedTime = Math.round((totalDistance / 30) * 60 + optimizedOrder.length * 15)
+          // Calcular distancia y tiempo real usando Google Maps Distance Matrix API
+          let totalDistance = 0
+          let estimatedTime = 0
+
+          try {
+            const routeDistance = await calculateRouteTotalDistance(waypoints, {
+              mode: 'driving',
+              departureTime: 'now',
+              trafficModel: 'best_guess',
+            })
+
+            if (routeDistance) {
+              totalDistance = routeDistance.totalDistance / 1000 // Convertir a km
+              estimatedTime = routeDistance.totalDurationInTraffic
+                ? Math.round(routeDistance.totalDurationInTraffic / 60) // Convertir a minutos
+                : Math.round(routeDistance.totalDuration / 60)
+              
+              // Agregar tiempo de parada por envío (15 min por parada)
+              estimatedTime += optimizedOrder.length * 15
+            } else {
+              // Fallback a cálculo manual si falla la API
+              let currentLocation = startLocation
+              optimizedOrder.forEach(shipment => {
+                if (shipment.destination.coordinates) {
+                  totalDistance += calculateHaversineDistance(currentLocation, shipment.destination.coordinates)
+                  currentLocation = shipment.destination.coordinates
+                }
+              })
+              estimatedTime = Math.round((totalDistance / 30) * 60 + optimizedOrder.length * 15)
+            }
+          } catch (error) {
+            console.warn('Error calculando distancia con Google Maps, usando cálculo manual:', error)
+            // Fallback a cálculo manual
+            let currentLocation = startLocation
+            optimizedOrder.forEach(shipment => {
+              if (shipment.destination.coordinates) {
+                totalDistance += calculateDistance(currentLocation, shipment.destination.coordinates)
+                currentLocation = shipment.destination.coordinates
+              }
+            })
+            estimatedTime = Math.round((totalDistance / 30) * 60 + optimizedOrder.length * 15)
+          }
 
           // Calcular score de optimización
           const avgPriority =
@@ -439,12 +476,82 @@ export function useRouteOptimization() {
               optimizationParams.time_weight! * Math.max(0, 100 - estimatedTime / 5)
           )
 
+          // Asignar driver automáticamente si hay drivers disponibles
+          let assignedDriver: Driver | undefined
+          const availableDrivers = drivers.filter(d => d.status === 'available')
+          
+          if (availableDrivers.length > 0) {
+            // Calcular score para cada driver basado en:
+            // 1. Capacidad suficiente
+            // 2. Distancia desde ubicación actual hasta inicio de ruta
+            // 3. Tipo de vehículo apropiado
+            const driverScores = await Promise.all(
+              availableDrivers.map(async (driver) => {
+                let score = 0
+
+                // Verificar capacidad
+                if (driver.max_capacity >= optimizedOrder.length) {
+                  score += 50
+                } else {
+                  score -= (optimizedOrder.length - driver.max_capacity) * 10
+                }
+
+                // Calcular distancia desde driver hasta inicio de ruta
+                if (driver.current_location && startLocation) {
+                  try {
+                    const distanceToStart = await calculateDistance(
+                      driver.current_location,
+                      startLocation,
+                      { mode: 'driving' }
+                    )
+                    if (distanceToStart) {
+                      // Menor distancia = mayor score (máximo 30 puntos)
+                      const distanceKm = distanceToStart.distance.value / 1000
+                      score += Math.max(0, 30 - distanceKm * 2)
+                    }
+                  } catch (error) {
+                    // Si falla, usar cálculo manual
+                    const distanceKm = calculateHaversineDistance(driver.current_location, startLocation)
+                    score += Math.max(0, 30 - distanceKm * 2)
+                  }
+                } else {
+                  // Si no hay ubicación, dar score neutral
+                  score += 15
+                }
+
+                // Preferir vehículos más grandes para rutas con muchos envíos
+                if (optimizedOrder.length > 10) {
+                  if (['Camión', 'Furgón'].includes(driver.vehicle_type)) {
+                    score += 20
+                  }
+                } else if (optimizedOrder.length <= 5) {
+                  if (['Camioneta', 'Motocicleta'].includes(driver.vehicle_type)) {
+                    score += 10
+                  }
+                }
+
+                return { driver, score }
+              })
+            )
+
+            // Ordenar por score y seleccionar el mejor
+            driverScores.sort((a, b) => b.score - a.score)
+            const bestDriver = driverScores[0]
+
+            // Solo asignar si el score es positivo
+            if (bestDriver && bestDriver.score > 0) {
+              assignedDriver = bestDriver.driver
+            }
+          }
+
           const route: OptimizedRoute = {
             id: `route-${Date.now()}-${i}`,
             name: `Ruta ${mainCity} #${i + 1}`,
             shipments: optimizedOrder,
             total_distance: Math.round(totalDistance * 10) / 10,
             estimated_time: estimatedTime,
+            driver: assignedDriver?.id,
+            vehicle: assignedDriver?.vehicle_type,
             status: 'planned',
             created_at: new Date().toISOString(),
             start_location: startLocation,
@@ -457,6 +564,18 @@ export function useRouteOptimization() {
 
         // Ordenar rutas por score de optimización
         optimizedRoutes.sort((a, b) => b.optimization_score - a.optimization_score)
+
+        // Si hay drivers asignados automáticamente, actualizar su estado
+        const assignedDriverIds = new Set(
+          optimizedRoutes
+            .map(r => r.driver)
+            .filter((id): id is string => !!id)
+        )
+
+        // Invalidar query de drivers para refrescar estados
+        if (assignedDriverIds.size > 0) {
+          queryClient.invalidateQueries({ queryKey: ['available-drivers'] })
+        }
 
         return optimizedRoutes
       } catch (error) {

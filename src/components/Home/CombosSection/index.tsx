@@ -5,29 +5,72 @@
  import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
  import { useSwipeGestures } from '@/hooks/useSwipeGestures'
  import { useRouter } from 'next/navigation'
+ import { useTenantSafe } from '@/contexts/TenantContext'
+ import { getTenantAssetPaths } from '@/lib/tenant/tenant-assets'
 
- interface Slide {
-   id: string
-   image: string
-   alt: string
-   productSlug: string
- }
-
-// ⚡ OPTIMIZACIÓN CRÍTICA: SVG → WebP para reducir tamaño de transferencia
-// Carrusel igual al de Hero pero con WebP optimizado
-const slides: Slide[] = [
-  { id: 'combo-hero-4', image: '/images/hero/hero2/hero4.webp', alt: 'Combo destacado - slide 1', productSlug: 'plavicon-fibrado-plavicon' },
-  { id: 'combo-hero-5', image: '/images/hero/hero2/hero5.webp', alt: 'Combo destacado - slide 2', productSlug: 'sintetico-converlux' },
-  { id: 'combo-hero-6', image: '/images/hero/hero2/hero6.webp', alt: 'Combo destacado - slide 3', productSlug: 'recuplast-frentes' },
-]
+interface Slide {
+  id: string
+  image: string
+  alt: string
+  productSlug: string
+  localFallback?: string
+}
 
  const CombosSection: React.FC = () => {
+   const tenant = useTenantSafe()
    const [currentIndex, setCurrentIndex] = useState(1)
    const [isTransitioning, setIsTransitioning] = useState(false)
    const [isAutoPlaying, setIsAutoPlaying] = useState(true)
    const [imagesLoaded, setImagesLoaded] = useState(false) // ⚡ FIX: Estado para verificar carga de imágenes
    const [loadedImagesCount, setLoadedImagesCount] = useState(0)
    const router = useRouter()
+   
+   // ⚡ MULTITENANT: Slides por tenant desde Supabase Storage; fallback local si falla
+   const slides = useMemo<Slide[]>(() => {
+     const fallbackImages = [
+       '/images/hero/hero2/hero4.webp',
+       '/images/hero/hero2/hero5.webp',
+       '/images/hero/hero2/hero6.webp',
+     ]
+     const localFallbacks = tenant
+       ? [
+           `/tenants/${tenant.slug}/combos/combo1.webp`,
+           `/tenants/${tenant.slug}/combos/combo2.webp`,
+           `/tenants/${tenant.slug}/combos/combo3.webp`,
+         ]
+       : fallbackImages
+     const comboImages = tenant
+       ? getTenantAssetPaths(tenant, [
+           'combos/combo1.webp',
+           'combos/combo2.webp',
+           'combos/combo3.webp',
+         ])
+       : fallbackImages
+
+     return [
+       {
+         id: 'combo-hero-1',
+         image: comboImages[0] ?? localFallbacks[0] ?? fallbackImages[0],
+         alt: 'Combo destacado - slide 1',
+         productSlug: 'plavicon-fibrado-plavicon',
+         localFallback: localFallbacks[0] ?? fallbackImages[0],
+       },
+       {
+         id: 'combo-hero-2',
+         image: comboImages[1] ?? localFallbacks[1] ?? fallbackImages[1],
+         alt: 'Combo destacado - slide 2',
+         productSlug: 'sintetico-converlux',
+         localFallback: localFallbacks[1] ?? fallbackImages[1],
+       },
+       {
+         id: 'combo-hero-3',
+         image: comboImages[2] ?? localFallbacks[2] ?? fallbackImages[2],
+         alt: 'Combo destacado - slide 3',
+         productSlug: 'recuplast-frentes',
+         localFallback: localFallbacks[2] ?? fallbackImages[2],
+       },
+     ]
+   }, [tenant])
    
    // ⚡ FIX: Ocultar skeleton cuando al menos la primera imagen (prioritaria) se haya cargado
    useEffect(() => {
@@ -263,6 +306,15 @@ const slides: Slide[] = [
                       quality={80}
                       onLoad={() => {
                         setLoadedImagesCount(prev => prev + 1)
+                      }}
+                      onError={(e) => {
+                        // Fallback a ruta local si Supabase falla
+                        if (slide.localFallback) {
+                          const target = e.target as HTMLImageElement
+                          if (target.src !== slide.localFallback) {
+                            target.src = slide.localFallback
+                          }
+                        }
                       }}
                       onMouseEnter={(e) => {
                         const target = e.currentTarget

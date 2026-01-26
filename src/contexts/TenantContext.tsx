@@ -8,6 +8,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react'
 import type { TenantPublicConfig } from '@/lib/tenant/types'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
 // ============================================================================
 // CONTEXT
@@ -83,19 +84,20 @@ export function useTenantTheme() {
 }
 
 /**
- * Hook para obtener los assets del tenant
+ * Hook para obtener los assets del tenant desde Supabase Storage
+ * Retorna URLs de Supabase Storage con fallback a rutas locales
  */
 export function useTenantAssets() {
   const tenant = useTenant()
   
   return {
-    logo: tenant.logoUrl || `/tenants/${tenant.slug}/logo.svg`,
-    logoDark: tenant.logoDarkUrl || `/tenants/${tenant.slug}/logo-dark.svg`,
-    favicon: tenant.faviconUrl || `/tenants/${tenant.slug}/favicon.svg`,
-    ogImage: tenant.ogImageUrl || `/tenants/${tenant.slug}/og-image.png`,
-    heroImage: (index: number) => `/tenants/${tenant.slug}/hero/hero${index}.webp`,
-    promoBanner: `/tenants/${tenant.slug}/hero/promo-banner.webp`,
-    shippingIcon: `/tenants/${tenant.slug}/icons/icon-envio.svg`,
+    logo: tenant.logoUrl || getTenantAssetPath(tenant, 'logo.svg', `/tenants/${tenant.slug}/logo.svg`),
+    logoDark: tenant.logoDarkUrl || getTenantAssetPath(tenant, 'logo-dark.svg', `/tenants/${tenant.slug}/logo-dark.svg`),
+    favicon: tenant.faviconUrl || getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`),
+    ogImage: tenant.ogImageUrl || getTenantAssetPath(tenant, 'og-image.png', `/tenants/${tenant.slug}/og-image.png`),
+    heroImage: (index: number) => getTenantAssetPath(tenant, `hero/hero${index}.webp`, `/tenants/${tenant.slug}/hero/hero${index}.webp`),
+    promoBanner: getTenantAssetPath(tenant, 'hero/promo-banner.webp', `/tenants/${tenant.slug}/hero/promo-banner.webp`),
+    shippingIcon: getTenantAssetPath(tenant, 'icons/icon-envio.svg', `/tenants/${tenant.slug}/icons/icon-envio.svg`),
   }
 }
 

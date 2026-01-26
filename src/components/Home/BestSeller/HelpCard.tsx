@@ -1,11 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import Image from "next/image"
+import { useState, useEffect } from "react"
 import { MessageCircle } from "@/lib/optimized-imports"
 import { cn } from "@/lib/utils"
 import { useTenantSafe } from "@/contexts/TenantContext"
+import { getTenantPromoAssetWithFallback } from "@/lib/tenant/tenant-assets"
 
 interface HelpCardProps {
   categoryName?: string | null
@@ -14,10 +14,15 @@ interface HelpCardProps {
 
 const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
   const [isHovered, setIsHovered] = useState(false)
-  
-  // Obtener número de WhatsApp del tenant
+
   const tenant = useTenantSafe()
-  const whatsappNumber = tenant?.whatsappNumber || "5493513411796"
+  const whatsappNumber = tenant?.whatsappNumber || (tenant?.slug === 'pintemas' ? '5493547637630' : '5493513411796')
+
+  // ⚡ MULTITENANT: Imagen desde Supabase Storage con fallback local
+  const localFallback = tenant ? `/tenants/${tenant.slug}/promo/help.webp` : '/images/promo/help.webp'
+  const { src, fallback } = getTenantPromoAssetWithFallback(tenant, 'help.webp', localFallback)
+  const [currentSrc, setCurrentSrc] = useState(src)
+  useEffect(() => setCurrentSrc(src), [src])
 
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -44,14 +49,16 @@ const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
     >
       {/* Background Layer - Sección superior (60%) (z-0) */}
       <div className="relative w-full h-[60%] overflow-hidden">
-        <Image
-          src="https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/promo/help.webp"
+        <img
+          src={currentSrc}
           alt="Asesoramiento por WhatsApp"
-          fill
-          className="object-cover object-top"
+          className="absolute inset-0 w-full h-full object-cover object-top"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority
-          quality={90}
+          loading="eager"
+          onError={(e) => {
+            const el = e.target as HTMLImageElement
+            if (el.src !== fallback) el.src = fallback
+          }}
         />
       </div>
 

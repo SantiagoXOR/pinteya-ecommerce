@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
 const CombosSection = dynamic(() => import('./CombosSection/index'), {
   ssr: false,
@@ -19,8 +21,17 @@ const CombosSection = dynamic(() => import('./CombosSection/index'), {
  * Impacto esperado: -1.0s a -1.5s en Speed Index, mejor LCP
  */
 export default function CombosOptimized() {
+  const tenant = useTenantSafe()
   const [showCarousel, setShowCarousel] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  
+  // ⚡ MULTITENANT: Imagen estática inicial por tenant desde Supabase Storage
+  const staticImagePath = getTenantAssetPath(
+    tenant,
+    'combos/combo1.webp',
+    '/images/hero/hero2/hero4.webp'
+  )
+  const staticImageLocal = tenant ? `/tenants/${tenant.slug}/combos/combo1.webp` : '/images/hero/hero2/hero4.webp'
 
   // ⚡ FIX: Marcar como montado después del primer render
   useEffect(() => {
@@ -54,7 +65,7 @@ export default function CombosOptimized() {
         {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
         <div className={`absolute inset-0 z-10 transition-opacity duration-500 ${showCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <Image
-            src="/images/hero/hero2/hero4.webp"
+            src={staticImagePath}
             alt="Combo destacado - Plavicon Fibrado"
             fill
             priority
@@ -64,6 +75,12 @@ export default function CombosOptimized() {
             quality={80}
             loading="eager"
             aria-hidden={showCarousel ? 'true' : 'false'}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              if (target.src !== staticImageLocal) {
+                target.src = staticImageLocal
+              }
+            }}
           />
         </div>
         {isMounted && (
@@ -93,7 +110,7 @@ export default function CombosOptimized() {
               }`}
             >
               <Image
-                src="/images/hero/hero2/hero4.webp"
+                src={staticImagePath}
                 alt="Combo destacado - Plavicon Fibrado"
                 fill
                 priority

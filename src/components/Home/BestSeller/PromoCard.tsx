@@ -1,24 +1,30 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArrowRight } from "@/lib/optimized-imports"
 import { cn } from "@/lib/utils"
+import { useTenantSafe } from "@/contexts/TenantContext"
+import { getTenantPromoAssetWithFallback } from "@/lib/tenant/tenant-assets"
 
 interface PromoCardProps {
   className?: string
 }
 
 const PromoCard: React.FC<PromoCardProps> = ({ className }) => {
+  const tenant = useTenantSafe()
   const [isHovered, setIsHovered] = useState(false)
-  const [imageError, setImageError] = useState(false)
 
-  const imageSrc = "https://aakzspzfulgftqlgwkpb.supabase.co/storage/v1/object/public/product-images/promo/30-off.webp"
+  // ⚡ MULTITENANT: Imagen desde Supabase Storage con fallback local
+  const localFallback = tenant ? `/tenants/${tenant.slug}/promo/30-off.webp` : '/images/promo/30-off.webp'
+  const { src, fallback } = getTenantPromoAssetWithFallback(tenant, '30-off.webp', localFallback)
+  const [currentSrc, setCurrentSrc] = useState(src)
+  useEffect(() => setCurrentSrc(src), [src])
 
   return (
     <Link
-      href="https://www.pinteya.com/products"
+      href="/products"
       className={cn(
         "relative rounded-xl md:rounded-[1.5rem] shadow-lg flex flex-col w-full cursor-pointer overflow-hidden",
         "min-h-[280px] sm:min-h-[320px] md:h-[400px] lg:h-[440px]",
@@ -31,14 +37,16 @@ const PromoCard: React.FC<PromoCardProps> = ({ className }) => {
       {/* --- LAYER 0: Background Image --- */}
       <div className="absolute inset-0 z-0 w-full h-full bg-gradient-to-br from-[#FF9000] to-[#FF5000]">
         <img
-          src={imageSrc || "/placeholder.svg"}
+          src={currentSrc}
           alt="Fondo Promoción"
           className={cn(
             "w-full h-full object-cover object-center transition-transform duration-700",
             isHovered ? "scale-105" : "scale-100",
-            imageError && "hidden",
           )}
-          onError={() => setImageError(true)}
+          onError={(e) => {
+            const el = e.target as HTMLImageElement
+            if (el.src !== fallback) el.src = fallback
+          }}
         />
       </div>
 

@@ -153,7 +153,7 @@ const HeaderNextAuth = () => {
                 ) : detectedZone ? (
                   `Envíos en ${detectedZone}`
                 ) : (
-                  'Envíos en Córdoba Capital'
+                  `Envíos en ${tenant?.contactCity || 'Córdoba Capital'}`
                 )}
               </span>
             </div>

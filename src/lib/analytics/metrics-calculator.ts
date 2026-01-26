@@ -156,6 +156,11 @@ class MetricsCalculator {
         .gte('created_at', Math.floor(new Date(params.startDate).getTime() / 1000))
         .lte('created_at', Math.floor(new Date(params.endDate).getTime() / 1000))
 
+      // MULTITENANT: Filtrar por tenant_id si está disponible
+      if (params.tenantId) {
+        query = query.eq('tenant_id', params.tenantId)
+      }
+
       if (params.userId) {
         query = query.eq('user_id', params.userId)
       }

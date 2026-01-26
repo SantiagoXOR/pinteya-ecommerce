@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       endDate,
       userId: userId || undefined,
       sessionId: sessionId || undefined,
+      tenantId: tenantId, // MULTITENANT: Incluir tenantId
     }
 
     // Determinar tipo de cache según rango de fechas
@@ -95,6 +96,7 @@ export async function GET(request: NextRequest) {
       endDate: previousEndDate,
       userId: userId || undefined,
       sessionId: sessionId || undefined,
+      tenantId: tenantId, // MULTITENANT: Incluir tenantId
     }
 
     const previousMetrics = includeAdvanced

@@ -3,6 +3,8 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { useDesignSystemConfig } from '@/lib/design-system-config'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
 interface ShippingProgressBarProps {
   currentAmount: number
@@ -20,6 +22,7 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
   variant = 'default',
 }) => {
   const config = useDesignSystemConfig()
+  const tenant = useTenantSafe()
   const resolvedTarget = targetAmount ?? config.ecommerce.shippingInfo.freeShippingThreshold
   const progress = Math.min((currentAmount / resolvedTarget) * 100, 100)
   const remainingAmount = Math.max(resolvedTarget - currentAmount, 0)
@@ -27,6 +30,14 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
 
   const isCompact = variant === 'compact'
   const isDetailed = variant === 'detailed'
+  
+  // ⚡ MULTITENANT: Icono de envío por tenant desde Supabase Storage
+  const shippingIconPath = getTenantAssetPath(
+    tenant,
+    'icons/icon-envio.svg',
+    '/images/icons/icon-envio.svg'
+  )
+  const shippingIconLocal = tenant ? `/tenants/${tenant.slug}/icons/icon-envio.svg` : '/images/icons/icon-envio.svg'
 
   return (
     <div
@@ -40,7 +51,7 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
         {showIcon && (
           <div className='flex-shrink-0'>
             <img
-              src='/images/icons/icon-envio.svg'
+              src={shippingIconPath}
               alt='Envío Gratis'
               className='w-auto h-auto'
               style={{ 
@@ -49,6 +60,12 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
                 maxWidth: isCompact ? '110px' : '140px', 
                 maxHeight: isCompact ? '110px' : '140px',
                 display: 'block'
+              }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                if (target.src !== shippingIconLocal) {
+                  target.src = shippingIconLocal
+                }
               }}
             />
           </div>

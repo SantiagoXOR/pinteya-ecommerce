@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useTenantSafe, useTenantContact, useTenantAssets } from '@/contexts/TenantContext'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
 // Fallback por defecto para cuando no hay tenant (sin URLs específicas de marca)
 const DEFAULT_SOCIALS = [
@@ -28,17 +29,28 @@ const Footer = () => {
   // Obtener configuración del tenant (con fallback seguro)
   const tenant = useTenantSafe()
   
-  // Assets del tenant (con fallback a la estructura de tenants)
+  // Assets del tenant desde Supabase Storage (con fallback local)
   const tenantAssets = tenant ? {
-    logo: tenant.logoUrl || `/tenants/${tenant.slug}/logo.svg`,
+    logo: tenant.logoUrl || getTenantAssetPath(tenant, 'logo.svg', `/tenants/${tenant.slug}/logo.svg`),
+    logoLocal: `/tenants/${tenant.slug}/logo.svg`, // Fallback local
   } : {
     logo: '/tenants/pinteya/logo.svg', // Usar estructura de tenant por defecto
+    logoLocal: '/tenants/pinteya/logo.svg',
   }
+  
+  // Fallback local para icono de envío
+  const shippingIconLocal = tenant ? `/tenants/${tenant.slug}/icons/icon-envio.svg` : '/images/icons/icon-envio.svg'
   
   // Información del tenant
   const tenantName = tenant?.name || 'Pinteya'
   const tenantCity = tenant?.contactCity || 'Córdoba'
   const tenantProvince = tenant?.contactProvince || 'Argentina'
+  
+  // ⚡ MULTITENANT: Icono de envío por tenant (+ cache bust para forzar versión actualizada)
+  const SHIPPING_ICON_VERSION = 2
+  const _iconBase = getTenantAssetPath(tenant, 'icons/icon-envio.svg', '/images/icons/icon-envio.svg')
+  const shippingIconPath = _iconBase + (_iconBase.includes('?') ? '&' : '?') + `v=${SHIPPING_ICON_VERSION}`
+  const shippingIconLocalBusted = shippingIconLocal + `?v=${SHIPPING_ICON_VERSION}`
   
   // Redes sociales del tenant (con fallback)
   const socials = tenant?.socialLinks ? [
@@ -106,15 +118,23 @@ const Footer = () => {
             <div className='flex items-center justify-between gap-4'>
               <div>
                 <p className='text-xs uppercase tracking-[0.2em] text-white/70 font-semibold'>Envío gratis</p>
-                <p className='text-2xl font-black text-white'>Córdoba Capital</p>
-                <p className='text-sm text-white/80 mt-1'>Sin costo extra en 24/48hs.</p>
+                <p className='text-2xl font-black text-white'>{tenantCity}</p>
+                <p className='text-sm text-white/80 mt-1'>
+                  {tenant?.slug === 'pintemas' ? 'Alta Gracia sin costo en el día.' : 'Sin costo extra en 24/48hs.'}
+                </p>
               </div>
               <Image
-                src='/images/icons/icon-envio.svg'
+                src={shippingIconPath}
                 alt='Icono envío gratis'
                 width={110}
                 height={90}
                 className='w-28 h-auto drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)]'
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  if (target.src !== shippingIconLocalBusted) {
+                    target.src = shippingIconLocalBusted
+                  }
+                }}
               />
             </div>
           </article>
@@ -164,6 +184,12 @@ const Footer = () => {
               height={45}
               className='h-9 w-auto drop-shadow-[0_6px_18px_rgba(0,0,0,0.25)]'
               loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                if (target.src !== tenantAssets.logoLocal) {
+                  target.src = tenantAssets.logoLocal
+                }
+              }}
             />
             <div>
               <p className='font-semibold text-white'>{tenantCity}, {tenantProvince}</p>

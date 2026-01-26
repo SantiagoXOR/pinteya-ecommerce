@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { SearchSuggestion } from '@/types/search'
 import { useRouter } from 'next/navigation'
 import { useTenantAssets, useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
 const NewHeader = () => {
   // Obtener assets del tenant (con fallback seguro)
@@ -19,12 +20,17 @@ const NewHeader = () => {
     fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'NewHeader.tsx:16',message:'Tenant loaded in NewHeader',data:{tenantSlug:tenant?.slug,tenantName:tenant?.name,headerBgColor:tenant?.headerBgColor,primaryColor:tenant?.primaryColor,hasTenant:!!tenant},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
   }
   // #endregion
+  // ⚡ MULTITENANT: Assets desde Supabase Storage con fallback local
   const tenantAssets = tenant ? {
-    logo: tenant.logoUrl || `/tenants/${tenant.slug}/logo.svg`,
-    logoDark: tenant.logoDarkUrl || `/tenants/${tenant.slug}/logo-dark.svg`,
+    logo: tenant.logoUrl || getTenantAssetPath(tenant, 'logo.svg', `/tenants/${tenant.slug}/logo.svg`),
+    logoDark: tenant.logoDarkUrl || getTenantAssetPath(tenant, 'logo-dark.svg', `/tenants/${tenant.slug}/logo-dark.svg`),
+    logoLocal: `/tenants/${tenant.slug}/logo.svg`,
+    logoDarkLocal: `/tenants/${tenant.slug}/logo-dark.svg`,
   } : {
     logo: '/images/logo/LOGO POSITIVO.svg',
     logoDark: '/images/logo/LOGO NEGATIVO.svg',
+    logoLocal: '/images/logo/LOGO POSITIVO.svg',
+    logoDarkLocal: '/images/logo/LOGO NEGATIVO.svg',
   }
   const tenantName = tenant?.name || 'Pinteya'
   const router = useRouter()
@@ -122,6 +128,12 @@ const NewHeader = () => {
                   height={40}
                   className='h-10 w-auto'
                   priority
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    if (target.src !== tenantAssets.logoLocal) {
+                      target.src = tenantAssets.logoLocal
+                    }
+                  }}
                 />
               </Link>
             </div>

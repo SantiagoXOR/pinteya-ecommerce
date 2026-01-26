@@ -14,6 +14,7 @@ import { updateProductWithMostExpensiveVariant } from '@/lib/products/utils/vari
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/products/constants'
 import { getCategoryImage } from '@/lib/categories/adapters'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
 interface DynamicProductCarouselProps {
   maxProducts?: number
@@ -36,11 +37,14 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     enableDynamicCounts: false,
   })
   
-  // Configuración para modo Envío Gratis - ⚡ MULTITENANT: usar accentColor
+  // Configuración para modo Envío Gratis - ⚡ MULTITENANT: icono por tenant, accentColor
+  const freeShippingIconUrl = getTenantAssetPath(tenant, 'icons/icon-envio.svg', '/images/icons/icon-envio.svg')
+  const freeShippingIconFallback = tenant ? `/tenants/${tenant.slug}/icons/icon-envio.svg` : '/images/icons/icon-envio.svg'
   const freeShippingConfig = {
     title: 'Envío Gratis',
     subtitle: 'Productos seleccionados con envío sin costo',
-    iconUrl: '/images/icons/icon-envio.svg',
+    iconUrl: freeShippingIconUrl,
+    iconFallback: freeShippingIconFallback,
     textColor: 'text-green-700',
   }
   
@@ -54,6 +58,9 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
   
   // Icono: usar el de la categoría real si existe, sino el del config
   const categoryIcon = currentCategory ? getCategoryImage(currentCategory) : categoryConfig.iconUrl
+  const categoryIconFallback = freeShippingOnly && 'iconFallback' in categoryConfig
+    ? (categoryConfig as { iconFallback?: string }).iconFallback
+    : '/images/icons/icon-envio.svg'
   
   // ⚡ OPTIMIZACIÓN: Si freeShippingOnly es true, usar useFilteredProducts para compartir cache con FreeShippingSection
   // Esto evita peticiones duplicadas a /api/products con los mismos filtros
@@ -188,6 +195,10 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
                 className='w-full h-full object-contain'
                 loading={freeShippingOnly ? 'lazy' : 'eager'}
                 priority={!freeShippingOnly}
+                onError={freeShippingOnly ? (e) => {
+                  const target = e.target as HTMLImageElement
+                  if (target.src !== categoryIconFallback) target.src = categoryIconFallback
+                } : undefined}
               />
             </div>
             

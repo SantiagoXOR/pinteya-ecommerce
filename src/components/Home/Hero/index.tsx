@@ -7,7 +7,7 @@ import HeroSlideCarousel from '@/components/Common/HeroSlideCarousel'
 import { useTenantSafe } from '@/contexts/TenantContext'
 
 // Función para generar hero slides dinámicos por tenant
-const generateHeroSlides = (tenantSlug: string): HeroSlideType[] => [
+const generateHeroSlides = (tenantSlug: string, serviceArea: string = 'Córdoba Capital'): HeroSlideType[] => [
   {
     id: 'slide-1',
     backgroundGradient: 'from-blaze-orange-500 via-blaze-orange-400 to-blaze-orange-600',
@@ -23,7 +23,7 @@ const generateHeroSlides = (tenantSlug: string): HeroSlideType[] => [
       {
         type: 'shipping',
         text: 'Envío Gratis',
-        subtitle: 'en Córdoba Capital',
+        subtitle: `en ${serviceArea}`,
         variant: 'green',
       },
       {
@@ -63,7 +63,7 @@ const generateHeroSlides = (tenantSlug: string): HeroSlideType[] => [
     backgroundGradient: 'from-blue-600 via-blue-500 to-blaze-orange-500',
     mainTitle: 'Comprá pinturas con entrega en 24 HS',
     highlightedWords: ['24 HS'],
-    subtitle: 'en Córdoba Capital',
+    subtitle: `en ${serviceArea}`,
     badges: [
       {
         type: 'shipping',
@@ -153,9 +153,10 @@ const Hero = () => {
   // Obtener tenant para rutas dinámicas
   const tenant = useTenantSafe()
   const tenantSlug = tenant?.slug || 'pinteya'
+  const serviceArea = tenant?.contactCity || 'Córdoba Capital'
   
   // Generar hero slides basados en el tenant
-  const heroSlides = useMemo(() => generateHeroSlides(tenantSlug), [tenantSlug])
+  const heroSlides = useMemo(() => generateHeroSlides(tenantSlug, serviceArea), [tenantSlug, serviceArea])
   return (
     <section className='relative overflow-hidden w-full' style={{ minHeight: '400px' }}>
       {/* Hero Modular y Responsive - Layout único que se adapta */}

@@ -9,6 +9,7 @@ import { StockIndicator } from './stock-indicator'
 import { ShippingInfo } from './shipping-info'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
 const cardVariants = cva('rounded-card bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-transform duration-200 ease-out', {
   variants: {
@@ -166,10 +167,13 @@ const ProductCard = React.memo(
       const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
       const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
       
-      // Icono de envío gratis: usar del tenant si existe, sino el default
-      const shippingIconPath = tenant?.slug 
-        ? `/tenants/${tenant.slug}/icons/icon-envio.svg`
-        : '/images/icons/icon-envio.svg'
+      // ⚡ MULTITENANT: Icono de envío gratis por tenant desde Supabase Storage
+      const shippingIconPath = getTenantAssetPath(
+        tenant,
+        'icons/icon-envio.svg',
+        '/images/icons/icon-envio.svg'
+      )
+      const shippingIconLocal = tenant ? `/tenants/${tenant.slug}/icons/icon-envio.svg` : '/images/icons/icon-envio.svg'
 
       const handleAddToCart = async () => {
         if (!onAddToCart) {
@@ -247,9 +251,11 @@ const ProductCard = React.memo(
                   alt='Envío gratis'
                   className='h-6 sm:h-8 md:h-10 w-auto object-contain drop-shadow-lg'
                   onError={(e) => {
-                    // Fallback al icono default si el del tenant no existe
+                    // Fallback al icono local del tenant, luego al genérico
                     const target = e.target as HTMLImageElement
-                    if (target.src !== '/images/icons/icon-envio.svg') {
+                    if (target.src !== shippingIconLocal) {
+                      target.src = shippingIconLocal
+                    } else if (target.src !== '/images/icons/icon-envio.svg') {
                       target.src = '/images/icons/icon-envio.svg'
                     }
                   }}

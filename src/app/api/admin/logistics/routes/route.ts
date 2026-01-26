@@ -12,6 +12,7 @@ import { createClient, createAdminClient } from '@/lib/integrations/supabase/ser
 import { auth } from '@/lib/auth/config'
 // ⚡ MULTITENANT: Importar guard de tenant admin
 import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
+import { calculateRouteTotalDistance } from '@/lib/integrations/google-maps/distance-matrix'
 
 // =====================================================
 // INTERFACES
@@ -188,8 +189,36 @@ export const POST = withTenantAdmin(async (
       return NextResponse.json({ error: 'Datos de ruta inválidos' }, { status: 400 })
     }
 
-    if (typeof total_distance !== 'number' || typeof estimated_time !== 'number') {
-      return NextResponse.json({ error: 'Distancia y tiempo deben ser números' }, { status: 400 })
+    // Calcular distancia y tiempo usando Google Maps Distance Matrix si hay waypoints
+    let calculatedDistance = total_distance
+    let calculatedTime = estimated_time
+
+    if (waypoints && waypoints.length >= 2) {
+      try {
+        const routeDistance = await calculateRouteTotalDistance(waypoints, {
+          mode: 'driving',
+          departureTime: 'now',
+          trafficModel: 'best_guess',
+        })
+
+        if (routeDistance) {
+          calculatedDistance = routeDistance.totalDistance / 1000 // Convertir a km
+          calculatedTime = routeDistance.totalDurationInTraffic
+            ? routeDistance.totalDurationInTraffic / 60 // Convertir a minutos
+            : routeDistance.totalDuration / 60
+        }
+      } catch (error) {
+        console.warn('Error calculando distancia con Google Maps, usando valores proporcionados:', error)
+        // Continuar con los valores proporcionados si falla el cálculo
+      }
+    }
+
+    // Validar que tenemos distancia y tiempo (calculados o proporcionados)
+    if (typeof calculatedDistance !== 'number' || typeof calculatedTime !== 'number') {
+      return NextResponse.json(
+        { error: 'Distancia y tiempo deben ser números. Proporcione waypoints o valores manuales.' },
+        { status: 400 }
+      )
     }
 
     const supabase = await createClient()
@@ -236,8 +265,8 @@ export const POST = withTenantAdmin(async (
       .insert({
         name,
         shipments,
-        total_distance,
-        estimated_time,
+        total_distance: calculatedDistance,
+        estimated_time: calculatedTime,
         driver_id: driver_id || null,
         vehicle: vehicle || null,
         status,

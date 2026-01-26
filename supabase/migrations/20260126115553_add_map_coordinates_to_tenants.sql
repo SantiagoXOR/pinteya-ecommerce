@@ -1,0 +1,1 @@
+-- Migración: Agregar campos de coordenadas de mapa a tenants

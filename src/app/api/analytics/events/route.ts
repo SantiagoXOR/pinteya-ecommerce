@@ -9,6 +9,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { metricsCache } from '@/lib/analytics/metrics-cache'
+import { getTenantConfig } from '@/lib/tenant'
 
 // Cache simple en memoria para eventos recientes (evita duplicados)
 const eventCache = new Map<string, number>()
@@ -16,6 +17,12 @@ const CACHE_TTL = 5000 // 5 segundos
 
 export async function POST(request: NextRequest) {
   try {
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     const event = await request.json()
 
     // Validación rápida y simple
@@ -84,6 +91,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Usar función RPC optimizada para insertar en tabla optimizada
+        // MULTITENANT: Incluir tenant_id si la función RPC lo soporta
         const { error: rpcError } = await supabase.rpc('insert_analytics_event_optimized', {
           p_event_name: event.event,
           p_category: event.category,
@@ -103,6 +111,8 @@ export async function POST(request: NextRequest) {
           p_device_type: deviceType || null,
           // Metadata enriquecido con visitorHash (se guarda comprimido)
           p_metadata: enrichedMetadata,
+          // MULTITENANT: Incluir tenant_id
+          p_tenant_id: tenantId,
         })
 
         if (rpcError) {
@@ -137,6 +147,12 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // ===================================
+    // MULTITENANT: Obtener configuración del tenant
+    // ===================================
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     const { searchParams } = new URL(request.url)
     const sessionId = searchParams.get('sessionId')
     const userId = searchParams.get('userId')
@@ -150,6 +166,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Usar tabla optimizada directamente (vista unificada eliminada)
+    // MULTITENANT: Filtrar por tenant_id
     let query = supabase
       .from('analytics_events_optimized')
       .select(`
@@ -161,6 +178,7 @@ export async function GET(request: NextRequest) {
         value,
         user_id,
         session_hash,
+        visitor_hash,
         page_id,
         browser_id,
         created_at,
@@ -170,6 +188,7 @@ export async function GET(request: NextRequest) {
         analytics_pages(path),
         analytics_browsers(name, version)
       `)
+      .eq('tenant_id', tenantId) // MULTITENANT: Filtrar por tenant
       .order('created_at', { ascending: false })
       .limit(limit)
 

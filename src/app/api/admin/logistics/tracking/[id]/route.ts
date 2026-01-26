@@ -10,9 +10,10 @@ import { auth } from '@/lib/auth/config'
 import { createClient } from '@/lib/integrations/supabase/server'
 import { Database } from '@/types/database'
 import { z } from 'zod'
-import { TrackingEvent, CreateTrackingEventRequest, Shipment } from '@/types/logistics'
+import { TrackingEvent, CreateTrackingEventRequest, Shipment, ShipmentStatus } from '@/types/logistics'
 // ⚡ MULTITENANT: Importar guard de tenant admin
 import { withTenantAdmin, type TenantAdminGuardResult } from '@/lib/auth/guards/tenant-admin-guard'
+import { getPushNotificationService } from '@/lib/notifications/push-notifications'
 
 // =====================================================
 // SCHEMAS DE VALIDACIÓN ZOD
@@ -254,6 +255,57 @@ export const POST = withTenantAdmin(async (
         })
         .eq('id', shipmentId)
         .eq('tenant_id', tenantId) // ⚡ MULTITENANT
+    }
+
+    // Enviar notificación push al cliente si el envío tiene una orden asociada
+    try {
+      const { data: shipmentData } = await supabase
+        .from('shipments')
+        .select('order_id, tracking_number, status')
+        .eq('id', shipmentId)
+        .eq('tenant_id', tenantId)
+        .single()
+
+      if (shipmentData?.order_id) {
+        // Mapear estados a labels en español
+        const statusLabels: Record<string, string> = {
+          pending: 'Pendiente',
+          confirmed: 'Confirmado',
+          picked_up: 'Recolectado',
+          in_transit: 'En Tránsito',
+          out_for_delivery: 'En Reparto',
+          delivered: 'Entregado',
+          exception: 'Excepción',
+          cancelled: 'Cancelado',
+          returned: 'Devuelto',
+        }
+
+        // Enviar notificación push de forma asíncrona (no bloquear la respuesta)
+        // Usar el servicio directamente en lugar de hacer fetch
+        const pushService = getPushNotificationService()
+        pushService
+          .sendShipmentUpdateNotification(
+            shipmentData.order_id,
+            {
+              shipmentId: shipmentId.toString(),
+              trackingNumber: shipmentData.tracking_number || `TRK${shipmentId}`,
+              status: validatedData.status,
+              statusLabel: statusLabels[validatedData.status] || validatedData.status,
+              location: validatedData.location,
+              estimatedDelivery: shipmentData.status === ShipmentStatus.OUT_FOR_DELIVERY
+                ? new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // Estimado 2 horas
+                : undefined,
+              orderId: shipmentData.order_id,
+            },
+            tenantId
+          )
+          .catch(error => {
+            console.error('Error enviando notificación push (no crítico):', error)
+          })
+      }
+    } catch (error) {
+      // No fallar si hay error en las notificaciones push
+      console.error('Error preparando notificación push (no crítico):', error)
     }
 
     return NextResponse.json(
