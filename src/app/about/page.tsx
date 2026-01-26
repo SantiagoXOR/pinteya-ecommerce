@@ -10,12 +10,13 @@ import React from 'react'
 import { motion } from '@/lib/framer-motion-lazy'
 import { Building2, Users, Target, Award, MapPin, Phone, Mail, Clock } from '@/lib/optimized-imports'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 const AboutPage = () => {
   // ⚡ MULTITENANT: Obtener datos del tenant
   const tenant = useTenantSafe()
   const tenantName = tenant?.name || 'Pinteya'
-  const contactPhone = tenant?.contactPhone || tenant?.whatsappNumber || '5493513411796'
+  const contactPhone = tenant?.contactPhone || getTenantWhatsAppNumber(tenant)
   const displayPhone = contactPhone.replace(/^549(\d{3})(\d{3})(\d{4})$/, '+54 9 $1 $2-$3')
   const supportEmail = tenant?.supportEmail || `info@${tenant?.slug || 'pinteya'}.com`
   const contactAddress = tenant?.contactAddress || 'Córdoba, Argentina'

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { WhatsAppQR } from '@/components/ui/whatsapp-qr'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 // ===================================
 // INTERFACES
@@ -48,10 +49,10 @@ const Contact: React.FC = () => {
   
   // Obtener datos de contacto del tenant
   const tenant = useTenantSafe()
-  const contactPhone = tenant?.contactPhone || tenant?.whatsappNumber || '5493513411796'
+  const contactPhone = tenant?.contactPhone || getTenantWhatsAppNumber(tenant)
   const displayPhone = contactPhone.replace(/^549(\d{3})(\d{3})(\d{4})$/, '+54 9 $1 $2-$3')
   const supportEmail = tenant?.name ? `info@${tenant.slug}.com.ar` : 'info@pinteya.com.ar'
-  const contactAddress = tenant?.contactAddress || 'Córdoba Capital, Argentina'
+  const contactAddress = tenant?.contactAddress || `${tenant?.contactCity || 'Córdoba Capital'}, Argentina`
 
   // Información de contacto (dinámica por tenant)
   const contactInfo: ContactInfo[] = [
@@ -193,7 +194,7 @@ const Contact: React.FC = () => {
                   </li>
                   <li className='flex items-center'>
                     <div className='w-2 h-2 bg-blaze-orange-600 rounded-full mr-3'></div>
-                    Envíos a toda Córdoba
+                    Envíos a {tenant?.contactCity || 'Córdoba'} y alrededores
                   </li>
                   <li className='flex items-center'>
                     <div className='w-2 h-2 bg-blaze-orange-600 rounded-full mr-3'></div>

@@ -12,6 +12,7 @@ import { trackPurchase as trackMetaPurchase } from '@/lib/meta-pixel'
 import { trackGoogleAdsPurchase } from '@/lib/google-ads'
 import { Separator } from '@/components/ui/separator'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 export default function CashSuccessPage() {
   const searchParams = useSearchParams()
@@ -22,7 +23,7 @@ export default function CashSuccessPage() {
   
   // Obtener datos del tenant
   const tenant = useTenantSafe()
-  const businessPhone = tenant?.whatsappNumber || '5493513411796'
+  const businessPhone = getTenantWhatsAppNumber(tenant)
 
   // Extraer datos de la URL
   const orderId = searchParams.get('orderId')

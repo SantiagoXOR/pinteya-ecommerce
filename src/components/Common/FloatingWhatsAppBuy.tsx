@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { MessageCircle, X } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 // Versión específica para /buy que aparece inmediatamente
 const FloatingWhatsAppBuy = () => {
@@ -12,7 +13,7 @@ const FloatingWhatsAppBuy = () => {
 
   // Obtener número de WhatsApp del tenant
   const tenant = useTenantSafe()
-  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+  const whatsappNumber = getTenantWhatsAppNumber(tenant)
   const defaultMessage = tenant?.whatsappMessageTemplate || 'Hola! Necesito ayuda con productos de pinturería'
 
   useEffect(() => {

@@ -4,6 +4,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { MessageCircle } from '@/lib/optimized-imports'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 interface FloatingWhatsAppButtonProps {
   className?: string
@@ -16,7 +17,7 @@ const FloatingWhatsAppButton: React.FC<FloatingWhatsAppButtonProps> = ({
 }) => {
   // Obtener número de WhatsApp del tenant
   const tenant = useTenantSafe()
-  const defaultPhone = tenant?.whatsappNumber || '5493513411796'
+  const defaultPhone = getTenantWhatsAppNumber(tenant)
   
   // Convertir número de teléfono a formato WhatsApp (sin espacios, guiones ni +)
   const whatsappNumber = (phoneNumber || defaultPhone).replace(/[\s\-+]/g, '')

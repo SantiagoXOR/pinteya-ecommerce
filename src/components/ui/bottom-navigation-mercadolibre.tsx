@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { useAppSelector } from '@/redux/store'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 interface MercadoLibreBottomNavProps {
   className?: string
@@ -26,7 +27,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
     
     // Obtener número de WhatsApp del tenant
     const tenant = useTenantSafe()
-    const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+    const whatsappNumber = getTenantWhatsAppNumber(tenant)
     
     // ⚡ MULTITENANT: Colores del tenant para el botón de carrito
     const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto

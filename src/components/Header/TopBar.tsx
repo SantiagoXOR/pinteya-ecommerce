@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 const TopBar = () => {
   const tenant = useTenantSafe()
@@ -27,7 +28,7 @@ const TopBar = () => {
   } = useGeolocation()
   
   // Obtener teléfono de contacto del tenant
-  const contactPhone = tenant?.contactPhone || tenant?.whatsappNumber || '5493513411796'
+  const contactPhone = tenant?.contactPhone || getTenantWhatsAppNumber(tenant)
   // Formatear número para mostrar
   const displayPhone = contactPhone.replace(/^549(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3')
   const telLink = `tel:+${contactPhone}`

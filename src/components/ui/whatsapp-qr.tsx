@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Download, Loader2 } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 interface WhatsAppQRProps {
   size?: number // Tamaño del QR (default: 256)
@@ -26,7 +27,7 @@ const WhatsAppQR: React.FC<WhatsAppQRProps> = ({
   
   // Obtener datos del tenant
   const tenant = useTenantSafe()
-  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+  const whatsappNumber = getTenantWhatsAppNumber(tenant)
   const tenantLogo = tenant?.logoUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo.svg`
   const tenantName = tenant?.name || 'PinteYa'
   const tenantPrimaryColor = tenant?.primaryColor || '#eb6313'

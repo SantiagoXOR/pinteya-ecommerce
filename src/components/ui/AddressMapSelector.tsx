@@ -4,6 +4,14 @@ import React, { useState, useEffect, useRef } from 'react'
 import { MapPin, CheckCircle, AlertCircle, Loader2, X, Navigation } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { Button } from './button'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import {
+  getTenantMapCenter,
+  getTenantMapBounds,
+  getTenantCityName,
+  validateTenantAddress,
+  isWithinTenantBounds,
+} from '@/lib/tenant/tenant-location'
 
 interface AddressMapSelectorProps {
   value?: string
@@ -43,15 +51,13 @@ export function AddressMapSelector({
   const markerRef = useRef<google.maps.Marker | null>(null)
   const geocoderRef = useRef<google.maps.Geocoder | null>(null)
 
-  const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const mapCenter = getTenantMapCenter(tenant)
+  const mapBounds = getTenantMapBounds(tenant)
+  const cityName = getTenantCityName(tenant)
 
-  // Límites de Córdoba Capital
-  const cordobaBounds = {
-    north: -31.25,
-    south: -31.55,
-    east: -64.05,
-    west: -64.35
-  }
+  const finalApiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   // Cargar Google Maps API
   useEffect(() => {
@@ -91,15 +97,15 @@ export function AddressMapSelector({
       }
 
       const map = new google.maps.Map(mapRef.current!, {
-        center: { lat: -31.4201, lng: -64.1888 }, // Centro de Córdoba
+        center: mapCenter, // Centro según tenant
         zoom: 13,
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         restriction: {
           latLngBounds: {
-            north: cordobaBounds.north,
-            south: cordobaBounds.south,
-            east: cordobaBounds.east,
-            west: cordobaBounds.west
+            north: mapBounds.north,
+            south: mapBounds.south,
+            east: mapBounds.east,
+            west: mapBounds.west
           },
           strictBounds: false
         },
@@ -117,7 +123,7 @@ export function AddressMapSelector({
 
       // Crear marcador inicial
       const marker = new google.maps.Marker({
-        position: { lat: -31.4201, lng: -64.1888 },
+        position: mapCenter,
         map: map,
         draggable: true,
         title: 'Arrastra para seleccionar tu ubicación',
@@ -167,7 +173,7 @@ export function AddressMapSelector({
   const reverseGeocode = (lat: number, lng: number) => {
     if (!geocoderRef.current) {
       // Si no hay geocoder, usar dirección de fallback
-      const fallbackAddress = 'Córdoba Capital, Córdoba, Argentina'
+      const fallbackAddress = `${cityName}, Córdoba, Argentina`
       setSelectedAddress(fallbackAddress)
       setIsValid(true)
       setErrorMessage(undefined)
@@ -186,21 +192,26 @@ export function AddressMapSelector({
         
         if (status === 'OK' && results && results[0]) {
           const address = results[0].formatted_address
+          const addressComponents = results[0].address_components || []
           setSelectedAddress(address)
           
-          // Verificar si está en la provincia de Córdoba (más amplio que solo Capital)
-          const isInCordoba = address.toLowerCase().includes('córdoba') || 
-                             address.toLowerCase().includes('cordoba')
+          // Validar usando el helper del tenant
+          const isValidAddress = validateTenantAddress(address, addressComponents, tenant)
+          const isInBounds = isWithinTenantBounds(lat, lng, tenant)
+          const isValid = isValidAddress && isInBounds
           
-          setIsValid(isInCordoba)
-          setErrorMessage(isInCordoba ? undefined : 'La ubicación debe estar en la provincia de Córdoba')
-          onValidationChange?.(isInCordoba, isInCordoba ? undefined : 'La ubicación debe estar en la provincia de Córdoba')
+          setIsValid(isValid)
+          const errorMsg = isValid 
+            ? undefined 
+            : `La ubicación debe estar en ${cityName}, Córdoba`
+          setErrorMessage(errorMsg)
+          onValidationChange?.(isValid, errorMsg)
           
           onChange(address, { lat, lng })
         } else {
           // Si falla la geocodificación, usar dirección de fallback
           console.debug('Geocodificación falló, usando dirección de fallback')
-          const fallbackAddress = 'Córdoba Capital, Córdoba, Argentina'
+          const fallbackAddress = `${cityName}, Córdoba, Argentina`
           setSelectedAddress(fallbackAddress)
           setIsValid(true)
           setErrorMessage(undefined)
@@ -211,14 +222,9 @@ export function AddressMapSelector({
     )
   }
 
-  // Verificar si está dentro de los límites de Córdoba Capital
+  // Verificar si está dentro de los límites del tenant (usando helper)
   const isWithinCordobaBounds = (lat: number, lng: number): boolean => {
-    return (
-      lat >= cordobaBounds.south &&
-      lat <= cordobaBounds.north &&
-      lng >= cordobaBounds.west &&
-      lng <= cordobaBounds.east
-    )
+    return isWithinTenantBounds(lat, lng, tenant)
   }
 
   // Obtener ubicación actual del usuario
@@ -256,14 +262,14 @@ export function AddressMapSelector({
         setSelectedCoordinates({ lat, lng })
         reverseGeocode(lat, lng)
 
-        // Verificar si está en Córdoba Capital y mostrar advertencia si no
+        // Verificar si está en la zona de servicio y mostrar advertencia si no
         if (!isWithinCordobaBounds(lat, lng)) {
-          setErrorMessage('Tu ubicación está fuera de Córdoba Capital. Mueve el marcador a tu dirección de entrega en Córdoba')
+          setErrorMessage(`Tu ubicación está fuera de ${cityName}. Mueve el marcador a tu dirección de entrega en ${cityName}, Córdoba`)
           setIsValid(false)
           onValidationChange?.(false, 'Ubicación fuera de zona de entrega')
         } else {
           setErrorMessage(undefined)
-          // La validación la maneja reverseGeocode cuando está en Córdoba
+          // La validación la maneja reverseGeocode cuando está en la zona
         }
         setIsLoading(false)
       },
@@ -317,54 +323,50 @@ export function AddressMapSelector({
   }
 
   const handleFallbackLocation = () => {
-    // Centrar en Córdoba como fallback
-    const cordobaCenter = { lat: -31.4201, lng: -64.1888 }
-    
-    console.debug('Usando ubicación de fallback:', cordobaCenter)
+    // Centrar según tenant
+    console.debug('Usando ubicación de fallback:', mapCenter)
     
     if (markerRef.current) {
-      markerRef.current.setPosition(cordobaCenter)
+      markerRef.current.setPosition(mapCenter)
     }
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setCenter(cordobaCenter)
+      mapInstanceRef.current.setCenter(mapCenter)
       mapInstanceRef.current.setZoom(13)
     }
     
-    setSelectedCoordinates(cordobaCenter)
+    setSelectedCoordinates(mapCenter)
     setErrorMessage(undefined)
     setIsValid(null) // Reset validation state
     
     // Usar dirección de fallback directamente
-    const fallbackAddress = 'Córdoba Capital, Córdoba, Argentina'
+    const fallbackAddress = `${cityName}, Córdoba, Argentina`
     setSelectedAddress(fallbackAddress)
     setIsValid(true)
-    onChange(fallbackAddress, cordobaCenter)
+    onChange(fallbackAddress, mapCenter)
     onValidationChange?.(true, undefined)
   }
 
   const handleTestLocation = () => {
-    // Simular ubicación GPS para testing
-    const testLocation = { lat: -31.4201, lng: -64.1888 }
-    
-    console.debug('Usando ubicación de prueba:', testLocation)
+    // Simular ubicación GPS para testing (usar centro del tenant)
+    console.debug('Usando ubicación de prueba:', mapCenter)
     
     if (markerRef.current) {
-      markerRef.current.setPosition(testLocation)
+      markerRef.current.setPosition(mapCenter)
     }
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setCenter(testLocation)
+      mapInstanceRef.current.setCenter(mapCenter)
       mapInstanceRef.current.setZoom(12)
     }
     
-    setSelectedCoordinates(testLocation)
+    setSelectedCoordinates(mapCenter)
     setErrorMessage(undefined)
     setIsValid(null) // Reset validation state
     
     // Usar dirección de prueba directamente
-    const testAddress = 'Córdoba Capital, Córdoba, Argentina'
+    const testAddress = `${cityName}, Córdoba, Argentina`
     setSelectedAddress(testAddress)
     setIsValid(true)
-    onChange(testAddress, testLocation)
+    onChange(testAddress, mapCenter)
     onValidationChange?.(true, undefined)
   }
 
@@ -388,12 +390,16 @@ export function AddressMapSelector({
             setSelectedAddress(e.target.value)
             // Si el usuario escribe manualmente, validar la dirección
             if (e.target.value.trim()) {
-              // Validar que contenga Córdoba (provincia completa)
-              const isManualAddress = e.target.value.toLowerCase().includes('córdoba') || 
-                                    e.target.value.toLowerCase().includes('cordoba')
-              setIsValid(isManualAddress)
-              setErrorMessage(isManualAddress ? undefined : 'La ubicación debe estar en la provincia de Córdoba')
-              onValidationChange?.(isManualAddress, isManualAddress ? undefined : 'La ubicación debe estar en la provincia de Córdoba')
+              // Validar usando el helper del tenant
+              const addressLower = e.target.value.toLowerCase()
+              const hasKeyword = cityName.toLowerCase().includes(addressLower) || 
+                                addressLower.includes(cityName.toLowerCase()) ||
+                                addressLower.includes('córdoba') || 
+                                addressLower.includes('cordoba')
+              setIsValid(hasKeyword)
+              const errorMsg = hasKeyword ? undefined : `La ubicación debe estar en ${cityName}, Córdoba`
+              setErrorMessage(errorMsg)
+              onValidationChange?.(hasKeyword, errorMsg)
               onChange(e.target.value, selectedCoordinates)
             }
           }}
@@ -461,7 +467,7 @@ export function AddressMapSelector({
                 onClick={handleFallbackLocation}
                 className="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition-colors"
               >
-                📍 Centrar en Córdoba Capital
+                📍 Centrar en {cityName}
               </button>
             </div>
           )}
@@ -471,7 +477,7 @@ export function AddressMapSelector({
       {isValid && !errorMessage && (
         <p className="text-sm text-green-600 flex items-center gap-1">
           <CheckCircle className="w-4 h-4" />
-          Ubicación válida en la provincia de Córdoba
+          Ubicación válida en {cityName}, Córdoba
         </p>
       )}
 
@@ -519,7 +525,7 @@ export function AddressMapSelector({
             disabled={disabled}
             className="flex-1 text-sm"
           >
-            📍 Centrar en Córdoba
+            📍 Centrar en {cityName}
           </Button>
         </div>
       )}
@@ -532,7 +538,7 @@ export function AddressMapSelector({
             <ul className="list-disc list-inside mt-1 space-y-1">
               <li>Arrastra el marcador azul a tu domicilio</li>
               <li>O haz clic en el mapa para seleccionar una ubicación</li>
-              <li>Se recomienda ubicaciones en la provincia de Córdoba para entrega</li>
+              <li>Se recomienda ubicaciones en {cityName}, Córdoba para entrega</li>
             </ul>
           </div>
           

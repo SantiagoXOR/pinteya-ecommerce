@@ -4,6 +4,14 @@ import React, { useState, useEffect, useRef } from 'react'
 import { MapPin, CheckCircle, AlertCircle, Loader2, X, Search } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import {
+  getTenantMapCenter,
+  getTenantMapBounds,
+  getTenantCityName,
+  validateTenantAddress,
+  isWithinTenantBounds,
+} from '@/lib/tenant/tenant-location'
 
 interface AddressMapSelectorAdvancedProps {
   value?: string
@@ -40,15 +48,13 @@ export function AddressMapSelectorAdvanced({
   const geocoderRef = useRef<google.maps.Geocoder | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const finalApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'DEMO_KEY'
+  // Obtener datos del tenant
+  const tenant = useTenantSafe()
+  const mapCenter = getTenantMapCenter(tenant)
+  const mapBounds = getTenantMapBounds(tenant)
+  const cityName = getTenantCityName(tenant)
 
-  // Límites de Córdoba Capital (ajustados y más precisos)
-  const cordobaCapitalBounds = {
-    north: -31.25,
-    south: -31.55,
-    east: -64.05,
-    west: -64.35
-  }
+  const finalApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'DEMO_KEY'
 
   const [placesApiAvailable, setPlacesApiAvailable] = useState(false)
 
@@ -184,51 +190,9 @@ export function AddressMapSelectorAdvanced({
     loadGoogleMaps()
   }, [finalApiKey])
 
-  // Verificar si está dentro de los límites de Córdoba Capital
+  // Verificar si está dentro de los límites del tenant (usando helper)
   const isWithinCordobaCapitalBounds = (lat: number, lng: number): boolean => {
-    return (
-      lat >= cordobaCapitalBounds.south &&
-      lat <= cordobaCapitalBounds.north &&
-      lng >= cordobaCapitalBounds.west &&
-      lng <= cordobaCapitalBounds.east
-    )
-  }
-
-  // Verificar si la dirección es de Córdoba Capital (validación mejorada)
-  const isCordobaCapitalAddress = (addressComponents: google.maps.GeocoderAddressComponent[]): boolean => {
-    // Buscar locality (ciudad)
-    const locality = addressComponents.find(component => 
-      component.types.includes('locality')
-    )
-    
-    // Buscar administrative_area_level_1 (provincia)
-    const administrativeAreaLevel1 = addressComponents.find(component => 
-      component.types.includes('administrative_area_level_1')
-    )
-
-    // Buscar también en political (puede contener información de ciudad)
-    const political = addressComponents.find(component => 
-      component.types.includes('political') && 
-      (component.types.includes('locality') || component.types.includes('administrative_area_level_1'))
-    )
-
-    // Validación más robusta: verificar que sea Córdoba en ciudad Y provincia
-    const isCordobaCity = locality?.long_name === 'Córdoba' || 
-                         locality?.short_name === 'Córdoba' ||
-                         locality?.long_name?.toLowerCase().includes('córdoba') ||
-                         locality?.long_name?.toLowerCase().includes('cordoba')
-
-    const isCordobaProvince = administrativeAreaLevel1?.long_name === 'Córdoba' ||
-                              administrativeAreaLevel1?.short_name === 'Córdoba' ||
-                              administrativeAreaLevel1?.long_name?.toLowerCase().includes('córdoba') ||
-                              administrativeAreaLevel1?.long_name?.toLowerCase().includes('cordoba')
-
-    // También verificar en political si existe
-    const isPoliticalCordoba = political?.long_name?.toLowerCase().includes('córdoba') ||
-                               political?.long_name?.toLowerCase().includes('cordoba') ||
-                               false
-
-    return ((isCordobaCity || false) && (isCordobaProvince || false)) || ((isPoliticalCordoba || false) && (isCordobaProvince || false))
+    return isWithinTenantBounds(lat, lng, tenant)
   }
 
   // Inicializar mapa y autocomplete
@@ -242,15 +206,15 @@ export function AddressMapSelectorAdvanced({
       }
 
       const map = new google.maps.Map(mapRef.current!, {
-        center: { lat: -31.4201, lng: -64.1888 },
+        center: mapCenter, // Centro según tenant
         zoom: 13,
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         restriction: {
           latLngBounds: {
-            north: cordobaCapitalBounds.north,
-            south: cordobaCapitalBounds.south,
-            east: cordobaCapitalBounds.east,
-            west: cordobaCapitalBounds.west
+            north: mapBounds.north,
+            south: mapBounds.south,
+            east: mapBounds.east,
+            west: mapBounds.west
           },
           strictBounds: false
         }
@@ -261,7 +225,7 @@ export function AddressMapSelectorAdvanced({
 
       // Crear marcador
       const marker = new google.maps.Marker({
-        position: { lat: -31.4201, lng: -64.1888 },
+        position: mapCenter,
         map: map,
         draggable: true,
         title: 'Arrastra para seleccionar tu ubicación'
@@ -297,7 +261,7 @@ export function AddressMapSelectorAdvanced({
     setTimeout(initMap, 100)
   }, [isMapLoaded])
 
-  // Función de validación mejorada
+  // Función de validación mejorada usando helper del tenant
   const validateLocation = (
     lat: number, 
     lng: number, 
@@ -305,13 +269,14 @@ export function AddressMapSelectorAdvanced({
     address: string
   ) => {
     const isInBounds = isWithinCordobaCapitalBounds(lat, lng)
-    const isCordobaAddress = isCordobaCapitalAddress(addressComponents)
+    const isValidAddress = validateTenantAddress(address, addressComponents, tenant)
     
-    const isInCordobaCapital = isInBounds && isCordobaAddress
+    const isValid = isInBounds && isValidAddress
     
-    setIsValid(isInCordobaCapital)
-    setErrorMessage(isInCordobaCapital ? undefined : 'La dirección debe estar en Córdoba Capital')
-    onValidationChange?.(isInCordobaCapital, isInCordobaCapital ? undefined : 'La dirección debe estar en Córdoba Capital')
+    setIsValid(isValid)
+    const errorMsg = isValid ? undefined : `La dirección debe estar en ${cityName}, Córdoba`
+    setErrorMessage(errorMsg)
+    onValidationChange?.(isValid, errorMsg)
     
     onChange(address, { lat, lng })
   }
@@ -351,7 +316,7 @@ export function AddressMapSelectorAdvanced({
     setErrorMessage(undefined)
 
     geocoderRef.current.geocode(
-      { address: `${selectedAddress}, Córdoba, Argentina` },
+      { address: `${selectedAddress}, ${cityName}, Córdoba, Argentina` },
       (results, status) => {
         setIsSearching(false)
         
@@ -530,7 +495,7 @@ export function AddressMapSelectorAdvanced({
       {isValid && !errorMessage && (
         <p className="text-sm text-green-600 flex items-center gap-1">
           <CheckCircle className="w-4 h-4" />
-          Ubicación válida en Córdoba Capital
+          Ubicación válida en {cityName}, Córdoba
         </p>
       )}
 

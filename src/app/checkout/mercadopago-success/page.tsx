@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { useAppDispatch } from '@/redux/store'
 import { removeAllItemsFromCart } from '@/redux/features/cart-slice'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 export default function MercadoPagoSuccessPage() {
   const searchParams = useSearchParams()
@@ -34,7 +35,7 @@ export default function MercadoPagoSuccessPage() {
   const [phoneNumber, setPhoneNumber] = useState<string>('')
 
   // Número de WhatsApp del negocio (dinámico por tenant)
-  const businessPhone = tenant?.whatsappNumber || '5493513411796'
+  const businessPhone = getTenantWhatsAppNumber(tenant)
 
   // Helper: resuelve el mejor endpoint de WhatsApp según dispositivo
   const resolveWhatsAppLink = (

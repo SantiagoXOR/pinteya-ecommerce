@@ -24,6 +24,7 @@ import {
 } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
@@ -102,7 +103,7 @@ const HelpPage = () => {
   
   // Obtener datos del tenant
   const tenant = useTenantSafe()
-  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+  const whatsappNumber = getTenantWhatsAppNumber(tenant)
   const tenantName = tenant?.name || 'Pinteya'
   
   const [publicSettings, setPublicSettings] = useState<PublicSettings>({

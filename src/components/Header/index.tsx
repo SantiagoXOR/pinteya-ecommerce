@@ -23,6 +23,7 @@ import ScrollingBanner from './ScrollingBanner'
 import { useDevicePerformance } from '@/hooks/useDevicePerformance'
 import { useScrollActive } from '@/hooks/useScrollActive'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 // import GeolocationDebugger from "./GeolocationDebugger"; // Componente de debugging desactivado
 
 const Header = () => {
@@ -35,7 +36,7 @@ const Header = () => {
   
   // Obtener número de WhatsApp del tenant
   const tenant = useTenantSafe()
-  const whatsappNumber = tenant?.whatsappNumber || '5493513411796'
+  const whatsappNumber = getTenantWhatsAppNumber(tenant)
   
   // ⚡ MULTITENANT: Colores del tenant para botones
   const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
