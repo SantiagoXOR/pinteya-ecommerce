@@ -157,6 +157,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* ⚡ MULTITENANT: Favicon dinámico por tenant desde Supabase Storage */}
         {/* Priorizar SVG para mejor calidad vectorial, PNG como fallback */}
         {(() => {
+          // Verificación de seguridad: asegurar que tenant existe
+          if (!tenant || !tenant.slug) {
+            // Fallback a favicon por defecto si no hay tenant
+            const defaultFavicon = '/favicon.svg'
+            return (
+              <>
+                <link rel="icon" type="image/svg+xml" href={defaultFavicon} />
+                <link rel="shortcut icon" type="image/svg+xml" href={defaultFavicon} />
+              </>
+            )
+          }
+          
           // Usar faviconUrl de la DB si está disponible (ya actualizado a Supabase Storage)
           // Si no, usar getTenantAssetPath como fallback
           const faviconSvgUrl = tenant.faviconUrl || getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`)
@@ -164,7 +176,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           const faviconPngUrl = getTenantAssetPath(tenant, 'favicon.png', null)
           const faviconTimestamp = Date.now()
           // Agregar cache-busting más agresivo con timestamp, tenant.id y random
-          const cacheBuster = `?v=${tenant.id}&t=${faviconTimestamp}&cb=${Math.random().toString(36).substring(7)}&r=${Math.random()}`
+          const cacheBuster = `?v=${tenant.id || tenant.slug}&t=${faviconTimestamp}&cb=${Math.random().toString(36).substring(7)}&r=${Math.random()}`
           const faviconSvgPath = `${faviconSvgUrl}${cacheBuster}`
           const faviconPngPath = faviconPngUrl ? `${faviconPngUrl}${cacheBuster}` : null
           
@@ -188,7 +200,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   __html: `
                   (function() {
                     try {
-                      const faviconUrl = '${faviconPath}';
+                      const faviconUrl = '${faviconSvgPath}';
                       const tenantSlug = '${tenant.slug}';
                       
                       // Función para actualizar favicon - PRIORIZAR SVG
