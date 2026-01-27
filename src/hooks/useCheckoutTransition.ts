@@ -132,7 +132,7 @@ export function useCheckoutTransition(
     }
   }, [])
 
-  // Función optimizada para iniciar la transición
+  // Función optimizada para iniciar la transición - NAVEGACIÓN INMEDIATA SIN ANIMACIÓN
   const startTransition = useCallback(() => {
     if (isTransitioning) {
       console.warn(
@@ -146,9 +146,6 @@ export function useCheckoutTransition(
       const startTime = enablePerformanceTracking ? performance.now() : 0
       performanceRef.current.startTime = startTime
 
-      setIsTransitioning(true)
-      setTransitionProgress(0)
-
       // Callback de inicio con error handling
       try {
         onTransitionStart?.()
@@ -157,77 +154,37 @@ export function useCheckoutTransition(
         onTransitionError?.(error as Error)
       }
 
-      // Progress tracking para animaciones largas
-      if (!skipAnimation && animationDuration > skipAnimationThreshold) {
-        const progressInterval = setInterval(() => {
-          setTransitionProgress(prev => {
-            const elapsed = performance.now() - startTime
-            const progress = Math.min((elapsed / animationDuration) * 100, 100)
-            return progress
-          })
-        }, 16) // 60fps updates
-
-        progressIntervalRef.current = progressInterval
+      // Navegación inmediata sin animación
+      try {
+        router.push('/checkout/meta')
+      } catch (error) {
+        console.error('[useCheckoutTransition] Error during navigation:', error)
+        onTransitionError?.(error as Error)
       }
 
-      // Auto-reset con cleanup mejorado
-      const timeout = setTimeout(() => {
-        try {
-          const endTime = enablePerformanceTracking ? performance.now() : 0
-          performanceRef.current.endTime = endTime
-          performanceRef.current.duration = endTime - startTime
+      // Callback de finalización con error handling
+      try {
+        const endTime = enablePerformanceTracking ? performance.now() : 0
+        performanceRef.current.endTime = endTime
+        performanceRef.current.duration = endTime - startTime
 
-          setIsTransitioning(false)
-          setTransitionProgress(100)
-
-          // Cleanup progress interval
-          if (progressIntervalRef.current) {
-            clearInterval(progressIntervalRef.current)
-            progressIntervalRef.current = null
-          }
-
-          // Performance logging
-          if (enablePerformanceTracking) {
-            console.debug('[useCheckoutTransition] Transition completed', {
-              duration: performanceRef.current.duration,
-              skipAnimation,
-              animationDuration,
-            })
-          }
-
-          // Callback de finalización con error handling
-          try {
-            onTransitionComplete?.()
-          } catch (error) {
-            console.error('[useCheckoutTransition] Error in onTransitionComplete callback:', error)
-            onTransitionError?.(error as Error)
-          }
-
-          // Navegación con error handling
-          try {
-            router.push('/checkout/meta')
-          } catch (error) {
-            console.error('[useCheckoutTransition] Error during navigation:', error)
-            onTransitionError?.(error as Error)
-          }
-        } catch (error) {
-          console.error('[useCheckoutTransition] Error during transition completion:', error)
-          onTransitionError?.(error as Error)
-          setIsTransitioning(false)
+        if (enablePerformanceTracking) {
+          console.debug('[useCheckoutTransition] Transition completed (immediate)', {
+            duration: performanceRef.current.duration,
+          })
         }
-      }, animationDuration)
 
-      timeoutRef.current = timeout
+        onTransitionComplete?.()
+      } catch (error) {
+        console.error('[useCheckoutTransition] Error in onTransitionComplete callback:', error)
+        onTransitionError?.(error as Error)
+      }
     } catch (error) {
       console.error('[useCheckoutTransition] Error starting transition:', error)
       onTransitionError?.(error as Error)
-      setIsTransitioning(false)
     }
   }, [
     isTransitioning,
-    skipAnimation,
-    animationDuration,
-    skipAnimationThreshold,
     enablePerformanceTracking,
     onTransitionStart,
     onTransitionComplete,

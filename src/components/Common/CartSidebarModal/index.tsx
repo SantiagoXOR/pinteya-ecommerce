@@ -423,14 +423,14 @@ const CartSidebarModal = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Componente de animación de transición */}
-      <CheckoutTransitionAnimation
+      {/* Componente de animación de transición - DESHABILITADO */}
+      {/* <CheckoutTransitionAnimation
         isActive={isTransitioning}
         skipAnimation={skipAnimation}
         onComplete={() => {
           // Callback adicional si es necesario
         }}
-      />
+      /> */}
     </>
   )
 }
