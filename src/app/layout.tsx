@@ -111,9 +111,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       accentColor: tenant.accentColor
     })
   }
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'layout.tsx:96',message:'Tenant loaded in layout (server)',data:{tenantSlug:tenant.slug,tenantName:tenant.name,headerBgColor:tenant.headerBgColor,primaryColor:tenant.primaryColor,faviconUrl:tenant.faviconUrl,gradientStart:tenant.backgroundGradientStart,gradientEnd:tenant.backgroundGradientEnd},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
   
   // ⚡ DEBUG: Simplificar layout para identificar el problema
   return (

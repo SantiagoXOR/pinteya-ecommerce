@@ -224,13 +224,7 @@ export async function GET(request: NextRequest) {
         },
       })
 
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:227',message:'Before getSupabaseClient',data:{tenantId,tenantSlug:tenant.slug},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       const supabase = getSupabaseClient()
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:229',message:'After getSupabaseClient',data:{hasSupabase:!!supabase,isAdmin:false},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
 
       // Verificar que el cliente de Supabase esté disponible
       if (!supabase) {
@@ -313,9 +307,6 @@ export async function GET(request: NextRequest) {
         // ===================================
         // MULTITENANT: Usar tenant_products para obtener precio/stock/visibilidad por tenant
         // ===================================
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:310',message:'Before products query',data:{tenantId,filters:Object.keys(filters)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
         let query = supabase.from('products').select(
           `
               id, name, slug, brand, images, color, medida,
@@ -332,9 +323,6 @@ export async function GET(request: NextRequest) {
         )
         .eq('tenant_products.tenant_id', tenantId)
         .eq('tenant_products.is_visible', true)
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:326',message:'After building query',data:{hasQuery:!!query},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
 
         // Aplicar filtros de categoría
         // ✅ CORREGIDO: Combinar categoryId y categoryIds en un solo filtro (OR, no AND)
@@ -506,23 +494,14 @@ export async function GET(request: NextRequest) {
           query = query.range(from, to)
         }
 
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:504',message:'Before executing query',data:{tenantId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
         // Ejecutar query con timeout
         const queryResult = await query
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:506',message:'After executing query',data:{hasError:!!queryResult.error,errorCode:queryResult.error?.code,errorMessage:queryResult.error?.message?.substring(0,100)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
         return queryResult
       }, API_TIMEOUTS.database)
 
       const { data: products, error, count } = result
 
       if (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'products/route.ts:512',message:'Query error detected',data:{errorCode:error.code,errorMessage:error.message,errorDetails:error.details,errorHint:error.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
         // Log de error de base de datos con contexto de seguridad
         securityLogger.logApiError(
           securityLogger.context,

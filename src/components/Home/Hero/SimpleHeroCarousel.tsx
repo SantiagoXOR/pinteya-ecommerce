@@ -22,11 +22,6 @@ const FALLBACK_SLIDES: Slide[] = [
 const SimpleHeroCarousel: React.FC = () => {
   // Obtener datos del tenant
   const tenant = useTenantSafe()
-  // #region agent log
-  if (typeof window !== 'undefined') {
-    fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SimpleHeroCarousel.tsx:24',message:'Tenant loaded in SimpleHeroCarousel',data:{tenantSlug:tenant?.slug,tenantName:tenant?.name,hasTenant:!!tenant},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  }
-  // #endregion
   const tenantName = tenant?.name || 'PinteYa'
   
   // Generar slides basados en el tenant
@@ -34,11 +29,6 @@ const SimpleHeroCarousel: React.FC = () => {
     // ⚡ FIX: Solo usar FALLBACK_SLIDES si realmente no hay tenant disponible
     // Si el tenant está disponible, siempre usar sus slides aunque las imágenes puedan fallar
     if (!tenant || !tenant.slug) {
-      // #region agent log
-      if (typeof window !== 'undefined') {
-        fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SimpleHeroCarousel.tsx:29',message:'Using FALLBACK_SLIDES - tenant is null',data:{fallbackSlides:FALLBACK_SLIDES.map(s=>s.image)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-      }
-      // #endregion
       return FALLBACK_SLIDES
     }
     
@@ -48,11 +38,6 @@ const SimpleHeroCarousel: React.FC = () => {
       { id: 'hero-2', image: `/tenants/${tenant.slug}/hero/hero2.webp`, alt: `${tenantName} - Envío express en 24HS` },
       { id: 'hero-3', image: `/tenants/${tenant.slug}/hero/hero3.webp`, alt: `${tenantName} - Pagá con Mercado Pago` },
     ]
-    // #region agent log
-    if (typeof window !== 'undefined') {
-      fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SimpleHeroCarousel.tsx:35',message:'Generated tenant slides',data:{tenantSlug:tenant.slug,slides:tenantSlides.map(s=>s.image)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    }
-    // #endregion
     return tenantSlides
   }, [tenant, tenantName])
   const [currentIndex, setCurrentIndex] = useState(1)

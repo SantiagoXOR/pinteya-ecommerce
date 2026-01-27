@@ -78,9 +78,6 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
       accentColor: tenant.accentColor
     })
   }
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TenantThemeStyles.tsx:71',message:'Generating CSS variables',data:{tenantSlug:tenant.slug,headerBgColor:tenant.headerBgColor,primaryColor:tenant.primaryColor,gradientStart:tenant.backgroundGradientStart,gradientEnd:tenant.backgroundGradientEnd},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-  // #endregion
   
   // Generar CSS variables
   const cssVariables = `

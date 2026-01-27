@@ -44,9 +44,6 @@ export const ElementMetricsOverlay: React.FC<ElementMetricsOverlayProps> = ({
   onElementClick,
   interactionFilter = ['click', 'hover', 'scroll'],
 }) => {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ElementMetricsOverlay.tsx:41',message:'ElementMetricsOverlay render',data:{elementsCount:elements.length,device,interactionFilter},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
   // Filtrar elementos según tipo de interacción
   const filteredElements = elements.filter(element => {
     if (interactionFilter.includes('click') && element.interactions.clicks > 0) return true
@@ -54,9 +51,6 @@ export const ElementMetricsOverlay: React.FC<ElementMetricsOverlayProps> = ({
     if (interactionFilter.includes('scroll') && element.interactions.scrolls > 0) return true
     return false
   })
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/b2bb30a6-4e88-4195-96cd-35106ab29a7d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ElementMetricsOverlay.tsx:53',message:'filteredElements calculated',data:{filteredCount:filteredElements.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-  // #endregion
 
   return (
     <div className='absolute inset-0 pointer-events-none z-10'>
