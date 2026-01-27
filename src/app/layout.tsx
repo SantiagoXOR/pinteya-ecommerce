@@ -155,24 +155,32 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
         {/* ⚡ MULTITENANT: Favicon dinámico por tenant desde Supabase Storage */}
-        {/* Usar timestamp además del tenant.id para cache-busting más agresivo */}
+        {/* Priorizar SVG para mejor calidad vectorial, PNG como fallback */}
         {(() => {
           // Usar faviconUrl de la DB si está disponible (ya actualizado a Supabase Storage)
           // Si no, usar getTenantAssetPath como fallback
-          const faviconUrl = tenant.faviconUrl || getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`)
+          const faviconSvgUrl = tenant.faviconUrl || getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`)
+          // Intentar obtener PNG de alta calidad como fallback si existe
+          const faviconPngUrl = getTenantAssetPath(tenant, 'favicon.png', null)
           const faviconTimestamp = Date.now()
           // Agregar cache-busting más agresivo con timestamp, tenant.id y random
           const cacheBuster = `?v=${tenant.id}&t=${faviconTimestamp}&cb=${Math.random().toString(36).substring(7)}&r=${Math.random()}`
-          const faviconPath = `${faviconUrl}${cacheBuster}`
+          const faviconSvgPath = `${faviconSvgUrl}${cacheBuster}`
+          const faviconPngPath = faviconPngUrl ? `${faviconPngUrl}${cacheBuster}` : null
           
           return (
             <>
-              {/* Favicon principal - múltiples formatos para compatibilidad */}
-              <link rel="icon" type="image/svg+xml" href={faviconPath} />
-              <link rel="shortcut icon" type="image/svg+xml" href={faviconPath} />
-              <link rel="icon" type="image/png" sizes="32x32" href={faviconPath} />
-              <link rel="icon" type="image/png" sizes="192x192" href={faviconPath} />
-              <link rel="icon" type="image/png" sizes="512x512" href={faviconPath} />
+              {/* Favicon principal - PRIORIZAR SVG para mejor calidad vectorial */}
+              <link rel="icon" type="image/svg+xml" href={faviconSvgPath} />
+              <link rel="shortcut icon" type="image/svg+xml" href={faviconSvgPath} />
+              {/* PNG como fallback solo si existe y es diferente al SVG */}
+              {faviconPngPath && faviconPngPath !== faviconSvgPath && (
+                <>
+                  <link rel="icon" type="image/png" sizes="32x32" href={faviconPngPath} />
+                  <link rel="icon" type="image/png" sizes="192x192" href={faviconPngPath} />
+                  <link rel="icon" type="image/png" sizes="512x512" href={faviconPngPath} />
+                </>
+              )}
               {/* Script para forzar actualización del favicon en el cliente - ejecutar inmediatamente */}
               <script
                 suppressHydrationWarning
@@ -183,7 +191,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       const faviconUrl = '${faviconPath}';
                       const tenantSlug = '${tenant.slug}';
                       
-                      // Función para actualizar favicon
+                      // Función para actualizar favicon - PRIORIZAR SVG
                       function updateFavicon() {
                         // Eliminar TODOS los links de icon existentes
                         const existingIcons = document.querySelectorAll('link[rel*="icon"], link[rel*="shortcut"]');
@@ -192,15 +200,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         // Crear nuevos links con cache-busting adicional
                         const timestamp = Date.now();
                         const random = Math.random().toString(36).substring(7);
-                        const newFaviconUrl = faviconUrl.split('?')[0] + '?v=' + tenantSlug + '&t=' + timestamp + '&cb=' + random + '&r=' + Math.random();
+                        const baseUrl = faviconUrl.split('?')[0];
+                        const newFaviconSvgUrl = baseUrl + '?v=' + tenantSlug + '&t=' + timestamp + '&cb=' + random + '&r=' + Math.random();
                         
-                        // Agregar múltiples formatos
+                        // PRIORIZAR SVG para mejor calidad vectorial
                         const formats = [
-                          { rel: 'icon', type: 'image/svg+xml', href: newFaviconUrl },
-                          { rel: 'shortcut icon', type: 'image/svg+xml', href: newFaviconUrl },
-                          { rel: 'icon', type: 'image/png', sizes: '32x32', href: newFaviconUrl },
-                          { rel: 'icon', type: 'image/png', sizes: '192x192', href: newFaviconUrl },
-                          { rel: 'icon', type: 'image/png', sizes: '512x512', href: newFaviconUrl }
+                          { rel: 'icon', type: 'image/svg+xml', href: newFaviconSvgUrl },
+                          { rel: 'shortcut icon', type: 'image/svg+xml', href: newFaviconSvgUrl }
                         ];
                         
                         formats.forEach(format => {
@@ -210,11 +216,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         });
                         
                         // Forzar recarga del favicon en algunos navegadores
-                        if (document.querySelector('link[rel="icon"]')) {
-                          const link = document.querySelector('link[rel="icon"]');
-                          if (link) {
-                            link.href = newFaviconUrl + '&force=' + Date.now();
-                          }
+                        const iconLink = document.querySelector('link[rel="icon"]');
+                        if (iconLink) {
+                          iconLink.href = newFaviconSvgUrl + '&force=' + Date.now();
                         }
                       }
                       

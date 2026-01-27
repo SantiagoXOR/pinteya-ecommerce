@@ -45,34 +45,34 @@ export async function GET(request: NextRequest) {
       categories: ['shopping', 'business'],
       prefer_related_applications: false,
       icons: [
-        // Favicon SVG (principal) - siempre del tenant
+        // Favicon SVG (principal) - PRIORIZAR SVG para mejor calidad vectorial
         {
           src: faviconSvg,
           sizes: 'any',
           type: 'image/svg+xml',
           purpose: 'maskable any'
         },
-        // Favicon PNG si existe
-        ...(faviconPng !== faviconSvg ? [{
-          src: faviconPng,
-          sizes: 'any',
-          type: 'image/png',
-          purpose: 'maskable any'
-        }] : []),
-        // Icono 192x192 del tenant
+        // Icono 192x192 - usar SVG si está disponible, sino PNG
         {
           src: icon192,
           sizes: '192x192',
           type: icon192.endsWith('.svg') ? 'image/svg+xml' : 'image/png',
           purpose: 'maskable any'
         },
-        // Icono 512x512 del tenant
+        // Icono 512x512 - usar SVG si está disponible, sino PNG
         {
           src: icon512,
           sizes: '512x512',
           type: icon512.endsWith('.svg') ? 'image/svg+xml' : 'image/png',
           purpose: 'maskable any'
         },
+        // Favicon PNG solo si existe y es diferente al SVG (fallback)
+        ...(faviconPng && faviconPng !== faviconSvg ? [{
+          src: faviconPng,
+          sizes: 'any',
+          type: 'image/png',
+          purpose: 'maskable any'
+        }] : []),
         // Apple touch icon del tenant
         {
           src: appleIcon,
