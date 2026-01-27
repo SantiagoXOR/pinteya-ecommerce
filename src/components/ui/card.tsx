@@ -141,7 +141,7 @@ const ProductCard = React.memo(
         stock = 0,
         productId,
         onAddToCart,
-        showCartAnimation = true,
+        showCartAnimation = false,
         // Nuevas props
         showInstallments = false,
         installments,
@@ -178,12 +178,6 @@ const ProductCard = React.memo(
       const handleAddToCart = async () => {
         if (!onAddToCart) {
           return
-        }
-
-        if (showCartAnimation) {
-          setIsAddingToCart(true)
-          // Simular delay de animación
-          setTimeout(() => setIsAddingToCart(false), 1000)
         }
 
         onAddToCart()

@@ -122,7 +122,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       stock = 0,
       productId,
       onAddToCart,
-      showCartAnimation = true,
+      showCartAnimation = false,
       freeShipping = false,
       shippingText,
       deliveryLocation,
@@ -303,11 +303,6 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         if (effectiveStock !== undefined && effectiveStock > 0 && totalQuantityAfterAdd > effectiveStock) {
           toast.error(`Stock insuficiente. Solo hay ${effectiveStock} unidades disponibles.`)
           return
-        }
-
-        if (showCartAnimation) {
-          state.setIsAddingToCart(true)
-          setTimeout(() => state.setIsAddingToCart(false), 1000)
         }
 
         try {

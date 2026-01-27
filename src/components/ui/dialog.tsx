@@ -30,7 +30,7 @@ const DialogOverlay = React.forwardRef<
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const dialogContentVariants = cva(
-  'fixed left-[50%] top-[50%] z-dialog grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
+  'fixed left-[50%] top-[50%] z-dialog grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-100 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
   {
     variants: {
       size: {
@@ -80,7 +80,7 @@ const DialogContent = React.forwardRef<
             'z-[6000] bg-white shadow-lg border border-gray-200',
             'text-gray-500 hover:text-gray-700 hover:bg-gray-100',
             'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blaze-orange-500',
-            'transition-all duration-200 opacity-70 hover:opacity-100',
+            'transition-all duration-100 opacity-70 hover:opacity-100',
             'disabled:pointer-events-none'
           )}
           // Evitar que el evento burbujee al elemento debajo (e.g., tarjeta) y reabra el modal
