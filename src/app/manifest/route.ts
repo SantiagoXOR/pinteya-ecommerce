@@ -17,9 +17,15 @@ export async function GET(request: NextRequest) {
     // Obtener configuración del tenant actual
     const tenant = await getTenantPublicConfig()
     
-    // Construir URLs de iconos usando getTenantAssetPath
+    // Construir URLs de iconos usando getTenantAssetPath - TODOS los iconos deben ser del tenant
     const faviconSvg = getTenantAssetPath(tenant, 'favicon.svg', '/favicon.svg')
     const faviconPng = getTenantAssetPath(tenant, 'favicon.png', '/favicon.png')
+    
+    // Iconos específicos del tenant desde Supabase Storage
+    // Si no existen, usar el favicon.svg como fallback (los navegadores lo escalarán)
+    const icon192 = getTenantAssetPath(tenant, 'favicon-192x192.png', faviconSvg)
+    const icon512 = getTenantAssetPath(tenant, 'favicon-512x512.png', faviconSvg)
+    const appleIcon = getTenantAssetPath(tenant, 'apple-touch-icon.png', '/apple-touch-icon.png')
     
     // Manifest dinámico basado en el tenant
     const manifest = {
@@ -39,32 +45,37 @@ export async function GET(request: NextRequest) {
       categories: ['shopping', 'business'],
       prefer_related_applications: false,
       icons: [
+        // Favicon SVG (principal) - siempre del tenant
         {
           src: faviconSvg,
           sizes: 'any',
           type: 'image/svg+xml',
           purpose: 'maskable any'
         },
-        {
-          src: faviconPng || faviconSvg,
+        // Favicon PNG si existe
+        ...(faviconPng !== faviconSvg ? [{
+          src: faviconPng,
           sizes: 'any',
           type: 'image/png',
           purpose: 'maskable any'
-        },
+        }] : []),
+        // Icono 192x192 del tenant
         {
-          src: '/favicon-192x192.png',
+          src: icon192,
           sizes: '192x192',
-          type: 'image/png',
+          type: icon192.endsWith('.svg') ? 'image/svg+xml' : 'image/png',
           purpose: 'maskable any'
         },
+        // Icono 512x512 del tenant
         {
-          src: '/favicon-512x512.png',
+          src: icon512,
           sizes: '512x512',
-          type: 'image/png',
+          type: icon512.endsWith('.svg') ? 'image/svg+xml' : 'image/png',
           purpose: 'maskable any'
         },
+        // Apple touch icon del tenant
         {
-          src: '/apple-touch-icon.png',
+          src: appleIcon,
           sizes: '180x180',
           type: 'image/png',
           purpose: 'any'

@@ -161,13 +161,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           // Si no, usar getTenantAssetPath como fallback
           const faviconUrl = tenant.faviconUrl || getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`)
           const faviconTimestamp = Date.now()
-          // Agregar cache-busting más agresivo con timestamp y tenant.id
-          const faviconPath = `${faviconUrl}?v=${tenant.id}&t=${faviconTimestamp}&cb=${Math.random().toString(36).substring(7)}`
+          // Agregar cache-busting más agresivo con timestamp, tenant.id y random
+          const cacheBuster = `?v=${tenant.id}&t=${faviconTimestamp}&cb=${Math.random().toString(36).substring(7)}&r=${Math.random()}`
+          const faviconPath = `${faviconUrl}${cacheBuster}`
+          
           return (
             <>
+              {/* Favicon principal - múltiples formatos para compatibilidad */}
               <link rel="icon" type="image/svg+xml" href={faviconPath} />
               <link rel="shortcut icon" type="image/svg+xml" href={faviconPath} />
-              {/* Script para forzar actualización del favicon en el cliente */}
+              <link rel="icon" type="image/png" sizes="32x32" href={faviconPath} />
+              <link rel="icon" type="image/png" sizes="192x192" href={faviconPath} />
+              <link rel="icon" type="image/png" sizes="512x512" href={faviconPath} />
+              {/* Script para forzar actualización del favicon en el cliente - ejecutar inmediatamente */}
               <script
                 suppressHydrationWarning
                 dangerouslySetInnerHTML={{
@@ -175,21 +181,62 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   (function() {
                     try {
                       const faviconUrl = '${faviconPath}';
-                      const links = document.querySelectorAll('link[rel*="icon"]');
-                      links.forEach(link => link.remove());
-                      const newLink = document.createElement('link');
-                      newLink.rel = 'icon';
-                      newLink.type = 'image/svg+xml';
-                      newLink.href = faviconUrl;
-                      document.head.appendChild(newLink);
-                      // También agregar shortcut icon
-                      const shortcutLink = document.createElement('link');
-                      shortcutLink.rel = 'shortcut icon';
-                      shortcutLink.type = 'image/svg+xml';
-                      shortcutLink.href = faviconUrl;
-                      document.head.appendChild(shortcutLink);
+                      const tenantSlug = '${tenant.slug}';
+                      
+                      // Función para actualizar favicon
+                      function updateFavicon() {
+                        // Eliminar TODOS los links de icon existentes
+                        const existingIcons = document.querySelectorAll('link[rel*="icon"], link[rel*="shortcut"]');
+                        existingIcons.forEach(link => link.remove());
+                        
+                        // Crear nuevos links con cache-busting adicional
+                        const timestamp = Date.now();
+                        const random = Math.random().toString(36).substring(7);
+                        const newFaviconUrl = faviconUrl.split('?')[0] + '?v=' + tenantSlug + '&t=' + timestamp + '&cb=' + random + '&r=' + Math.random();
+                        
+                        // Agregar múltiples formatos
+                        const formats = [
+                          { rel: 'icon', type: 'image/svg+xml', href: newFaviconUrl },
+                          { rel: 'shortcut icon', type: 'image/svg+xml', href: newFaviconUrl },
+                          { rel: 'icon', type: 'image/png', sizes: '32x32', href: newFaviconUrl },
+                          { rel: 'icon', type: 'image/png', sizes: '192x192', href: newFaviconUrl },
+                          { rel: 'icon', type: 'image/png', sizes: '512x512', href: newFaviconUrl }
+                        ];
+                        
+                        formats.forEach(format => {
+                          const link = document.createElement('link');
+                          Object.assign(link, format);
+                          document.head.appendChild(link);
+                        });
+                        
+                        // Forzar recarga del favicon en algunos navegadores
+                        if (document.querySelector('link[rel="icon"]')) {
+                          const link = document.querySelector('link[rel="icon"]');
+                          if (link) {
+                            link.href = newFaviconUrl + '&force=' + Date.now();
+                          }
+                        }
+                      }
+                      
+                      // Ejecutar inmediatamente
+                      updateFavicon();
+                      
+                      // También ejecutar cuando el DOM esté listo
+                      if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', updateFavicon);
+                      } else {
+                        updateFavicon();
+                      }
+                      
+                      // Ejecutar después de un pequeño delay para asegurar que se actualice
+                      setTimeout(updateFavicon, 100);
+                      setTimeout(updateFavicon, 500);
+                      
+                      if (typeof console !== 'undefined' && console.log) {
+                        console.log('[Favicon] Actualizado para tenant:', tenantSlug, 'URL:', faviconUrl.split('?')[0]);
+                      }
                     } catch(e) {
-                      console.warn('Error actualizando favicon:', e);
+                      console.warn('[Favicon] Error actualizando favicon:', e);
                     }
                   })();
                   `,
