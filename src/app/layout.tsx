@@ -79,6 +79,8 @@ export async function generateMetadata(): Promise<Metadata> {
         description: tenant.siteDescription || defaultMetadata.twitter?.description,
       },
       metadataBase: new URL(baseUrl),
+      // ⚡ MULTITENANT: Manifest dinámico por tenant (permite múltiples instalaciones PWA)
+      manifest: '/manifest',
       // ⚡ MULTITENANT: Theme-color dinámico por tenant (color primario)
       other: {
         ...defaultMetadata.other,
@@ -122,16 +124,77 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* ⚡ MULTITENANT: Inyectar tenant_id para analytics (Fase 1 - Performance) */}
         <meta name="tenant-id" content={tenant.id} />
         {/* ⚡ MULTITENANT: Theme-color dinámico para header del navegador (mobile) */}
-        <meta name="theme-color" content={tenant.primaryColor || '#841468'} />
+        <meta name="theme-color" content={tenant.primaryColor || '#ea5a17'} />
+        {/* ⚡ MULTITENANT: Script para actualizar theme-color dinámicamente (evita caché del navegador) */}
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function() {
+              try {
+                const themeColor = '${tenant.primaryColor || '#ea5a17'}';
+                const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+                if (metaThemeColor) {
+                  metaThemeColor.setAttribute('content', themeColor);
+                } else {
+                  const meta = document.createElement('meta');
+                  meta.name = 'theme-color';
+                  meta.content = themeColor;
+                  document.head.appendChild(meta);
+                }
+                // También actualizar msapplication-TileColor para Windows
+                const metaTileColor = document.querySelector('meta[name="msapplication-TileColor"]');
+                if (metaTileColor) {
+                  metaTileColor.setAttribute('content', themeColor);
+                }
+              } catch(e) {
+                console.warn('Error actualizando theme-color:', e);
+              }
+            })();
+            `,
+          }}
+        />
         {/* ⚡ MULTITENANT: Favicon dinámico por tenant desde Supabase Storage */}
         {/* Usar timestamp además del tenant.id para cache-busting más agresivo */}
         {(() => {
+          // Usar faviconUrl de la DB si está disponible (ya actualizado a Supabase Storage)
+          // Si no, usar getTenantAssetPath como fallback
+          const faviconUrl = tenant.faviconUrl || getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`)
           const faviconTimestamp = Date.now()
-          const faviconPath = getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`) + `?v=${tenant.id}&t=${faviconTimestamp}`
+          // Agregar cache-busting más agresivo con timestamp y tenant.id
+          const faviconPath = `${faviconUrl}?v=${tenant.id}&t=${faviconTimestamp}&cb=${Math.random().toString(36).substring(7)}`
           return (
             <>
               <link rel="icon" type="image/svg+xml" href={faviconPath} />
               <link rel="shortcut icon" type="image/svg+xml" href={faviconPath} />
+              {/* Script para forzar actualización del favicon en el cliente */}
+              <script
+                suppressHydrationWarning
+                dangerouslySetInnerHTML={{
+                  __html: `
+                  (function() {
+                    try {
+                      const faviconUrl = '${faviconPath}';
+                      const links = document.querySelectorAll('link[rel*="icon"]');
+                      links.forEach(link => link.remove());
+                      const newLink = document.createElement('link');
+                      newLink.rel = 'icon';
+                      newLink.type = 'image/svg+xml';
+                      newLink.href = faviconUrl;
+                      document.head.appendChild(newLink);
+                      // También agregar shortcut icon
+                      const shortcutLink = document.createElement('link');
+                      shortcutLink.rel = 'shortcut icon';
+                      shortcutLink.type = 'image/svg+xml';
+                      shortcutLink.href = faviconUrl;
+                      document.head.appendChild(shortcutLink);
+                    } catch(e) {
+                      console.warn('Error actualizando favicon:', e);
+                    }
+                  })();
+                  `,
+                }}
+              />
             </>
           )
         })()}

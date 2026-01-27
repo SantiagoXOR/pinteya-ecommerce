@@ -123,12 +123,14 @@ const Footer = () => {
                   {tenant?.slug === 'pintemas' ? 'Alta Gracia sin costo en el día.' : 'Sin costo extra en 24/48hs.'}
                 </p>
               </div>
-              <Image
+              {/* img nativo: next/image falla con SVG externo (Supabase) en Pintemas; img + onError evita optimizador */}
+              <img
                 src={shippingIconPath}
                 alt='Icono envío gratis'
                 width={110}
                 height={90}
                 className='w-28 h-auto drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)]'
+                loading='lazy'
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
                   if (target.src !== shippingIconLocalBusted) {

@@ -57,6 +57,7 @@ export function AddressMapSelectorAdvanced({
   const finalApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'DEMO_KEY'
 
   const [placesApiAvailable, setPlacesApiAvailable] = useState(false)
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null)
 
   // Interceptar errores de Google Maps API para manejarlos silenciosamente
   useEffect(() => {
@@ -68,16 +69,27 @@ export function AddressMapSelectorAdvanced({
       const errorMessage = args[0]?.toString() || ''
       const errorString = JSON.stringify(args)
       
+      // Detectar errores de API key o restricciones
+      if (errorMessage.includes('This API key is not authorized') ||
+          errorMessage.includes('RefererNotAllowedMapError') ||
+          errorMessage.includes('RefererNotAllowedError') ||
+          errorMessage.includes('ApiTargetBlockedMapError') ||
+          errorMessage.includes('not authorized to use this service') ||
+          errorString.includes('RefererNotAllowed') ||
+          errorString.includes('ApiTargetBlocked')) {
+        setApiKeyError('La API key de Google Maps no está autorizada para este dominio. Verifica las restricciones en Google Cloud Console.')
+        setIsMapLoaded(false)
+        setPlacesApiAvailable(false)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[Google Maps] Error de autorización:', errorMessage)
+        }
+        return
+      }
+      
       // Silenciar errores específicos de Places API
       if (errorMessage.includes('Places API') || 
-          errorMessage.includes('ApiTargetBlockedMapError') ||
-          errorMessage.includes('This API key is not authorized') ||
-          errorMessage.includes('not authorized to use this service') ||
-          errorString.includes('Places API') ||
-          errorString.includes('ApiTargetBlockedMapError')) {
-        // No mostrar estos errores en consola, solo actualizar el estado
+          errorString.includes('Places API')) {
         setPlacesApiAvailable(false)
-        // Opcionalmente loggear en modo debug
         if (process.env.NODE_ENV === 'development') {
           console.debug('Places API no disponible - error silenciado')
         }
@@ -93,12 +105,18 @@ export function AddressMapSelectorAdvanced({
     // También interceptar errores globales de window
     const handleGlobalError = (event: ErrorEvent) => {
       const errorMessage = event.message || ''
-      if (errorMessage.includes('Places API') || 
-          errorMessage.includes('ApiTargetBlockedMapError') ||
-          errorMessage.includes('not authorized to use this service')) {
-        event.preventDefault() // Prevenir que el error se muestre
-        setPlacesApiAvailable(false)
-        return false
+      const errorSource = event.filename || ''
+      
+      // Detectar errores de Google Maps
+      if (errorSource.includes('maps.googleapis.com') || 
+          errorMessage.includes('Google Maps') ||
+          errorMessage.includes('RefererNotAllowed') ||
+          errorMessage.includes('ApiTargetBlocked')) {
+        if (errorMessage.includes('RefererNotAllowed') || errorMessage.includes('ApiTargetBlocked')) {
+          setApiKeyError('La API key de Google Maps no está autorizada para este dominio.')
+          setIsMapLoaded(false)
+        }
+        // No prevenir el error completamente, solo manejarlo
       }
     }
 
@@ -113,31 +131,29 @@ export function AddressMapSelectorAdvanced({
     }
   }, [])
 
-  // Cargar Google Maps API con Places API
+  // Cargar Google Maps API con validación mejorada
   useEffect(() => {
+    // Validar API key antes de intentar cargar
     if (!finalApiKey || finalApiKey === 'DEMO_KEY') {
-      console.warn('Google Maps API key no configurada. Usando modo demo.')
+      console.warn('[Google Maps] API key no configurada. Usando modo demo.')
+      setApiKeyError('Google Maps API key no configurada')
+      return
+    }
+
+    // Validar formato básico de API key
+    if (finalApiKey.length < 20) {
+      console.error('[Google Maps] API key inválida (muy corta)')
+      setApiKeyError('La API key de Google Maps parece inválida')
       return
     }
 
     const loadGoogleMaps = () => {
+      // Si ya está cargado, verificar disponibilidad
       if (window.google && window.google.maps) {
-        // Verificar si Places API está disponible
-        if (window.google.maps.places) {
-          setPlacesApiAvailable(true)
-          setIsMapLoaded(true)
-        } else {
-          // Cargar Places API si no está disponible
-          setIsMapLoaded(true)
-          // Intentar cargar Places API
-          try {
-            if (window.google.maps.places) {
-              setPlacesApiAvailable(true)
-            }
-          } catch (error) {
-            console.warn('Places API no disponible. Usando modo básico:', error)
-            setPlacesApiAvailable(false)
-          }
+        setIsMapLoaded(true)
+        setPlacesApiAvailable(false) // No usamos Places API
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Google Maps] API ya cargada previamente')
         }
         return
       }
@@ -146,45 +162,73 @@ export function AddressMapSelectorAdvanced({
       const existingScript = document.querySelector('script[src*="maps.googleapis.com"]')
       if (existingScript) {
         // Si ya existe, esperar a que se cargue
+        let attempts = 0
+        const maxAttempts = 50 // 5 segundos máximo
+        
         const checkLoaded = () => {
+          attempts++
           if (window.google && window.google.maps) {
             setIsMapLoaded(true)
-            // Verificar Places API
-            try {
-              if (window.google.maps.places) {
-                setPlacesApiAvailable(true)
-              } else {
-                setPlacesApiAvailable(false)
-                console.warn('Places API no está habilitada en tu API key. Algunas funciones estarán limitadas.')
-              }
-            } catch (error) {
-              setPlacesApiAvailable(false)
+            setPlacesApiAvailable(false)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[Google Maps] API cargada desde script existente')
             }
-          } else {
+          } else if (attempts < maxAttempts) {
             setTimeout(checkLoaded, 100)
+          } else {
+            console.error('[Google Maps] Timeout esperando carga del script existente')
+            setApiKeyError('Timeout cargando Google Maps. Verifica tu conexión y la API key.')
+            setIsMapLoaded(false)
           }
         }
         checkLoaded()
         return
       }
 
+      // Crear nuevo script
       const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${finalApiKey}&language=es&region=ar`
+      const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${finalApiKey}&language=es&region=ar&loading=async`
+      script.src = scriptUrl
       script.async = true
       script.defer = true
+      
+      // Timeout para detectar si el script nunca carga
+      const loadTimeout = setTimeout(() => {
+        if (!window.google || !window.google.maps) {
+          console.error('[Google Maps] Timeout cargando API (30s)')
+          setApiKeyError('Timeout cargando Google Maps. Verifica las restricciones de la API key en Google Cloud Console.')
+          setIsMapLoaded(false)
+        }
+      }, 30000) // 30 segundos timeout
+      
       script.onload = () => {
-        console.log('Google Maps API cargada')
-        setIsMapLoaded(true)
-        // No cargar Places API - solo usar Geocoding API para búsqueda manual
-        setPlacesApiAvailable(false)
+        clearTimeout(loadTimeout)
+        if (window.google && window.google.maps) {
+          console.log('[Google Maps] API cargada exitosamente')
+          setIsMapLoaded(true)
+          setPlacesApiAvailable(false) // No usamos Places API
+          setApiKeyError(null)
+        } else {
+          console.error('[Google Maps] Script cargado pero window.google.maps no disponible')
+          setApiKeyError('Error inicializando Google Maps')
+          setIsMapLoaded(false)
+        }
       }
+      
       script.onerror = (error) => {
-        console.error('Error cargando Google Maps API:', error)
-        setErrorMessage('Error cargando el mapa. Usando modo manual.')
+        clearTimeout(loadTimeout)
+        console.error('[Google Maps] Error cargando script:', error)
+        setApiKeyError('Error cargando Google Maps. Verifica la API key y las restricciones de dominio en Google Cloud Console.')
         setIsMapLoaded(false)
         setPlacesApiAvailable(false)
       }
+      
+      // Agregar script al head
       document.head.appendChild(script)
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Google Maps] Iniciando carga de API desde:', scriptUrl.replace(finalApiKey, 'API_KEY_HIDDEN'))
+      }
     }
 
     loadGoogleMaps()
@@ -510,8 +554,30 @@ export function AddressMapSelectorAdvanced({
         />
       </div>
 
+      {/* Mensajes de error de API key */}
+      {apiKeyError && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-red-800 mb-1">
+                Error cargando Google Maps
+              </p>
+              <p className="text-sm text-red-700">
+                {apiKeyError}
+              </p>
+              {process.env.NODE_ENV === 'development' && (
+                <p className="text-xs text-red-600 mt-2">
+                  Tenant: {tenant.slug} | API Key: {finalApiKey ? `${finalApiKey.substring(0, 10)}...` : 'NO CONFIGURADA'}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Mensaje de modo demo */}
-      {finalApiKey === 'DEMO_KEY' && (
+      {finalApiKey === 'DEMO_KEY' && !apiKeyError && (
         <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
           ⚠️ <strong>Modo Demo:</strong> Google Maps API no configurada. La validación es básica.
         </div>
