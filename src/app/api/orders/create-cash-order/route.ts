@@ -541,8 +541,9 @@ export async function POST(request: NextRequest) {
     // Generar mensaje de WhatsApp con el formato solicitado
     const formatARS = (v: number) => Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const bullet = EMOJIS.bullet;
+    const tenantName = tenant?.name || 'Pinteya';
     const lines: string[] = [
-      `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+      `✨ *¡Gracias por tu compra en ${tenantName}!* 🛍`,
       `🤝 Te compartimos el detalle para coordinar la entrega:`,
       '',
       `*Detalle de Orden:*`,

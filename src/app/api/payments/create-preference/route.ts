@@ -91,12 +91,12 @@ function getFinalPrice(product: { price: number; discounted_price?: number | nul
 }
 
 // Función para generar mensaje de WhatsApp para MercadoPago
-function generateMercadoPagoWhatsAppMessage(order: any, orderData: any, products: any[]): string {
+function generateMercadoPagoWhatsAppMessage(order: any, orderData: any, products: any[], tenantName: string = 'Pinteya'): string {
   const formatARS = (v: number) => Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const bullet = '•'
   
   const lines: string[] = [
-    `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+    `✨ *¡Gracias por tu compra en ${tenantName}!* 🛍`,
     `💳 Tu pago con MercadoPago ha sido procesado exitosamente`,
     ``,
     `*Detalle de Orden:*`,
@@ -630,8 +630,9 @@ export async function POST(request: NextRequest) {
 
     const formatARS = (v: number) => Number(v).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const bullet = '•';
+    const tenantName = tenant?.name || 'Pinteya';
     const lines: string[] = [
-      `✨ *¡Gracias por tu compra en Pinteya!* 🛍`,
+      `✨ *¡Gracias por tu compra en ${tenantName}!* 🛍`,
       `💳 Tu pago con MercadoPago ha sido procesado exitosamente`,
       '',
       `*Detalle de Orden:*`,
@@ -1078,7 +1079,8 @@ export async function POST(request: NextRequest) {
 
     // ✅ NUEVO: Generar WhatsApp link al crear la orden (similar a pago al recibir)
     try {
-      const whatsappMessage = generateMercadoPagoWhatsAppMessage(order, orderData, typedProducts)
+      const tenantName = tenant?.name || 'Pinteya'
+      const whatsappMessage = generateMercadoPagoWhatsAppMessage(order, orderData, typedProducts, tenantName)
       // MULTITENANT: Usar número de WhatsApp del tenant actual
       const businessPhone = tenant.whatsappNumber || process.env.WHATSAPP_BUSINESS_NUMBER || '5493513411796'
       const whatsappUrl = `https://api.whatsapp.com/send?phone=${businessPhone}&text=${encodeURIComponent(whatsappMessage)}`
