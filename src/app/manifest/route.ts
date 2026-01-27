@@ -19,13 +19,18 @@ export async function GET(request: NextRequest) {
     
     // Construir URLs de iconos usando getTenantAssetPath - TODOS los iconos deben ser del tenant
     const faviconSvg = getTenantAssetPath(tenant, 'favicon.svg', '/favicon.svg')
-    const faviconPng = getTenantAssetPath(tenant, 'favicon.png', '/favicon.png')
     
     // Iconos específicos del tenant desde Supabase Storage
-    // Si no existen, usar el favicon.svg como fallback (los navegadores lo escalarán)
+    // Usar SVG como fallback para todos los tamaños (es escalable y de mejor calidad)
+    // Solo incluir PNGs si realmente existen y son diferentes al SVG
     const icon192 = getTenantAssetPath(tenant, 'favicon-192x192.png', faviconSvg)
     const icon512 = getTenantAssetPath(tenant, 'favicon-512x512.png', faviconSvg)
-    const appleIcon = getTenantAssetPath(tenant, 'apple-touch-icon.png', '/apple-touch-icon.png')
+    const appleIcon = getTenantAssetPath(tenant, 'apple-touch-icon.png', faviconSvg)
+    
+    // Verificar si los iconos PNG son diferentes al SVG (si no, usar SVG)
+    const useIcon192Png = icon192 !== faviconSvg && !icon192.endsWith('.svg')
+    const useIcon512Png = icon512 !== faviconSvg && !icon512.endsWith('.svg')
+    const useApplePng = appleIcon !== faviconSvg && !appleIcon.endsWith('.svg')
     
     // Manifest dinámico basado en el tenant
     const manifest = {
@@ -46,40 +51,49 @@ export async function GET(request: NextRequest) {
       prefer_related_applications: false,
       icons: [
         // Favicon SVG (principal) - PRIORIZAR SVG para mejor calidad vectorial
+        // SVG es escalable y se ve perfecto en todos los tamaños
         {
           src: faviconSvg,
           sizes: 'any',
           type: 'image/svg+xml',
           purpose: 'maskable any'
         },
-        // Icono 192x192 - usar SVG si está disponible, sino PNG
-        {
+        // Icono 192x192 - solo incluir si es PNG válido, sino el SVG ya cubre este tamaño
+        ...(useIcon192Png ? [{
           src: icon192,
           sizes: '192x192',
-          type: icon192.endsWith('.svg') ? 'image/svg+xml' : 'image/png',
-          purpose: 'maskable any'
-        },
-        // Icono 512x512 - usar SVG si está disponible, sino PNG
-        {
-          src: icon512,
-          sizes: '512x512',
-          type: icon512.endsWith('.svg') ? 'image/svg+xml' : 'image/png',
-          purpose: 'maskable any'
-        },
-        // Favicon PNG solo si existe y es diferente al SVG (fallback)
-        ...(faviconPng && faviconPng !== faviconSvg ? [{
-          src: faviconPng,
-          sizes: 'any',
           type: 'image/png',
           purpose: 'maskable any'
-        }] : []),
-        // Apple touch icon del tenant
-        {
+        }] : [{
+          src: faviconSvg,
+          sizes: '192x192',
+          type: 'image/svg+xml',
+          purpose: 'maskable any'
+        }]),
+        // Icono 512x512 - solo incluir si es PNG válido, sino el SVG ya cubre este tamaño
+        ...(useIcon512Png ? [{
+          src: icon512,
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable any'
+        }] : [{
+          src: faviconSvg,
+          sizes: '512x512',
+          type: 'image/svg+xml',
+          purpose: 'maskable any'
+        }]),
+        // Apple touch icon - solo incluir si es PNG válido
+        ...(useApplePng ? [{
           src: appleIcon,
           sizes: '180x180',
           type: 'image/png',
           purpose: 'any'
-        }
+        }] : [{
+          src: faviconSvg,
+          sizes: '180x180',
+          type: 'image/svg+xml',
+          purpose: 'any'
+        }])
       ]
     }
 
