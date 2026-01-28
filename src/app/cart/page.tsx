@@ -7,35 +7,28 @@ import { useRouter } from 'next/navigation'
 import { useAppSelector } from '@/redux/store'
 import { selectCartItems } from '@/redux/features/cart-slice'
 
-import { Metadata } from 'next'
-
 const CartPage = () => {
   const router = useRouter()
   const cartItems = useAppSelector(selectCartItems)
 
-  // ✅ CORREGIDO: Solo redirigir si el carrito está vacío Y no venimos de un checkout
+  // ✅ Redirecciones solo en useEffect para evitar desmontaje/updates durante render
   useEffect(() => {
-    // Verificar si venimos de un checkout (referrer contiene /checkout)
-    const isFromCheckout = document.referrer.includes('/checkout')
-
-    // También verificar si hay datos de checkout en sessionStorage
-    const hasCheckoutSession = sessionStorage.getItem('checkout-in-progress') === 'true'
-
-    console.log('🛒 Cart Page - Verificando redirección:', {
-      cartItemsLength: cartItems.length,
-      isFromCheckout,
-      hasCheckoutSession,
-      referrer: document.referrer,
-    })
+    const isFromCheckout =
+      typeof document !== 'undefined' && document.referrer?.includes('/checkout')
+    const hasCheckoutSession =
+      typeof sessionStorage !== 'undefined' &&
+      sessionStorage.getItem('checkout-in-progress') === 'true'
 
     if (cartItems.length === 0 && !isFromCheckout && !hasCheckoutSession) {
-      // Solo redirigir si el carrito está vacío y NO venimos de checkout
-      console.log('🔄 Cart Page - Redirigiendo a home porque carrito está vacío')
-      router.push('/')
+      router.replace('/')
+      return
+    }
+    if (cartItems.length > 0) {
+      router.replace('/')
     }
   }, [cartItems.length, router])
 
-  // Si el carrito está vacío y venimos de checkout, mostrar mensaje apropiado
+  // Si el carrito está vacío y venimos de checkout, mostrar mensaje
   if (cartItems.length === 0) {
     return (
       <div className='min-h-screen flex items-center justify-center p-4'>
@@ -54,9 +47,6 @@ const CartPage = () => {
       </div>
     )
   }
-
-  // Si hay items en el carrito, redirigir al home donde está el CartSidebarModal
-  router.push('/')
 
   return null
 }

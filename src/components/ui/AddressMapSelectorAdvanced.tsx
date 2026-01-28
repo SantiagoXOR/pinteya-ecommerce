@@ -47,6 +47,18 @@ export function AddressMapSelectorAdvanced({
   const markerRef = useRef<google.maps.Marker | null>(null)
   const geocoderRef = useRef<google.maps.Geocoder | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const isMountedRef = useRef(true)
+  const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const checkLoadedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const initMapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const listenerRefs = useRef<google.maps.MapsEventListener[]>([])
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   // Obtener datos del tenant
   const tenant = useTenantSafe()
@@ -77,19 +89,18 @@ export function AddressMapSelectorAdvanced({
           errorMessage.includes('not authorized to use this service') ||
           errorString.includes('RefererNotAllowed') ||
           errorString.includes('ApiTargetBlocked')) {
-        setApiKeyError('La API key de Google Maps no está autorizada para este dominio. Verifica las restricciones en Google Cloud Console.')
-        setIsMapLoaded(false)
-        setPlacesApiAvailable(false)
+        if (isMountedRef.current) {
+          setApiKeyError('La API key de Google Maps no está autorizada para este dominio. Verifica las restricciones en Google Cloud Console.')
+          setIsMapLoaded(false)
+          setPlacesApiAvailable(false)
+        }
         if (process.env.NODE_ENV === 'development') {
           console.error('[Google Maps] Error de autorización:', errorMessage)
         }
         return
       }
-      
-      // Silenciar errores específicos de Places API
-      if (errorMessage.includes('Places API') || 
-          errorString.includes('Places API')) {
-        setPlacesApiAvailable(false)
+      if (errorMessage.includes('Places API') || errorString.includes('Places API')) {
+        if (isMountedRef.current) setPlacesApiAvailable(false)
         if (process.env.NODE_ENV === 'development') {
           console.debug('Places API no disponible - error silenciado')
         }
@@ -108,15 +119,14 @@ export function AddressMapSelectorAdvanced({
       const errorSource = event.filename || ''
       
       // Detectar errores de Google Maps
-      if (errorSource.includes('maps.googleapis.com') || 
+      if (errorSource.includes('maps.googleapis.com') ||
           errorMessage.includes('Google Maps') ||
           errorMessage.includes('RefererNotAllowed') ||
           errorMessage.includes('ApiTargetBlocked')) {
-        if (errorMessage.includes('RefererNotAllowed') || errorMessage.includes('ApiTargetBlocked')) {
+        if ((errorMessage.includes('RefererNotAllowed') || errorMessage.includes('ApiTargetBlocked')) && isMountedRef.current) {
           setApiKeyError('La API key de Google Maps no está autorizada para este dominio.')
           setIsMapLoaded(false)
         }
-        // No prevenir el error completamente, solo manejarlo
       }
     }
 
@@ -133,105 +143,119 @@ export function AddressMapSelectorAdvanced({
 
   // Cargar Google Maps API con validación mejorada
   useEffect(() => {
-    // Validar API key antes de intentar cargar
     if (!finalApiKey || finalApiKey === 'DEMO_KEY') {
-      console.warn('[Google Maps] API key no configurada. Usando modo demo.')
       setApiKeyError('Google Maps API key no configurada')
-      return
+      return () => {}
+    }
+    if (finalApiKey.length < 20) {
+      setApiKeyError('La API key de Google Maps parece inválida')
+      return () => {}
     }
 
-    // Validar formato básico de API key
-    if (finalApiKey.length < 20) {
-      console.error('[Google Maps] API key inválida (muy corta)')
-      setApiKeyError('La API key de Google Maps parece inválida')
-      return
+    const safeSet = (fn: () => void) => {
+      if (isMountedRef.current) fn()
     }
 
     const loadGoogleMaps = () => {
-      // Si ya está cargado, verificar disponibilidad
       if (window.google && window.google.maps) {
-        setIsMapLoaded(true)
-        setPlacesApiAvailable(false) // No usamos Places API
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[Google Maps] API ya cargada previamente')
-        }
+        safeSet(() => {
+          setIsMapLoaded(true)
+          setPlacesApiAvailable(false)
+        })
         return
       }
 
-      // Verificar si ya existe un script de Google Maps
       const existingScript = document.querySelector('script[src*="maps.googleapis.com"]')
       if (existingScript) {
-        // Si ya existe, esperar a que se cargue
         let attempts = 0
-        const maxAttempts = 50 // 5 segundos máximo
-        
+        const maxAttempts = 50
         const checkLoaded = () => {
+          if (!isMountedRef.current) return
           attempts++
           if (window.google && window.google.maps) {
-            setIsMapLoaded(true)
-            setPlacesApiAvailable(false)
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[Google Maps] API cargada desde script existente')
-            }
-          } else if (attempts < maxAttempts) {
-            setTimeout(checkLoaded, 100)
+            safeSet(() => {
+              setIsMapLoaded(true)
+              setPlacesApiAvailable(false)
+            })
+            return
+          }
+          if (attempts < maxAttempts) {
+            const t = setTimeout(checkLoaded, 100)
+            checkLoadedTimeoutRef.current = t
           } else {
-            console.error('[Google Maps] Timeout esperando carga del script existente')
-            setApiKeyError('Timeout cargando Google Maps. Verifica tu conexión y la API key.')
-            setIsMapLoaded(false)
+            safeSet(() => {
+              setApiKeyError('Timeout cargando Google Maps. Verifica tu conexión y la API key.')
+              setIsMapLoaded(false)
+            })
           }
         }
         checkLoaded()
         return
       }
 
-      // Crear nuevo script
       const script = document.createElement('script')
       const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${finalApiKey}&language=es&region=ar&loading=async`
       script.src = scriptUrl
       script.async = true
       script.defer = true
-      
-      // Timeout para detectar si el script nunca carga
-      const loadTimeout = setTimeout(() => {
+
+      const lt = setTimeout(() => {
+        if (!isMountedRef.current) return
         if (!window.google || !window.google.maps) {
-          console.error('[Google Maps] Timeout cargando API (30s)')
-          setApiKeyError('Timeout cargando Google Maps. Verifica las restricciones de la API key en Google Cloud Console.')
-          setIsMapLoaded(false)
+          safeSet(() => {
+            setApiKeyError('Timeout cargando Google Maps. Verifica las restricciones de la API key en Google Cloud Console.')
+            setIsMapLoaded(false)
+          })
         }
-      }, 30000) // 30 segundos timeout
-      
+      }, 30000)
+      loadTimeoutRef.current = lt
+
       script.onload = () => {
-        clearTimeout(loadTimeout)
+        if (loadTimeoutRef.current) {
+          clearTimeout(loadTimeoutRef.current)
+          loadTimeoutRef.current = null
+        }
+        if (!isMountedRef.current) return
         if (window.google && window.google.maps) {
-          console.log('[Google Maps] API cargada exitosamente')
-          setIsMapLoaded(true)
-          setPlacesApiAvailable(false) // No usamos Places API
-          setApiKeyError(null)
+          safeSet(() => {
+            setIsMapLoaded(true)
+            setPlacesApiAvailable(false)
+            setApiKeyError(null)
+          })
         } else {
-          console.error('[Google Maps] Script cargado pero window.google.maps no disponible')
-          setApiKeyError('Error inicializando Google Maps')
-          setIsMapLoaded(false)
+          safeSet(() => {
+            setApiKeyError('Error inicializando Google Maps')
+            setIsMapLoaded(false)
+          })
         }
       }
-      
-      script.onerror = (error) => {
-        clearTimeout(loadTimeout)
-        console.error('[Google Maps] Error cargando script:', error)
-        setApiKeyError('Error cargando Google Maps. Verifica la API key y las restricciones de dominio en Google Cloud Console.')
-        setIsMapLoaded(false)
-        setPlacesApiAvailable(false)
+      script.onerror = () => {
+        if (loadTimeoutRef.current) {
+          clearTimeout(loadTimeoutRef.current)
+          loadTimeoutRef.current = null
+        }
+        if (!isMountedRef.current) return
+        safeSet(() => {
+          setApiKeyError('Error cargando Google Maps. Verifica la API key y las restricciones de dominio en Google Cloud Console.')
+          setIsMapLoaded(false)
+          setPlacesApiAvailable(false)
+        })
       }
-      
-      // Agregar script al head
       document.head.appendChild(script)
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Google Maps] Iniciando carga de API desde:', scriptUrl.replace(finalApiKey, 'API_KEY_HIDDEN'))
-      }
     }
 
     loadGoogleMaps()
+
+    return () => {
+      if (loadTimeoutRef.current) {
+        clearTimeout(loadTimeoutRef.current)
+        loadTimeoutRef.current = null
+      }
+      if (checkLoadedTimeoutRef.current) {
+        clearTimeout(checkLoadedTimeoutRef.current)
+        checkLoadedTimeoutRef.current = null
+      }
+    }
   }, [finalApiKey])
 
   // Verificar si está dentro de los límites del tenant (usando helper)
@@ -243,44 +267,39 @@ export function AddressMapSelectorAdvanced({
   useEffect(() => {
     if (!mapRef.current || !isMapLoaded || !inputRef.current) return
 
+    const listeners: google.maps.MapsEventListener[] = []
+
     const initMap = () => {
+      if (!isMountedRef.current) return
       if (!window.google || !window.google.maps) {
-        setTimeout(initMap, 100)
+        const t = setTimeout(initMap, 100)
+        initMapTimeoutRef.current = t
         return
       }
+      if (!mapRef.current) return
 
-      const map = new google.maps.Map(mapRef.current!, {
-        center: mapCenter, // Centro según tenant
+      const map = new google.maps.Map(mapRef.current, {
+        center: mapCenter,
         zoom: 13,
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         restriction: {
-          latLngBounds: {
-            north: mapBounds.north,
-            south: mapBounds.south,
-            east: mapBounds.east,
-            west: mapBounds.west
-          },
+          latLngBounds: { north: mapBounds.north, south: mapBounds.south, east: mapBounds.east, west: mapBounds.west },
           strictBounds: false
         }
       })
-
       mapInstanceRef.current = map
       geocoderRef.current = new google.maps.Geocoder()
 
-      // Crear marcador
       const marker = new google.maps.Marker({
         position: mapCenter,
-        map: map,
+        map,
         draggable: true,
         title: 'Arrastra para seleccionar tu ubicación'
       })
-
       markerRef.current = marker
 
-      // NO configurar Places Autocomplete - solo usar búsqueda manual con botón "Buscar"
-
-      // Evento de arrastre del marcador
-      marker.addListener('dragend', () => {
+      const onDragEnd = () => {
+        if (!isMountedRef.current) return
         const position = marker.getPosition()
         if (position) {
           const lat = position.lat()
@@ -288,10 +307,12 @@ export function AddressMapSelectorAdvanced({
           setSelectedCoordinates({ lat, lng })
           reverseGeocode(lat, lng)
         }
-      })
+      }
+      const dragListener = marker.addListener('dragend', onDragEnd)
+      listeners.push(dragListener)
 
-      // Evento de click en el mapa
-      map.addListener('click', (event: google.maps.MapMouseEvent) => {
+      const onClick = (event: google.maps.MapMouseEvent) => {
+        if (!isMountedRef.current) return
         if (event.latLng) {
           const lat = event.latLng.lat()
           const lng = event.latLng.lng()
@@ -299,11 +320,30 @@ export function AddressMapSelectorAdvanced({
           setSelectedCoordinates({ lat, lng })
           reverseGeocode(lat, lng)
         }
-      })
+      }
+      const clickListener = map.addListener('click', onClick)
+      listeners.push(clickListener)
+      listenerRefs.current = listeners
     }
 
-    setTimeout(initMap, 100)
-  }, [isMapLoaded])
+    const t = setTimeout(initMap, 100)
+    initMapTimeoutRef.current = t
+
+    return () => {
+      if (initMapTimeoutRef.current) {
+        clearTimeout(initMapTimeoutRef.current)
+        initMapTimeoutRef.current = null
+      }
+      listenerRefs.current.forEach((l) => l?.remove())
+      listenerRefs.current = []
+      if (markerRef.current) {
+        markerRef.current.setMap(null)
+        markerRef.current = null
+      }
+      mapInstanceRef.current = null
+      geocoderRef.current = null
+    }
+  }, [isMapLoaded, mapCenter, mapBounds])
 
   // Función de validación mejorada usando helper del tenant
   const validateLocation = (
@@ -335,12 +375,11 @@ export function AddressMapSelectorAdvanced({
     geocoderRef.current.geocode(
       { location: { lat, lng } },
       (results, status) => {
+        if (!isMountedRef.current) return
         setIsLoading(false)
-        
         if (status === 'OK' && results && results[0]) {
           const address = results[0].formatted_address
           const addressComponents = results[0].address_components || []
-          
           setSelectedAddress(address)
           validateLocation(lat, lng, addressComponents, address)
         } else {
@@ -362,15 +401,13 @@ export function AddressMapSelectorAdvanced({
     geocoderRef.current.geocode(
       { address: `${selectedAddress}, ${cityName}, Córdoba, Argentina` },
       (results, status) => {
+        if (!isMountedRef.current) return
         setIsSearching(false)
-        
         if (status === 'OK' && results && results[0]) {
           const result = results[0]
           const location = result.geometry.location
           const lat = location.lat()
           const lng = location.lng()
-          
-          // Mover marcador y mapa a la ubicación encontrada
           if (markerRef.current && mapInstanceRef.current) {
             markerRef.current.setPosition({ lat, lng })
             mapInstanceRef.current.setCenter({ lat, lng })

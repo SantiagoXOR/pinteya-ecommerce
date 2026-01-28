@@ -133,48 +133,31 @@ export function useCheckoutTransition(
   }, [])
 
   // Función optimizada para iniciar la transición - NAVEGACIÓN INMEDIATA SIN ANIMACIÓN
+  // Sin setTimeout/fallback: evitaba "volver al carrito" al forzar /checkout/meta tras 100ms
   const startTransition = useCallback(() => {
-    // Prevenir múltiples llamadas simultáneas
-    if (isTransitioning) {
-      return
-    }
+    if (isTransitioning) return
 
-    // Ejecutar callback de inicio si existe
     try {
       onTransitionStart?.()
-    } catch (error) {
-      console.error('[useCheckoutTransition] Error in onTransitionStart callback:', error)
+    } catch (e) {
+      console.error('[useCheckoutTransition] onTransitionStart:', e)
     }
 
-    // Navegación inmediata - usar window.location como fallback si router.push falla
     try {
       router.push('/checkout/meta')
-      // Fallback: si router.push no funciona, usar window.location
-      setTimeout(() => {
-        if (typeof window !== 'undefined' && window.location.pathname !== '/checkout/meta') {
-          window.location.href = '/checkout/meta'
-        }
-      }, 100)
-    } catch (error) {
-      console.error('[useCheckoutTransition] Error during navigation, using window.location:', error)
-      // Fallback directo a window.location
+    } catch (e) {
+      console.error('[useCheckoutTransition] router.push:', e)
       if (typeof window !== 'undefined') {
         window.location.href = '/checkout/meta'
       }
     }
 
-    // Ejecutar callback de finalización si existe (sin bloquear)
     try {
       onTransitionComplete?.()
-    } catch (error) {
-      console.error('[useCheckoutTransition] Error in onTransitionComplete callback:', error)
+    } catch (e) {
+      console.error('[useCheckoutTransition] onTransitionComplete:', e)
     }
-  }, [
-    isTransitioning,
-    onTransitionStart,
-    onTransitionComplete,
-    router,
-  ])
+  }, [isTransitioning, onTransitionStart, onTransitionComplete, router])
 
   return {
     isTransitioning,
