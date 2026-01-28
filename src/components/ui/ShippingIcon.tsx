@@ -12,6 +12,10 @@ export interface ShippingIconProps extends Omit<React.ImgHTMLAttributes<HTMLImag
   alt?: string
   /** loading: lazy por defecto para no competir con LCP; "eager" para above-the-fold (ej. header carrusel) */
   loading?: 'lazy' | 'eager'
+  /** Ancho en px (default 36) para reservar espacio y evitar colapso si la imagen tarda o falla */
+  width?: number
+  /** Alto en px (default 36) */
+  height?: number
 }
 
 /**
@@ -23,6 +27,8 @@ export function ShippingIcon({
   className,
   alt = 'Envío gratis',
   loading = 'lazy',
+  width = 36,
+  height = 36,
   onError,
   ...rest
 }: ShippingIconProps) {
@@ -31,7 +37,10 @@ export function ShippingIcon({
   const handleError = React.useCallback(
     (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
       const target = e.target as HTMLImageElement
-      if (target.src !== FALLBACK_SHIPPING_ICON) {
+      const isAlreadyFallback =
+        target.src === FALLBACK_SHIPPING_ICON ||
+        target.src.endsWith('/images/icons/icon-envio.svg')
+      if (!isAlreadyFallback) {
         target.src = FALLBACK_SHIPPING_ICON
       }
       onError?.(e)
@@ -43,9 +52,12 @@ export function ShippingIcon({
     <img
       src={shippingIcon}
       alt={alt}
+      width={width}
+      height={height}
       loading={loading}
       className={className}
       onError={handleError}
+      decoding='async'
       {...rest}
     />
   )

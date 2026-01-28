@@ -97,6 +97,7 @@ export function useTenantAssets() {
     ogImage: tenant.ogImageUrl || getTenantAssetPath(tenant, 'og-image.png', `/tenants/${tenant.slug}/og-image.png`),
     heroImage: (index: number) => getTenantAssetPath(tenant, `hero/hero${index}.webp`, `/tenants/${tenant.slug}/hero/hero${index}.webp`),
     promoBanner: getTenantAssetPath(tenant, 'hero/promo-banner.webp', `/tenants/${tenant.slug}/hero/promo-banner.webp`),
+    // Fallback a ruta local que existe (public/images/icons/); /tenants/{slug}/icons/ suele estar vacío en repo
     shippingIcon: getTenantAssetPath(tenant, 'icons/icon-envio.svg', '/images/icons/icon-envio.svg'),
   }
 }
