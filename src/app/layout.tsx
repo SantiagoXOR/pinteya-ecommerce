@@ -483,6 +483,28 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           fetchPriority="low"
           type="image/webp"
         />
+        {/* ⚡ MULTITENANT: Preload imágenes carrusel combos (promocombo) para descubrimiento temprano y menos fallbacks al refrescar */}
+        <link
+          rel="preload"
+          as="image"
+          href={getTenantAssetPath(tenant, 'combos/combo1.webp', `/tenants/${tenant.slug}/combos/combo1.webp`)}
+          fetchPriority="low"
+          type="image/webp"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href={getTenantAssetPath(tenant, 'combos/combo2.webp', `/tenants/${tenant.slug}/combos/combo2.webp`)}
+          fetchPriority="low"
+          type="image/webp"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href={getTenantAssetPath(tenant, 'combos/combo3.webp', `/tenants/${tenant.slug}/combos/combo3.webp`)}
+          fetchPriority="low"
+          type="image/webp"
+        />
         
         {/* ⚡ OPTIMIZACIÓN LCP: Resource Hints para mejorar descubrimiento de recursos */}
         {/* NOTA: Preconnect al dominio propio - En producción, el dominio real viene del tenant */}
