@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { useTenantSafe } from '@/contexts/TenantContext'
+import { useTenantSafe, useTenantAssets } from '@/contexts/TenantContext'
 
 // ⚡ OPTIMIZACIÓN LCP: Lazy load del carousel después del LCP
 // Esto reduce el JavaScript inicial y mejora el LCP significativamente
@@ -25,16 +25,12 @@ interface HeroSectionProps {
  */
 export function HeroSection({ isDesktop = false }: HeroSectionProps) {
   const tenant = useTenantSafe()
+  const { heroImage } = useTenantAssets()
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
-  // ⚡ OPTIMIZACIÓN: Obtener URL de imagen hero del tenant
-  const heroImageUrl = useMemo(() => {
-    if (tenant?.slug) {
-      return `/tenants/${tenant.slug}/hero/hero1.webp`
-    }
-    return '/images/hero/hero2/hero1.webp'
-  }, [tenant?.slug])
+  // ⚡ OPTIMIZACIÓN: URL hero desde bucket (Supabase) o fallback local
+  const heroImageUrl = useMemo(() => (tenant?.slug ? heroImage(1) : '/images/hero/hero2/hero1.webp'), [tenant?.slug, heroImage])
 
   const heroAlt = useMemo(() => {
     const tenantName = tenant?.name || 'PinteYa'

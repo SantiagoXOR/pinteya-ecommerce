@@ -4,10 +4,10 @@ import React, { useMemo } from 'react'
 import { HeroSlide as HeroSlideType } from '@/types/hero'
 // ⚡ FIX: Importar directamente sin lazy loading para evitar skeleton
 import HeroSlideCarousel from '@/components/Common/HeroSlideCarousel'
-import { useTenantSafe } from '@/contexts/TenantContext'
+import { useTenantSafe, useTenantAssets } from '@/contexts/TenantContext'
 
-// Función para generar hero slides dinámicos por tenant
-const generateHeroSlides = (tenantSlug: string, serviceArea: string = 'Córdoba Capital'): HeroSlideType[] => [
+// Función para generar hero slides dinámicos por tenant (src se sobrescribe con URLs del bucket)
+const generateHeroSlides = (tenantSlug: string, serviceArea: string = 'Córdoba Capital', getHeroUrl: (index: number) => string): HeroSlideType[] => [
   {
     id: 'slide-1',
     backgroundGradient: 'from-blaze-orange-500 via-blaze-orange-400 to-blaze-orange-600',
@@ -34,7 +34,7 @@ const generateHeroSlides = (tenantSlug: string, serviceArea: string = 'Córdoba 
     ],
     productImages: [
       {
-        src: `/tenants/${tenantSlug}/hero/hero1.webp`,
+        src: getHeroUrl(1),
         alt: 'Pareja eligiendo pinturas con laptop y muestras de colores',
         priority: true,
         position: {
@@ -79,7 +79,7 @@ const generateHeroSlides = (tenantSlug: string, serviceArea: string = 'Córdoba 
     ],
     productImages: [
       {
-        src: `/tenants/${tenantSlug}/hero/hero2.webp`,
+        src: getHeroUrl(2),
         alt: 'Pareja en sofá con muestras de colores y app móvil',
         priority: false,
         position: {
@@ -123,7 +123,7 @@ const generateHeroSlides = (tenantSlug: string, serviceArea: string = 'Córdoba 
     ],
     productImages: [
       {
-        src: `/tenants/${tenantSlug}/hero/hero3.webp`,
+        src: getHeroUrl(3),
         alt: 'Equipo de entrega con productos',
         priority: false,
         position: {
@@ -150,13 +150,13 @@ const generateHeroSlides = (tenantSlug: string, serviceArea: string = 'Córdoba 
 ]
 
 const Hero = () => {
-  // Obtener tenant para rutas dinámicas
   const tenant = useTenantSafe()
+  const { heroImage } = useTenantAssets()
   const tenantSlug = tenant?.slug || 'pinteya'
   const serviceArea = tenant?.contactCity || 'Córdoba Capital'
   
-  // Generar hero slides basados en el tenant
-  const heroSlides = useMemo(() => generateHeroSlides(tenantSlug, serviceArea), [tenantSlug, serviceArea])
+  // Generar hero slides con URLs del bucket (Supabase) o fallback local
+  const heroSlides = useMemo(() => generateHeroSlides(tenantSlug, serviceArea, heroImage), [tenantSlug, serviceArea, heroImage])
   return (
     <section className='relative overflow-hidden w-full' style={{ minHeight: '400px' }}>
       {/* Hero Modular y Responsive - Layout único que se adapta */}

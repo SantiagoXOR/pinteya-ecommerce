@@ -466,21 +466,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
 
-        {/* ⚡ MULTITENANT: Preload de imagen hero LCP del tenant actual */}
+        {/* ⚡ MULTITENANT: Preload de imagen hero LCP desde bucket (Supabase) o fallback local */}
         {/* ⚡ DEBE estar PRIMERO para descubrimiento inmediato sin esperar CSS o JS */}
-        {/* ⚡ OPTIMIZACIÓN LCP: Preload dinámico basado en tenant */}
         <link
           rel="preload"
           as="image"
-          href={`/tenants/${tenant.slug}/hero/hero1.webp`}
+          href={getTenantAssetPath(tenant, 'hero/hero1.webp', `/tenants/${tenant.slug}/hero/hero1.webp`)}
           fetchPriority="high"
           type="image/webp"
         />
-        {/* ⚡ MULTITENANT: Preload de segunda imagen hero para mejor UX (no bloquea LCP) */}
+        {/* ⚡ MULTITENANT: Preload segunda imagen hero (bucket o local) */}
         <link
           rel="preload"
           as="image"
-          href={`/tenants/${tenant.slug}/hero/hero2.webp`}
+          href={getTenantAssetPath(tenant, 'hero/hero2.webp', `/tenants/${tenant.slug}/hero/hero2.webp`)}
           fetchPriority="low"
           type="image/webp"
         />

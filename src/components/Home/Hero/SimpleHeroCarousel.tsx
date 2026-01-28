@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useSwipeGestures } from '@/hooks/useSwipeGestures'
-import { useTenantSafe } from '@/contexts/TenantContext'
+import { useTenantSafe, useTenantAssets } from '@/contexts/TenantContext'
 
 interface Slide {
   id: string
@@ -20,26 +20,21 @@ const FALLBACK_SLIDES: Slide[] = [
 ]
 
 const SimpleHeroCarousel: React.FC = () => {
-  // Obtener datos del tenant
   const tenant = useTenantSafe()
+  const { heroImage } = useTenantAssets()
   const tenantName = tenant?.name || 'PinteYa'
   
-  // Generar slides basados en el tenant
+  // Slides con URLs del bucket (Supabase) o fallback local
   const slides = useMemo<Slide[]>(() => {
-    // ⚡ FIX: Solo usar FALLBACK_SLIDES si realmente no hay tenant disponible
-    // Si el tenant está disponible, siempre usar sus slides aunque las imágenes puedan fallar
     if (!tenant || !tenant.slug) {
       return FALLBACK_SLIDES
     }
-    
-    // ⚡ FIX: Siempre usar slides del tenant si está disponible
-    const tenantSlides = [
-      { id: 'hero-1', image: `/tenants/${tenant.slug}/hero/hero1.webp`, alt: `${tenantName} - Pintá rápido, fácil y cotiza al instante` },
-      { id: 'hero-2', image: `/tenants/${tenant.slug}/hero/hero2.webp`, alt: `${tenantName} - Envío express en 24HS` },
-      { id: 'hero-3', image: `/tenants/${tenant.slug}/hero/hero3.webp`, alt: `${tenantName} - Pagá con Mercado Pago` },
+    return [
+      { id: 'hero-1', image: heroImage(1), alt: `${tenantName} - Pintá rápido, fácil y cotiza al instante` },
+      { id: 'hero-2', image: heroImage(2), alt: `${tenantName} - Envío express en 24HS` },
+      { id: 'hero-3', image: heroImage(3), alt: `${tenantName} - Pagá con Mercado Pago` },
     ]
-    return tenantSlides
-  }, [tenant, tenantName])
+  }, [tenant, tenantName, heroImage])
   const [currentIndex, setCurrentIndex] = useState(1)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
