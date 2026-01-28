@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
+import { ShippingIcon } from '@/components/ui/ShippingIcon'
 
 // Fallback por defecto para cuando no hay tenant (sin URLs específicas de marca)
 const DEFAULT_SOCIALS = [
@@ -38,19 +39,10 @@ const Footer = () => {
     logoLocal: '/tenants/pinteya/logo.svg',
   }
   
-  // Fallback local para icono de envío
-  const shippingIconLocal = tenant ? `/tenants/${tenant.slug}/icons/icon-envio.svg` : '/images/icons/icon-envio.svg'
-  
   // Información del tenant
   const tenantName = tenant?.name || 'Pinteya'
   const tenantCity = tenant?.contactCity || 'Córdoba'
   const tenantProvince = tenant?.contactProvince || 'Argentina'
-  
-  // ⚡ MULTITENANT: Icono de envío por tenant (+ cache bust para forzar versión actualizada)
-  const SHIPPING_ICON_VERSION = 2
-  const _iconBase = getTenantAssetPath(tenant, 'icons/icon-envio.svg', '/images/icons/icon-envio.svg')
-  const shippingIconPath = _iconBase + (_iconBase.includes('?') ? '&' : '?') + `v=${SHIPPING_ICON_VERSION}`
-  const shippingIconLocalBusted = shippingIconLocal + `?v=${SHIPPING_ICON_VERSION}`
   
   // Redes sociales del tenant (con fallback)
   const socials = tenant?.socialLinks ? [
@@ -123,20 +115,12 @@ const Footer = () => {
                   {tenant?.slug === 'pintemas' ? 'Alta Gracia sin costo en el día.' : 'Sin costo extra en 24/48hs.'}
                 </p>
               </div>
-              {/* img nativo: next/image falla con SVG externo (Supabase) en Pintemas; img + onError evita optimizador */}
-              <img
-                src={shippingIconPath}
+              {/* ShippingIcon usa URL canónica (useTenantAssets) sin ?v= para maximizar caché */}
+              <ShippingIcon
                 alt='Icono envío gratis'
-                width={110}
-                height={90}
                 className='w-28 h-auto drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)]'
                 loading='lazy'
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  if (target.src !== shippingIconLocalBusted) {
-                    target.src = shippingIconLocalBusted
-                  }
-                }}
+                style={{ width: 110, height: 'auto', display: 'block' }}
               />
             </div>
           </article>

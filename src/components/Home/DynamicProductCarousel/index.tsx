@@ -14,7 +14,7 @@ import { updateProductWithMostExpensiveVariant } from '@/lib/products/utils/vari
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/products/constants'
 import { getCategoryImage } from '@/lib/categories/adapters'
 import { useTenantSafe } from '@/contexts/TenantContext'
-import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
+import { ShippingIcon } from '@/components/ui/ShippingIcon'
 
 interface DynamicProductCarouselProps {
   maxProducts?: number
@@ -37,14 +37,10 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     enableDynamicCounts: false,
   })
   
-  // Configuración para modo Envío Gratis - ⚡ MULTITENANT: icono por tenant, accentColor
-  const freeShippingIconUrl = getTenantAssetPath(tenant, 'icons/icon-envio.svg', '/images/icons/icon-envio.svg')
-  const freeShippingIconFallback = tenant ? `/tenants/${tenant.slug}/icons/icon-envio.svg` : '/images/icons/icon-envio.svg'
+  // Configuración para modo Envío Gratis - ⚡ MULTITENANT: accentColor; icono vía ShippingIcon (URL canónica)
   const freeShippingConfig = {
     title: 'Envío Gratis',
     subtitle: 'Productos seleccionados con envío sin costo',
-    iconUrl: freeShippingIconUrl,
-    iconFallback: freeShippingIconFallback,
     textColor: 'text-green-700',
   }
   
@@ -56,11 +52,8 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
     ? categories.find(cat => cat.slug === selectedCategory)
     : null
   
-  // Icono: usar el de la categoría real si existe, sino el del config
-  const categoryIcon = currentCategory ? getCategoryImage(currentCategory) : categoryConfig.iconUrl
-  const categoryIconFallback = freeShippingOnly && 'iconFallback' in categoryConfig
-    ? (categoryConfig as { iconFallback?: string }).iconFallback
-    : '/images/icons/icon-envio.svg'
+  // Icono: usar el de la categoría real si existe, sino el del config (solo cuando no es freeShippingOnly)
+  const categoryIcon = currentCategory ? getCategoryImage(currentCategory) : (categoryConfig as { iconUrl?: string }).iconUrl
   
   // ⚡ OPTIMIZACIÓN: Si freeShippingOnly es true, usar useFilteredProducts para compartir cache con FreeShippingSection
   // Esto evita peticiones duplicadas a /api/products con los mismos filtros
@@ -181,25 +174,35 @@ const DynamicProductCarousel: React.FC<DynamicProductCarouselProps> = ({
         {/* Header Dinámico - 2 líneas máximo */}
         <div className='flex items-center justify-between mb-3'>
           <div className='flex items-center gap-3'>
-            {/* Icono - Más grande para envío gratis */}
+            {/* Icono - ShippingIcon cuando envío gratis (URL canónica); Image para categorías */}
             <div className={`relative flex-shrink-0 flex items-center justify-center ${
               freeShippingOnly 
                 ? 'w-[100px] h-[40px] md:w-[120px] md:h-[48px]' 
                 : 'w-[68px] h-[68px] md:w-[84px] md:h-[84px]'
             }`}>
-              <Image
-                src={categoryIcon}
-                alt={categoryConfig.title}
-                width={84}
-                height={84}
-                className='w-full h-full object-contain'
-                loading={freeShippingOnly ? 'lazy' : 'eager'}
-                priority={!freeShippingOnly}
-                onError={freeShippingOnly ? (e) => {
-                  const target = e.target as HTMLImageElement
-                  if (target.src !== categoryIconFallback) target.src = categoryIconFallback
-                } : undefined}
-              />
+              {freeShippingOnly ? (
+                <ShippingIcon
+                  alt={categoryConfig.title}
+                  className='w-full h-full object-contain'
+                  loading='eager'
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '84px',
+                    maxHeight: '84px',
+                  }}
+                />
+              ) : categoryIcon ? (
+                <Image
+                  src={categoryIcon}
+                  alt={categoryConfig.title}
+                  width={84}
+                  height={84}
+                  className='w-full h-full object-contain'
+                  loading='eager'
+                  priority={true}
+                />
+              ) : null}
             </div>
             
             <div className='flex flex-col justify-center' style={{maxHeight: '3.5rem'}}>

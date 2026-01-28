@@ -258,6 +258,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </>
           )
         })()}
+        {/* ⚡ PERFORMANCE: Preload icono de envío (evita múltiples requests en product cards, footer, carrusel) */}
+        <link
+          rel="preload"
+          as="image"
+          href={getTenantAssetPath(tenant, 'icons/icon-envio.svg', '/images/icons/icon-envio.svg')}
+        />
         {/* ⚡ MULTITENANT: Apple touch icon puede ser tenant-specific en el futuro */}
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script

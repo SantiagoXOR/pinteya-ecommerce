@@ -115,6 +115,7 @@ export { DatePicker, DateRangePicker } from './date-picker'
 export { PriceDisplay } from './price-display'
 export { StockIndicator } from './stock-indicator'
 export { ShippingInfo } from './shipping-info'
+export { ShippingIcon } from './ShippingIcon'
 
 // ProductCard - Interfaz// Componentes especializados de e-commerce
 export { EnhancedProductCard } from './product-card-enhanced'

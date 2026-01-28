@@ -9,7 +9,7 @@ import { StockIndicator } from './stock-indicator'
 import { ShippingInfo } from './shipping-info'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
 import { useTenantSafe } from '@/contexts/TenantContext'
-import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
+import { ShippingIcon } from '@/components/ui/ShippingIcon'
 
 const cardVariants = cva('rounded-card bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-transform duration-200 ease-out', {
   variants: {
@@ -166,14 +166,6 @@ const ProductCard = React.memo(
       // ⚡ MULTITENANT: Colores del tenant para el botón de agregar al carrito
       const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
       const primaryColor = tenant?.primaryColor || '#f27a1d' // Naranja por defecto
-      
-      // ⚡ MULTITENANT: Icono de envío gratis por tenant desde Supabase Storage
-      const shippingIconPath = getTenantAssetPath(
-        tenant,
-        'icons/icon-envio.svg',
-        '/images/icons/icon-envio.svg'
-      )
-      const shippingIconLocal = tenant ? `/tenants/${tenant.slug}/icons/icon-envio.svg` : '/images/icons/icon-envio.svg'
 
       const handleAddToCart = async () => {
         if (!onAddToCart) {
@@ -237,23 +229,10 @@ const ProductCard = React.memo(
             {/* Degradado suave hacia blanco en la parte inferior - Responsive */}
             <div className='absolute bottom-0 left-0 right-0 h-12 md:h-20 bg-gradient-to-t from-white via-white/80 to-transparent z-10 pointer-events-none' />
             
-            {/* Icono de envío gratis - Esquina inferior derecha de la imagen */}
+            {/* Icono de envío gratis - ShippingIcon usa URL canónica (useTenantAssets) */}
             {!useNewComponents && (badge === 'Envío gratis' || legacyAutoFree) && (
               <div className='absolute bottom-2 right-2 md:bottom-3 md:right-3 z-30 pointer-events-none'>
-                <img
-                  src={shippingIconPath}
-                  alt='Envío gratis'
-                  className='h-6 sm:h-8 md:h-10 w-auto object-contain drop-shadow-lg'
-                  onError={(e) => {
-                    // Fallback al icono local del tenant, luego al genérico
-                    const target = e.target as HTMLImageElement
-                    if (target.src !== shippingIconLocal) {
-                      target.src = shippingIconLocal
-                    } else if (target.src !== '/images/icons/icon-envio.svg') {
-                      target.src = '/images/icons/icon-envio.svg'
-                    }
-                  }}
-                />
+                <ShippingIcon className='h-6 sm:h-8 md:h-10 w-auto object-contain drop-shadow-lg' alt='Envío gratis' />
               </div>
             )}
           </div>

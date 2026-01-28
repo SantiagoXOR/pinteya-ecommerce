@@ -3,8 +3,7 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { useDesignSystemConfig } from '@/lib/design-system-config'
-import { useTenantSafe } from '@/contexts/TenantContext'
-import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
+import { ShippingIcon } from '@/components/ui/ShippingIcon'
 
 interface ShippingProgressBarProps {
   currentAmount: number
@@ -22,7 +21,6 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
   variant = 'default',
 }) => {
   const config = useDesignSystemConfig()
-  const tenant = useTenantSafe()
   const resolvedTarget = targetAmount ?? config.ecommerce.shippingInfo.freeShippingThreshold
   const progress = Math.min((currentAmount / resolvedTarget) * 100, 100)
   const remainingAmount = Math.max(resolvedTarget - currentAmount, 0)
@@ -30,14 +28,6 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
 
   const isCompact = variant === 'compact'
   const isDetailed = variant === 'detailed'
-  
-  // ⚡ MULTITENANT: Icono de envío por tenant desde Supabase Storage
-  const shippingIconPath = getTenantAssetPath(
-    tenant,
-    'icons/icon-envio.svg',
-    '/images/icons/icon-envio.svg'
-  )
-  const shippingIconLocal = tenant ? `/tenants/${tenant.slug}/icons/icon-envio.svg` : '/images/icons/icon-envio.svg'
 
   return (
     <div
@@ -50,22 +40,15 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
         {/* Columna izquierda: Icono SVG */}
         {showIcon && (
           <div className='flex-shrink-0'>
-            <img
-              src={shippingIconPath}
+            <ShippingIcon
               alt='Envío Gratis'
               className='w-auto h-auto'
               style={{ 
-                width: isCompact ? '110px' : '140px', 
-                height: isCompact ? '110px' : '140px',
-                maxWidth: isCompact ? '110px' : '140px', 
-                maxHeight: isCompact ? '110px' : '140px',
+                width: isCompact ? 110 : 140, 
+                height: isCompact ? 110 : 140,
+                maxWidth: isCompact ? 110 : 140, 
+                maxHeight: isCompact ? 110 : 140,
                 display: 'block'
-              }}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement
-                if (target.src !== shippingIconLocal) {
-                  target.src = shippingIconLocal
-                }
               }}
             />
           </div>
