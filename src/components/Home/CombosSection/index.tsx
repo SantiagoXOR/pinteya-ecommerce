@@ -1,12 +1,14 @@
  'use client'
 
- import React, { useState, useEffect, useCallback, useMemo } from 'react'
- import Image from 'next/image'
- import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
- import { useSwipeGestures } from '@/hooks/useSwipeGestures'
- import { useRouter } from 'next/navigation'
- import { useTenantSafe } from '@/contexts/TenantContext'
- import { getTenantAssetPaths } from '@/lib/tenant/tenant-assets'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import Image from 'next/image'
+import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
+import { useSwipeGestures } from '@/hooks/useSwipeGestures'
+import { useRouter } from 'next/navigation'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantAssetPaths } from '@/lib/tenant/tenant-assets'
+import { useSlugFromHostname } from '@/hooks/useSlugFromHostname'
+import type { TenantPublicConfig } from '@/lib/tenant/types'
 
 interface Slide {
   id: string
@@ -16,38 +18,46 @@ interface Slide {
   localFallback?: string
 }
 
- const CombosSection: React.FC = () => {
-   const tenant = useTenantSafe()
-   const [currentIndex, setCurrentIndex] = useState(1)
-   const [isTransitioning, setIsTransitioning] = useState(false)
-   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-   const [imagesLoaded, setImagesLoaded] = useState(false) // ⚡ FIX: Estado para verificar carga de imágenes
-   const [loadedImagesCount, setLoadedImagesCount] = useState(0)
-   const router = useRouter()
-   
-   // ⚡ MULTITENANT: Slides por tenant desde Supabase Storage; fallback local si falla
-   const slides = useMemo<Slide[]>(() => {
-     const fallbackImages = [
-       '/images/hero/hero2/hero4.webp',
-       '/images/hero/hero2/hero5.webp',
-       '/images/hero/hero2/hero6.webp',
-     ]
-     const localFallbacks = tenant
-       ? [
-           `/tenants/${tenant.slug}/combos/combo1.webp`,
-           `/tenants/${tenant.slug}/combos/combo2.webp`,
-           `/tenants/${tenant.slug}/combos/combo3.webp`,
-         ]
-       : fallbackImages
-     const comboImages = tenant
-       ? getTenantAssetPaths(tenant, [
-           'combos/combo1.webp',
-           'combos/combo2.webp',
-           'combos/combo3.webp',
-         ])
-       : fallbackImages
+const CombosSection: React.FC = () => {
+  const tenant = useTenantSafe()
+  const slugFromHost = useSlugFromHostname()
+  const [currentIndex, setCurrentIndex] = useState(1)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const [imagesLoaded, setImagesLoaded] = useState(false)
+  const [loadedImagesCount, setLoadedImagesCount] = useState(0)
+  const router = useRouter()
 
-     return [
+  // ⚡ MULTITENANT: Usar tenant del contexto o slug del hostname para no mostrar Pinteya en pintemas.com
+  const effectiveTenant = useMemo((): TenantPublicConfig | null => {
+    if (tenant?.slug) return tenant
+    if (slugFromHost) return { slug: slugFromHost } as TenantPublicConfig
+    return null
+  }, [tenant, slugFromHost])
+
+  const fallbackImages = [
+    '/images/hero/hero2/hero4.webp',
+    '/images/hero/hero2/hero5.webp',
+    '/images/hero/hero2/hero6.webp',
+  ]
+
+  const slides = useMemo<Slide[]>(() => {
+    const localFallbacks = effectiveTenant
+      ? [
+          `/tenants/${effectiveTenant.slug}/combos/combo1.webp`,
+          `/tenants/${effectiveTenant.slug}/combos/combo2.webp`,
+          `/tenants/${effectiveTenant.slug}/combos/combo3.webp`,
+        ]
+      : fallbackImages
+    const comboImages = effectiveTenant
+      ? getTenantAssetPaths(effectiveTenant, [
+          'combos/combo1.webp',
+          'combos/combo2.webp',
+          'combos/combo3.webp',
+        ])
+      : fallbackImages
+
+    return [
        {
          id: 'combo-hero-1',
          image: comboImages[0] ?? localFallbacks[0] ?? fallbackImages[0],
@@ -70,7 +80,7 @@ interface Slide {
          localFallback: localFallbacks[2] ?? fallbackImages[2],
        },
      ]
-   }, [tenant])
+  }, [effectiveTenant])
    
    // ⚡ FIX: Ocultar skeleton cuando al menos la primera imagen (prioritaria) se haya cargado
    useEffect(() => {

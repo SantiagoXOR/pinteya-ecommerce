@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
+import { useSlugFromHostname } from '@/hooks/useSlugFromHostname'
+import type { TenantPublicConfig } from '@/lib/tenant/types'
 
 const CombosSection = dynamic(() => import('./CombosSection/index'), {
   ssr: false,
@@ -22,16 +24,23 @@ const CombosSection = dynamic(() => import('./CombosSection/index'), {
  */
 export default function CombosOptimized() {
   const tenant = useTenantSafe()
+  const slugFromHost = useSlugFromHostname()
   const [showCarousel, setShowCarousel] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   
-  // ⚡ MULTITENANT: Imagen estática inicial por tenant desde Supabase Storage
+  // ⚡ MULTITENANT: Usar tenant del contexto o slug derivado del hostname para no mostrar Pinteya en pintemas.com
+  const effectiveTenant = useMemo((): TenantPublicConfig | null => {
+    if (tenant?.slug) return tenant
+    if (slugFromHost) return { slug: slugFromHost } as TenantPublicConfig
+    return null
+  }, [tenant, slugFromHost])
+  
   const staticImagePath = getTenantAssetPath(
-    tenant,
+    effectiveTenant,
     'combos/combo1.webp',
     '/images/hero/hero2/hero4.webp'
   )
-  const staticImageLocal = tenant ? `/tenants/${tenant.slug}/combos/combo1.webp` : '/images/hero/hero2/hero4.webp'
+  const staticImageLocal = effectiveTenant ? `/tenants/${effectiveTenant.slug}/combos/combo1.webp` : '/images/hero/hero2/hero4.webp'
 
   // ⚡ FIX: Marcar como montado después del primer render
   useEffect(() => {
