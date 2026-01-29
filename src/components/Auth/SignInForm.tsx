@@ -1,7 +1,6 @@
 /**
  * Formulario de Inicio de Sesión - NextAuth.js v5
- * Componente personalizado para Pinteya E-commerce
- * Diseño moderno y responsive
+ * Multitenant: nombre y colores del tenant
  */
 
 'use client'
@@ -12,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Shield, ArrowRight, CheckCircle } from '@/lib/optimized-imports'
-
+import { useTenantSafe } from '@/contexts/TenantContext'
 import { signIn } from 'next-auth/react'
 
 export function SignInForm() {
@@ -20,6 +19,9 @@ export function SignInForm() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
   const error = searchParams.get('error')
+  const tenant = useTenantSafe()
+  const tenantName = tenant?.name || 'Pinteya'
+  const primaryColor = tenant?.primaryColor || '#ea580c'
 
   // Proveedores configurados manualmente para NextAuth v5
   const providers = {
@@ -73,7 +75,7 @@ export function SignInForm() {
   return (
     <Card className='w-full max-w-md mx-auto shadow-2xl border-0 bg-white backdrop-blur-sm'>
       <CardHeader className='space-y-1 text-center pb-4 px-4 sm:px-6 pt-6 sm:pt-8'>
-        <CardTitle className='text-xl sm:text-2xl font-bold text-gray-900'>Bienvenido a Pinteya</CardTitle>
+        <CardTitle className='text-xl sm:text-2xl font-bold text-gray-900'>Bienvenido a {tenantName}</CardTitle>
         <CardDescription className='text-sm sm:text-base text-gray-600'>
           Inicia sesión para acceder a tu cuenta
         </CardDescription>
@@ -150,11 +152,11 @@ export function SignInForm() {
         <div className='text-center pt-3 sm:pt-4'>
           <p className='text-[10px] sm:text-xs text-gray-500 leading-relaxed px-2'>
             Al iniciar sesión, aceptas nuestros{' '}
-            <a href='/terms' className='text-blaze-orange-600 hover:underline'>
+            <a href='/terms' className='hover:underline' style={{ color: primaryColor }}>
               términos de servicio
             </a>{' '}
             y{' '}
-            <a href='/privacy' className='text-blaze-orange-600 hover:underline'>
+            <a href='/privacy' className='hover:underline' style={{ color: primaryColor }}>
               política de privacidad
             </a>
             .

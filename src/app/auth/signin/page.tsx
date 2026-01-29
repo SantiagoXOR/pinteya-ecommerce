@@ -14,12 +14,16 @@ export default async function SignInPage() {
   // Obtener configuración del tenant
   const tenant = await getTenantPublicConfig()
   
-  // Assets del tenant
+  // Assets y colores del tenant
   const logoUrl = tenant?.logoUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo.svg`
   const logoDarkUrl = tenant?.logoDarkUrl || `/tenants/${tenant?.slug || 'pinteya'}/logo-dark.svg`
   const tenantName = tenant?.name || 'E-commerce'
   const primaryColor = tenant?.primaryColor || '#eb6313'
   const primaryDark = tenant?.primaryDark || '#bd4811'
+  const accentColor = tenant?.accentColor || '#ffd549'
+  // Fondo del panel del formulario (mobile y desktop): degradado con color del tenant
+  const formPanelBackground =
+    `linear-gradient(180deg, ${accentColor} 0%, ${accentColor} 12%, rgba(255,248,224,0.98) 45%, #ffffff 100%)`
   
   return (
     <div className='auth-page-container min-h-screen flex flex-col lg:flex-row'>
@@ -76,8 +80,11 @@ export default async function SignInPage() {
         </div>
       </div>
 
-      {/* Panel derecho - Formulario (fondo amarillo heredado del body en mobile y desktop) */}
-      <div className='flex-1 flex flex-col justify-center px-4 py-12 sm:py-16 sm:px-6 lg:px-8 relative'>
+      {/* Panel derecho - Formulario con fondo por tenant */}
+      <div
+        className='flex-1 flex flex-col justify-center min-h-screen lg:min-h-0 px-4 py-12 sm:py-16 sm:px-6 lg:px-8 relative'
+        style={{ background: formPanelBackground }}
+      >
         {/* Contenido */}
         <div className='relative z-10'>
           {/* Logo móvil */}
@@ -106,7 +113,8 @@ export default async function SignInPage() {
           <div className='mt-8 sm:mt-10 text-center'>
             <Link
               href='/'
-              className='inline-flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blaze-orange-600 transition-colors px-4 py-2 rounded-lg hover:bg-white/80 backdrop-blur-sm'
+              className='inline-flex items-center gap-2 text-sm font-medium transition-colors px-4 py-2 rounded-lg hover:bg-white/80 backdrop-blur-sm hover:opacity-90'
+              style={{ color: primaryColor }}
             >
               ← Volver a la tienda
             </Link>
