@@ -124,6 +124,8 @@ export interface ColorPillSelectorProps {
   onColorSelect: (hex: string) => void
   isImpregnante: boolean
   selectedFinish?: string  // Finish seleccionado actualmente (para textura dinámica)
+  /** Activa scroll automático tipo marquee cuando el card está hover/touch (solo si hay overflow) */
+  autoScroll?: boolean
 }
 
 // Props para MeasurePill
@@ -146,6 +148,8 @@ export interface MeasurePillSelectorProps {
   isAddingToCart?: boolean
   stock?: number
   isImpregnante?: boolean
+  /** Activa scroll automático tipo marquee cuando el card está hover/touch (solo si hay overflow) */
+  autoScroll?: boolean
 }
 
 // Props para ProductCardImage

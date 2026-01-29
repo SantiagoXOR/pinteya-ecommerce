@@ -6,8 +6,20 @@ import { MeasurePill } from './MeasurePill'
 import { useHorizontalScroll } from '../hooks/useHorizontalScroll'
 import type { MeasurePillSelectorProps } from '../types'
 
+const pillRowStyles: React.CSSProperties = {
+  scrollbarWidth: 'none',
+  msOverflowStyle: 'none',
+  WebkitOverflowScrolling: 'touch',
+  gap: 'clamp(0.25rem, 1vw, 0.375rem)',
+  paddingTop: 'clamp(0.125rem, 0.5vw, 0.25rem)',
+  paddingBottom: 'clamp(0.125rem, 0.5vw, 0.25rem)',
+  paddingLeft: 'clamp(0.75rem, 2vw, 1rem)',
+  paddingRight: 'clamp(0.75rem, 2vw, 1rem)',
+}
+
 /**
- * Selector de medidas con scroll horizontal y Sheet modal
+ * Selector de medidas con scroll horizontal
+ * Con autoScroll: efecto marquee (scroll automático) al hover/touch en el card cuando hay overflow
  */
 export const MeasurePillSelector = React.memo(function MeasurePillSelector({
   measures,
@@ -20,61 +32,83 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
   onAddToCart,
   isAddingToCart = false,
   stock = 0,
-  isImpregnante = false
+  isImpregnante = false,
+  autoScroll = false
 }: MeasurePillSelectorProps) {
   if (measures.length === 0) {
     return null
   }
 
-  // Usar hook compartido de scroll horizontal
   const { scrollContainerRef, canScrollLeft, canScrollRight } = useHorizontalScroll({
     deps: [measures]
   })
 
+  const hasOverflow = canScrollLeft || canScrollRight
+  const useMarquee = autoScroll && hasOverflow
+
+  const renderPills = () =>
+    measures.map((measure) => (
+      <MeasurePill
+        key={measure}
+        measure={measure}
+        isSelected={selectedMeasure === measure}
+        onSelect={onMeasureSelect}
+      />
+    ))
+
+  if (useMarquee) {
+    return (
+      <div className='relative w-full overflow-hidden'>
+        <div
+          className='absolute inset-0 overflow-hidden'
+          style={{ visibility: 'hidden', pointerEvents: 'none' }}
+          aria-hidden
+        >
+          <div
+            ref={scrollContainerRef}
+            className='flex items-center overflow-x-auto overflow-y-hidden w-full h-full scrollbar-hide'
+            style={pillRowStyles}
+          >
+            {renderPills()}
+          </div>
+        </div>
+        <div
+          className='flex items-center overflow-x-hidden w-full'
+          style={{
+            paddingTop: pillRowStyles.paddingTop,
+            paddingBottom: pillRowStyles.paddingBottom,
+            paddingLeft: pillRowStyles.paddingLeft,
+            paddingRight: pillRowStyles.paddingRight
+          }}
+        >
+          <div className='flex items-center whitespace-nowrap animate-pills-scroll-infinite' style={{ gap: pillRowStyles.gap }}>
+            {renderPills()}
+            {renderPills()}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='relative w-full overflow-hidden'>
-      {/* Gradiente izquierdo - indicador de scroll */}
       {canScrollLeft && (
-        <div 
+        <div
           className='absolute left-0 inset-y-0 w-8 z-10 pointer-events-none'
-          style={{
-            background: 'linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent)',
-          }}
+          style={{ background: 'linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent)' }}
         />
       )}
-      
-      {/* Contenedor de scroll full width - Sin scrollbar visible */}
-      <div 
+      <div
         ref={scrollContainerRef}
-        className='flex items-center overflow-x-auto overflow-y-hidden scroll-smooth w-full scrollbar-hide' 
-        style={{ 
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          WebkitOverflowScrolling: 'touch',
-          gap: 'clamp(0.25rem, 1vw, 0.375rem)',
-          paddingTop: 'clamp(0.125rem, 0.5vw, 0.25rem)',
-          paddingBottom: 'clamp(0.125rem, 0.5vw, 0.25rem)',
-          paddingLeft: 'clamp(0.75rem, 2vw, 1rem)',
-          paddingRight: 'clamp(0.75rem, 2vw, 1rem)',
-        }}
+        className='flex items-center overflow-x-auto overflow-y-hidden scroll-smooth w-full scrollbar-hide'
+        style={pillRowStyles}
       >
-        {measures.map((measure) => (
-          <MeasurePill
-            key={measure}
-            measure={measure}
-            isSelected={selectedMeasure === measure}
-            onSelect={onMeasureSelect}
-          />
-        ))}
+        {renderPills()}
       </div>
-
-      {/* Gradiente derecho - indicador de scroll */}
       {canScrollRight && (
-        <div 
+        <div
           className='absolute right-0 inset-y-0 w-8 z-10 pointer-events-none'
-          style={{
-            background: 'linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent)',
-          }}
+          style={{ background: 'linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent)' }}
         />
       )}
 
@@ -265,6 +299,7 @@ export const MeasurePillSelector = React.memo(function MeasurePillSelector({
     prevProps.isAddingToCart === nextProps.isAddingToCart &&
     prevProps.stock === nextProps.stock &&
     prevProps.isImpregnante === nextProps.isImpregnante &&
+    prevProps.autoScroll === nextProps.autoScroll &&
     prevProps.onMeasureSelect === nextProps.onMeasureSelect &&
     prevProps.onColorSelect === nextProps.onColorSelect &&
     prevProps.onAddToCart === nextProps.onAddToCart

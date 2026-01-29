@@ -157,6 +157,37 @@
   .animate-pulse {
     animation: pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+
+  /* Scroll automático de pills en product cards - misma velocidad y movimiento que ScrollingBanner */
+  @keyframes pills-scroll-infinite {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-pills-scroll-infinite {
+    animation: pills-scroll-infinite 30s linear infinite !important;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Mismo override que ScrollingBanner: mantener 30s en mobile */
+  @media (max-width: 768px) {
+    .animate-pills-scroll-infinite {
+      animation: pills-scroll-infinite 30s linear infinite !important;
+      animation-duration: 30s !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pills-scroll-infinite {
+      animation: none;
+    }
+  }
 }
 
 @layer base {

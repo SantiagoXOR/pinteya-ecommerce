@@ -394,6 +394,31 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       state.setShowQuickActions(false)
     }, [state])
 
+    // Touch: activar scroll automático de pills en mobile al posar el dedo
+    const touchEndTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+    React.useEffect(() => () => {
+      if (touchEndTimeoutRef.current) clearTimeout(touchEndTimeoutRef.current)
+    }, [])
+    const handleTouchStart = React.useCallback(() => {
+      if (touchEndTimeoutRef.current) {
+        clearTimeout(touchEndTimeoutRef.current)
+        touchEndTimeoutRef.current = null
+      }
+      if (!isScrolling) {
+        state.setIsHovered(true)
+        state.setShowQuickActions(true)
+      }
+    }, [isScrolling, state])
+    const handleTouchEnd = React.useCallback(() => {
+      touchEndTimeoutRef.current = setTimeout(() => {
+        state.setIsHovered(false)
+        state.setShowQuickActions(false)
+        touchEndTimeoutRef.current = null
+      }, 300)
+    }, [state])
+
+    const autoScrollPills = state.isHovered && !isLowPerformance && !isScrolling
+
     return (
       <div
         ref={ref}
@@ -420,6 +445,9 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         onClick={handleCardClick}
         {...props}
       >
@@ -531,6 +559,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                       onColorSelect={variantSelection.setSelectedColor}
                       isImpregnante={variantSelection.isImpregnante}
                       selectedFinish={variantSelection.selectedFinish || undefined}
+                      autoScroll={autoScrollPills}
                     />
                   )}
 
@@ -548,6 +577,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                       isAddingToCart={state.isAddingToCart}
                       stock={effectiveStock}
                       isImpregnante={variantSelection.isImpregnante}
+                      autoScroll={autoScrollPills}
                     />
                   )}
 
@@ -558,6 +588,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                       availableFinishes={variantSelection.availableFinishesForColor}
                       selectedFinish={variantSelection.selectedFinish}
                       onFinishSelect={variantSelection.setSelectedFinish}
+                      autoScroll={autoScrollPills}
                     />
                   )}
                 </div>
