@@ -85,6 +85,9 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
         token.userId = user.id
+        token.name = user.name ?? null
+        token.email = user.email ?? null
+        token.picture = user.image ?? null
         // Limpiar el rol para forzar recarga
         delete token.role
         console.log(`[NextAuth v4 JWT] Token inicializado con userId: ${token.userId}`)
@@ -117,6 +120,9 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.userId as string
         const role = token.role as string || 'customer'
         session.user.role = role
+        if (token.name != null) session.user.name = token.name as string
+        if (token.email != null) session.user.email = token.email as string
+        if (token.picture != null) session.user.image = token.picture as string
         console.log(`[NextAuth v4 Session] Setting role: ${role} for user ${token.userId || 'unknown'}`)
       } else {
         console.log(`[NextAuth v4 Session] ⚠️ No token provided to session callback`)
