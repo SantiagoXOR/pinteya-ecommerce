@@ -7,7 +7,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 import { ShippingIcon } from '@/components/ui/ShippingIcon'
-import { MercadoPagoLogo } from '@/components/ui/MercadoPagoLogo'
+import { MercadoPagoLogoPluma } from '@/components/ui/MercadoPagoLogoPluma'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -104,7 +104,7 @@ const Footer = () => {
                 <p className='text-2xl font-black text-white'>Mercado Pago</p>
                 <p className='text-sm text-white/80 mt-1'>Pago seguro con un clic.</p>
               </div>
-              <MercadoPagoLogo color={accentColor} width={140} className="h-12 w-auto" alt="Mercado Pago" />
+              <MercadoPagoLogoPluma color={accentColor} width={56} className="h-14 w-14 shrink-0" alt="Mercado Pago" />
             </div>
           </article>
 

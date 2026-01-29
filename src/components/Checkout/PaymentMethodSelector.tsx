@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useTenantSafe } from '@/contexts/TenantContext';
 import { getTenantAssetPath } from '@/lib/tenant/tenant-assets';
-import { MercadoPagoLogo } from '@/components/ui/MercadoPagoLogo';
 
 interface PaymentMethodSelectorProps {
   selectedMethod?: 'cash' | 'mercadopago';
@@ -129,10 +128,12 @@ export default function PaymentMethodSelector({ selectedMethod = 'cash', onMetho
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="flex items-center justify-center">
-                  <MercadoPagoLogo
-                    color={accentColor}
-                    width={70}
+                  <Image
+                    src="/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg"
                     alt="Mercado Pago"
+                    width={70}
+                    height={35}
+                    className="object-contain"
                   />
                 </div>
                 <div className="flex-1">
