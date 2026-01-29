@@ -105,7 +105,7 @@ const AIChatTab = dynamic(() => import('@/components/Common/AIChatTab').then(m =
   ssr: false,
   loading: () => null,
 })
-const AIChatPopup = dynamic(() => import('@/components/Common/AIChatPopup').then(m => ({ default: m.AIChatPopup })), {
+const AIChatPopup = dynamic(() => import('@/components/Common/AIChatPopup'), {
   ssr: false,
   loading: () => null,
 })

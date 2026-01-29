@@ -1,7 +1,7 @@
 /**
  * Optimiza favicon.svg, hero1/hero2.png, combo1/2/3.png, promo (30-off, calculator, help).png y pagoalrecibir.png de pintemas y los sube a Supabase tenant-assets.
  * - Favicon: minifica SVG (quita comentarios y espacios redundantes).
- * - Hero, combo y promo PNG: convierte a WebP (max 1920px, calidad 76).
+ * - Hero 1/2/3, combo y promo PNG: convierte a WebP (max 1920px, calidad 76).
  * - pagoalrecibir.png: optimiza (max 420px ancho, PNG comprimido) y sube como pagoalrecibir.png.
  * Uso: node optimize-pintemas-assets-upload.js
  * Requiere: .env.local con NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY
@@ -124,11 +124,34 @@ async function main() {
       console.error(`❌ hero2.png: ${e.message}`)
       err++
     }
+    await new Promise((r) => setTimeout(r, 150))
   } else {
     console.warn(`⚠️ No existe: ${hero2Path}`)
   }
 
-  // 4–6. Combo 1, 2, 3 PNG → WebP
+  // 4. Hero 3 PNG → WebP
+  const hero3Path = path.join(BASE, 'hero', 'hero3.png')
+  if (fs.existsSync(hero3Path)) {
+    try {
+      const out = await optimizePngToWebp(hero3Path)
+      const storagePath = `tenants/${SLUG}/hero/hero3.webp`
+      await upload(storagePath, out, 'image/webp')
+      const stats = fs.statSync(hero3Path)
+      console.log(`✅ ${storagePath}  ${(stats.size / 1024).toFixed(1)} KB (PNG) → ${(out.length / 1024).toFixed(1)} KB (WebP)`)
+      ok++
+      const localWebp = path.join(BASE, 'hero', 'hero3.webp')
+      fs.mkdirSync(path.dirname(localWebp), { recursive: true })
+      fs.writeFileSync(localWebp, out)
+    } catch (e) {
+      console.error(`❌ hero3.png: ${e.message}`)
+      err++
+    }
+    await new Promise((r) => setTimeout(r, 150))
+  } else {
+    console.warn(`⚠️ No existe: ${hero3Path}`)
+  }
+
+  // 5–7. Combo 1, 2, 3 PNG → WebP
   const combos = ['combo1', 'combo2', 'combo3']
   const combosBase = path.join(BASE, 'combos')
   for (const name of combos) {

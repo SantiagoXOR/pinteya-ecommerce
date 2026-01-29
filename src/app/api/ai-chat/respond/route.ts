@@ -7,10 +7,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { getTenantConfig } from '@/lib/tenant'
+import { AI_CHAT_KNOWLEDGE_BASE } from '@/lib/ai-chat/knowledge-base'
+import { getProductCatalogSummaryForPrompt } from '@/lib/ai-chat/get-product-catalog-summary'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
-const GEMINI_API_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
+const BASE = 'https://generativelanguage.googleapis.com'
+// Modelos disponibles con tu clave (según /api/ai-chat/models); se prueba en orden.
+const GEMINI_MODEL_URLS = [
+  `${BASE}/v1beta/models/gemini-2.5-flash:generateContent`,
+  `${BASE}/v1beta/models/gemini-2.0-flash:generateContent`,
+  `${BASE}/v1beta/models/gemini-flash-latest:generateContent`,
+  `${BASE}/v1beta/models/gemini-pro-latest:generateContent`,
+  `${BASE}/v1beta/models/gemini-2.5-pro:generateContent`,
+]
 
 const MAX_MESSAGES = 20
 
@@ -30,18 +39,34 @@ interface GeminiRespondPayload {
 }
 
 function buildSystemPrompt(tenantName: string, tenantSlug: string): string {
-  const agentName =
-    tenantSlug === 'pintemas' ? 'Luis de Pintemas' : `asistente de ${tenantName}`
-  return `Eres el ${agentName} de una tienda de pinturería. Ayudás al cliente a elegir productos según lo que quiera pintar (interior, exterior, madera, metal, paredes, techos, muebles, automotor, etc.).
+  const agentName = tenantSlug === 'pintemas' ? 'Luis' : `asistente de ${tenantName}`
+  const storeName = tenantSlug === 'pintemas' ? 'Pintemas' : tenantName
+  return `Eres ${agentName}, asistente de la tienda de pinturería ${storeName}. Ayudás al cliente a elegir pinturas y productos (látex, esmalte, barnices, impregnantes, AEROSOLES cuando los pidan). NO ofrezcas reparadores ni masillas.
+IDENTIDAD (obligatorio): Presentate siempre como "Luis" (o "${agentName}"), NUNCA digas "Luis de Pintemas" ni "Como Luis de Pintemas". Decí "soy Luis" o "te ayudo desde Pintemas"; la tienda es ${storeName}.
+AEROSOLES: La tienda SÍ trabaja con aerosoles/spray. Si el usuario pide aerosol, spray, pintar maceta/maseta con aerosol, detalles con spray, etc., respondé que tenemos y usá suggestedSearch "aerosol" o "spray" para mostrar productos.
 
-Respondé SIEMPRE únicamente con un objeto JSON válido, sin markdown ni texto extra, con esta forma exacta:
+CONTEXTO DE LA CONVERSACIÓN (obligatorio):
+- Tenés acceso a TODO el historial del chat. Usalo SIEMPRE para recordar qué está consultando el usuario (interior, exterior, madera, aerosol, pinceles, etc.).
+- Si el usuario hizo una pregunta de seguimiento, respondé EN ESE CONTEXTO. NUNCA respondas genérico tipo "Decime qué querés pintar" si en la conversación ya dijo qué quiere.
+
+REGLAS DE suggestedSearch (críticas para que los resultados sean correctos):
+- Si el usuario pide AEROSOL, SPRAY, maceta/maseta con aerosol, detalles con spray: usá suggestedSearch "aerosol" o "spray".
+- Si quiere pintar INTERIOR o paredes interiores: usá suggestedSearch "látex interior".
+- Si quiere pintar EXTERIOR, frente o fachada: usá suggestedSearch "látex exterior".
+- Si quiere pintar MADERA o muebles (mesa, exterior): usá "pintura madera", "barniz" o "impregnante".
+- Si quiere METAL: usá "esmalte metal".
+- Si quiere TECHOS: usá "pintura techo".
+- Si pide COMPLEMENTOS (rodillos, pinceles, brochas, cintas, bandejas): usá "rodillo", "pincel", "brocha", etc. según corresponda.
+- NUNCA uses suggestedSearch: "reparador", "reparador de paredes", "masilla", "enduido".
+
+Respondé SIEMPRE únicamente con un objeto JSON válido, sin markdown ni texto extra:
 {"reply": "tu respuesta amigable en una o dos oraciones", "suggestedCategory": "slug-categoria o null", "suggestedSearch": "término de búsqueda o null"}
 
 Reglas:
-- reply: mensaje breve y amigable para el usuario. Si el usuario dijo qué quiere pintar, sugerí que le mostramos productos y usá suggestedCategory o suggestedSearch.
-- suggestedCategory: si podés mapear a una categoría de productos (ej: interior, exterior, madera, metal, paredes), usá un slug corto en minúsculas; si no, null.
-- suggestedSearch: si conviene buscar por texto (ej: "esmalte sintético", "látex"), poné el término; si no, null.
-- Si el mensaje no es sobre pintar algo, respondé con reply amigable y suggestedCategory/suggestedSearch en null.`
+- reply: mensaje breve, USANDO EL CONTEXTO. NUNCA digas que no trabajamos con aerosoles; si piden aerosol, confirmá que tenemos y sugerí productos.
+- suggestedCategory: slug de categoría si lo conocés; si no, null.
+- suggestedSearch: según lo que pida (aerosol/spray cuando pidan eso; látex interior/exterior; pintura madera/barniz; etc.).
+- Si el mensaje no es sobre pintar ni complementos, respondé con reply amigable y suggestedCategory/suggestedSearch en null.`
 }
 
 function parseGeminiJson(text: string): GeminiRespondPayload | null {
@@ -114,40 +139,91 @@ export async function POST(request: NextRequest) {
 
       const systemPrompt = buildSystemPrompt(tenantName, tenantSlug)
 
+      // Base de conocimiento (asesor pinturería + pintor) y catálogo de productos (XML)
+      const catalogSummary = await getProductCatalogSummaryForPrompt(tenant.id)
+      const knowledgeSection = `\n\nBASE DE CONOCIMIENTO (asesor de pinturería y pintor - usá esto para responder con criterio técnico):\n${AI_CHAT_KNOWLEDGE_BASE}`
+      const catalogSection = catalogSummary
+        ? `\n\nCATÁLOGO DE PRODUCTOS (productos disponibles en la tienda - podés nombrar marcas y productos reales del XML):\n${catalogSummary}`
+        : ''
+
       const contents = messages.map((m) => ({
         role: m.role === 'assistant' ? ('model' as const) : ('user' as const),
         parts: [{ text: m.content }],
       }))
 
+      // Construir prompt: system + base de conocimiento + catálogo XML + conversación
+      const fullPrompt = `${systemPrompt}${knowledgeSection}${catalogSection}\n\n---\nConversación:\n${messages
+        .map((m) => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.content}`)
+        .join('\n')}\n\nResponde solo con el JSON (reply, suggestedCategory, suggestedSearch).`
+
       const payload = {
-        systemInstruction: {
-          parts: [{ text: systemPrompt }],
-        },
-        contents: contents.length
-          ? contents
-          : [{ role: 'user' as const, parts: [{ text: 'Hola' }] }],
+        contents: [
+          {
+            parts: [{ text: fullPrompt }],
+          },
+        ],
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 512,
-          responseMimeType: 'application/json',
         },
       }
 
-      const geminiResponse = await fetch(
-        `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }
-      )
+      let responseText = ''
+      let lastStatus = 0
+      const urlsToTry = GEMINI_MODEL_URLS
 
-      if (!geminiResponse.ok) {
-        const errorText = await geminiResponse.text().catch(() => 'Unknown error')
+      for (let i = 0; i < urlsToTry.length; i++) {
+        const url = urlsToTry[i]
+        const geminiResponse = await fetch(
+          `${url}?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }
+        )
+        responseText = await geminiResponse.text().catch(() => '')
+        lastStatus = geminiResponse.status
+
+        if (geminiResponse.ok) break
+
+        const isModelNotFound =
+          geminiResponse.status === 404 ||
+          (responseText.includes('is not found') && geminiResponse.status >= 400)
+        const isLast = i === urlsToTry.length - 1
+        if (isModelNotFound && !isLast) {
+          const modelName = url.split('/models/')[1]?.split(':')[0] ?? url
+          console.warn('[AI Chat] Modelo no disponible:', modelName, '- probando siguiente')
+          continue
+        }
+
         console.error('[AI Chat] Error de Gemini API:', {
           status: geminiResponse.status,
-          error: errorText,
+          error: responseText,
         })
+        let userMessage = 'No pude procesar tu mensaje. Intentá de nuevo.'
+        if (process.env.NODE_ENV === 'development') {
+          try {
+            const errJson = JSON.parse(responseText)
+            const reason =
+              errJson?.error?.message ??
+              errJson?.error?.status ??
+              responseText.slice(0, 200)
+            userMessage = `Error (dev): ${reason}`
+          } catch {
+            userMessage = `Error (dev): ${responseText.slice(0, 200)}`
+          }
+        }
+        return NextResponse.json(
+          {
+            success: false,
+            error: userMessage,
+          },
+          { status: 500 }
+        )
+      }
+
+      if (lastStatus !== 200) {
         return NextResponse.json(
           {
             success: false,
@@ -157,7 +233,18 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const geminiData = await geminiResponse.json()
+      let geminiData: { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
+      try {
+        geminiData = JSON.parse(responseText)
+      } catch {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'No pude procesar la respuesta. Intentá de nuevo.',
+          },
+          { status: 500 }
+        )
+      }
       const rawText =
         geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 

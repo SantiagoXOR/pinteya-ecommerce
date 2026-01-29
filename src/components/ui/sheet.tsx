@@ -250,17 +250,16 @@ const SheetContent = React.forwardRef<
         } : undefined}
         onPointerDown={(e) => {
           if (isBottom) {
-            // ⚡ FASE 5: Agrupar lecturas de geometría en requestAnimationFrame
+            const target = e.target as HTMLElement;
+            const sheetContent = document.querySelector('[role="dialog"]') as HTMLElement;
+            const isInsideSheetContent = sheetContent && sheetContent.contains(target);
+            // Si el click es dentro del contenido del sheet (ej. input/botón del chat), no bloquear
+            if (isInsideSheetContent) return;
             requestAnimationFrame(() => {
-              const target = e.target as HTMLElement;
               const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
               const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
               const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
-              
-              // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
-              // Permitir que el evento pase al bottom bar
               if (isBottomNavArea || isInsideBottomNav) {
-                // No hacer nada, permitir que el evento llegue al bottom bar
                 e.stopPropagation();
                 e.preventDefault();
                 return;
@@ -271,11 +270,12 @@ const SheetContent = React.forwardRef<
         onClick={(e) => {
           if (isBottom) {
             const target = e.target as HTMLElement;
+            const sheetContent = document.querySelector('[role="dialog"]') as HTMLElement;
+            const isInsideSheetContent = sheetContent && sheetContent.contains(target);
+            if (isInsideSheetContent) return;
             const bottomNav = document.querySelector('[class*="z-bottom-nav"]') as HTMLElement;
             const isInsideBottomNav = bottomNav && (bottomNav.contains(target) || target.closest('[class*="z-bottom-nav"]'));
             const isBottomNavArea = bottomNav && (e.clientY > window.innerHeight - 80);
-            
-            // Si el click es en el área del bottom bar o dentro del bottom nav, NO capturar el evento
             if (isBottomNavArea || isInsideBottomNav) {
               e.stopPropagation();
               e.preventDefault();
