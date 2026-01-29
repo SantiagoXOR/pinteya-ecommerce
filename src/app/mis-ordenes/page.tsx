@@ -4,6 +4,8 @@
 // Los Client Components se renderizan estáticamente en build time y se hidratan en el cliente
 // El 'export const dynamic' es solo para Server Components
 import React, { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import {
   Package,
   Clock,
@@ -98,6 +100,8 @@ const paymentStatusConfig = {
 }
 
 export default function OrdersPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -111,8 +115,14 @@ export default function OrdersPage() {
   const [loadingDetails, setLoadingDetails] = useState(false)
 
   useEffect(() => {
-    fetchOrders()
-  }, [])
+    if (status === 'unauthenticated') {
+      router.push('/api/auth/signin?callbackUrl=/mis-ordenes')
+      return
+    }
+    if (status === 'authenticated') {
+      fetchOrders()
+    }
+  }, [status, router])
 
   // Filtrar órdenes cuando cambian los filtros
   useEffect(() => {
@@ -272,13 +282,15 @@ export default function OrdersPage() {
     )
   }
 
-  if (loading) {
+  if (status === 'loading' || status === 'unauthenticated' || loading) {
     return (
       <div className='min-h-screen py-12'>
         <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center'>
             <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blaze-orange-600 mx-auto'></div>
-            <p className='mt-4 text-gray-600'>Cargando tus órdenes...</p>
+            <p className='mt-4 text-gray-600'>
+              {status === 'unauthenticated' ? 'Redirigiendo a inicio de sesión...' : 'Cargando tus órdenes...'}
+            </p>
           </div>
         </div>
       </div>

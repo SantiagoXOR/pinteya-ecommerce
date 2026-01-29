@@ -2,10 +2,11 @@
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { ShoppingBag, DollarSign, Monitor, Clock, User, Settings, Package } from '@/lib/optimized-imports'
 import Link from 'next/link'
+import { formatCurrency } from '@/lib/utils/consolidated-utils'
 
 interface StatCardProps {
   title: string
@@ -39,8 +40,50 @@ function StatCard({ title, value, icon: Icon, color, href }: StatCardProps) {
   return content
 }
 
+interface DashboardStats {
+  total_orders: number
+  total_spent: number
+  pending_orders: number
+}
+
 export default function DashboardPage() {
   const { user } = useAuth()
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchDashboard() {
+      try {
+        const res = await fetch('/api/user/dashboard')
+        if (!res.ok) {
+          if (res.status === 401) {
+            setError('Debes iniciar sesión')
+            return
+          }
+          setError('No se pudieron cargar las estadísticas')
+          return
+        }
+        const json = await res.json()
+        if (!cancelled && json?.success && json?.dashboard?.statistics) {
+          setStats(json.dashboard.statistics)
+        }
+      } catch {
+        if (!cancelled) setError('Error al cargar el dashboard')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    fetchDashboard()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const totalOrders = stats?.total_orders ?? 0
+  const totalSpent = stats?.total_spent ?? 0
+  const pendingOrders = stats?.pending_orders ?? 0
 
   return (
     <div className='space-y-6'>
@@ -56,28 +99,52 @@ export default function DashboardPage() {
 
       {/* Statistics Cards */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-        <StatCard
-          title='Total de Órdenes'
-          value={0}
-          icon={ShoppingBag}
-          color='bg-blue-500'
-          href='/mis-ordenes'
-        />
-        <StatCard title='Total Gastado' value='$0' icon={DollarSign} color='bg-green-500' />
-        <StatCard
-          title='Órdenes Pendientes'
-          value={0}
-          icon={Clock}
-          color='bg-yellow-500'
-          href='/mis-ordenes'
-        />
-        <StatCard
-          title='Sesiones Activas'
-          value='1'
-          icon={Monitor}
-          color='bg-purple-500'
-          href='/dashboard/sessions'
-        />
+        {loading ? (
+          <>
+            {[1, 2, 3, 4].map(i => (
+              <div
+                key={i}
+                className='bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse'
+              >
+                <div className='h-4 bg-gray-200 rounded w-24 mb-3' />
+                <div className='h-8 bg-gray-200 rounded w-16' />
+              </div>
+            ))}
+          </>
+        ) : error ? (
+          <div className='col-span-full bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800'>
+            {error}
+          </div>
+        ) : (
+          <>
+            <StatCard
+              title='Total de Órdenes'
+              value={totalOrders}
+              icon={ShoppingBag}
+              color='bg-blue-500'
+              href='/mis-ordenes'
+            />
+            <StatCard
+              title='Total Gastado'
+              value={formatCurrency(totalSpent)}
+              icon={DollarSign}
+              color='bg-green-500'
+            />
+            <StatCard
+              title='Órdenes Pendientes'
+              value={pendingOrders}
+              icon={Clock}
+              color='bg-yellow-500'
+              href='/mis-ordenes'
+            />
+            <StatCard
+              title='Sesión actual'
+              value={1}
+              icon={Monitor}
+              color='bg-purple-500'
+            />
+          </>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -95,16 +162,16 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          <Link
-            href='/dashboard/security'
-            className='flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors'
+          <div
+            className='flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50 opacity-90 cursor-not-allowed'
+            aria-disabled
           >
-            <Settings className='h-8 w-8 text-green-500 mr-3' />
+            <Settings className='h-8 w-8 text-gray-400 mr-3' />
             <div>
-              <h3 className='font-medium text-gray-900'>Configurar Seguridad</h3>
-              <p className='text-sm text-gray-600'>Gestiona tu seguridad</p>
+              <h3 className='font-medium text-gray-500'>Configurar Seguridad</h3>
+              <p className='text-sm text-gray-500'>Próximamente</p>
             </div>
-          </Link>
+          </div>
 
           <Link
             href='/mis-ordenes'

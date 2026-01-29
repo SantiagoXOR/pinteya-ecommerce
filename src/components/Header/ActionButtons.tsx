@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
+import { useRouter } from 'next/navigation'
 import { User, ShoppingCart, LogIn, Package, LayoutDashboard, Shield } from '@/lib/optimized-imports'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -50,6 +50,7 @@ interface ActionButtonsProps {
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'header' }) => {
+  const router = useRouter()
   // ⚡ MULTITENANT: Colores del tenant para botones de carrito
   const tenant = useTenantSafe()
   const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
@@ -139,29 +140,41 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
             <DropdownMenuContent align='end' className='w-56'>
               {isAdmin && (
                 <>
-                  <DropdownMenuItem asChild>
-                    <Link href='/admin'>
-                      <Shield className='mr-2 h-4 w-4' />
-                      Panel Admin
-                    </Link>
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      router.push('/admin')
+                    }}
+                    className='cursor-pointer'
+                  >
+                    <Shield className='mr-2 h-4 w-4' />
+                    Panel Admin
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               )}
-              <DropdownMenuItem asChild>
-                <Link href='/dashboard'>
-                  <LayoutDashboard className='mr-2 h-4 w-4' />
-                  Mi Dashboard
-                </Link>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault()
+                  router.push('/dashboard')
+                }}
+                className='cursor-pointer'
+              >
+                <LayoutDashboard className='mr-2 h-4 w-4' />
+                Mi Dashboard
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href='/mis-ordenes'>
-                  <Package className='mr-2 h-4 w-4' />
-                  Mis Órdenes
-                </Link>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault()
+                  router.push('/mis-ordenes')
+                }}
+                className='cursor-pointer'
+              >
+                <Package className='mr-2 h-4 w-4' />
+                Mis Órdenes
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut}>
+              <DropdownMenuItem onClick={handleSignOut} className='cursor-pointer'>
                 <LogIn className='mr-2 h-4 w-4 rotate-180' />
                 Cerrar Sesión
               </DropdownMenuItem>
@@ -249,29 +262,41 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ className, variant = 'hea
           <DropdownMenuContent align='end' className='w-56'>
             {isAdmin && (
               <>
-                <DropdownMenuItem asChild>
-                  <Link href='/admin'>
-                    <Shield className='mr-2 h-4 w-4' />
-                    Panel Admin
-                  </Link>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    router.push('/admin')
+                  }}
+                  className='cursor-pointer'
+                >
+                  <Shield className='mr-2 h-4 w-4' />
+                  Panel Admin
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>
             )}
-            <DropdownMenuItem asChild>
-              <Link href='/dashboard'>
-                <LayoutDashboard className='mr-2 h-4 w-4' />
-                Mi Dashboard
-              </Link>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault()
+                router.push('/dashboard')
+              }}
+              className='cursor-pointer'
+            >
+              <LayoutDashboard className='mr-2 h-4 w-4' />
+              Mi Dashboard
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href='/mis-ordenes'>
-                <Package className='mr-2 h-4 w-4' />
-                Mis Órdenes
-              </Link>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault()
+                router.push('/mis-ordenes')
+              }}
+              className='cursor-pointer'
+            >
+              <Package className='mr-2 h-4 w-4' />
+              Mis Órdenes
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>
+            <DropdownMenuItem onClick={handleSignOut} className='cursor-pointer'>
               <LogIn className='mr-2 h-4 w-4 rotate-180' />
               Cerrar Sesión
             </DropdownMenuItem>

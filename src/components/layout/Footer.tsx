@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
@@ -56,6 +57,7 @@ type FooterSocialItem = FooterSocialLink | FooterSocialUser
 
 const Footer = () => {
   const year = new Date().getFullYear()
+  const router = useRouter()
   const { data: session, status } = useSession()
   const isSignedIn = !!session && status !== 'loading'
 
@@ -167,29 +169,41 @@ const Footer = () => {
                 <DropdownMenuContent align="center" className="w-56 bg-white/95 backdrop-blur border-white/20 text-gray-900">
                   {item.session.user?.role === 'admin' && (
                     <>
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin">
-                          <Shield className="mr-2 h-4 w-4" />
-                          Panel Admin
-                        </Link>
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault()
+                          router.push('/admin')
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <Shield className="mr-2 h-4 w-4" />
+                        Panel Admin
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                     </>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Mi Dashboard
-                    </Link>
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      router.push('/dashboard')
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Mi Dashboard
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/mis-ordenes">
-                      <Package className="mr-2 h-4 w-4" />
-                      Mis Órdenes
-                    </Link>
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      router.push('/mis-ordenes')
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    Mis Órdenes
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })} className="cursor-pointer">
                     <LogIn className="mr-2 h-4 w-4 rotate-180" />
                     Cerrar sesión
                   </DropdownMenuItem>
