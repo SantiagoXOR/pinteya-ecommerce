@@ -7,7 +7,6 @@ import { useSession, signOut } from 'next-auth/react'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 import { ShippingIcon } from '@/components/ui/ShippingIcon'
-import { MercadoPagoLogoPluma } from '@/components/ui/MercadoPagoLogoPluma'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -78,7 +77,6 @@ const Footer = () => {
   const tenantName = tenant?.name || 'Pinteya'
   const tenantCity = tenant?.contactCity || 'Córdoba'
   const tenantProvince = tenant?.contactProvince || 'Argentina'
-  const accentColor = tenant?.accentColor ?? '#ffd549'
   const pagoAlRecibirSrc = tenant
     ? getTenantAssetPath(tenant, 'pagoalrecibir.png', `/tenants/${tenant.slug}/pagoalrecibir.png`)
     : '/images/checkout/pagoalrecibir.png'
@@ -98,54 +96,67 @@ const Footer = () => {
       <div className='max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14 pb-24 space-y-8'>
         <div className='grid gap-4 md:grid-cols-3'>
           <article className='rounded-2xl bg-white/10 p-5 sm:p-6 shadow-lg shadow-black/10 backdrop-blur'>
-            <div className='flex items-center justify-between gap-4'>
-              <div>
+            <div className='flex items-center justify-between gap-3 sm:gap-4'>
+              <div className='min-w-0 flex-1'>
                 <p className='text-xs uppercase tracking-[0.2em] text-white/70 font-semibold'>Pagás al instante</p>
                 <p className='text-2xl font-black text-white'>Mercado Pago</p>
                 <p className='text-sm text-white/80 mt-1'>Pago seguro con un clic.</p>
               </div>
-              <MercadoPagoLogoPluma color={accentColor} width={56} className="h-14 w-14 shrink-0" alt="Mercado Pago" />
+              <div className='flex shrink-0 items-center justify-center' style={{ minWidth: 100 }}>
+                <Image
+                  src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_pluma_vertical.svg'
+                  alt='Mercado Pago'
+                  width={96}
+                  height={96}
+                  className='h-20 w-20 sm:h-24 sm:w-24 drop-shadow-[0_8px_25px_rgba(0,0,0,0.25)] object-contain'
+                  loading='lazy'
+                />
+              </div>
             </div>
           </article>
 
           <article className='rounded-2xl bg-white/10 p-5 sm:p-6 shadow-lg shadow-black/10 backdrop-blur h-full'>
-            <div className='flex items-end justify-between gap-4 h-full'>
-              <div>
+            <div className='flex h-full items-center justify-between gap-3 sm:gap-4'>
+              <div className='min-w-0 flex-1'>
                 <p className='text-xs uppercase tracking-[0.2em] text-white/70 font-semibold'>Pagás al recibir</p>
                 <p className='text-2xl font-black text-white'>Tu pedido en mano</p>
                 <p className='text-sm text-white/80 mt-1'>QR, efectivo o tarjetas sin vueltas.</p>
               </div>
-              <Image
-                src={pagoAlRecibirSrc}
-                alt='Tu pedido en mano'
-                width={105}
-                height={85}
-                className='w-20 h-auto drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)] translate-y-1 -mb-2'
-                loading="lazy"
-                onError={(e) => {
-                  const t = e.target as HTMLImageElement
-                  if (t.src !== '/images/checkout/pagoalrecibir.png') t.src = '/images/checkout/pagoalrecibir.png'
-                }}
-              />
+              <div className='flex shrink-0 items-center justify-center' style={{ minWidth: 120 }}>
+                <Image
+                  src={pagoAlRecibirSrc}
+                  alt='Tu pedido en mano'
+                  width={160}
+                  height={128}
+                  className='h-24 w-auto sm:h-28 sm:w-auto max-w-[140px] sm:max-w-[160px] object-contain drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)]'
+                  loading='lazy'
+                  onError={(e) => {
+                    const t = e.target as HTMLImageElement
+                    if (t.src !== '/images/checkout/pagoalrecibir.png') t.src = '/images/checkout/pagoalrecibir.png'
+                  }}
+                />
+              </div>
             </div>
           </article>
 
           <article className='rounded-2xl bg-white/10 p-5 sm:p-6 shadow-lg shadow-black/10 backdrop-blur'>
-            <div className='flex items-center justify-between gap-4'>
-              <div>
+            <div className='flex items-center justify-between gap-3 sm:gap-4'>
+              <div className='min-w-0 flex-1'>
                 <p className='text-xs uppercase tracking-[0.2em] text-white/70 font-semibold'>Envío gratis</p>
                 <p className='text-2xl font-black text-white'>{tenantCity}</p>
                 <p className='text-sm text-white/80 mt-1'>
                   {tenant?.slug === 'pintemas' ? 'Alta Gracia sin costo en el día.' : 'Sin costo extra en 24/48hs.'}
                 </p>
               </div>
-              {/* ShippingIcon usa URL canónica (useTenantAssets) sin ?v= para maximizar caché */}
-              <ShippingIcon
-                alt='Icono envío gratis'
-                className='w-28 h-auto drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)]'
-                loading='lazy'
-                style={{ width: 110, height: 'auto', display: 'block' }}
-              />
+              <div className='flex shrink-0 items-center justify-center' style={{ minWidth: 120 }}>
+                <ShippingIcon
+                  alt='Icono envío gratis'
+                  width={140}
+                  height={112}
+                  className='h-24 w-auto sm:h-28 sm:w-auto max-w-[140px] object-contain drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)]'
+                  loading='lazy'
+                />
+              </div>
             </div>
           </article>
         </div>
