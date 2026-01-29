@@ -43,17 +43,29 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
       return NextResponse.json(errorResponse, { status: 503 })
     }
 
-    // Obtener producto con categoría por slug
+    // ===================================
+    // MULTITENANT: Obtener producto por slug solo si está visible para el tenant actual
+    // Join con tenant_products y filtrar por tenant_id e is_visible (igual que API por ID)
+    // ===================================
     const { data: product, error } = await supabase
       .from('products')
       .select(
         `
         id, name, slug, description, price, discounted_price, brand, stock, images, created_at, updated_at, aikon_id, color, medida,
-        category:categories(id, name, slug)
+        category:categories(id, name, slug),
+        tenant_products!inner (
+          price,
+          discounted_price,
+          stock,
+          is_visible,
+          tenant_id
+        )
       `
       )
       .eq('slug', slug)
       .eq('is_active', true)
+      .eq('tenant_products.tenant_id', tenant.id)
+      .eq('tenant_products.is_visible', true)
       .single()
 
     if (error) {
@@ -69,6 +81,24 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
     }
 
     if (!product) {
+      const notFoundResponse: ApiResponse<null> = {
+        data: null,
+        success: false,
+        error: 'Producto no encontrado',
+      }
+      return NextResponse.json(notFoundResponse, { status: 404 })
+    }
+
+    // Filtrar tenant_products por tenant_id (PostgREST puede devolver varias filas)
+    if (product && Array.isArray(product.tenant_products)) {
+      product.tenant_products = product.tenant_products.filter((tp: { tenant_id: string }) => tp.tenant_id === tenant.id)
+    }
+
+    // Si tiene tenant_products y no está visible, 404
+    const tenantProduct = Array.isArray(product?.tenant_products) && product.tenant_products.length > 0
+      ? product.tenant_products[0]
+      : product?.tenant_products
+    if (tenantProduct && (tenantProduct as { is_visible?: boolean }).is_visible === false) {
       const notFoundResponse: ApiResponse<null> = {
         data: null,
         success: false,
@@ -218,6 +248,13 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
 
         const defaultVariant = processedVariants?.find(v => v.is_default) || processedVariants?.[0]
 
+        // MULTITENANT: Precio/stock desde tenant_products (fallback a producto)
+        const tenantPrice = tenantProduct?.price ?? product.price
+        const tenantDiscountedPrice = tenantProduct?.discounted_price ?? product.discounted_price
+        const tenantStock = tenantProduct?.stock !== null && tenantProduct?.stock !== undefined
+          ? Number(tenantProduct.stock)
+          : (product.stock !== null && product.stock !== undefined ? Number(product.stock) : null)
+
         enrichedProduct = {
           ...product,
           // ✅ NUEVO: Normalizar título del producto a formato capitalizado
@@ -231,10 +268,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ slu
           variant_count: processedVariants?.length || 0,
           has_variants: (variants?.length || 0) > 0,
           default_variant: defaultVariant || null,
-          // Usar precios de la variante por defecto si están disponibles
-          price: defaultVariant?.price_list || product.price,
-          discounted_price: defaultVariant?.price_sale || product.discounted_price,
-          stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : product.stock,
+          // MULTITENANT: Precio/stock prioridad variante > tenant_products > producto
+          price: defaultVariant?.price_list ?? tenantPrice,
+          discounted_price: defaultVariant?.price_sale ?? tenantDiscountedPrice,
+          stock: defaultVariant?.stock !== undefined ? defaultVariant.stock : tenantStock,
           // ✅ CRÍTICO: Prioridad: product_images > variante > null (asegurar siempre)
           image_url: primaryImageUrl || defaultVariant?.image_url || enrichedProduct.image_url || null,
         }

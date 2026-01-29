@@ -963,16 +963,16 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                     )}
 
                     {/* Selector de capacidad */}
-                    {/* ✅ CORREGIDO: Solo mostrar si hay capacidades reales (no fallbacks) */}
+                    {/* ✅ Mostrar si hay capacidades: cuando hay variantes con measure siempre mostrar; si no hay variantes, ocultar solo si son exactamente las defaultCapacities del tipo (placeholder). */}
                     {availableCapacities.length > 0 &&
                       !(availableCapacities.length === 1 && availableCapacities[0] === 'Sin especificar') &&
                       !productType.hasWidthSelector &&
                       !productType.hasGrainSelector &&
                       !productType.hasSizeSelector &&
                       !(availableCapacities.length === 1 && availableCapacities[0] === '1') &&
-                      // ✅ NUEVO: Verificar que las capacidades no sean solo valores por defecto del tipo
-                      !(availableCapacities.length === productType.defaultCapacities.length && 
-                        availableCapacities.every((cap, idx) => cap === productType.defaultCapacities[idx])) && (
+                      ((Array.isArray(variants) && variants.length > 0) ||
+                        !(availableCapacities.length === productType.defaultCapacities.length &&
+                          availableCapacities.every((cap, idx) => cap === productType.defaultCapacities[idx]))) && (
                         <div className='space-y-4'>
                           <div className='flex items-center gap-2'>
                             <Ruler className='w-5 h-5 text-blaze-orange-600' />

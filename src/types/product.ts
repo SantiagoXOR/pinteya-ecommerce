@@ -10,8 +10,9 @@ export type Product = {
     thumbnails: string[]
     previews: string[]
   }
-  // ✅ CAMPOS CRÍTICOS PARA BADGES INTELIGENTES
+  // ✅ CAMPOS CRÍTICOS PARA BADGES INTELIGENTES Y SELECTOR DE MEDIDA
   variants?: any[]
+  default_variant?: { measure?: string; price_list?: number; price_sale?: number; stock?: number; [key: string]: unknown } | null
   specifications?: Record<string, any>
   // Campos directos de la base de datos
   color?: string

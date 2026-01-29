@@ -74,6 +74,11 @@ const ShopDetailsById = ({ productId }: ShopDetailsByIdProps) => {
               thumbnails: [mainImageUrl],
               previews: [mainImageUrl],
             },
+            // ✅ Incluir variantes para que el selector de medida/color se muestre en ShopDetails
+            variants: Array.isArray(productData.variants) ? productData.variants : [],
+            default_variant: productData.default_variant ?? null,
+            stock: productData.stock != null ? Number(productData.stock) : undefined,
+            description: productData.description ?? undefined,
           }
 
           setProduct(transformedProduct)
