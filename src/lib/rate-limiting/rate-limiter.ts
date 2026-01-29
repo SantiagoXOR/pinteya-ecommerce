@@ -148,6 +148,13 @@ export const RATE_LIMIT_CONFIGS = {
     maxRequests: isDevelopment ? 50 : 10, // 50 en dev, 10 en prod
     message: 'Límite de visualizaciones excedido. Intente en 5 minutos.',
   },
+
+  // AI Chat API - límites moderados (usa Gemini API)
+  aiChat: {
+    windowMs: isDevelopment ? 60 * 1000 : 5 * 60 * 1000, // 1 minuto en dev, 5 minutos en prod
+    maxRequests: isDevelopment ? 60 : 20, // 60 en dev, 20 en prod
+    message: 'Límite de mensajes del chat excedido. Intente en 5 minutos.',
+  },
 } as const
 
 // ===================================

@@ -26,6 +26,10 @@ const CartModalProvider = dynamic(() => import('./context/CartSidebarModalContex
   ssr: false,
   loading: () => null,
 })
+const AIChatPopupProvider = dynamic(() => import('./context/AIChatPopupContext').then(m => ({ default: m.AIChatPopupProvider })), {
+  ssr: false,
+  loading: () => null,
+})
 const PreviewSliderProvider = dynamic(() => import('./context/PreviewSliderContext').then(m => ({ default: m.PreviewSliderProvider })), {
   ssr: false,
   loading: () => null,
@@ -94,6 +98,14 @@ const PreviewSliderModal = dynamic(() => import('@/components/Common/PreviewSlid
 
 // ⚡ PERFORMANCE: Bottom navigation estilo MercadoLibre (lazy load)
 const MercadoLibreBottomNav = dynamic(() => import('@/components/ui/bottom-navigation-mercadolibre').then(m => ({ default: m.MercadoLibreBottomNav })), {
+  ssr: false,
+  loading: () => null,
+})
+const AIChatTab = dynamic(() => import('@/components/Common/AIChatTab').then(m => ({ default: m.AIChatTab })), {
+  ssr: false,
+  loading: () => null,
+})
+const AIChatPopup = dynamic(() => import('@/components/Common/AIChatPopup').then(m => ({ default: m.AIChatPopup })), {
   ssr: false,
   loading: () => null,
 })
@@ -183,7 +195,12 @@ const BottomNavWrapper = ({
     return null
   }
 
-  return <MercadoLibreBottomNav />
+  return (
+    <>
+      <AIChatTab />
+      <MercadoLibreBottomNav />
+    </>
+  )
 }
 
 const DeferredComponents = React.memo(({ 
@@ -284,6 +301,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               {/* 4. Modal provider - Crítico para UI */}
               <ModalProvider>
                 <CartModalProvider>
+                  <AIChatPopupProvider>
                   <PreviewSliderProvider>
                     {/* ⚡ FASE 4: Providers diferidos después del LCP para reducir TBT */}
                     <DeferredProviders
@@ -296,6 +314,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
                       {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
                       {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
+                      {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <AIChatPopup />}
                       <PreviewSliderModal />
                       
                       {/* ⚡ FASE 4: Componentes diferidos después del LCP */}
@@ -312,6 +331,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                       {!isAdminRoute && !isAuthRoute && !isCheckoutRoute && <MemoizedFooter />}
                     </DeferredProviders>
                   </PreviewSliderProvider>
+                  </AIChatPopupProvider>
                 </CartModalProvider>
               </ModalProvider>
             </CartPersistenceProvider>
