@@ -352,6 +352,30 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       [state.isAddingToCart, effectiveStock, currentCartQuantity, showCartAnimation, variantSelection, productId, title, image, variants, price, brand, category, addProduct, trackCartAction]
     )
 
+    // Activación del scroll de pills por visibilidad al hacer scroll vertical (estilo YouTube/Pornhub preview)
+    const cardRef = React.useRef<HTMLDivElement | null>(null)
+    const [isCardInView, setIsCardInView] = React.useState(false)
+    React.useEffect(() => {
+      const el = cardRef.current
+      if (!el || typeof IntersectionObserver === 'undefined') return
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries
+          if (!entry) return
+          // Activar cuando el card tiene ~25% visible; desactivar cuando baja de ~10%
+          const ratio = entry.intersectionRatio
+          setIsCardInView(ratio >= 0.25)
+        },
+        {
+          root: null,
+          rootMargin: '50px 0px',
+          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1]
+        }
+      )
+      observer.observe(el)
+      return () => observer.disconnect()
+    }, [])
+
     // Handler para clic en el card
     const handleCardClick = React.useCallback(
       (e: React.MouseEvent) => {
@@ -361,7 +385,6 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
           ignoreClicksUntil: state.ignoreClicksUntilRef.current,
           now: Date.now()
         })
-        
         if (Date.now() < state.ignoreClicksUntilRef.current) {
           console.log('⏸️ [ProductCard] Click ignorado (dentro del período de guardia)')
           e.preventDefault()
@@ -394,34 +417,20 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       state.setShowQuickActions(false)
     }, [state])
 
-    // Touch: activar scroll automático de pills en mobile al posar el dedo
-    const touchEndTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
-    React.useEffect(() => () => {
-      if (touchEndTimeoutRef.current) clearTimeout(touchEndTimeoutRef.current)
-    }, [])
-    const handleTouchStart = React.useCallback(() => {
-      if (touchEndTimeoutRef.current) {
-        clearTimeout(touchEndTimeoutRef.current)
-        touchEndTimeoutRef.current = null
-      }
-      if (!isScrolling) {
-        state.setIsHovered(true)
-        state.setShowQuickActions(true)
-      }
-    }, [isScrolling, state])
-    const handleTouchEnd = React.useCallback(() => {
-      touchEndTimeoutRef.current = setTimeout(() => {
-        state.setIsHovered(false)
-        state.setShowQuickActions(false)
-        touchEndTimeoutRef.current = null
-      }, 300)
-    }, [state])
+    const autoScrollPills = isCardInView && !isLowPerformance
 
-    const autoScrollPills = state.isHovered && !isLowPerformance && !isScrolling
+    const setRef = React.useCallback(
+      (el: HTMLDivElement | null) => {
+        cardRef.current = el
+        if (typeof ref === 'function') ref(el)
+        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el
+      },
+      [ref]
+    )
 
     return (
       <div
-        ref={ref}
+        ref={setRef}
         className={cn(
           'relative flex flex-col w-full cursor-pointer',
           'min-h-[280px] sm:min-h-[320px] md:h-[400px] lg:h-[440px]',
@@ -445,9 +454,6 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
         onClick={handleCardClick}
         {...props}
       >
