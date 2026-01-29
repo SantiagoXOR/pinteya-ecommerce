@@ -21,9 +21,13 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import { MercadoPagoLogo } from '@/components/ui/MercadoPagoLogo'
 
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext()
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor ?? '#009ee3'
   const cartItems = useAppSelector(state => state.cartReducer.items)
   const [mounted, setMounted] = useState(false)
   const [dragStartY, setDragStartY] = useState<number | null>(null)
@@ -309,13 +313,10 @@ const CartSidebarModal = () => {
             {mounted && hasItems && (
               <div className={`px-4 sm:px-7.5 lg:px-11 bg-white pointer-events-none`} style={{ paddingTop: '0px', paddingBottom: '0px', marginBottom: '0px' }}>
                 <div className={`w-full flex items-center justify-center gap-1.5 ${isLargeText ? 'px-1' : 'px-2'} ${isLargeText ? 'text-[9px]' : 'text-[10px]'} text-gray-600`} style={{ paddingTop: '0px', paddingBottom: '4px', marginTop: '0px', marginBottom: '0px' }}>
-                  <Image
-                    src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
-                    alt='MercadoPago'
+                  <MercadoPagoLogo
+                    color={accentColor}
                     width={isLargeText ? 80 : 95}
-                    height={isLargeText ? 24 : 30}
-                    className='w-auto h-auto'
-                    style={{ maxWidth: isLargeText ? '80px' : '95px', margin: '0', display: 'block' }}
+                    alt='Mercado Pago'
                   />
                   <span className={`font-medium ${isLargeText ? 'text-[9px]' : 'text-[10px]'}`} style={{ margin: '0' }}>Pago seguro</span>
                 </div>

@@ -99,6 +99,8 @@ export function useTenantAssets() {
     promoBanner: getTenantAssetPath(tenant, 'hero/promo-banner.webp', `/tenants/${tenant.slug}/hero/promo-banner.webp`),
     // Fallback a ruta local que existe (public/images/icons/); /tenants/{slug}/icons/ suele estar vacío en repo
     shippingIcon: getTenantAssetPath(tenant, 'icons/icon-envio.svg', '/images/icons/icon-envio.svg'),
+    /** Asset "Tu pedido en mano" / pago al recibir (por tenant) */
+    pagoAlRecibir: getTenantAssetPath(tenant, 'pagoalrecibir.png', `/tenants/${tenant.slug}/pagoalrecibir.png`),
   }
 }
 

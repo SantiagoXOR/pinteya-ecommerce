@@ -7,6 +7,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 import { ShippingIcon } from '@/components/ui/ShippingIcon'
+import { MercadoPagoLogo } from '@/components/ui/MercadoPagoLogo'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -77,6 +78,10 @@ const Footer = () => {
   const tenantName = tenant?.name || 'Pinteya'
   const tenantCity = tenant?.contactCity || 'Córdoba'
   const tenantProvince = tenant?.contactProvince || 'Argentina'
+  const accentColor = tenant?.accentColor ?? '#ffd549'
+  const pagoAlRecibirSrc = tenant
+    ? getTenantAssetPath(tenant, 'pagoalrecibir.png', `/tenants/${tenant.slug}/pagoalrecibir.png`)
+    : '/images/checkout/pagoalrecibir.png'
 
   // Primer slot: con sesión = avatar + dropdown; sin sesión = enlace Google. Resto: Facebook, Instagram
   const primaryColor = tenant?.primaryColor ?? '#7c3aed'
@@ -99,14 +104,7 @@ const Footer = () => {
                 <p className='text-2xl font-black text-white'>Mercado Pago</p>
                 <p className='text-sm text-white/80 mt-1'>Pago seguro con un clic.</p>
               </div>
-              <Image
-                src='/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg'
-                alt='Mercado Pago'
-                width={140}
-                height={55}
-                className='h-12 w-auto drop-shadow-[0_8px_25px_rgba(0,0,0,0.25)]'
-                loading="lazy"
-              />
+              <MercadoPagoLogo color={accentColor} width={140} className="h-12 w-auto" alt="Mercado Pago" />
             </div>
           </article>
 
@@ -118,12 +116,16 @@ const Footer = () => {
                 <p className='text-sm text-white/80 mt-1'>QR, efectivo o tarjetas sin vueltas.</p>
               </div>
               <Image
-                src='/images/checkout/pagoalrecibir.png'
-                alt='Pagás al recibir'
+                src={pagoAlRecibirSrc}
+                alt='Tu pedido en mano'
                 width={105}
                 height={85}
                 className='w-20 h-auto drop-shadow-[0_12px_25px_rgba(0,0,0,0.25)] translate-y-1 -mb-2'
                 loading="lazy"
+                onError={(e) => {
+                  const t = e.target as HTMLImageElement
+                  if (t.src !== '/images/checkout/pagoalrecibir.png') t.src = '/images/checkout/pagoalrecibir.png'
+                }}
               />
             </div>
           </article>

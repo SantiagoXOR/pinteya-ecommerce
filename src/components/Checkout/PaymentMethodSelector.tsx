@@ -3,9 +3,10 @@
 import React from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTenantSafe } from '@/contexts/TenantContext';
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets';
+import { MercadoPagoLogo } from '@/components/ui/MercadoPagoLogo';
 
 interface PaymentMethodSelectorProps {
   selectedMethod?: 'cash' | 'mercadopago';
@@ -87,15 +88,19 @@ export default function PaymentMethodSelector({ selectedMethod = 'cash', onMetho
                     </div>
                   )}
                   
-                  {/* Imagen pequeña integrada */}
+                  {/* Imagen pequeña integrada (por tenant) */}
                   <div className="ml-2 flex-shrink-0 translate-y-0.5">
                     <Image
-                      src="/images/checkout/pagoalrecibir.png"
+                      src={tenant ? getTenantAssetPath(tenant, 'pagoalrecibir.png', `/tenants/${tenant.slug}/pagoalrecibir.png`) : '/images/checkout/pagoalrecibir.png'}
                       alt="Pago al recibir el producto"
                       width={60}
                       height={42}
                       className="object-contain drop-shadow-lg"
                       priority
+                      onError={(e) => {
+                        const t = e.target as HTMLImageElement;
+                        if (t.src !== '/images/checkout/pagoalrecibir.png') t.src = '/images/checkout/pagoalrecibir.png';
+                      }}
                     />
                   </div>
                 </div>
@@ -124,12 +129,10 @@ export default function PaymentMethodSelector({ selectedMethod = 'cash', onMetho
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="flex items-center justify-center">
-                  <Image
-                    src="/images/logo/MercadoPagoLogos/SVGs/MP_RGB_HANDSHAKE_color_horizontal.svg"
-                    alt="MercadoPago"
+                  <MercadoPagoLogo
+                    color={accentColor}
                     width={70}
-                    height={35}
-                    className="object-contain"
+                    alt="Mercado Pago"
                   />
                 </div>
                 <div className="flex-1">

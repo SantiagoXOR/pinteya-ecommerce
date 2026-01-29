@@ -1,7 +1,8 @@
 /**
- * Optimiza favicon.svg, hero1/hero2.png, combo1/2/3.png y promo (30-off, calculator, help).png de pintemas y los sube a Supabase tenant-assets.
+ * Optimiza favicon.svg, hero1/hero2.png, combo1/2/3.png, promo (30-off, calculator, help).png y pagoalrecibir.png de pintemas y los sube a Supabase tenant-assets.
  * - Favicon: minifica SVG (quita comentarios y espacios redundantes).
  * - Hero, combo y promo PNG: convierte a WebP (max 1920px, calidad 76).
+ * - pagoalrecibir.png: optimiza (max 420px ancho, PNG comprimido) y sube como pagoalrecibir.png.
  * Uso: node optimize-pintemas-assets-upload.js
  * Requiere: .env.local con NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY
  */
@@ -39,6 +40,15 @@ async function optimizePngToWebp(inputPath) {
   return sharp(inputPath)
     .resize(MAX_HERO_WIDTH, null, { withoutEnlargement: true })
     .webp({ quality: WEBP_QUALITY })
+    .toBuffer()
+}
+
+const MAX_PAGOALRECIBIR_WIDTH = 420
+
+async function optimizePagoAlRecibirPng(inputPath) {
+  return sharp(inputPath)
+    .resize(MAX_PAGOALRECIBIR_WIDTH, null, { withoutEnlargement: true })
+    .png({ compressionLevel: 9 })
     .toBuffer()
 }
 
@@ -168,6 +178,25 @@ async function main() {
       err++
     }
     await new Promise((r) => setTimeout(r, 150))
+  }
+
+  // 10. Tu pedido en mano (pagoalrecibir) PNG optimizado
+  const pagoAlRecibirPath = path.join(BASE, 'pagoalrecibir.png')
+  if (fs.existsSync(pagoAlRecibirPath)) {
+    try {
+      const out = await optimizePagoAlRecibirPng(pagoAlRecibirPath)
+      const storagePath = `tenants/${SLUG}/pagoalrecibir.png`
+      await upload(storagePath, out, 'image/png')
+      const stats = fs.statSync(pagoAlRecibirPath)
+      console.log(`✅ ${storagePath}  ${(stats.size / 1024).toFixed(1)} KB → ${(out.length / 1024).toFixed(1)} KB (PNG optimizado)`)
+      ok++
+    } catch (e) {
+      console.error(`❌ pagoalrecibir.png: ${e.message}`)
+      err++
+    }
+    await new Promise((r) => setTimeout(r, 150))
+  } else {
+    console.warn(`⚠️ No existe: ${pagoAlRecibirPath}`)
   }
 
   console.log(`\n📊 OK: ${ok} | Errores: ${err}`)
