@@ -15,7 +15,7 @@ const EmptyCart = () => {
       {/* Header más compacto */}
       <div className='mb-4'>
         <div className='mx-auto mb-3 w-16 h-16 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full flex items-center justify-center'>
-          <ShoppingBag className='w-8 h-8' style={{ color: '#c2410b' }} />
+          <ShoppingBag className='w-8 h-8 text-tenant-price' />
         </div>
         <h3 className='text-lg font-bold text-gray-900 mb-1'>¡Tu carrito está vacío!</h3>
         <p className='text-gray-600 text-sm'>

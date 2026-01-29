@@ -5,6 +5,9 @@ import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useSwipeGestures } from '@/hooks/useSwipeGestures'
 import { useTenantSafe, useTenantAssets } from '@/contexts/TenantContext'
+import { useSlugFromHostname } from '@/hooks/useSlugFromHostname'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
+import type { TenantPublicConfig } from '@/lib/tenant/types'
 
 interface Slide {
   id: string
@@ -12,7 +15,7 @@ interface Slide {
   alt: string
 }
 
-// Fallback slides si no hay tenant context
+// Fallback slides solo cuando no hay tenant ni hostname (ej: localhost sin tenant)
 const FALLBACK_SLIDES: Slide[] = [
   { id: 'hero-1', image: '/images/hero/hero2/hero1.webp', alt: 'Pintá rápido, fácil y cotiza al instante' },
   { id: 'hero-2', image: '/images/hero/hero2/hero2.webp', alt: 'Envío express en 24HS' },
@@ -21,20 +24,28 @@ const FALLBACK_SLIDES: Slide[] = [
 
 const SimpleHeroCarousel: React.FC = () => {
   const tenant = useTenantSafe()
+  const slugFromHost = useSlugFromHostname()
   const { heroImage } = useTenantAssets()
   const tenantName = tenant?.name || 'PinteYa'
-  
-  // Slides con URLs del bucket (Supabase) o fallback local
+
+  // Usar tenant del contexto o slug del hostname para no mostrar Pinteya en pintemas.com
+  const effectiveTenant = useMemo((): TenantPublicConfig | null => {
+    if (tenant?.slug) return tenant
+    if (slugFromHost) return { slug: slugFromHost } as TenantPublicConfig
+    return null
+  }, [tenant, slugFromHost])
+
+  // Slides con URLs del bucket (Supabase) o fallback local solo cuando no hay effectiveTenant
   const slides = useMemo<Slide[]>(() => {
-    if (!tenant || !tenant.slug) {
-      return FALLBACK_SLIDES
-    }
+    if (!effectiveTenant) return FALLBACK_SLIDES
+    const getUrl = (i: number) =>
+      getTenantAssetPath(effectiveTenant, `hero/hero${i}.webp`, `/tenants/${effectiveTenant.slug}/hero/hero${i}.webp`)
     return [
-      { id: 'hero-1', image: heroImage(1), alt: `${tenantName} - Pintá rápido, fácil y cotiza al instante` },
-      { id: 'hero-2', image: heroImage(2), alt: `${tenantName} - Envío express en 24HS` },
-      { id: 'hero-3', image: heroImage(3), alt: `${tenantName} - Pagá con Mercado Pago` },
+      { id: 'hero-1', image: getUrl(1), alt: `${tenantName} - Pintá rápido, fácil y cotiza al instante` },
+      { id: 'hero-2', image: getUrl(2), alt: `${tenantName} - Envío express en 24HS` },
+      { id: 'hero-3', image: getUrl(3), alt: `${tenantName} - Pagá con Mercado Pago` },
     ]
-  }, [tenant, tenantName, heroImage])
+  }, [effectiveTenant, tenantName])
   const [currentIndex, setCurrentIndex] = useState(1)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)

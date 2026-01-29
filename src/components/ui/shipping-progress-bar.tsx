@@ -59,7 +59,7 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
           {/* Texto principal */}
           <div className={cn(isCompact ? 'mb-1.5' : 'mb-3')}>
             {hasReachedTarget ? (
-              <p className={cn('text-green-700 font-bold', isCompact ? 'text-sm' : 'text-base')}>
+              <p className={cn('text-tenant-success font-bold', isCompact ? 'text-sm' : 'text-base')}>
                 ¡Felicitaciones! Tienes envío gratis
               </p>
             ) : (
@@ -77,7 +77,7 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
               className={cn(
                 'h-full rounded-full transition-all duration-500 ease-out',
                 hasReachedTarget
-                  ? 'bg-gradient-to-r from-green-500 to-green-600'
+                  ? 'bg-tenant-success-bar'
                   : 'bg-gradient-to-r from-yellow-400 to-orange-500'
               )}
               style={{ width: `${progress}%` }}

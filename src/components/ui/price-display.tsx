@@ -157,12 +157,13 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
           </div>
         )}
 
-        {/* Precio Principal */}
+        {/* Precio Principal - multitenant: usa --tenant-price-color si no se pasa priceColor */}
         <div
           className={cn(
             priceVariants({ size }),
-            priceColor ? `text-[${priceColor}]` : 'text-[#712F00]'
+            !priceColor && 'text-tenant-price'
           )}
+          style={priceColor ? { color: priceColor } : undefined}
         >
           {renderPrice(amount, currency, currencySymbol)}
         </div>

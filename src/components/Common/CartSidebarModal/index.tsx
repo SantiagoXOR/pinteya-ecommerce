@@ -364,7 +364,7 @@ const CartSidebarModal = () => {
             {/* Subtotal */}
             <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-0.5' : 'mb-1'}`}>
               <p className={isLargeText ? 'text-[11px] text-gray-600 font-light' : 'text-xs text-gray-600 font-light'}>Subtotal</p>
-              <p className={isLargeText ? 'text-[11px] font-semibold' : 'text-xs font-semibold'} style={{ color: '#c2410b' }}>
+              <p className={`${isLargeText ? 'text-[11px] font-semibold' : 'text-xs font-semibold'} text-tenant-price`}>
                 {mounted ? formatCurrency(effectiveTotalPrice) : formatCurrency(0)}
               </p>
             </div>
@@ -375,7 +375,7 @@ const CartSidebarModal = () => {
                 <p className={isLargeText ? 'text-[11px] text-gray-600' : 'text-xs text-gray-600'}>Envío</p>
                 <p className={isLargeText ? 'text-[11px] font-semibold' : 'text-xs font-semibold'}>
                   {estimatedShippingCost === 0 ? (
-                    <span className='text-green-600'>Gratis</span>
+                    <span className='text-tenant-success'>Gratis</span>
                   ) : (
                     <span className='text-yellow-600'>{formatCurrency(estimatedShippingCost)}</span>
                   )}
@@ -387,7 +387,7 @@ const CartSidebarModal = () => {
             {hasItems && (
               <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
                 <p className={isLargeText ? 'font-semibold text-xs text-gray-900' : 'font-semibold text-sm text-gray-900'}>Total</p>
-                <p className={isLargeText ? 'font-semibold text-xs' : 'font-semibold text-sm'} style={{ color: '#c2410b' }}>
+                <p className={`${isLargeText ? 'font-semibold text-xs' : 'font-semibold text-sm'} text-tenant-price`}>
                   {mounted ? formatCurrency(effectiveTotalPrice + estimatedShippingCost) : formatCurrency(0)}
                 </p>
               </div>

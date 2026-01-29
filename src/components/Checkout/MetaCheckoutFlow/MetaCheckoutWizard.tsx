@@ -958,7 +958,7 @@ const ConfirmationStep: React.FC<{
             <span>Envío:</span>
             <span>
               {shippingCost === 0 ? (
-                <span className='text-green-600 font-semibold'>Gratis</span>
+                <span className='text-tenant-success font-semibold'>Gratis</span>
               ) : (
                 `$${shippingCost.toLocaleString('es-AR')}`
               )}
@@ -966,7 +966,7 @@ const ConfirmationStep: React.FC<{
           </div>
           <div className='border-t pt-2 mt-2 flex justify-between font-bold text-lg'>
             <span>Total:</span>
-            <span className='text-green-600'>${finalTotal.toLocaleString('es-AR')}</span>
+            <span className='text-tenant-price'>${finalTotal.toLocaleString('es-AR')}</span>
           </div>
         </div>
       </div>

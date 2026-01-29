@@ -297,7 +297,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                   </div>
                   <div className='text-right'>
                     {qualifiesForFreeShipping ? (
-                      <span className={cn('text-green-600 font-medium', isMobile && 'text-sm')}>
+                      <span className={cn('text-tenant-success font-medium', isMobile && 'text-sm')}>
                         Gratis
                       </span>
                     ) : (
@@ -354,7 +354,7 @@ export const CartSummary = React.forwardRef<HTMLDivElement, CartSummaryProps>(
                     amount={calculatedFinalTotal * 100}
                     variant='default'
                     size={isMobile ? 'xl' : 'lg'}
-                    className={cn('text-primary', isMobile && 'text-green-600 text-2xl font-bold')}
+                    className={cn('text-tenant-price', isMobile && 'text-2xl font-bold')}
                   />
                 </div>
               </div>

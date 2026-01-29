@@ -333,11 +333,11 @@ const SingleItem = ({ item }: { item: any }) => {
 
           {/* Subtotal */}
           <div className='text-right'>
-            <p className='font-bold text-sm' style={{ color: '#c2410b' }}>
+            <p className='font-bold text-sm text-tenant-price'>
               ${item.discountedPrice ? (item.discountedPrice * quantity).toLocaleString() : '0'}
             </p>
             {item.price && item.discountedPrice && item.discountedPrice < item.price && (
-              <p className='text-xs text-green-600 font-semibold'>
+              <p className='text-xs text-tenant-success font-semibold'>
                 Ahorro: ${((item.price - item.discountedPrice) * quantity).toLocaleString()}
               </p>
             )}

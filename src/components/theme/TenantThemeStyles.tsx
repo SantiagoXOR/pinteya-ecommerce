@@ -119,6 +119,12 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
       --tenant-accent-light: ${tenant.accentColor.replace('#', '')}ff;
       
       /* =================================
+         COLORES PARA PRECIOS Y ÉXITO (checkout/cart)
+         ================================= */
+      --tenant-price-color: ${tenant.primaryColor};
+      --tenant-success-color: ${tenant.secondaryColor};
+
+      /* =================================
          VARIABLES PARA ICONOS
          ================================= */
       --tenant-icon-color: ${tenant.primaryColor};
@@ -299,6 +305,18 @@ export function TenantThemeStyles({ tenant }: TenantThemeStylesProps) {
       color: var(--tenant-icon-color) !important;
     }
     
+    /* =================================
+       PRECIOS Y ÉXITO (checkout/cart) - multitenant
+       ================================= */
+    .text-tenant-price {
+      color: var(--tenant-price-color) !important;
+    }
+    .text-tenant-success {
+      color: var(--tenant-success-color) !important;
+    }
+    .bg-tenant-success-bar {
+      background: linear-gradient(to right, var(--tenant-success-color), var(--tenant-success-color)) !important;
+    }
     /* =================================
        ESTILOS ADICIONALES BLAZE-ORANGE
        ================================= */

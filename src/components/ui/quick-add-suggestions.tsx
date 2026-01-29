@@ -246,7 +246,7 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
                   )}
 
                   <div className='flex items-center gap-2'>
-                    <span className='font-bold text-sm' style={{ color: '#c2410b' }}>
+                    <span className='font-bold text-sm text-tenant-price'>
                       ${currentPrice.toLocaleString()}
                     </span>
                     {hasDiscount && (

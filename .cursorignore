@@ -1,27 +1,9 @@
-# Cursor Ignore - Archivos excluidos del contexto para reducir consumo de tokens
-# Este archivo reduce significativamente el número de tokens usados en cada request
-
-# ============================================
-# DOCUMENTACIÓN Y ARCHIVOS DE REFERENCIA
-# ============================================
-# Excluir documentación extensa (892 archivos .md)
+# Cursor Ignore - Permisivo para agent-development (migraciones, logs)
+# DOCUMENTACIÓN
 docs/
-# Mantener solo archivos de documentación activa si es necesario
-# !docs/README.md
-# !docs/MULTITENANCY.md
-
-# ============================================
-# SCRIPTS Y UTILIDADES
-# ============================================
-# Excluir scripts (287 archivos) - solo se necesitan cuando se trabaja directamente con ellos
+# SCRIPTS
 scripts/
-# Mantener solo scripts críticos si es necesario
-# !scripts/development/
-
-# ============================================
-# TESTS Y ARCHIVOS DE PRUEBA
-# ============================================
-# Excluir todos los tests
+# TESTS
 __tests__/
 __mocks__/
 tests/
@@ -36,11 +18,7 @@ e2e/
 *.spec.jsx
 *.stories.ts
 *.stories.tsx
-
-# ============================================
-# ARCHIVOS DE CONFIGURACIÓN Y BUILD
-# ============================================
-# Build outputs
+# BUILD
 .next/
 out/
 dist/
@@ -51,14 +29,9 @@ coverage/
 .cache/
 .parcel-cache/
 tsconfig.tsbuildinfo
-
-# ============================================
-# ARCHIVOS DE LOGS Y REPORTES
-# ============================================
-*.log
-*.logs
+# LOGS (permisivo: report.json y mcp-logs no ignorados)
 *.report.html
-*.report.json
+# *.report.json
 lighthouse-*.json
 lighthouse-*.html
 npm-audit-report.json
@@ -70,24 +43,18 @@ bundle-reports/
 bundle-analysis/
 ci-performance-reports/
 audit-screenshots/
-
-# ============================================
-# BASE DE DATOS Y SQL
-# ============================================
-# Excluir archivos SQL grandes y backups
-database/
-sql/
-*.sql
-*.db
-*.sqlite
-*.sqlite3
-*.backup
-*.bak
-
-# ============================================
-# ARCHIVOS DE IMÁGENES Y ASSETS GRANDES
-# ============================================
-# Excluir imágenes grandes (solo se incluyen cuando se trabaja específicamente con ellas)
+# BASE DE DATOS (permisivo: migraciones Supabase)
+#database/
+#sql/
+#*.db
+#*.sqlite
+#*.sqlite3
+#*.backup
+#*.bak
+#*.sql
+#!supabase/migrations/
+#!supabase/migrations/**/*.sql
+# IMÁGENES
 public/images/
 public/test-screenshots/
 public/test-reports/
@@ -97,13 +64,7 @@ public/test-reports/
 *.gif
 *.webp
 *.svg
-# Mantener solo cuando se trabaja con assets específicos
-# !public/favicon.*
-# !public/tenants/
-
-# ============================================
-# ARCHIVOS TEMPORALES Y DEBUG
-# ============================================
+# TEMP
 *.tmp
 *.temp
 temp/
@@ -113,14 +74,10 @@ debug-*.js
 debug-*.html
 test-debug.html
 check-order-number.html
-
-# ============================================
-# CONFIGURACIÓN Y ARCHIVOS DEL SISTEMA
-# ============================================
-# Archivos de configuración que no necesitan estar en contexto
+# CONFIG (permisivo: mcp-logs no ignorado)
 config/
 .mcp-config.json
-.mcp-logs.json
+# .mcp-logs.json
 vercel.json
 vercel-storybook.json
 lighthouserc.js
@@ -129,33 +86,18 @@ jest.*.js
 jest.*.config.js
 playwright.config.ts
 .eslintcache
-
-# ============================================
-# SUPABASE Y MIGRACIONES
-# ============================================
-# Excluir migraciones y configs de Supabase (solo cuando se trabaja directamente)
-supabase/
-# Mantener solo si se está trabajando activamente con Supabase
-# !supabase/config.toml
-
-# ============================================
-# NODE_MODULES Y DEPENDENCIAS
-# ============================================
+# SUPABASE (permisivo: migraciones y config)
+#supabase/
+#!supabase/migrations/
+#!supabase/migrations/**
+#!supabase/config.toml
+# NODE
 node_modules/
 .pnp
 .pnp.js
-
-# ============================================
-# ARCHIVOS DE PLANES Y DOCUMENTACIÓN CURSOR
-# ============================================
-# Excluir planes antiguos de Cursor (solo mantener el actual si es necesario)
+# CURSOR
 .cursor/plans/
-# Mantener solo el plan actual si es necesario
-# !.cursor/plans/plan-actual.plan.md
-
-# ============================================
-# ARCHIVOS DE ENTORNO Y SEGURIDAD
-# ============================================
+# SEGURIDAD
 .env
 .env.local
 .env.*.local
@@ -164,31 +106,11 @@ node_modules/
 *.crt
 *.p12
 *.pfx
-
-# ============================================
-# ARCHIVOS ESPECÍFICOS GRANDES
-# ============================================
-# Archivos JSON grandes de análisis
+# GRANDES
 lighthouse-analysis-output.json
 resumen-busquedas-search.json
 www.*.report.html
-
-# ============================================
-# ARCHIVOS DE STORYBOOK
-# ============================================
 .storybook/
 storybook-static/
-
-# ============================================
-# ARCHIVOS DE HUSKY Y GIT
-# ============================================
 .husky/
 .git/
-
-# ============================================
-# NOTAS IMPORTANTES
-# ============================================
-# Si necesitas trabajar con archivos excluidos, puedes:
-# 1. Usar búsqueda específica con @filename
-# 2. Temporalmente comentar la línea correspondiente
-# 3. Usar comandos de terminal para acceder a los archivos
