@@ -32,6 +32,7 @@ export function AIChatDebugPanel() {
     handleApplicationClick,
     applications,
     lastResponseDebug,
+    resetChat,
   } = useAIChatSend({
     initialBotMessage: INITIAL_BOT_MESSAGE,
     adminDebug: true,
@@ -128,14 +129,25 @@ export function AIChatDebugPanel() {
     <div className="p-6 space-y-6">
       {/* Chat: misma implementación que el storefront */}
       <Card>
-        <CardHeader>
-          <CardTitle>Chat (misma implementación)</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Misma UI que el chat de la tienda: mensajes, product cards, chips. Con instrumentación de debug abajo.
-          </p>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div>
+            <CardTitle>Chat (misma implementación)</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Misma UI que el chat de la tienda: mensajes, product cards, chips. Con instrumentación de debug abajo.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={resetChat}
+            className="flex-shrink-0"
+          >
+            Reiniciar chat
+          </Button>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg overflow-hidden" style={{ minHeight: 400, maxHeight: 500 }}>
+          <div className="border rounded-lg overflow-hidden flex flex-col min-h-[400px] h-[500px]">
             <AIChatConversationUI
               displayMessages={displayMessages}
               inputValue={inputValue}
@@ -145,7 +157,7 @@ export function AIChatDebugPanel() {
               handleApplicationClick={handleApplicationClick}
               applications={applications}
               debugSlot={debugStrip}
-              className="h-full p-3"
+              className="min-h-0 flex-1 flex flex-col p-3"
             />
           </div>
         </CardContent>

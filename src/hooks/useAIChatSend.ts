@@ -172,6 +172,31 @@ export function useAIChatSend(options: UseAIChatSendOptions) {
               filtered = filtered.slice(0, PRODUCTS_CAROUSEL_MAX)
             }
             products = filtered
+            // Si categoría + búsqueda no devolvieron nada, intentar solo búsqueda (ej. esmalte metal)
+            if ((!products || products.length === 0) && suggestedSearch) {
+              try {
+                const paramsFallback = new URLSearchParams()
+                paramsFallback.set('search', suggestedSearch)
+                paramsFallback.set('limit', String(PRODUCTS_LIMIT))
+                const resFallback = await fetch(`/api/products?${paramsFallback.toString()}`)
+                const dataFallback = await resFallback.json()
+                const rawFallback = (dataFallback?.data ?? dataFallback?.products ?? []) as unknown[]
+                const sliceFallback = Array.isArray(rawFallback) ? rawFallback.slice(0, PRODUCTS_LIMIT) : []
+                const adaptedFallback = adaptApiProductsToComponents(sliceFallback as Record<string, unknown>[])
+                const filteredFallback = adaptedFallback
+                  .filter(
+                    (p) =>
+                      !EXCLUDE_PRODUCT_KEYWORDS.test(String(p.name ?? p.title ?? '')) &&
+                      !EXCLUDE_PRODUCT_KEYWORDS.test(String((p as Record<string, unknown>).slug ?? ''))
+                  )
+                  .slice(0, PRODUCTS_CAROUSEL_MAX)
+                if (filteredFallback.length > 0) products = filteredFallback
+              } catch (e) {
+                if (process.env.NODE_ENV === 'development') {
+                  console.warn('[AIChat] Fallback products fetch:', e)
+                }
+              }
+            }
           } catch (e) {
             if (process.env.NODE_ENV === 'development') {
               console.warn('[AIChat] Error fetching products:', e)
@@ -219,6 +244,15 @@ export function useAIChatSend(options: UseAIChatSendOptions) {
     [handleSend]
   )
 
+  const resetChat = useCallback(() => {
+    setMessages([])
+    setChatSessionId(null)
+    setLastResponseDebug(null)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('ai_chat_session_id')
+    }
+  }, [])
+
   const displayMessages = useMemo(() => {
     if (messages.length === 0) {
       return [
@@ -243,6 +277,7 @@ export function useAIChatSend(options: UseAIChatSendOptions) {
     initialBotMessage,
     lastResponseDebug,
     chatSessionId,
+    resetChat,
     applications: APPLICATIONS,
   }
 }
