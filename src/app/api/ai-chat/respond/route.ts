@@ -38,6 +38,28 @@ interface GeminiRespondPayload {
   suggestedSearch?: string | null
 }
 
+/** Schema para Structured Output: respuesta siempre JSON válido (documentación Gemini). */
+const RESPONSE_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    reply: {
+      type: 'string',
+      description: 'Respuesta amigable al usuario en una o dos oraciones.',
+    },
+    suggestedCategory: {
+      type: ['string', 'null'],
+      description: 'Slug de categoría si aplica; null si no.',
+    },
+    suggestedSearch: {
+      type: ['string', 'null'],
+      description: 'Término de búsqueda para productos (ej. aerosol, látex interior, pintura madera).',
+    },
+  },
+  required: ['reply'],
+  // Gemini 2.0 puede requerir propertyOrdering explícito para orden predecible
+  propertyOrdering: ['reply', 'suggestedCategory', 'suggestedSearch'],
+} as const
+
 function buildSystemPrompt(tenantName: string, tenantSlug: string): string {
   const agentName = tenantSlug === 'pintemas' ? 'Luis' : `asistente de ${tenantName}`
   const storeName = tenantSlug === 'pintemas' ? 'Pintemas' : tenantName
@@ -163,8 +185,10 @@ export async function POST(request: NextRequest) {
           },
         ],
         generationConfig: {
-          temperature: 0.7,
+          temperature: 0.3,
           maxOutputTokens: 512,
+          responseMimeType: 'application/json' as const,
+          responseJsonSchema: RESPONSE_JSON_SCHEMA,
         },
       }
 

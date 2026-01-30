@@ -11,22 +11,21 @@ import { MessageCircle, ShoppingCart } from '@/lib/optimized-imports'
 import { adaptApiProductsToComponents } from '@/lib/adapters/product-adapter'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 import { useAppSelector } from '@/redux/store'
+import {
+  APPLICATIONS,
+  EXCLUDE_PRODUCT_KEYWORDS,
+  isAerosolContext,
+  normalizeSuggestedSearch,
+  getFallbackSuggestedSearch,
+  AEROSOL_PRODUCT_REGEX,
+  PRODUCTS_LIMIT,
+  PRODUCTS_CAROUSEL_MAX,
+} from '@/lib/ai-chat/search-intent-config'
 
 const ProductItem = dynamic(
   () => import('@/components/Common/ProductItem').then((m) => ({ default: m.default })),
   { ssr: false, loading: () => <div className="w-[180px] h-[280px] rounded-lg bg-muted animate-pulse" /> }
 )
-
-const APPLICATIONS = [
-  'Interior',
-  'Exterior',
-  'Madera',
-  'Metal',
-  'Paredes',
-  'Techos',
-  'Muebles',
-  'Automotor',
-] as const
 
 function getGreeting(): string {
   const hour = new Date().getHours()
@@ -134,98 +133,58 @@ export default function AIChatPopup() {
           .join(' ')
           .toLowerCase()
 
-        // Si el usuario pide explícitamente aerosol/spray, priorizar esa búsqueda (la tienda SÍ tiene aerosoles)
-        if (/\b(aerosol|aerosoles|spray)\b/.test(contextText) || (/\b(maceta|maseta|masetero)\b/.test(contextText) && /\b(aerosol|spray|pintar)\b/.test(contextText))) {
-          suggestedSearch = 'aerosol'
-        }
+        // Aerosol/spray: priorizar búsqueda (la tienda SÍ tiene aerosoles)
+        if (isAerosolContext(contextText)) suggestedSearch = 'aerosol'
 
-        // Normalizar términos de la IA: madera/techos a búsqueda concreta
-        if (suggestedSearch && !/aerosol|spray/i.test(suggestedSearch)) {
-          const s = suggestedSearch.toLowerCase()
-          if (/interior|interiores/.test(s) && !/látex\s+interior/.test(s)) suggestedSearch = 'látex interior'
-          else if (/exterior|exteriores|frente|fachada/.test(s) && !/látex\s+exterior/.test(s)) suggestedSearch = 'látex exterior'
-          else if (/madera|muebles?/.test(s) && !/pintura\s+madera/.test(s)) suggestedSearch = 'pintura madera'
-          else if (/techo/.test(s) && !/pintura\s+techo/.test(s)) suggestedSearch = 'pintura techo'
-        }
+        // Normalizar términos de la IA a búsquedas canónicas (config centralizado)
+        suggestedSearch = normalizeSuggestedSearch(suggestedSearch)
 
+        // Fallback: si la API no devolvió categoría ni búsqueda, derivar con reglas centralizadas
         if (!suggestedCategory && !suggestedSearch) {
-          // Mensajes cortos de confirmación: usar intención de la conversación (ej. "mostrame" -> último tema)
-          const isShowMe = /^(mostrame|mostrá|mostrar|dale|sí|si|ok|okay|ver|muestra?)$/.test(currentLower.trim())
-          const conversationForIntent = isShowMe ? contextText : currentLower
-
-          // (Aerosol ya se fijó arriba si el usuario lo pidió; aquí el resto de fallbacks)
-          if (/\b(sinteplast|sherwin|sherwin.?williams|plavicon|petrilac|alba)\b/.test(currentLower)) {
-            const brand = currentLower.match(/\b(sinteplast|sherwin|sherwin.?williams|plavicon|petrilac|alba)\b/)?.[1] ?? ''
-            if (/\b(exterior|exteriores|frente|fachada)\b/.test(contextText)) suggestedSearch = `${brand} látex exterior`
-            else if (/\b(interior|interiores)\b/.test(contextText)) suggestedSearch = `${brand} látex interior`
-            else suggestedSearch = brand
-          } else if (/\b(mas\s+vendidos|más\s+vendidos|mejores|best\s*seller)\b/.test(currentLower)) {
-            // "más vendidos" → usar contexto (exterior/interior/madera) para mostrar productos
-            if (/\b(exterior|exteriores|frente|fachada)\b/.test(contextText)) suggestedSearch = 'látex exterior'
-            else if (/\b(interior|interiores)\b/.test(contextText)) suggestedSearch = 'látex interior'
-            else if (/\b(madera|muebles?)\b/.test(contextText)) suggestedSearch = 'pintura madera'
-            else suggestedSearch = 'látex'
-          } else if (/\b(complementos?|accesorios|rodillos?|pinceles?|brochas?|cintas?|bandejas?|herramientas?)\b/.test(conversationForIntent)) {
-            if (/\b(rodillos?|rodillo)\b/.test(conversationForIntent)) suggestedSearch = 'rodillo'
-            else if (/\b(pinceles?|pincel)\b/.test(conversationForIntent)) suggestedSearch = 'pincel'
-            else if (/\b(brochas?|brocha)\b/.test(conversationForIntent)) suggestedSearch = 'brocha'
-            else if (/\b(cintas?|cinta)\b/.test(conversationForIntent)) suggestedSearch = 'cinta'
-            else if (/\b(bandejas?|bandeja)\b/.test(conversationForIntent)) suggestedSearch = 'bandeja'
-            else suggestedSearch = 'rodillo pincel'
-          } else if (/\b(madera|muebles?)\b/.test(contextText)) {
-            suggestedSearch = 'pintura madera'
-          } else if (/\b(interior(es?)?|habitacion(es?)?|cuarto)\b/.test(contextText)) {
-            suggestedSearch = 'látex interior'
-          } else if (/\b(exterior(es?)?|frente|fachada|revestimiento)\b/.test(contextText)) {
-            suggestedSearch = 'látex exterior'
-          } else if (/\bmetal\b/.test(contextText)) {
-            suggestedSearch = 'esmalte metal'
-          } else if (/\b(techos?|techo)\b/.test(contextText)) {
-            suggestedSearch = 'pintura techo'
-          } else if (/\bautomotor\b/.test(contextText)) {
-            suggestedSearch = 'pintura automotor'
-          } else if (/\b(paredes?|muros?)\b/.test(contextText)) {
-            suggestedSearch = 'látex'
-          } else if (/\b(pintar|pintura)\b/.test(contextText)) {
-            suggestedSearch = 'látex'
-          }
+          const fallback = getFallbackSuggestedSearch(contextText, currentLower)
+          if (fallback) suggestedSearch = fallback
         }
 
         if ((suggestedCategory || suggestedSearch) && !products?.length) {
           const params = new URLSearchParams()
           if (suggestedCategory) params.set('category', suggestedCategory)
           if (suggestedSearch) params.set('search', suggestedSearch)
-          params.set('limit', '16')
+          params.set('limit', String(PRODUCTS_LIMIT))
           try {
             const productsRes = await fetch(`/api/products?${params.toString()}`)
             const productsData = await productsRes.json()
             const raw = (productsData?.data ?? productsData?.products ?? [])
-            const rawSlice = Array.isArray(raw) ? raw.slice(0, 16) : []
+            const rawSlice = Array.isArray(raw) ? raw.slice(0, PRODUCTS_LIMIT) : []
             const adapted = adaptApiProductsToComponents(rawSlice as any[])
-            const excludeKeywords = /reparador|enduido|masilla|sellador/i
             let filtered = adapted.filter(
               (p) =>
-                !excludeKeywords.test(String(p.name ?? p.title ?? '')) &&
-                !excludeKeywords.test(String((p as any).slug ?? ''))
+                !EXCLUDE_PRODUCT_KEYWORDS.test(String(p.name ?? p.title ?? '')) &&
+                !EXCLUDE_PRODUCT_KEYWORDS.test(String((p as any).slug ?? ''))
             )
             const userWantsAerosol =
-              (suggestedSearch && /aerosol|spray/i.test(suggestedSearch)) ||
-              /\b(aerosol|spray)\b/.test(contextText) ||
-              (/\b(maceta|maseta)\b/.test(contextText) && /\b(aerosol|spray|pintar)\b/.test(contextText))
+              (suggestedSearch && /aerosol|spray/i.test(suggestedSearch)) || isAerosolContext(contextText)
             const isInteriorOrExterior =
               (suggestedSearch && /látex\s+(interior|exterior)/i.test(suggestedSearch)) ||
               (contextText && /\b(interior|exterior|frente|fachada)\b/.test(contextText))
             if (userWantsAerosol && filtered.length > 0) {
-              const aerosolLike = /aerosol|spray|krylon|tableros y vinilicos|plastico y acrilicos/i
-              const withAerosol = filtered.filter((p) => aerosolLike.test(String(p.name ?? p.title ?? '')))
-              filtered = withAerosol.length > 0 ? withAerosol.slice(0, 12) : filtered.slice(0, 12)
+              const withAerosol = filtered.filter((p) =>
+                AEROSOL_PRODUCT_REGEX.test(String(p.name ?? p.title ?? ''))
+              )
+              filtered =
+                withAerosol.length > 0 ? withAerosol.slice(0, PRODUCTS_CAROUSEL_MAX) : filtered.slice(0, PRODUCTS_CAROUSEL_MAX)
             } else if (isInteriorOrExterior && filtered.length > 0) {
-              const aerosolLike = /aerosol|spray|krylon|tableros y vinilicos|plastico y acrilicos/i
-              const withAerosol = filtered.filter((p) => aerosolLike.test(String(p.name ?? p.title ?? '')))
-              const withoutAerosol = filtered.filter((p) => !aerosolLike.test(String(p.name ?? p.title ?? '')))
-              filtered = withoutAerosol.length >= 8 ? withoutAerosol.slice(0, 12) : [...withoutAerosol, ...withAerosol].slice(0, 12)
+              const withAerosol = filtered.filter((p) =>
+                AEROSOL_PRODUCT_REGEX.test(String(p.name ?? p.title ?? ''))
+              )
+              const withoutAerosol = filtered.filter(
+                (p) => !AEROSOL_PRODUCT_REGEX.test(String(p.name ?? p.title ?? ''))
+              )
+              filtered =
+                withoutAerosol.length >= 8
+                  ? withoutAerosol.slice(0, PRODUCTS_CAROUSEL_MAX)
+                  : [...withoutAerosol, ...withAerosol].slice(0, PRODUCTS_CAROUSEL_MAX)
             } else {
-              filtered = filtered.slice(0, 12)
+              filtered = filtered.slice(0, PRODUCTS_CAROUSEL_MAX)
             }
             products = filtered
           } catch (e) {
