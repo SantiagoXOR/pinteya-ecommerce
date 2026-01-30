@@ -9,6 +9,10 @@ import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limi
 import { getTenantConfig } from '@/lib/tenant'
 import { AI_CHAT_KNOWLEDGE_BASE } from '@/lib/ai-chat/knowledge-base'
 import { getProductCatalogSummaryForPrompt } from '@/lib/ai-chat/get-product-catalog-summary'
+import {
+  getFallbackSuggestedSearch,
+  normalizeSuggestedSearch,
+} from '@/lib/ai-chat/search-intent-config'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const BASE = 'https://generativelanguage.googleapis.com'
@@ -71,6 +75,10 @@ CONTEXTO DE LA CONVERSACIÓN (obligatorio):
 - Tenés acceso a TODO el historial del chat. Usalo SIEMPRE para recordar qué está consultando el usuario (interior, exterior, madera, aerosol, pinceles, etc.).
 - Si el usuario hizo una pregunta de seguimiento, respondé EN ESE CONTEXTO. NUNCA respondas genérico tipo "Decime qué querés pintar" si en la conversación ya dijo qué quiere.
 
+IMPORTANTE - SIEMPRE MOSTRAR PRODUCTOS EN ASESORAMIENTO:
+- Cuando el usuario pregunte qué necesita, qué hace falta, o describa una superficie a pintar (pared exterior, interior, revoque, madera, frente, fachada, etc.), SIEMPRE devolvé suggestedSearch con el término correspondiente. NUNCA devolvas suggestedSearch null en una consulta de asesoramiento.
+- Ejemplos que DEBEN tener suggestedSearch: "qué hace falta para pintar una pared exterior", "necesito pintar revoque", "pared sin mano de pintura", "mesa de madera exterior", "quiero pintar interior" → en todos estos casos devolvé suggestedSearch (látex exterior, látex interior, pintura madera, etc.) para que se muestren productos en el carrusel.
+
 REGLAS DE suggestedSearch (críticas para que los resultados sean correctos):
 - Si el usuario pide AEROSOL, SPRAY, maceta/maseta con aerosol, detalles con spray: usá suggestedSearch "aerosol" o "spray".
 - Si quiere pintar INTERIOR o paredes interiores: usá suggestedSearch "látex interior".
@@ -87,8 +95,8 @@ Respondé SIEMPRE únicamente con un objeto JSON válido, sin markdown ni texto 
 Reglas:
 - reply: mensaje breve, USANDO EL CONTEXTO. NUNCA digas que no trabajamos con aerosoles; si piden aerosol, confirmá que tenemos y sugerí productos.
 - suggestedCategory: slug de categoría si lo conocés; si no, null.
-- suggestedSearch: según lo que pida (aerosol/spray cuando pidan eso; látex interior/exterior; pintura madera/barniz; etc.).
-- Si el mensaje no es sobre pintar ni complementos, respondé con reply amigable y suggestedCategory/suggestedSearch en null.`
+- suggestedSearch: según lo que pida (aerosol/spray cuando pidan eso; látex interior/exterior; pintura madera/barniz; etc.). En consultas de asesoramiento (qué hace falta, qué necesito, describir superficie) SIEMPRE indicá un término.
+- Solo si el mensaje no es sobre pintar ni complementos (saludo, despedida, tema ajeno), respondé con suggestedCategory/suggestedSearch en null.`
 }
 
 function parseGeminiJson(text: string): GeminiRespondPayload | null {
@@ -273,17 +281,44 @@ export async function POST(request: NextRequest) {
         geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
 
       const result = parseGeminiJson(rawText)
+
+      // Construir contexto para fallback de intención (igual que en frontend)
+      const lastUserContents = messages
+        .filter((m) => m.role === 'user')
+        .slice(-3)
+        .map((m) => m.content)
+      const lastAssistantContents = messages
+        .filter((m) => m.role === 'assistant')
+        .slice(-2)
+        .map((m) => m.content)
+      const contextText = [...lastUserContents, ...lastAssistantContents]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      const currentLower = lastUserContents[lastUserContents.length - 1] ?? ''
+
       if (!result) {
+        // Parse falló: intentar derivar búsqueda del mensaje para igual mostrar productos
+        const fallbackSearch = getFallbackSuggestedSearch(contextText, currentLower)
         return NextResponse.json(
           {
             success: true,
             reply:
               'Te puedo ayudar a elegir productos. Decime qué querés pintar (interior, exterior, madera, etc.).',
             suggestedCategory: null,
-            suggestedSearch: null,
+            suggestedSearch: fallbackSearch ?? null,
           },
           { status: 200 }
         )
+      }
+
+      // Si la IA no devolvió suggestedSearch pero el mensaje es de asesoramiento, rellenar con fallback
+      let suggestedSearch = result.suggestedSearch ?? null
+      if (!suggestedSearch) {
+        const fallbackSearch = getFallbackSuggestedSearch(contextText, currentLower)
+        if (fallbackSearch) suggestedSearch = normalizeSuggestedSearch(fallbackSearch) ?? fallbackSearch
+      } else {
+        suggestedSearch = normalizeSuggestedSearch(suggestedSearch) ?? suggestedSearch
       }
 
       return NextResponse.json(
@@ -291,7 +326,7 @@ export async function POST(request: NextRequest) {
           success: true,
           reply: result.reply,
           suggestedCategory: result.suggestedCategory ?? null,
-          suggestedSearch: result.suggestedSearch ?? null,
+          suggestedSearch,
         },
         { status: 200 }
       )

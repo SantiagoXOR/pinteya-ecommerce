@@ -92,6 +92,18 @@ export const FALLBACK_INTENT_RULES: FallbackRule[] = [
       return 'látex'
     },
   },
+  // Asesoramiento: "qué hace falta", "que necesito", "revoque", "sin mano de pintura" → derivar del contexto
+  {
+    test: (ctx) =>
+      /\b(que\s+hace\s+falta|qué\s+hace\s+falta|que\s+necesito|qué\s+necesito|revoque|revoques|sin\s+mano)\b/i.test(ctx),
+    getSearch: (ctx) => {
+      if (/\b(exterior|exteriores|frente|fachada|revestimiento)\b/.test(ctx)) return 'látex exterior'
+      if (/\b(interior|interiores)\b/.test(ctx)) return 'látex interior'
+      if (/\b(madera|muebles?)\b/.test(ctx)) return 'pintura madera'
+      if (/\b(pared|muro|revoque)\b/.test(ctx)) return 'látex'
+      return 'látex'
+    },
+  },
   // Complementos / herramientas
   {
     test: (ctx, cur) =>
