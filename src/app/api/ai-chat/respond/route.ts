@@ -13,6 +13,7 @@ import {
   getFallbackSuggestedSearch,
   normalizeSuggestedSearch,
 } from '@/lib/ai-chat/search-intent-config'
+import { pushAIChatLog } from '@/lib/ai-chat/ai-chat-logs'
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const BASE = 'https://generativelanguage.googleapis.com'
@@ -128,6 +129,9 @@ function parseGeminiJson(text: string): GeminiRespondPayload | null {
 
 export async function POST(request: NextRequest) {
   return withRateLimit(request, RATE_LIMIT_CONFIGS.aiChat, async () => {
+    const startTime = Date.now()
+    let lastUserMessage = ''
+    let messageCount = 0
     try {
       if (!GEMINI_API_KEY) {
         console.error('[AI Chat] GEMINI_API_KEY no configurada')
@@ -166,6 +170,11 @@ export async function POST(request: NextRequest) {
             (m as Message).role in { user: 1, assistant: 1 } &&
             typeof (m as Message).content === 'string'
         ) as Message[]
+
+      lastUserMessage =
+        messages.filter((m) => m.role === 'user').pop()?.content ?? ''
+      messageCount = messages.length
+      let modelUsed: string | null = null
 
       const systemPrompt = buildSystemPrompt(tenantName, tenantSlug)
 
@@ -217,7 +226,10 @@ export async function POST(request: NextRequest) {
         responseText = await geminiResponse.text().catch(() => '')
         lastStatus = geminiResponse.status
 
-        if (geminiResponse.ok) break
+        if (geminiResponse.ok) {
+          modelUsed = url.split('/models/')[1]?.split(':')[0] ?? null
+          break
+        }
 
         const isModelNotFound =
           geminiResponse.status === 404 ||
@@ -246,6 +258,17 @@ export async function POST(request: NextRequest) {
             userMessage = `Error (dev): ${responseText.slice(0, 200)}`
           }
         }
+        pushAIChatLog({
+          messageCount,
+          lastUserMessage,
+          reply: '',
+          suggestedSearch: null,
+          suggestedCategory: null,
+          success: false,
+          durationMs: Date.now() - startTime,
+          modelUsed: modelUsed ?? undefined,
+          error: userMessage,
+        })
         return NextResponse.json(
           {
             success: false,
@@ -256,6 +279,17 @@ export async function POST(request: NextRequest) {
       }
 
       if (lastStatus !== 200) {
+        pushAIChatLog({
+          messageCount,
+          lastUserMessage,
+          reply: '',
+          suggestedSearch: null,
+          suggestedCategory: null,
+          success: false,
+          durationMs: Date.now() - startTime,
+          modelUsed: modelUsed ?? undefined,
+          error: 'lastStatus !== 200',
+        })
         return NextResponse.json(
           {
             success: false,
@@ -269,6 +303,17 @@ export async function POST(request: NextRequest) {
       try {
         geminiData = JSON.parse(responseText)
       } catch {
+        pushAIChatLog({
+          messageCount,
+          lastUserMessage,
+          reply: '',
+          suggestedSearch: null,
+          suggestedCategory: null,
+          success: false,
+          durationMs: Date.now() - startTime,
+          modelUsed: modelUsed ?? undefined,
+          error: 'Parse JSON respuesta Gemini',
+        })
         return NextResponse.json(
           {
             success: false,
@@ -300,11 +345,22 @@ export async function POST(request: NextRequest) {
       if (!result) {
         // Parse falló: intentar derivar búsqueda del mensaje para igual mostrar productos
         const fallbackSearch = getFallbackSuggestedSearch(contextText, currentLower)
+        const fallbackReply =
+          'Te puedo ayudar a elegir productos. Decime qué querés pintar (interior, exterior, madera, etc.).'
+        pushAIChatLog({
+          messageCount,
+          lastUserMessage,
+          reply: fallbackReply,
+          suggestedSearch: fallbackSearch ?? null,
+          suggestedCategory: null,
+          success: true,
+          durationMs: Date.now() - startTime,
+          modelUsed: modelUsed ?? undefined,
+        })
         return NextResponse.json(
           {
             success: true,
-            reply:
-              'Te puedo ayudar a elegir productos. Decime qué querés pintar (interior, exterior, madera, etc.).',
+            reply: fallbackReply,
             suggestedCategory: null,
             suggestedSearch: fallbackSearch ?? null,
           },
@@ -321,6 +377,16 @@ export async function POST(request: NextRequest) {
         suggestedSearch = normalizeSuggestedSearch(suggestedSearch) ?? suggestedSearch
       }
 
+      pushAIChatLog({
+        messageCount,
+        lastUserMessage,
+        reply: result.reply,
+        suggestedSearch,
+        suggestedCategory: result.suggestedCategory ?? null,
+        success: true,
+        durationMs: Date.now() - startTime,
+        modelUsed: modelUsed ?? undefined,
+      })
       return NextResponse.json(
         {
           success: true,
@@ -332,6 +398,16 @@ export async function POST(request: NextRequest) {
       )
     } catch (error) {
       console.error('[AI Chat] Error interno:', error)
+      pushAIChatLog({
+        messageCount,
+        lastUserMessage,
+        reply: '',
+        suggestedSearch: null,
+        suggestedCategory: null,
+        success: false,
+        durationMs: Date.now() - startTime,
+        error: error instanceof Error ? error.message : String(error),
+      })
       return NextResponse.json(
         {
           success: false,

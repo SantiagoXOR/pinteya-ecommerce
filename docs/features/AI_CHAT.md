@@ -45,6 +45,22 @@ Se muestran mensaje + carrusel de productos; ítems agregables al carrito
 | `src/lib/ai-chat/knowledge-base.ts` | Base de conocimiento (asesor pinturería + pintor): tipos de pintura, acabados, herramientas. |
 | `src/lib/ai-chat/get-product-catalog-summary.ts` | Resumen del catálogo del tenant (nombre, marca, categoría) en texto/XML para el prompt. |
 | `src/lib/ai-chat/search-intent-config.ts` | Config centralizada: reglas de fallback (intención → búsqueda), exclusión de productos, chips, límites. |
+| `src/lib/ai-chat/ai-chat-logs.ts` | Logs en memoria (últimas 100 solicitudes) para el panel de admin. |
+| `src/app/admin/ai-chat/page.tsx` | Página de admin: debug, testing y logs del AI Chat. |
+| `src/components/admin/AIChatDebugPanel.tsx` | Componente del panel: test de envío, modelos Gemini, tabla de logs. |
+| `src/app/api/admin/ai-chat/logs/route.ts` | API GET (admin): devuelve los últimos logs del AI Chat. |
+
+---
+
+## Panel de admin (debug y logs)
+
+En **Admin → AI Chat Debug** (`/admin/ai-chat`) podés:
+
+- **Test de envío:** enviar un mensaje de prueba al AI Chat y ver `reply`, `suggestedSearch`, `suggestedCategory` y tiempo de respuesta.
+- **Modelos Gemini:** listar los modelos disponibles con la clave configurada (GET `/api/ai-chat/models`).
+- **Logs recientes:** tabla con las últimas solicitudes al AI Chat (hora, mensaje, reply, suggestedSearch, suggestedCategory, estado, ms, modelo usado). Se actualiza cada 10 s y con "Actualizar".
+
+Los logs se guardan en memoria (últimas 100 entradas) en `lib/ai-chat/ai-chat-logs.ts`; cada llamada a `/api/ai-chat/respond` registra una entrada (éxito o error). La API de logs (`GET /api/admin/ai-chat/logs`) requiere autenticación de administrador.
 
 ---
 

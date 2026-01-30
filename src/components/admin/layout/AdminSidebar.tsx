@@ -19,6 +19,7 @@ import {
   Search,
   Bell,
   LogOut,
+  MessageCircle,
 } from '@/lib/optimized-imports'
 
 interface SidebarItem {
@@ -88,6 +89,11 @@ const sidebarItems: SidebarItem[] = [
     title: 'Diagnósticos',
     href: '/admin/diagnostics',
     icon: Search,
+  },
+  {
+    title: 'AI Chat Debug',
+    href: '/admin/ai-chat',
+    icon: MessageCircle,
   },
 ]
 

@@ -20,6 +20,7 @@ import {
   Truck,
   Gauge,
   GitBranch,
+  MessageCircle,
 } from '@/lib/optimized-imports'
 import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 import { useMonitoringStats } from '@/providers/MonitoringProvider'
@@ -112,6 +113,14 @@ export function AdminPageClient() {
       icon: Search,
       color: 'bg-red-500',
       stats: 'Sistema OK',
+    },
+    {
+      title: 'AI Chat Debug',
+      description: 'Debug, testing y logs del asistente de chat con IA (Gemini)',
+      href: '/admin/ai-chat',
+      icon: MessageCircle,
+      color: 'bg-teal-500',
+      stats: 'Logs',
     },
     {
       title: 'Configuración',
