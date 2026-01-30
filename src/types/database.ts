@@ -184,6 +184,67 @@ export interface Database {
           price?: number
         }
       }
+      ai_chat_sessions: {
+        Row: {
+          id: string
+          tenant_id: string
+          user_id: string | null
+          visitor_id: string | null
+          session_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          user_id?: string | null
+          visitor_id?: string | null
+          session_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          user_id?: string | null
+          visitor_id?: string | null
+          session_id?: string | null
+          updated_at?: string
+        }
+      }
+      ai_chat_messages: {
+        Row: {
+          id: string
+          session_id: string
+          role: string
+          content: string
+          suggested_search: string | null
+          suggested_category: string | null
+          model_used: string | null
+          duration_ms: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          role: string
+          content: string
+          suggested_search?: string | null
+          suggested_category?: string | null
+          model_used?: string | null
+          duration_ms?: number | null
+          created_at?: string
+        }
+        Update: {
+          session_id?: string
+          role?: string
+          content?: string
+          suggested_search?: string | null
+          suggested_category?: string | null
+          model_used?: string | null
+          duration_ms?: number | null
+        }
+      }
     }
   }
 }

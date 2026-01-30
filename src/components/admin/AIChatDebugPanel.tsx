@@ -3,29 +3,39 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { ChevronDown, ChevronRight } from '@/lib/optimized-imports'
 import type { AIChatLogEntry } from '@/lib/ai-chat/ai-chat-logs'
+import { useAIChatSend } from '@/hooks/useAIChatSend'
+import { AIChatConversationUI } from '@/components/Common/AIChatConversation/AIChatConversationUI'
+
+const INITIAL_BOT_MESSAGE =
+  'Hola, soy el asistente (modo debug). ¿Qué vas a pintar hoy? Elegí una opción o escribime.'
 
 export function AIChatDebugPanel() {
-  const [testMessage, setTestMessage] = useState('')
-  const [testLoading, setTestLoading] = useState(false)
-  const [testResult, setTestResult] = useState<{
-    reply?: string
-    suggestedSearch?: string | null
-    suggestedCategory?: string | null
-    durationMs?: number
-    success?: boolean
-    error?: string
-  } | null>(null)
-
   const [models, setModels] = useState<{ name: string; displayName?: string }[]>([])
   const [modelsLoading, setModelsLoading] = useState(true)
   const [modelsError, setModelsError] = useState<string | null>(null)
+  const [modelsOpen, setModelsOpen] = useState(false)
 
   const [logs, setLogs] = useState<AIChatLogEntry[]>([])
   const [logsLoading, setLogsLoading] = useState(true)
   const [logsError, setLogsError] = useState<string | null>(null)
+
+  const {
+    displayMessages,
+    inputValue,
+    setInputValue,
+    isLoading,
+    handleSend,
+    handleApplicationClick,
+    applications,
+    lastResponseDebug,
+  } = useAIChatSend({
+    initialBotMessage: INITIAL_BOT_MESSAGE,
+    adminDebug: true,
+  })
 
   const fetchModels = useCallback(async () => {
     setModelsLoading(true)
@@ -69,50 +79,6 @@ export function AIChatDebugPanel() {
     return () => clearInterval(t)
   }, [fetchLogs])
 
-  const handleTest = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const msg = testMessage.trim()
-    if (!msg || testLoading) return
-    setTestLoading(true)
-    setTestResult(null)
-    const start = Date.now()
-    try {
-      const res = await fetch('/api/ai-chat/respond', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{ role: 'user' as const, content: msg }],
-        }),
-      })
-      const data = await res.json()
-      const durationMs = Date.now() - start
-      if (!res.ok) {
-        setTestResult({
-          success: false,
-          error: data?.error ?? 'Error en la respuesta',
-          durationMs,
-        })
-        return
-      }
-      setTestResult({
-        reply: data.reply,
-        suggestedSearch: data.suggestedSearch ?? null,
-        suggestedCategory: data.suggestedCategory ?? null,
-        success: data.success !== false,
-        durationMs,
-      })
-      fetchLogs()
-    } catch (e) {
-      setTestResult({
-        success: false,
-        error: e instanceof Error ? e.message : String(e),
-        durationMs: Date.now() - start,
-      })
-    } finally {
-      setTestLoading(false)
-    }
-  }
-
   const formatTime = (iso: string) => {
     try {
       const d = new Date(iso)
@@ -126,84 +92,111 @@ export function AIChatDebugPanel() {
     }
   }
 
+  const debugStrip = lastResponseDebug && (
+    <div className="p-3 rounded-lg bg-muted/60 text-sm space-y-1.5 border">
+      <div className="font-medium text-muted-foreground">Debug última respuesta</div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
+        {lastResponseDebug.durationMs != null && (
+          <span>{lastResponseDebug.durationMs} ms</span>
+        )}
+        {lastResponseDebug.modelUsed != null && (
+          <span>Modelo: {lastResponseDebug.modelUsed || '—'}</span>
+        )}
+        {lastResponseDebug.suggestedSearch != null && (
+          <span>suggestedSearch: {lastResponseDebug.suggestedSearch || '—'}</span>
+        )}
+        {lastResponseDebug.suggestedCategory != null && (
+          <span>suggestedCategory: {lastResponseDebug.suggestedCategory || '—'}</span>
+        )}
+      </div>
+      {lastResponseDebug.contextProvided && (
+        <div className="pt-1 border-t mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+          <span>
+            Knowledge-base: {lastResponseDebug.contextProvided.knowledgeBase ? 'Sí' : 'No'}
+          </span>
+          <span>
+            Catálogo XML: {lastResponseDebug.contextProvided.catalogIncluded ? 'Sí' : 'No'}
+            {lastResponseDebug.contextProvided.catalogProductCount != null &&
+              ` (${lastResponseDebug.contextProvided.catalogProductCount} productos)`}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div className="p-6 space-y-6">
-      {/* Test de envío */}
+      {/* Chat: misma implementación que el storefront */}
       <Card>
         <CardHeader>
-          <CardTitle>Test de envío</CardTitle>
+          <CardTitle>Chat (misma implementación)</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Enviá un mensaje al AI Chat y revisá reply, suggestedSearch y suggestedCategory.
+            Misma UI que el chat de la tienda: mensajes, product cards, chips. Con instrumentación de debug abajo.
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleTest} className="flex gap-2">
-            <Input
-              value={testMessage}
-              onChange={(e) => setTestMessage(e.target.value)}
-              placeholder="Ej: necesito pintar una pared exterior con revoque"
-              className="max-w-md"
-              disabled={testLoading}
+          <div className="border rounded-lg overflow-hidden" style={{ minHeight: 400, maxHeight: 500 }}>
+            <AIChatConversationUI
+              displayMessages={displayMessages}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+              isLoading={isLoading}
+              handleSend={handleSend}
+              handleApplicationClick={handleApplicationClick}
+              applications={applications}
+              debugSlot={debugStrip}
+              className="h-full p-3"
             />
-            <Button type="submit" disabled={testLoading || !testMessage.trim()}>
-              {testLoading ? 'Enviando…' : 'Enviar'}
-            </Button>
-          </form>
-          {testResult && (
-            <div className="mt-4 p-4 rounded-lg bg-muted/50 text-sm space-y-2">
-              <div className="flex items-center gap-2">
-                <Badge variant={testResult.success ? 'default' : 'destructive'}>
-                  {testResult.success ? 'OK' : 'Error'}
-                </Badge>
-                {testResult.durationMs != null && (
-                  <span className="text-muted-foreground">{testResult.durationMs} ms</span>
-                )}
-              </div>
-              {testResult.error && (
-                <p className="text-destructive">{testResult.error}</p>
-              )}
-              {testResult.reply && (
-                <p><strong>reply:</strong> {testResult.reply}</p>
-              )}
-              {testResult.suggestedSearch != null && (
-                <p><strong>suggestedSearch:</strong> {testResult.suggestedSearch || '—'}</p>
-              )}
-              {testResult.suggestedCategory != null && (
-                <p><strong>suggestedCategory:</strong> {testResult.suggestedCategory || '—'}</p>
-              )}
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Modelos Gemini */}
+      {/* Modelos Gemini: lista colapsable */}
       <Card>
-        <CardHeader>
-          <CardTitle>Modelos Gemini</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Modelos disponibles con la clave configurada (se prueban en orden en respond).
-          </p>
-        </CardHeader>
-        <CardContent>
-          {modelsLoading ? (
-            <p className="text-muted-foreground">Cargando modelos…</p>
-          ) : modelsError ? (
-            <p className="text-destructive">{modelsError}</p>
-          ) : models.length === 0 ? (
-            <p className="text-muted-foreground">No se encontraron modelos.</p>
-          ) : (
-            <ul className="list-disc list-inside text-sm space-y-1">
-              {models.map((m) => (
-                <li key={m.name}>
-                  <code className="bg-muted px-1 rounded">{m.name}</code>
-                  {m.displayName && (
-                    <span className="text-muted-foreground ml-2">{m.displayName}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
+        <Collapsible open={modelsOpen} onOpenChange={setModelsOpen}>
+          <CardHeader className="pb-2">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between text-left hover:opacity-80"
+              >
+                <CardTitle className="text-base">
+                  Modelos Gemini ({modelsLoading ? '…' : models.length})
+                </CardTitle>
+                {modelsOpen ? (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                )}
+              </button>
+            </CollapsibleTrigger>
+            <p className="text-sm text-muted-foreground">
+              Modelos disponibles con la clave configurada (se prueban en orden en respond).
+            </p>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              {modelsLoading ? (
+                <p className="text-muted-foreground text-sm">Cargando modelos…</p>
+              ) : modelsError ? (
+                <p className="text-destructive text-sm">{modelsError}</p>
+              ) : models.length === 0 ? (
+                <p className="text-muted-foreground text-sm">No se encontraron modelos.</p>
+              ) : (
+                <ul className="list-disc list-inside text-sm space-y-1 max-h-48 overflow-y-auto">
+                  {models.map((m) => (
+                    <li key={m.name}>
+                      <code className="bg-muted px-1 rounded">{m.name}</code>
+                      {m.displayName && (
+                        <span className="text-muted-foreground ml-2">{m.displayName}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
 
       {/* Logs recientes */}
@@ -258,7 +251,10 @@ export function AIChatDebugPanel() {
                           {log.success ? 'OK' : 'Error'}
                         </Badge>
                         {log.error && (
-                          <span className="ml-1 text-destructive truncate max-w-[120px] inline-block" title={log.error}>
+                          <span
+                            className="ml-1 text-destructive truncate max-w-[120px] inline-block"
+                            title={log.error}
+                          >
                             {log.error}
                           </span>
                         )}

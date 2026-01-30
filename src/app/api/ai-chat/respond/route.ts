@@ -7,6 +7,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { getTenantConfig } from '@/lib/tenant'
+import { auth } from '@/auth'
+import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { AI_CHAT_KNOWLEDGE_BASE } from '@/lib/ai-chat/knowledge-base'
 import { getProductCatalogSummaryForPrompt } from '@/lib/ai-chat/get-product-catalog-summary'
 import {
@@ -35,6 +37,8 @@ interface Message {
 
 interface ChatRespondBody {
   messages?: Message[]
+  chatSessionId?: string
+  visitorId?: string
 }
 
 interface GeminiRespondPayload {
@@ -100,6 +104,34 @@ Reglas:
 - Solo si el mensaje no es sobre pintar ni complementos (saludo, despedida, tema ajeno), respondé con suggestedCategory/suggestedSearch en null.`
 }
 
+async function persistChatMessages(
+  supabase: ReturnType<typeof getSupabaseClient> | null,
+  sessionId: string,
+  lastUserMessage: string,
+  reply: string,
+  suggestedSearch: string | null,
+  suggestedCategory: string | null,
+  modelUsed: string | null,
+  durationMs: number
+) {
+  if (!supabase) return
+  const { error: userErr } = await supabase.from('ai_chat_messages').insert({
+    session_id: sessionId,
+    role: 'user',
+    content: lastUserMessage,
+  })
+  if (userErr) return
+  await supabase.from('ai_chat_messages').insert({
+    session_id: sessionId,
+    role: 'assistant',
+    content: reply,
+    suggested_search: suggestedSearch,
+    suggested_category: suggestedCategory,
+    model_used: modelUsed,
+    duration_ms: durationMs,
+  })
+}
+
 function parseGeminiJson(text: string): GeminiRespondPayload | null {
   const trimmed = text.trim()
   const jsonMatch = trimmed.match(/\{[\s\S]*\}/)
@@ -158,6 +190,55 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      const adminDebug = request.headers.get('X-Admin-Debug') === 'true'
+      const session = await auth()
+      const userId = session?.user?.id ?? null
+      const visitorId = typeof body.visitorId === 'string' && body.visitorId.trim() ? body.visitorId.trim() : null
+
+      const supabaseAdmin = getSupabaseClient(true)
+      let chatSessionId: string | null = null
+      if (supabaseAdmin) {
+        const existingId =
+          typeof body.chatSessionId === 'string' && /^[0-9a-f-]{36}$/i.test(body.chatSessionId)
+            ? body.chatSessionId
+            : null
+        if (existingId) {
+          const { data: row } = await supabaseAdmin
+            .from('ai_chat_sessions')
+            .select('id, user_id, visitor_id')
+            .eq('id', existingId)
+            .eq('tenant_id', tenant.id)
+            .maybeSingle()
+          const ok =
+            row &&
+            (userId != null
+              ? row.user_id === userId
+              : visitorId != null
+                ? row.visitor_id === visitorId
+                : row.visitor_id != null || row.user_id != null)
+          if (ok && row?.id) chatSessionId = row.id
+        }
+        if (!chatSessionId) {
+          const insertPayload: {
+            tenant_id: string
+            user_id: string | null
+            visitor_id: string | null
+            session_id: string | null
+          } = {
+            tenant_id: tenant.id,
+            user_id: userId,
+            visitor_id: visitorId,
+            session_id: userId != null || visitorId != null ? null : crypto.randomUUID(),
+          }
+          const { data: inserted, error: insertErr } = await supabaseAdmin
+            .from('ai_chat_sessions')
+            .insert(insertPayload)
+            .select('id')
+            .single()
+          if (!insertErr && inserted?.id) chatSessionId = inserted.id
+        }
+      }
+
       const rawMessages = Array.isArray(body.messages) ? body.messages : []
       const messages: Message[] = rawMessages
         .slice(-MAX_MESSAGES)
@@ -179,11 +260,21 @@ export async function POST(request: NextRequest) {
       const systemPrompt = buildSystemPrompt(tenantName, tenantSlug)
 
       // Base de conocimiento (asesor pinturería + pintor) y catálogo de productos (XML)
-      const catalogSummary = await getProductCatalogSummaryForPrompt(tenant.id)
+      const catalogResult = await getProductCatalogSummaryForPrompt(tenant.id)
+      const catalogSummaryText = catalogResult.summary
+      const catalogProductCount = catalogResult.productCount
       const knowledgeSection = `\n\nBASE DE CONOCIMIENTO (asesor de pinturería y pintor - usá esto para responder con criterio técnico):\n${AI_CHAT_KNOWLEDGE_BASE}`
-      const catalogSection = catalogSummary
-        ? `\n\nCATÁLOGO DE PRODUCTOS (productos disponibles en la tienda - podés nombrar marcas y productos reales del XML):\n${catalogSummary}`
+      const catalogSection = catalogSummaryText
+        ? `\n\nCATÁLOGO DE PRODUCTOS (productos disponibles en la tienda - podés nombrar marcas y productos reales del XML):\n${catalogSummaryText}`
         : ''
+
+      const contextProvided = adminDebug
+        ? {
+            knowledgeBase: true,
+            catalogIncluded: Boolean(catalogSummaryText),
+            catalogProductCount: catalogSummaryText ? catalogProductCount : undefined,
+          }
+        : undefined
 
       const contents = messages.map((m) => ({
         role: m.role === 'assistant' ? ('model' as const) : ('user' as const),
@@ -357,15 +448,33 @@ export async function POST(request: NextRequest) {
           durationMs: Date.now() - startTime,
           modelUsed: modelUsed ?? undefined,
         })
-        return NextResponse.json(
-          {
-            success: true,
-            reply: fallbackReply,
-            suggestedCategory: null,
-            suggestedSearch: fallbackSearch ?? null,
-          },
-          { status: 200 }
-        )
+        if (chatSessionId) {
+          await persistChatMessages(
+            supabaseAdmin,
+            chatSessionId,
+            lastUserMessage,
+            fallbackReply,
+            fallbackSearch ?? null,
+            null,
+            modelUsed,
+            Date.now() - startTime
+          )
+        }
+        const fallbackPayload: Record<string, unknown> = {
+          success: true,
+          reply: fallbackReply,
+          suggestedCategory: null,
+          suggestedSearch: fallbackSearch ?? null,
+        }
+        if (chatSessionId) fallbackPayload.chatSessionId = chatSessionId
+        if (adminDebug && contextProvided) {
+          fallbackPayload._debug = {
+            durationMs: Date.now() - startTime,
+            modelUsed: modelUsed ?? null,
+            contextProvided,
+          }
+        }
+        return NextResponse.json(fallbackPayload, { status: 200 })
       }
 
       // Si la IA no devolvió suggestedSearch pero el mensaje es de asesoramiento, rellenar con fallback
@@ -387,15 +496,33 @@ export async function POST(request: NextRequest) {
         durationMs: Date.now() - startTime,
         modelUsed: modelUsed ?? undefined,
       })
-      return NextResponse.json(
-        {
-          success: true,
-          reply: result.reply,
-          suggestedCategory: result.suggestedCategory ?? null,
+      if (chatSessionId) {
+        await persistChatMessages(
+          supabaseAdmin,
+          chatSessionId,
+          lastUserMessage,
+          result.reply,
           suggestedSearch,
-        },
-        { status: 200 }
-      )
+          result.suggestedCategory ?? null,
+          modelUsed,
+          Date.now() - startTime
+        )
+      }
+      const successPayload: Record<string, unknown> = {
+        success: true,
+        reply: result.reply,
+        suggestedCategory: result.suggestedCategory ?? null,
+        suggestedSearch,
+      }
+      if (chatSessionId) successPayload.chatSessionId = chatSessionId
+      if (adminDebug && contextProvided) {
+        successPayload._debug = {
+          durationMs: Date.now() - startTime,
+          modelUsed: modelUsed ?? null,
+          contextProvided,
+        }
+      }
+      return NextResponse.json(successPayload, { status: 200 })
     } catch (error) {
       console.error('[AI Chat] Error interno:', error)
       pushAIChatLog({

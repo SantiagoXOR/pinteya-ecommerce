@@ -15,16 +15,22 @@ export interface ProductSummaryRow {
   category_name: string | null
 }
 
+export interface CatalogSummaryResult {
+  summary: string
+  productCount: number
+}
+
 /**
  * Genera un resumen en texto del catálogo para el prompt.
  * Incluye nombre, marca y categoría de cada producto (hasta MAX_PRODUCTS).
+ * Devuelve también productCount para debug (contextProvided en _debug).
  */
 export async function getProductCatalogSummaryForPrompt(
   tenantId: string | number
-): Promise<string> {
+): Promise<CatalogSummaryResult> {
   const supabase = getSupabaseClient()
   if (!supabase) {
-    return ''
+    return { summary: '', productCount: 0 }
   }
 
   try {
@@ -48,11 +54,11 @@ export async function getProductCatalogSummaryForPrompt(
       if (process.env.NODE_ENV === 'development') {
         console.warn('[AI Chat] Error fetching catalog summary:', error.message)
       }
-      return ''
+      return { summary: '', productCount: 0 }
     }
 
     const products = (rows || []).slice(0, MAX_PRODUCTS)
-    if (products.length === 0) return ''
+    if (products.length === 0) return { summary: '', productCount: 0 }
 
     const lines: string[] = [
       '<catalogo>',
@@ -78,12 +84,13 @@ export async function getProductCatalogSummaryForPrompt(
 
     lines.push('</catalogo>')
     const text = lines.join('\n')
-    return text.length > MAX_CHARS ? text.slice(0, MAX_CHARS) + '\n...' : text
+    const summary = text.length > MAX_CHARS ? text.slice(0, MAX_CHARS) + '\n...' : text
+    return { summary, productCount: products.length }
   } catch (e) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('[AI Chat] getProductCatalogSummaryForPrompt error:', e)
     }
-    return ''
+    return { summary: '', productCount: 0 }
   }
 }
 
