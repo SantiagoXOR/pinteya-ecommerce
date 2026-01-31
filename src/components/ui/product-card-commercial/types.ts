@@ -106,6 +106,8 @@ export interface CommercialProductCardProps extends React.HTMLAttributes<HTMLDiv
   // Campos directos de la base de datos
   color?: string
   medida?: string
+  /** Si true, pre-selecciona la variante de menor precio (default en grid/búsqueda) */
+  preferLowestPrice?: boolean
 }
 
 // Props para ColorPill

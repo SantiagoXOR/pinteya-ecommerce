@@ -24,7 +24,7 @@ import { executeWithRLS, withRLS, createRLSFilters } from '@/lib/auth/enterprise
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { API_TIMEOUTS, withDatabaseTimeout, getEndpointTimeouts } from '@/lib/config/api-timeouts'
 import { createSecurityLogger } from '@/lib/logging/security-logger'
-import { expandQueryIntents, stripDiacritics } from '@/lib/search/intents'
+import { expandQueryIntents, expandQueryIntentsByWords, mapSearchToCategory, stripDiacritics } from '@/lib/search/intents'
 import { normalizeProductTitle } from '@/lib/core/utils'
 
 // ===================================
@@ -390,8 +390,11 @@ export async function GET(request: NextRequest) {
           // ================================
           const raw = String(filters.search).trim()
 
-          // Expandir intención (sinónimos, singularización, diacríticos)
-          const candidates = new Set<string>(expandQueryIntents(raw))
+          // Expandir intención: frase completa + por palabras (OR para "metales y maderas")
+          const candidates = new Set<string>([
+            ...expandQueryIntents(raw),
+            ...expandQueryIntentsByWords(raw),
+          ])
 
           // Obtener más resultados de la RPC mejorada (hasta 50) para poder reordenar
           // La función RPC ya combina FTS e ILIKE, así que obtenemos todos los resultados relevantes
@@ -727,6 +730,110 @@ export async function GET(request: NextRequest) {
           if (filters.search) {
             // Usar reordenamiento inteligente basado en relevancia de búsqueda
             sortedProducts = reorderSearchResults(enrichedProducts, filters.search, ftsProductsMapOuter)
+
+            // Fallback: si hay < 11 resultados y la búsqueda mapea a una categoría, incluir productos de esa categoría
+            const MIN_SEARCH_RESULTS = 11
+            if (sortedProducts.length < MIN_SEARCH_RESULTS) {
+              const categorySlug = mapSearchToCategory(filters.search)
+              if (categorySlug) {
+                try {
+                  const { data: catData } = await supabase
+                    .from('categories')
+                    .select('id')
+                    .eq('slug', categorySlug)
+                    .single()
+                  if (catData?.id) {
+                    const { data: pcData } = await supabase
+                      .from('product_categories')
+                      .select('product_id')
+                      .eq('category_id', catData.id)
+                    const existingIds = new Set(sortedProducts.map((p: any) => p.id))
+                    const extraIds = (pcData || [])
+                      .map((pc: any) => pc.product_id)
+                      .filter((id: number) => !existingIds.has(id))
+                      .slice(0, MIN_SEARCH_RESULTS - sortedProducts.length + 10)
+                    if (extraIds.length > 0) {
+                      const fallbackQuery = supabase.from('products').select(
+                        `
+                          id, name, slug, brand, images, color, medida,
+                          category:categories(id, name, slug),
+                          categories:product_categories(category:categories(id, name, slug)),
+                          tenant_products!inner (price, discounted_price, stock, is_visible)
+                        `
+                      ).eq('tenant_products.tenant_id', tenantId).eq('tenant_products.is_visible', true).in('id', extraIds)
+                      const { data: fallbackProducts } = await fallbackQuery
+                      if (fallbackProducts && fallbackProducts.length > 0) {
+                        const extraProductIds = fallbackProducts.map((p: any) => p.id)
+                        const { data: extraVariantsData } = await supabase
+                          .from('product_variants')
+                          .select('*')
+                          .in('product_id', extraProductIds)
+                          .eq('is_active', true)
+                        const { data: extraImagesData } = await supabase
+                          .from('product_images')
+                          .select('product_id, url, is_primary')
+                          .in('product_id', extraProductIds)
+                        const variantsByProductExtra: Record<number, any[]> = {}
+                        (extraVariantsData || []).forEach((v: any) => {
+                          if (!variantsByProductExtra[v.product_id]) variantsByProductExtra[v.product_id] = []
+                          variantsByProductExtra[v.product_id].push(v)
+                        })
+                        const productImagesByProductExtra: Record<number, string | null> = {}
+                        (extraImagesData || []).forEach((img: any) => {
+                          if (!productImagesByProductExtra[img.product_id]) productImagesByProductExtra[img.product_id] = img.url
+                        })
+                        const enrichedExtra = fallbackProducts.map((product: any) => {
+                          const productVariants = variantsByProductExtra[product.id] || []
+                          const defaultVariant = productVariants.find((v: any) => v.is_default) || productVariants[0]
+                          const tenantProduct = Array.isArray(product.tenant_products) ? product.tenant_products[0] : product.tenant_products
+                          const tenantPrice = tenantProduct?.price ?? product.price
+                          const tenantDiscountedPrice = tenantProduct?.discounted_price ?? product.discounted_price
+                          let effectiveStock = 0
+                          if (productVariants.length > 0) {
+                            effectiveStock = productVariants.filter((v: any) => v.is_active !== false).reduce((sum: number, v: any) => sum + (Number(v.stock) || 0), 0)
+                          } else {
+                            effectiveStock = tenantProduct?.stock != null ? Number(tenantProduct.stock) || 0 : (product.stock != null ? Number(product.stock) || 0 : 0)
+                          }
+                          const rawMedida = product.medida || defaultVariant?.measure
+                          return {
+                            ...product,
+                            name: normalizeProductTitle(product.name),
+                            aikon_id: product.aikon_id || defaultVariant?.aikon_id,
+                            color: product.color || defaultVariant?.color_name,
+                            medida: !rawMedida ? null : (typeof rawMedida === 'string' && rawMedida.trim().startsWith('[') ? (() => { try { const p = JSON.parse(rawMedida); return Array.isArray(p) && p.length > 0 ? p[0] : rawMedida } catch { return rawMedida } })() : rawMedida),
+                            variants: productVariants,
+                            variant_count: productVariants.length,
+                            has_variants: productVariants.length > 0,
+                            default_variant: defaultVariant || null,
+                            category_name: (product as any).category?.name || (product as any).categories?.[0]?.category?.name || null,
+                            price: tenantPrice,
+                            discounted_price: tenantDiscountedPrice,
+                            stock: effectiveStock,
+                            image_url: productImagesByProductExtra[product.id] || defaultVariant?.image_url || (Array.isArray(product.images) ? product.images[0] : null),
+                          }
+                        })
+                        const withStock = enrichedExtra.filter((p: any) => (p.stock || 0) > 0)
+                        const merged = [...sortedProducts]
+                        const mergedIds = new Set(merged.map((p: any) => p.id))
+                        for (const p of withStock) {
+                          if (!mergedIds.has(p.id) && merged.length < 50) {
+                            merged.push(p)
+                            mergedIds.add(p.id)
+                          }
+                        }
+                        sortedProducts = merged
+                        enrichedProducts = merged
+                        ;(enrichedProducts as any).__totalAfterStockFilter = merged.length
+                      }
+                    }
+                  }
+                } catch (fallbackErr) {
+                  if (process.env.NODE_ENV === 'development') {
+                    console.warn('[Search] Category fallback error:', fallbackErr)
+                  }
+                }
+              }
+            }
           } else {
             // Reordenar productos: primero los que tienen variantes (solo si no hay búsqueda)
             sortedProducts = [...enrichedProducts].sort((a, b) => {

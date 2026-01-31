@@ -2,105 +2,56 @@
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
-import React, { useEffect, useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { searchProducts } from '@/lib/api/products'
-import { ProductWithCategory } from '@/types/api'
 import { CommercialProductCard } from '@/components/ui/product-card-commercial'
 import { useDesignSystemConfig, shouldShowFreeShipping as dsShouldShowFreeShipping } from '@/lib/design-system-config'
-import { Search, AlertCircle, Package, Filter, SortAsc } from '@/lib/optimized-imports'
+import { Search, AlertCircle, Package } from '@/lib/optimized-imports'
 import { ProductGridSkeleton } from '@/components/ui/skeletons'
 import { Button } from '@/components/ui/button'
 import { useCartUnified } from '@/hooks/useCartUnified'
 import { toast } from '@/components/ui/use-toast'
 import { getMainImage } from '@/lib/adapters/product-adapter'
+import { useTenantSafe } from '@/contexts/TenantContext'
+import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
+import { SearchWithFilters } from '@/components/Search/SearchWithFilters'
+import { SearchSuggestionsCarousel } from '@/components/Search/SearchSuggestionsCarousel'
+import type { ExtendedProduct } from '@/lib/adapters/productAdapter'
 
 export default function SearchPage() {
+  const tenant = useTenantSafe()
   const searchParams = useSearchParams()
   const { addProduct } = useCartUnified()
   const query = searchParams.get('search') || ''
   const category = searchParams.get('category')
   const config = useDesignSystemConfig()
 
-  const [products, setProducts] = useState<ProductWithCategory[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [totalResults, setTotalResults] = useState(0)
   const [sortBy, setSortBy] = useState<'relevance' | 'price-asc' | 'price-desc' | 'name'>(
     'relevance'
   )
 
-  // Función para ordenar productos
-  const sortProducts = (products: ProductWithCategory[], sortBy: string) => {
-    const sorted = [...products]
+  const whatsappNumber = getTenantWhatsAppNumber(tenant)
+  const whatsappMessage = `Hola, busqué "${query}" y no encontré lo que necesito. ¿Me pueden ayudar?`
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
 
-    switch (sortBy) {
+  const sortProductsFn = (items: ExtendedProduct[], sort: string) => {
+    const sorted = [...items]
+    switch (sort) {
       case 'price-asc':
-        return sorted.sort((a, b) => a.price - b.price)
+        return sorted.sort((a, b) => (a.price || 0) - (b.price || 0))
       case 'price-desc':
-        return sorted.sort((a, b) => b.price - a.price)
+        return sorted.sort((a, b) => (b.price || 0) - (a.price || 0))
       case 'name':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name))
-      case 'relevance':
+        return sorted.sort((a, b) => (a.name || a.title || '').localeCompare(b.name || b.title || ''))
       default:
-        return sorted // Mantener orden original (relevancia)
+        return sorted
     }
-  }
-
-  useEffect(() => {
-    const performSearch = async () => {
-      if (!query.trim()) {
-        setProducts([])
-        setIsLoading(false)
-        return
-      }
-
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const response = await searchProducts(query, 50) // Más resultados para la página
-
-        if (response.success && response.data) {
-          const sortedProducts = sortProducts(response.data, sortBy)
-          setProducts(sortedProducts)
-          setTotalResults(response.pagination?.total || response.data.length)
-        } else {
-          setProducts([])
-          setTotalResults(0)
-          setError(response.error || 'No se encontraron resultados')
-        }
-      } catch (err) {
-        console.error('❌ Error en búsqueda:', err)
-        setProducts([])
-        setTotalResults(0)
-        setError('Error al realizar la búsqueda. Intenta nuevamente.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    performSearch()
-  }, [query, category, sortBy])
-
-  // Estado de carga
-  if (isLoading) {
-    return (
-      <div className='min-h-screen py-8'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='text-center py-12'>
-            <div className='animate-spin w-8 h-8 border-2 border-blaze-orange-600 border-t-transparent rounded-full mx-auto mb-4'></div>
-            <p className='text-white'>Buscando productos...</p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   // Sin query de búsqueda
   if (!query.trim()) {
     return (
-      <div className='min-h-screen py-8'>
+      <div className='min-h-screen pt-6 pb-8 scroll-mt-20'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center py-12'>
             <Search className='w-16 h-16 text-gray-400 mx-auto mb-4' />
@@ -115,8 +66,15 @@ export default function SearchPage() {
   }
 
   return (
-    <div className='min-h-screen py-8 overflow-x-hidden'>
+    <SearchWithFilters searchQuery={query}>
+      {({ products, loading, error, totalResults, filtersBar }) => {
+        const sortedProducts = sortProductsFn(products, sortBy)
+        return (
+    <div className='min-h-screen pt-6 pb-8 overflow-x-hidden scroll-mt-20'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+        {/* Filtros */}
+        {filtersBar}
+
         {/* Header de resultados */}
         <div className='mb-8'>
           <div className='flex items-center gap-3 mb-4'>
@@ -127,7 +85,7 @@ export default function SearchPage() {
           <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
             <div>
               <p className='text-lg text-white/90'>
-                {isLoading ? (
+                {loading ? (
                   <span className='flex items-center gap-2'>
                     <div className='animate-spin w-4 h-4 border-2 border-blaze-orange-400 border-t-transparent rounded-full' />
                     Buscando productos...
@@ -147,7 +105,7 @@ export default function SearchPage() {
 
             <div className='flex items-center gap-4'>
               <div className='text-sm text-white/80'>
-                {isLoading ? (
+                {loading ? (
                   <span>Cargando...</span>
                 ) : totalResults > 0 ? (
                   <span>
@@ -159,10 +117,8 @@ export default function SearchPage() {
                 )}
               </div>
 
-              {/* Controles de ordenamiento */}
-              {!isLoading && totalResults > 0 && (
+              {!loading && totalResults > 0 && (
                 <div className='flex items-center gap-3'>
-                  {/* Selector de ordenamiento */}
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value as any)}
@@ -179,9 +135,7 @@ export default function SearchPage() {
           </div>
         </div>
 
-        {/* Contenido principal */}
-        {isLoading ? (
-          // Estado de loading con skeletons
+        {loading ? (
           <ProductGridSkeleton
             count={12}
             variant='card'
@@ -202,7 +156,7 @@ export default function SearchPage() {
               Intentar nuevamente
             </Button>
           </div>
-        ) : products.length === 0 ? (
+        ) : sortedProducts.length === 0 ? (
           // Sin resultados
           <div className='text-center py-12'>
             <Package className='w-16 h-16 text-white/70 mx-auto mb-4' />
@@ -221,11 +175,27 @@ export default function SearchPage() {
                 <li>Busca por marca o categoría</li>
               </ul>
             </div>
+            <div className='mt-6 flex flex-col sm:flex-row gap-4 justify-center'>
+              <a
+                href={whatsappUrl}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white px-6 py-2 rounded-lg transition-colors inline-block text-center'
+              >
+                Contactar asesor
+              </a>
+              <a
+                href='/products'
+                className='border border-blaze-orange-600 text-blaze-orange-600 hover:bg-blaze-orange-50 px-6 py-2 rounded-lg transition-colors inline-block text-center'
+              >
+                Ver todos los productos
+              </a>
+            </div>
+            <SearchSuggestionsCarousel searchQuery={query} maxProducts={12} className='mt-8' />
           </div>
         ) : (
-          // Resultados de productos - 1 columna en móviles pequeños, 2 en móviles medianos
           <div className='grid grid-cols-1 xsm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full'>
-            {products.map(product => {
+            {sortedProducts.map(product => {
               const hasDiscount =
                 typeof product.discounted_price === 'number' &&
                 product.discounted_price > 0 &&
@@ -244,15 +214,15 @@ export default function SearchPage() {
                 <CommercialProductCard
                   key={product.id}
                   productId={String(product.id)}
-                  title={product.name}
-                  slug={product.slug}
+                  title={product.name || product.title}
+                  slug={product.slug || (product.name || product.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-')}
                   brand={product.brand}
                   category={productCategory}
                   image={image}
                   price={currentPrice}
                   originalPrice={originalPrice}
                   discount={discount}
-                  stock={product.stock}
+                  stock={product.stock ?? 0}
                   // ✅ NO pasar color/medida legacy - usar solo variantes para badges
                   // color={(product as any).color}
                   // medida={(product as any).medida}
@@ -276,7 +246,7 @@ export default function SearchPage() {
                       addProduct(
                         {
                           id: product.id,
-                          title: product.name,
+                          title: product.name || product.title,
                           price: product.price,
                           discounted_price:
                             (product as any).discounted_price ?? currentPrice ?? product.price,
@@ -296,7 +266,7 @@ export default function SearchPage() {
                       )
                       toast({
                         title: 'Producto agregado',
-                        description: `${product.name} se agregó al carrito`,
+                        description: `${product.name || product.title} se agregó al carrito`,
                       })
                     } catch (error) {
                       toast({
@@ -329,8 +299,11 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* Paginación futura */}
-        {!isLoading && !error && products.length > 0 && totalResults > 50 && (
+        {sortedProducts.length > 0 && (
+          <SearchSuggestionsCarousel searchQuery={query} maxProducts={12} className='mt-8' />
+        )}
+
+        {!loading && !error && sortedProducts.length > 0 && totalResults > 50 && (
           <div className='flex justify-center mt-12'>
             <div className='flex items-center gap-2'>
               <Button variant='outline' disabled>
@@ -346,8 +319,7 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* Información adicional */}
-        {products.length > 0 && (
+        {sortedProducts.length > 0 && (
           <div className='mt-12 text-center'>
             <div className='bg-white rounded-lg p-6 shadow-sm'>
               <h3 className='text-lg font-semibold text-gray-900 mb-2'>
@@ -358,14 +330,16 @@ export default function SearchPage() {
               </p>
               <div className='flex flex-col sm:flex-row gap-4 justify-center'>
                 <a
-                  href='/contact'
+                  href={whatsappUrl}
+                  target='_blank'
+                  rel='noopener noreferrer'
                   className='bg-blaze-orange-600 hover:bg-blaze-orange-700 text-white px-6 py-2 rounded-lg transition-colors'
                 >
                   Contactar asesor
                 </a>
                 <a
-                  href='/shop'
-                  className='border border-blaze-orange-600 text-blaze-orange-600 hover:bg-blaze-orange-50 px-6 py-2 rounded-lg transition-colors'
+                  href='/products'
+                  className='border border-blaze-orange-600 text-blaze-orange-600 hover:bg-blaze-orange-50 px-6 py-2 rounded-lg transition-colors inline-block text-center'
                 >
                   Ver todos los productos
                 </a>
@@ -375,5 +349,8 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+        )
+      }}
+    </SearchWithFilters>
   )
 }

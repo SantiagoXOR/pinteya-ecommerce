@@ -84,6 +84,25 @@ async function main() {
     console.warn(`⚠️ No existe: ${faviconPath}`)
   }
 
+  // 1b. Icon envío SVG
+  const iconEnvioPath = path.join(BASE, 'icons', 'icon-envio.svg')
+  if (fs.existsSync(iconEnvioPath)) {
+    try {
+      const raw = fs.readFileSync(iconEnvioPath)
+      const out = minifySvg(raw)
+      const storagePath = `tenants/${SLUG}/icons/icon-envio.svg`
+      await upload(storagePath, out, 'image/svg+xml')
+      console.log(`✅ ${storagePath}  ${(raw.length / 1024).toFixed(1)} KB → ${(out.length / 1024).toFixed(1)} KB`)
+      ok++
+    } catch (e) {
+      console.error(`❌ icons/icon-envio.svg: ${e.message}`)
+      err++
+    }
+    await new Promise((r) => setTimeout(r, 150))
+  } else {
+    console.warn(`⚠️ No existe: ${iconEnvioPath}`)
+  }
+
   // 2. Hero 1 PNG → WebP
   const hero1Path = path.join(BASE, 'hero', 'hero1.png')
   if (fs.existsSync(hero1Path)) {

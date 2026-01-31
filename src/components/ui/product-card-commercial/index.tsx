@@ -138,6 +138,7 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       children,
       medida,
       color,
+      preferLowestPrice = true,
       ...props
     },
     ref
@@ -165,7 +166,8 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       medida,
       productId,
       price,
-      originalPrice
+      originalPrice,
+      preferLowestPrice
     })
     const badges = useProductBadges({
       title,

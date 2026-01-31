@@ -7,7 +7,11 @@ export const INTENT_SYNONYMS: Record<string, string[]> = {
   goteras: ['impermeabilizante', 'membrana', 'sellador', 'humedad'],
   filtracion: ['filtración', 'impermeabilizante', 'membrana', 'sellador', 'humedad'],
   madera: ['impregnante', 'protector madera', 'barniz', 'lasur'],
+  maderas: ['madera', 'impregnante', 'protector madera', 'barniz', 'lasur'],
+  metal: ['esmalte metal', 'esmalte', 'metales'],
+  metales: ['metal', 'esmalte metal', 'esmalte'],
   techo: ['membrana', 'impermeabilizante', 'sellador'],
+  techos: ['techo', 'membrana', 'impermeabilizante', 'sellador'],
   latex: ['látex'],
   impregnantes: ['impregnante'],
   impregnante: ['impregnantes'],
@@ -136,4 +140,83 @@ export function expandQueryIntents(raw: string): string[] {
   }
 
   return Array.from(results)
+}
+
+/** Stopwords en español a ignorar al expandir por palabras */
+const STOPWORDS = new Set(['y', 'e', 'o', 'u', 'de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas', 'en', 'con', 'para', 'por', 'al', 'a', 'que', 'es', 'son'])
+
+/**
+ * Expande la query dividiendo por palabras y expandiendo cada una.
+ * Útil para búsquedas como "metales y maderas" donde cada palabra debe buscarse por separado (OR).
+ * Ej: "metales y maderas" → ["metales", "maderas", "metal", "esmalte", "madera", "impregnante", "barniz", ...]
+ */
+export function expandQueryIntentsByWords(raw: string): string[] {
+  const results = new Set<string>()
+  const words = raw.trim().toLowerCase().split(/\s+/).filter(Boolean)
+
+  for (const word of words) {
+    const normalized = stripDiacritics(word)
+    if (STOPWORDS.has(normalized) || normalized.length < 2) continue
+
+    results.add(normalized)
+    results.add(word)
+
+    const singular = toSingular(normalized)
+    if (singular !== normalized) results.add(singular)
+
+    const synonyms = INTENT_SYNONYMS[normalized]
+    if (synonyms) {
+      for (const s of synonyms) results.add(s)
+    }
+
+    if (normalized.length >= 3) {
+      const prefixVariations = generatePrefixVariations(normalized)
+      for (const v of prefixVariations) results.add(v)
+      const suffixVariations = generateSuffixVariations(normalized)
+      for (const v of suffixVariations) results.add(v)
+    }
+  }
+
+  return Array.from(results)
+}
+
+/**
+ * Mapea una búsqueda a slug de categoría si es reconocible.
+ * Ej: "metales y maderas" → "metales-y-maderas", "techos" → "techos"
+ */
+export function mapSearchToCategory(query: string): string | null {
+  const normalized = stripDiacritics(query.trim().toLowerCase())
+  if (!normalized) return null
+
+  const CATEGORY_MAP: Record<string, string> = {
+    'metales y maderas': 'metales-y-maderas',
+    'metales': 'metales-y-maderas',
+    'maderas': 'metales-y-maderas',
+    'metal': 'metales-y-maderas',
+    'madera': 'metales-y-maderas',
+    'techos': 'techos',
+    'techo': 'techos',
+    'paredes': 'paredes',
+    'pared': 'paredes',
+    'complementos': 'complementos',
+    'complemento': 'complementos',
+    'antihumedad': 'antihumedad',
+    'piscinas': 'piscinas',
+    'piscina': 'piscinas',
+    'reparaciones': 'reparaciones',
+    'reparacion': 'reparaciones',
+    'pisos': 'pisos',
+    'piso': 'pisos',
+    'humedad': 'antihumedad',
+    'goteras': 'techos',
+    'impermeabilizante': 'techos',
+  }
+
+  if (CATEGORY_MAP[normalized]) return CATEGORY_MAP[normalized]
+
+  for (const [key, slug] of Object.entries(CATEGORY_MAP)) {
+    if (normalized.includes(key) || key.includes(normalized)) return slug
+  }
+
+  return null
 }
