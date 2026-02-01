@@ -3,7 +3,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { getRelatedProducts, ProductGroup } from '@/lib/api/related-products'
+import { ProductGroup } from '@/lib/api/related-products'
+import { getApiTenantHeaders } from '@/lib/api/products'
 import { logError } from '@/lib/error-handling/centralized-error-handler'
 
 interface Product {
@@ -49,8 +50,11 @@ export const useRelatedProducts = ({
         return
       }
       
-      const related = await getRelatedProducts(product.id)
-      setRelatedProducts(related)
+      // Cargar vía API (servidor) para tener imagen, precio y variantes correctos (RLS en cliente bloqueaba product_variants/product_images)
+      const res = await fetch(`/api/products/related?productId=${product.id}`, { headers: getApiTenantHeaders() })
+      const json = await res.json()
+      if (json.success && json.data) setRelatedProducts(json.data as ProductGroup)
+      else setRelatedProducts(null)
       // No autoseleccionar un producto relacionado al abrir el modal
       // para no alterar precio/stock iniciales del card
       // La selección se hará sólo cuando el usuario cambie capacidad/ancho

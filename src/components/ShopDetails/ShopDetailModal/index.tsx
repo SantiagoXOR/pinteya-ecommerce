@@ -9,7 +9,7 @@
 'use client'
 
 import React, { useEffect, useCallback, useMemo } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'react-hot-toast'
@@ -55,6 +55,7 @@ import { ProductInfo } from './components/ProductInfo'
 import { ProductSpecifications } from './components/ProductSpecifications'
 import { AddToCartSection } from './components/AddToCartSection'
 import { RelatedProducts } from './components/RelatedProducts'
+import { SuggestedProductsWithCard } from './components/SuggestedProductsWithCard'
 import { QuantitySelector } from './components/QuantitySelector'
 import { GrainSelector } from './components/VariantSelectors/GrainSelector'
 import { SizeSelector } from './components/VariantSelectors/SizeSelector'
@@ -898,6 +899,9 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
           <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 pr-10">
             {productData?.name || product?.name}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Detalle del producto {productData?.name || product?.name}. Precio, variantes, agregar al carrito y productos sugeridos.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto overscroll-contain">
@@ -1055,14 +1059,24 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               </div>
             )}
 
-            {/* Productos relacionados */}
-            {product && product.id && (
-              <React.Suspense fallback={<div>Cargando productos relacionados...</div>}>
+            {/* Productos sugeridos: ProductItem (CommercialProductCard) cargado dinámicamente para evitar ciclo de dependencias */}
+            {product && product.id && relatedProducts?.products && relatedProducts.products.length > 1 && (
+              <SuggestedProductsWithCard
+                products={relatedProducts.products}
+                currentProductId={product.id}
+                limit={8}
+              />
+            )}
+
+            {/* Carrusel lazy solo si el modal aún no tiene productos sugeridos (evita duplicar sección) */}
+            {product && product.id && (!relatedProducts?.products || relatedProducts.products.length <= 1) && (
+              <React.Suspense fallback={null}>
                 <RelatedProducts
                   productId={product.id}
                   categoryId={(product as any).category?.id}
                   categorySlug={(product as any).category?.slug}
                   limit={8}
+                  productGroupFromParent={relatedProducts}
                 />
               </React.Suspense>
             )}

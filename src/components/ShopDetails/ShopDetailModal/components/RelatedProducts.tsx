@@ -6,12 +6,15 @@
  */
 
 import React, { useState, useEffect } from 'react'
+import type { ProductGroup } from '@/lib/api/related-products'
 
 interface RelatedProductsProps {
   productId: number
   categoryId?: number
   categorySlug?: string
   limit?: number
+  /** Productos relacionados ya cargados por el modal (getRelatedProducts en cliente); se usan cuando la API /related no devuelve datos (p. ej. en local) */
+  productGroupFromParent?: ProductGroup | null
 }
 
 // Componente lazy para evitar dependencia circular
@@ -20,6 +23,7 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
   categoryId,
   categorySlug,
   limit = 8,
+  productGroupFromParent,
 }) => {
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -70,12 +74,18 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
     return null
   }
 
+  // Debug: confirmar que pasamos productGroupFromParent al carrusel
+  if (typeof window !== 'undefined' && productGroupFromParent?.products?.length) {
+    console.log('[RelatedProducts] pasando al carrusel productGroupFromParent con', productGroupFromParent.products.length, 'productos')
+  }
+
   return (
     <Component
       productId={productId}
       categoryId={categoryId}
       categorySlug={categorySlug}
       limit={limit}
+      productGroupFromParent={productGroupFromParent}
     />
   )
 }
@@ -88,6 +98,7 @@ export const RelatedProducts = React.memo<RelatedProductsProps>(({
   categoryId,
   categorySlug,
   limit = 8,
+  productGroupFromParent,
 }) => {
   if (!productId) return null
 
@@ -97,6 +108,7 @@ export const RelatedProducts = React.memo<RelatedProductsProps>(({
       categoryId={categoryId}
       categorySlug={categorySlug}
       limit={limit}
+      productGroupFromParent={productGroupFromParent}
     />
   )
 })

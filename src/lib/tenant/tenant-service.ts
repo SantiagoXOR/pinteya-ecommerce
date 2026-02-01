@@ -294,8 +294,19 @@ export const getTenantConfig = cache(async (): Promise<TenantConfig> => {
   if (process.env.NODE_ENV === 'test' && typeof globalThis.__TENANT_TEST_GET_CONFIG__ === 'function') {
     return globalThis.__TENANT_TEST_GET_CONFIG__()
   }
-  // Obtener hostname del request
   const headersList = await headers()
+  // Prioridad: header enviado por el cliente (permite en local usar el mismo tenant que la UI)
+  const tenantSlugHeader = headersList.get('x-tenant-slug')
+  if (tenantSlugHeader && tenantSlugHeader.trim()) {
+    const config = await getTenantBySlug(tenantSlugHeader.trim())
+    if (config) return config
+  }
+  // En desarrollo, override por env para simular un tenant sin cambiar el host
+  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEV_TENANT_SLUG) {
+    const config = await getTenantBySlug(process.env.NEXT_PUBLIC_DEV_TENANT_SLUG)
+    if (config) return config
+  }
+  // Obtener hostname del request
   const hostname = headersList.get('x-tenant-domain') 
     || headersList.get('host') 
     || 'localhost'

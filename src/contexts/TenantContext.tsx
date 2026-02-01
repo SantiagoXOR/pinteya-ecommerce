@@ -6,7 +6,7 @@
 // configuración del tenant en componentes cliente
 // =====================================================
 
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, type ReactNode } from 'react'
 import type { TenantPublicConfig } from '@/lib/tenant/types'
 import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
@@ -25,11 +25,24 @@ interface TenantProviderProps {
   children: ReactNode
 }
 
+/** Sincroniza tenant.slug para que las APIs (getProducts, /api/products/related) usen el mismo tenant */
+function useTenantSlugForApi(slug: string | undefined) {
+  useEffect(() => {
+    if (typeof window !== 'undefined' && slug) {
+      ;(window as any).__API_TENANT_SLUG__ = slug
+    }
+    return () => {
+      if (typeof window !== 'undefined') delete (window as any).__API_TENANT_SLUG__
+    }
+  }, [slug])
+}
+
 /**
  * Provider para hacer disponible la configuración del tenant
  * en todos los componentes cliente
  */
 export function TenantProvider({ tenant, children }: TenantProviderProps) {
+  useTenantSlugForApi(tenant?.slug)
   return (
     <TenantContext.Provider value={tenant}>
       {children}

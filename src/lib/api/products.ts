@@ -52,9 +52,7 @@ export async function getProducts(
 
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getApiTenantHeaders(),
       signal, // Agregar soporte para AbortController
     })
 
@@ -122,13 +120,20 @@ export async function getProducts(
  * @param id - ID del producto
  * @returns Promise<ApiResponse<ProductWithCategory>>
  */
+/** Headers para peticiones a la API de productos (incluye x-tenant-slug si está en el cliente). */
+export function getApiTenantHeaders(): Record<string, string> {
+  const h: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (typeof window !== 'undefined' && (window as any).__API_TENANT_SLUG__) {
+    h['x-tenant-slug'] = (window as any).__API_TENANT_SLUG__
+  }
+  return h
+}
+
 export async function getProductById(id: number): Promise<ApiResponse<ProductWithCategory>> {
   try {
     const response = await fetch(`/api/products/${id}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getApiTenantHeaders(),
     })
 
     // Usar parsing seguro de JSON

@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { ProductWithCategory, PaginatedResponse } from '@/types/api'
 import { logError } from '@/lib/error-handling/centralized-error-handler'
 import { safeApiResponseJson } from '@/lib/json-utils'
+import { getApiTenantHeaders } from '@/lib/api/products'
 
 export interface RelatedProduct {
   id: number
@@ -14,6 +15,16 @@ export interface RelatedProduct {
   price: string
   discounted_price?: string
   stock?: number
+  /** URL de imagen cuando viene de la API (opcional) */
+  image?: string
+  /** Slug cuando viene de la API (para enlaces) */
+  slug?: string
+  /** Variantes cuando viene de la API (para pills y selector) */
+  variants?: any[]
+  /** Variante por defecto cuando viene de la API (precio/medida para el card) */
+  default_variant?: { measure?: string; price_list?: number; price_sale?: number; stock?: number; [key: string]: unknown } | null
+  /** Marca cuando viene de la API */
+  brand?: string
 }
 
 export interface ProductGroup {
@@ -49,6 +60,32 @@ export function extractBaseName(productName: string): string {
   }
   
   return baseName.trim()
+}
+
+/**
+ * Extrae la primera URL de imagen desde el campo images (JSONB o string)
+ */
+export function extractImageFromJsonb(images: unknown): string | null {
+  if (images == null) return null
+  if (typeof images === 'string') {
+    const trimmed = images.trim()
+    if (!trimmed) return null
+    if (trimmed.startsWith('{') || trimmed.startsWith('[') || trimmed.startsWith('"')) {
+      try {
+        const parsed = JSON.parse(trimmed) as unknown
+        return extractImageFromJsonb(parsed)
+      } catch {
+        return trimmed || null
+      }
+    }
+    return trimmed || null
+  }
+  if (Array.isArray(images)) return (images[0] as string)?.trim() || null
+  if (typeof images === 'object') {
+    const o = images as Record<string, unknown>
+    return (o.url as string) || (o.previews as string[])?.[0] || (o.thumbnails as string[])?.[0] || (o.gallery as string[])?.[0] || (o.main as string) || null
+  }
+  return null
 }
 
 /**
@@ -88,7 +125,7 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
     // Primero obtener el producto actual
     const { data: currentProduct, error: currentError } = await supabase
       .from('products')
-      .select('id, name, price, discounted_price, medida, stock')
+      .select('id, name, price, discounted_price, medida, stock, brand')
       .eq('id', productId)
       .eq('is_active', true)
       .single()
@@ -126,7 +163,7 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
     // Buscar productos con nombre similar o exacto
     const { data: relatedProducts, error: relatedError } = await supabase
       .from('products')
-      .select('id, name, price, discounted_price, medida, stock')
+      .select('id, name, price, discounted_price, medida, stock, brand, slug, images')
       .or(`name.ilike.%${baseName}%,name.eq.${currentProduct.name}`)
       .eq('is_active', true)
       .order('medida')
@@ -150,7 +187,7 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
         const search = encodeURIComponent(baseName)
         const response = await fetch(`/api/products?search=${search}&limit=20`, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getApiTenantHeaders(),
         })
 
         const result = await safeApiResponseJson<PaginatedResponse<ProductWithCategory>>(response)
@@ -159,21 +196,41 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
           return null
         }
 
-        const apiProducts = result.data.data || []
+        // PaginatedResponse tiene data: T[] (array directo), no data.data
+        const apiProducts = Array.isArray(result.data) ? result.data : (result.data as any)?.data ?? []
         if (apiProducts.length <= 1) {
           console.log('Fallback /api/products: insuficientes productos para agrupar por medida')
           return null
         }
 
-        // Construir lista de RelatedProduct desde API
-        const products: RelatedProduct[] = apiProducts.map(p => ({
-          id: p.id,
-          name: p.name,
-          measure: (p as any).medida || extractMeasure(p.name) || 'Sin medida',
-          price: String((p as any).price ?? 0),
-          discounted_price: (p as any).discounted_price != null ? String((p as any).discounted_price) : undefined,
-          stock: typeof (p as any).stock === 'number' ? (p as any).stock : parseFloat(String((p as any).stock ?? 0)),
-        }))
+        // Construir lista de RelatedProduct desde API (precio, imagen, variantes y default_variant para el ProductCard)
+        const products: RelatedProduct[] = apiProducts.map((p: any) => {
+          const def = p.default_variant
+          const priceVal =
+            p.price ??
+            p.discounted_price ??
+            def?.price_sale ??
+            def?.price_list ??
+            p.price_sale ??
+            p.price_list ??
+            0
+          const numPrice = Number(priceVal) || 0
+          const discountNum = p.discounted_price != null ? Number(p.discounted_price) : (def?.price_sale ?? numPrice)
+          const imageUrl = p.image_url ?? p.images?.previews?.[0] ?? p.images?.thumbnails?.[0] ?? p.image ?? ''
+          return {
+            id: p.id,
+            name: p.name,
+            measure: p.medida || def?.measure || extractMeasure(p.name) || 'Sin medida',
+            price: String(numPrice),
+            discounted_price: discountNum > 0 && discountNum < numPrice ? String(discountNum) : undefined,
+            stock: typeof p.stock === 'number' ? p.stock : parseFloat(String(p.stock ?? 0)),
+            image: imageUrl || undefined,
+            slug: p.slug,
+            variants: p.variants,
+            default_variant: p.default_variant ?? null,
+            brand: p.brand ?? undefined,
+          }
+        })
 
         const selectedProduct = products.find(pr => pr.id === productId) || products[0]
 
@@ -195,16 +252,58 @@ export async function getRelatedProducts(productId: number): Promise<ProductGrou
       }
     }
     
-    // Convertir a RelatedProduct usando el campo medida de la base de datos
-    const products: RelatedProduct[] = relatedProducts.map(product => ({
-      id: product.id,
-      name: product.name,
-      measure: product.medida || extractMeasure(product.name) || 'Sin medida',
-      price: product.price.toString(),
-      discounted_price: product.discounted_price?.toString(),
-      stock: typeof product.stock === 'number' ? product.stock : parseFloat(String(product.stock ?? 0))
-    }))
-    
+    // Enriquecer con variantes e imágenes (igual que API) para que las tarjetas muestren precio, imagen y medida
+    const productIds = relatedProducts.map(p => p.id)
+    const { data: variants } = await supabase
+      .from('product_variants')
+      .select('id, product_id, measure, price_list, price_sale, stock, image_url, is_default')
+      .in('product_id', productIds)
+      .eq('is_active', true)
+      .order('is_default', { ascending: false })
+
+    const variantsByProduct = (variants || []).reduce((acc, v) => {
+      if (!acc[v.product_id]) acc[v.product_id] = []
+      acc[v.product_id].push(v)
+      return acc
+    }, {} as Record<number, { product_id: number; measure?: string; price_list?: number; price_sale?: number; stock?: number; image_url?: string; is_default?: boolean }[]>)
+
+    const { data: productImagesData } = await supabase
+      .from('product_images')
+      .select('product_id, url, is_primary')
+      .in('product_id', productIds)
+      .order('is_primary', { ascending: false })
+      .order('display_order', { ascending: true })
+
+    const imageByProductId: Record<number, string | null> = {}
+    productImagesData?.forEach((img: { product_id: number; url: string }) => {
+      if (imageByProductId[img.product_id] == null) imageByProductId[img.product_id] = img.url
+    })
+
+    const products: RelatedProduct[] = relatedProducts.map(product => {
+      const productVariants = variantsByProduct[product.id] || []
+      const defaultVariant = productVariants.find((v: { is_default?: boolean }) => v.is_default) || productVariants[0]
+      const numPrice = Number(product.price) || defaultVariant?.price_list || 0
+      const numDiscount = product.discounted_price != null ? Number(product.discounted_price) : (defaultVariant?.price_sale ?? numPrice)
+      const effectivePrice = numPrice > 0 ? numPrice : (defaultVariant?.price_list ?? 0)
+      const effectiveDiscount = numDiscount > 0 && numDiscount < effectivePrice ? numDiscount : (defaultVariant?.price_sale != null && defaultVariant?.price_list != null && defaultVariant.price_sale < defaultVariant.price_list ? defaultVariant.price_sale : effectivePrice)
+      const imageUrl = imageByProductId[product.id] ?? defaultVariant?.image_url ?? extractImageFromJsonb((product as any).images)
+      const measure = (product.medida ?? defaultVariant?.measure ?? extractMeasure(product.name)) || 'Sin medida'
+      const stock = typeof product.stock === 'number' ? product.stock : (defaultVariant?.stock ?? parseFloat(String(product.stock ?? 0)))
+      return {
+        id: product.id,
+        name: product.name,
+        measure,
+        price: String(effectivePrice),
+        discounted_price: effectiveDiscount < effectivePrice ? String(effectiveDiscount) : undefined,
+        stock: Number(stock) || 0,
+        brand: (product as any).brand ?? undefined,
+        slug: (product as any).slug ?? undefined,
+        image: imageUrl ?? undefined,
+        variants: productVariants.length ? productVariants : undefined,
+        default_variant: defaultVariant ? { measure: defaultVariant.measure, price_list: defaultVariant.price_list, price_sale: defaultVariant.price_sale, stock: defaultVariant.stock } : null,
+      }
+    })
+
     // Encontrar el producto seleccionado actual
     const selectedProduct = products.find(p => p.id === productId) || products[0]
     

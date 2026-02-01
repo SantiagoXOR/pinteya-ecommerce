@@ -366,6 +366,8 @@ module.exports.__esModule = true;
   images: {
     // Formatos modernos para mejor compresión
     formats: ['image/webp', 'image/avif'],
+    // Calidades usadas en la app (Next.js exige declararlas para evitar warning)
+    qualities: [65, 75, 80, 85],
     // Cache más largo para imágenes optimizadas
     minimumCacheTTL: 31536000, // 1 año para imágenes estáticas
     // ⚡ OPTIMIZACIÓN: Tamaños responsivos optimizados para productos y hero
