@@ -192,7 +192,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  // Rutas públicas optimizadas
+  // Rutas públicas optimizadas (añadir headers de tenant para que la API resuelva el tenant correcto)
   const publicRoutes = [
     '/api/products',
     '/api/categories',
@@ -203,7 +203,17 @@ export default async function middleware(req: NextRequest) {
   ]
 
   if (publicRoutes.some(route => nextUrl.pathname.startsWith(route))) {
-    return NextResponse.next()
+    const requestHeaders = new Headers(req.headers)
+    requestHeaders.set('x-tenant-domain', hostname)
+    if (tenantInfo.subdomain) {
+      requestHeaders.set('x-tenant-subdomain', tenantInfo.subdomain)
+    }
+    if (tenantInfo.customDomain) {
+      requestHeaders.set('x-tenant-custom-domain', tenantInfo.customDomain)
+    }
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    })
   }
 
   // Proteger rutas administrativas, de usuario y driver
