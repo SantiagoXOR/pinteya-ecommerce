@@ -1061,6 +1061,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                 <RelatedProducts
                   productId={product.id}
                   categoryId={(product as any).category?.id}
+                  categorySlug={(product as any).category?.slug}
                   limit={8}
                 />
               </React.Suspense>

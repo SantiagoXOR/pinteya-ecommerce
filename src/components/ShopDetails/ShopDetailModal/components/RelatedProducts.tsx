@@ -10,6 +10,7 @@ import React, { useState, useEffect } from 'react'
 interface RelatedProductsProps {
   productId: number
   categoryId?: number
+  categorySlug?: string
   limit?: number
 }
 
@@ -17,6 +18,7 @@ interface RelatedProductsProps {
 const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
   productId,
   categoryId,
+  categorySlug,
   limit = 8,
 }) => {
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null)
@@ -72,6 +74,7 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
     <Component
       productId={productId}
       categoryId={categoryId}
+      categorySlug={categorySlug}
       limit={limit}
     />
   )
@@ -83,6 +86,7 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
 export const RelatedProducts = React.memo<RelatedProductsProps>(({
   productId,
   categoryId,
+  categorySlug,
   limit = 8,
 }) => {
   if (!productId) return null
@@ -91,6 +95,7 @@ export const RelatedProducts = React.memo<RelatedProductsProps>(({
     <LazySuggestedProducts
       productId={productId}
       categoryId={categoryId}
+      categorySlug={categorySlug}
       limit={limit}
     />
   )

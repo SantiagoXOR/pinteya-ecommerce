@@ -96,9 +96,11 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
             const effectivePrice = getEffectiveProductPrice(product)
             return effectivePrice >= FREE_SHIPPING_THRESHOLD
           })
-          
-          // Limitar a 6 productos para que sean visibles sin scroll
-          setProducts(freeShippingProducts.slice(0, 6))
+          // Fallback: si no hay productos con envío gratis, mostrar sugerencias (primeros N de la respuesta)
+          const toShow = freeShippingProducts.length > 0
+            ? freeShippingProducts.slice(0, 6)
+            : response.data.slice(0, 6)
+          setProducts(toShow)
         } else {
           setError('No se pudieron cargar los productos')
         }

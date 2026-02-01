@@ -7,19 +7,20 @@ import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import ProductItem from '@/components/Common/ProductItem'
-import { getRelatedProducts, ProductGroup } from '@/lib/api/related-products'
 import { ProductWithCategory } from '@/types/api'
 import { getProductById } from '@/lib/api/products'
 
 interface SuggestedProductsCarouselProps {
   productId: number
   categoryId?: number
+  categorySlug?: string
   limit?: number
 }
 
 const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
   productId,
   categoryId,
+  categorySlug,
   limit = 8,
 }) => {
   const router = useRouter()
@@ -34,29 +35,25 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
       const minProducts = 4 // Mínimo de productos a mostrar
       
       try {
-        // Estrategia 1: Intentar obtener productos relacionados por nombre base
+        // Estrategia 1: API servidor (multitenant) - productos relacionados por nombre base
         try {
-          const productGroup = await getRelatedProducts(productId)
+          const response = await fetch(`/api/products/related?productId=${productId}`)
+          const result = await response.json()
           
-          if (productGroup && productGroup.products && productGroup.products.length > 1) {
-            // Obtener datos completos de cada producto relacionado
+          if (result.success && result.data?.products && result.data.products.length > 1) {
+            const productGroup = result.data
             const productsWithFullData = await Promise.all(
               productGroup.products
-                .filter(p => p.id !== productId) // Excluir el producto actual
+                .filter((p: { id: number }) => p.id !== productId)
                 .slice(0, limit)
-                .map(async (p: any) => {
+                .map(async (p: { id: number }) => {
                   try {
-                    // Obtener datos completos del producto desde la API
                     const fullProductResponse = await getProductById(p.id)
-                    // Manejar ambos formatos de respuesta (con data o directamente)
                     const realProduct =
                       fullProductResponse && typeof fullProductResponse === 'object' && 'data' in (fullProductResponse as any)
                         ? (fullProductResponse as any).data
                         : fullProductResponse
-                    
-                    if (realProduct) {
-                      return realProduct as ProductWithCategory
-                    }
+                    if (realProduct) return realProduct as ProductWithCategory
                     return null
                   } catch (error) {
                     console.warn(`Error obteniendo producto ${p.id}:`, error)
@@ -64,44 +61,34 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
                   }
                 })
             )
-            
-            // Filtrar productos nulos
-            const validProducts = productsWithFullData
-              .filter((p): p is ProductWithCategory => p !== null)
-            
+            const validProducts = productsWithFullData.filter((p): p is ProductWithCategory => p !== null)
             if (validProducts.length > 0) {
               loadedProducts = validProducts
-              console.log('✅ Productos relacionados por nombre encontrados:', validProducts.length)
             }
           }
         } catch (error) {
-          console.warn('Error obteniendo productos relacionados por nombre:', error)
+          console.warn('Error obteniendo productos relacionados por API:', error)
         }
         
-        // Estrategia 2: Si no hay suficientes productos, agregar de la misma categoría
-        // Ejecutar siempre si hay categoryId, o si no hay suficientes productos
-        if (loadedProducts.length < minProducts) {
-          if (categoryId) {
-            try {
-              const needed = Math.max(minProducts, limit) - loadedProducts.length
-              const response = await fetch(`/api/products?category_id=${categoryId}&limit=${needed + 1}`)
-              const result = await response.json()
-              if (result.success && result.data && result.data.data) {
-                const categoryProducts = result.data.data
-                  .filter((p: ProductWithCategory) => 
-                    p.id !== productId && 
-                    !loadedProducts.some(loaded => loaded.id === p.id)
-                  )
-                  .slice(0, needed)
-                
-                if (categoryProducts.length > 0) {
-                  loadedProducts = [...loadedProducts, ...categoryProducts]
-                  console.log('✅ Productos de categoría agregados:', categoryProducts.length)
-                }
+        // Estrategia 2: Misma categoría usando slug (la API acepta category=slug)
+        if (loadedProducts.length < minProducts && categorySlug) {
+          try {
+            const needed = Math.max(minProducts, limit) - loadedProducts.length
+            const response = await fetch(`/api/products?category=${encodeURIComponent(categorySlug)}&limit=${needed + 1}`)
+            const result = await response.json()
+            if (result.success && result.data && result.data.data) {
+              const categoryProducts = result.data.data
+                .filter((p: ProductWithCategory) => 
+                  p.id !== productId && 
+                  !loadedProducts.some(loaded => loaded.id === p.id)
+                )
+                .slice(0, needed)
+              if (categoryProducts.length > 0) {
+                loadedProducts = [...loadedProducts, ...categoryProducts]
               }
-            } catch (error) {
-              console.warn('Error obteniendo productos por categoría:', error)
             }
+          } catch (error) {
+            console.warn('Error obteniendo productos por categoría:', error)
           }
         }
         
