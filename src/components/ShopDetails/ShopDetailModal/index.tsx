@@ -1073,8 +1073,18 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
               <React.Suspense fallback={null}>
                 <RelatedProducts
                   productId={product.id}
-                  categoryId={productData?.category?.id ?? (product as any).category?.id}
-                  categorySlug={productData?.category?.slug ?? (product as any).category?.slug}
+                  categoryId={
+                    productData?.category?.id ??
+                    (product as any).category?.id ??
+                    (productData as any)?.categories?.[0]?.category?.id ??
+                    (product as any)?.categories?.[0]?.category?.id
+                  }
+                  categorySlug={
+                    productData?.category?.slug ??
+                    (product as any).category?.slug ??
+                    (productData as any)?.categories?.[0]?.category?.slug ??
+                    (product as any)?.categories?.[0]?.category?.slug
+                  }
                   limit={8}
                   productGroupFromParent={relatedProducts}
                   productName={productData?.name ?? product?.name}

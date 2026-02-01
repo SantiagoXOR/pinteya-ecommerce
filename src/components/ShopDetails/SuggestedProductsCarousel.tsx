@@ -56,13 +56,13 @@ const relatedProductsToDisplay = (
     .slice(0, limit)
     .map((p) => ({
       id: p.id,
-      slug: `${p.id}-${(p.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`.slice(0, 80) || String(p.id),
+      slug: p.slug || `${p.id}-${(p.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`.slice(0, 80) || String(p.id),
       name: p.name,
       price: parseFloat(String(p.price)) || 0,
       discounted_price: p.discounted_price != null ? parseFloat(String(p.discounted_price)) : undefined,
-      image: '',
-      images: [],
-      brand: '',
+      image: p.image || '',
+      images: p.image ? { previews: [p.image], thumbnails: [p.image] } : {},
+      brand: p.brand || '',
       stock: typeof p.stock === 'number' ? p.stock : 0,
       description: '',
       category: null,
@@ -140,8 +140,8 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
       let loadedProducts: ProductWithCategory[] = []
       const minProducts = 4 // Mínimo de productos a mostrar
 
-      // Inmediato: si el modal ya trajo productos relacionados, usarlos ya (evita pantalla vacía y carreras con Strict Mode)
-      if (productGroupFromParent?.products && productGroupFromParent.products.length > 0) {
+      // Inmediato: si el modal ya trajo productos relacionados (>1), usarlos ya (evita pantalla vacía y carreras con Strict Mode)
+      if (productGroupFromParent?.products && productGroupFromParent.products.length > 1) {
         const fromParent = relatedProductsToDisplay(
           productGroupFromParent.products,
           productId,
@@ -151,25 +151,53 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
           loadedProducts = fromParent
         }
       }
+
+      const hasFewFromParent = !productGroupFromParent?.products || productGroupFromParent.products.length <= 1
       
       try {
-        // Prioridad 0: búsqueda por baseName o por nombre del producto (si no hay grupo del padre)
+        // Prioridad 0 (cuando hay pocos del padre): estrategia por categoría PRIMERO (más fiable que búsqueda por nombre)
+        if (hasFewFromParent && loadedProducts.length < minProducts && categorySlug) {
+          try {
+            const response = await fetch(`/api/products?category=${encodeURIComponent(categorySlug)}&limit=${limit + 5}`, {
+              headers: getApiTenantHeaders(),
+            })
+            const result = await response.json()
+            const categoryList = Array.isArray(result.data) ? result.data : result.data?.data
+            if (result.success && categoryList?.length) {
+              const categoryProducts = categoryList
+                .filter((p: ProductWithCategory) => p.id !== productId)
+                .slice(0, limit)
+              if (categoryProducts.length > 0) {
+                loadedProducts = categoryProducts
+              }
+            }
+          } catch (error) {
+            console.warn('Error obteniendo productos por categoría (prioridad):', error)
+          }
+        }
+
+        // Prioridad 1: búsqueda por baseName (si aún no tenemos suficientes)
         const searchTerm = productGroupFromParent?.baseName ?? (productName?.trim() ? extractBaseName(productName.trim()) || productName.trim() : '')
-        if (searchTerm) {
+        if (loadedProducts.length < minProducts && searchTerm) {
           const bySearch = await fetchFullProductsByBaseName(
             searchTerm,
             productId,
             limit
           )
           if (bySearch.length > 0) {
-            loadedProducts = bySearch
+            const existingIds = new Set(loadedProducts.map((p) => p.id))
+            const newFromSearch = bySearch.filter((p) => !existingIds.has(p.id))
+            loadedProducts =
+              loadedProducts.length > 0
+                ? [...loadedProducts, ...newFromSearch].slice(0, limit)
+                : bySearch
           } else if (loadedProducts.length === 0 && productGroupFromParent?.products?.length) {
             const enriched = await enrichProductGroupToFull(productGroupFromParent, productId, limit)
             if (enriched.length > 0) loadedProducts = enriched
           }
         }
 
-        // Estrategia 1: API servidor (multitenant) - solo si no tenemos datos del padre
+        // Estrategia 2: API servidor (multitenant) - solo si no tenemos suficientes
         if (loadedProducts.length < minProducts) {
           try {
             const response = await fetch(`/api/products/related?productId=${productId}`, {
@@ -208,7 +236,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
           }
         }
         
-        // Estrategia 2: Misma categoría usando slug (la API devuelve { data: T[] })
+        // Estrategia 3: Misma categoría usando slug (si aún no se intentó o no devolvió suficientes)
         if (loadedProducts.length < minProducts && categorySlug) {
           try {
             const needed = Math.max(minProducts, limit) - loadedProducts.length
@@ -233,7 +261,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
           }
         }
         
-        // Estrategia 3: Si aún no hay suficientes, agregar productos populares (la API devuelve { data: T[] })
+        // Estrategia 4: Si aún no hay suficientes, agregar productos populares (la API devuelve { data: T[] })
         if (loadedProducts.length < minProducts) {
           try {
             const needed = Math.max(minProducts, limit) - loadedProducts.length
@@ -260,7 +288,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
           }
         }
 
-        // Estrategia 4: Usar productos del modal (productGroupFromParent) cuando la API devuelve 0
+        // Estrategia 5: Usar productos del modal (productGroupFromParent) cuando la API devuelve 0
         // Útil en local o cuando el tenant no devuelve datos por API pero el modal sí tiene relacionados
         if (loadedProducts.length < minProducts && productGroupFromParent?.products && productGroupFromParent.products.length > 0) {
           const fromParent = relatedProductsToDisplay(

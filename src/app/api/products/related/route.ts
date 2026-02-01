@@ -88,7 +88,47 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const rows = relatedRows || []
+    let rows = relatedRows || []
+
+    // Fallback: cuando hay 0 o 1 producto relacionado por nombre, buscar por categoría
+    if (rows.length <= 1) {
+      const { data: productCategories } = await supabase
+        .from('product_categories')
+        .select('category_id')
+        .eq('product_id', productId)
+
+      const categoryIds = productCategories?.map((pc: { category_id: number }) => pc.category_id).filter(Boolean) ?? []
+      if (categoryIds.length > 0) {
+        const { data: categoryProductIds } = await supabase
+          .from('product_categories')
+          .select('product_id')
+          .in('category_id', categoryIds)
+          .neq('product_id', productId)
+
+        const ids = [...new Set((categoryProductIds ?? []).map((r: { product_id: number }) => r.product_id))]
+        if (ids.length > 0) {
+          const { data: categoryRows, error: categoryError } = await supabase
+            .from('products')
+            .select(
+              `id, name, price, discounted_price, medida, stock, slug, images, brand,
+              tenant_products!inner (tenant_id, price, discounted_price, stock)`
+            )
+            .in('id', ids)
+            .eq('is_active', true)
+            .eq('tenant_products.tenant_id', tenantId)
+            .eq('tenant_products.is_visible', true)
+            .limit(8)
+            .order('name')
+
+          if (!categoryError && categoryRows?.length) {
+            const existingIds = new Set(rows.map((r: { id: number }) => r.id))
+            const toAdd = (categoryRows as any[]).filter((r: { id: number }) => !existingIds.has(r.id))
+            rows = [...rows, ...toAdd]
+          }
+        }
+      }
+    }
+
     const productIds = rows.map((r: { id: number }) => r.id)
 
     // Enriquecer con variantes e imágenes usando cliente admin (evita RLS que bloquea en algunos productos, ej. Impregnante Danzke)
