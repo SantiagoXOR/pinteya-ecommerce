@@ -66,15 +66,22 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
         setLoading(true)
         setError(null)
 
-        // Obtener más productos para filtrar por envío gratis
-        const response = await getProducts(
+        // No usar sortBy=price: en pintemas products.price=0 causa 0 resultados en la API.
+        // Usar sortBy=created_at y ordenar en cliente por precio efectivo para priorizar envío gratis.
+        let response = await getProducts(
           {
-            limit: 30, // Obtener más para filtrar después
-            sortBy: 'price',
+            limit: 30,
+            sortBy: 'created_at',
             sortOrder: 'desc',
           },
           abortController.signal
         )
+
+        // Fallback: si la primera llamada devuelve 0 productos, reintentar sin sort
+        if (response.success && (!response.data || response.data.length === 0)) {
+          if (abortController.signal.aborted) return
+          response = await getProducts({ limit: 30 }, abortController.signal)
+        }
 
         // Verificar si el componente aún está montado
         if (abortController.signal.aborted) {
@@ -82,24 +89,22 @@ const QuickAddSuggestions: React.FC<QuickAddSuggestionsProps> = ({
         }
 
         if (response.success && response.data) {
-          // Filtrar productos con envío gratis (precio >= $50,000)
           const FREE_SHIPPING_THRESHOLD = 50000
-          const freeShippingProducts = response.data.filter(product => {
-            // Si tiene variantes, verificar si alguna califica
+          const rawData = response.data
+          const freeShippingProducts = rawData.filter(product => {
             if (product.variants && product.variants.length > 0) {
               return product.variants.some((v: any) => {
                 const variantPrice = Number(v.price_sale) || Number(v.price_list) || 0
                 return variantPrice >= FREE_SHIPPING_THRESHOLD
               })
             }
-            // Si no tiene variantes, verificar precio del producto
-            const effectivePrice = getEffectiveProductPrice(product)
-            return effectivePrice >= FREE_SHIPPING_THRESHOLD
+            return getEffectiveProductPrice(product) >= FREE_SHIPPING_THRESHOLD
           })
-          // Fallback: si no hay productos con envío gratis, mostrar sugerencias (primeros N de la respuesta)
-          const toShow = freeShippingProducts.length > 0
-            ? freeShippingProducts.slice(0, 6)
-            : response.data.slice(0, 6)
+          // Ordenar por precio efectivo desc para priorizar envío gratis (más caros primero)
+          const sorted = [...freeShippingProducts].sort(
+            (a, b) => getEffectiveProductPrice(b) - getEffectiveProductPrice(a)
+          )
+          const toShow = sorted.length > 0 ? sorted.slice(0, 6) : rawData.slice(0, 6)
           setProducts(toShow)
         } else {
           setError('No se pudieron cargar los productos')
