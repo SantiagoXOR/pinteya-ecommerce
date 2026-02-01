@@ -22,6 +22,10 @@ export const INTENT_SYNONYMS: Record<string, string[]> = {
   esmalte: ['esm', 'esmaltes', 'esmaltado'],
   sintetico: ['sintético', 'sintetica', 'sintética'],
   acrilico: ['acrílico', 'acrilica', 'acrílica'],
+  piscina: ['piletas', 'piscinas', 'pileta', 'plavipint', 'plavicon', 'impermeabilizante piscina'],
+  piscinas: ['piscina', 'piletas', 'pileta', 'plavipint', 'plavicon'],
+  pileta: ['piscina', 'piletas', 'piscinas'],
+  piletas: ['pileta', 'piscina', 'piscinas'],
 }
 
 // Sufijos comunes en productos de pintura
@@ -41,6 +45,18 @@ const COMMON_PREFIXES = [
   'sint', 'sintetic', 'sintético',
   'acril', 'acrílic',
 ]
+
+/** Corrige typos comunes en búsquedas (ej: pisicna -> piscina) */
+const TYPO_MAP: Record<string, string> = {
+  pisicna: 'piscina',
+  piscna: 'piscina',
+  psinica: 'piscina',
+}
+
+export function normalizeSearchQuery(raw: string): string {
+  const trimmed = raw.trim().toLowerCase()
+  return TYPO_MAP[trimmed] ?? raw
+}
 
 export function stripDiacritics(text: string): string {
   return text
@@ -189,6 +205,8 @@ export function mapSearchToCategory(query: string): string | null {
   if (!normalized) return null
 
   const CATEGORY_MAP: Record<string, string> = {
+    'pisicna': 'piscinas',
+    'piscna': 'piscinas',
     'metales y maderas': 'metales-y-maderas',
     'metales': 'metales-y-maderas',
     'maderas': 'metales-y-maderas',

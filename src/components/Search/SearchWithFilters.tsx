@@ -5,6 +5,8 @@ import { useProducts } from '@/hooks/useProducts'
 import { useCategoriesForFilters } from '@/hooks/useCategoriesWithDynamicCounts'
 import ImprovedFilters from '@/components/filters/ImprovedFilters'
 import { buildFilterBadgesFromProducts } from '@/utils/filter-utils'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { ChevronDown } from '@/lib/optimized-imports'
 import type { ProductFilters } from '@/types/api'
 import { ExtendedProduct } from '@/lib/adapters/productAdapter'
 
@@ -33,8 +35,12 @@ const parsePriceRanges = (ranges: string[]) => {
   return { priceMin: minPrice, priceMax: maxPrice }
 }
 
+export type SearchSortOption = 'relevance' | 'price-asc' | 'price-desc' | 'name'
+
 export interface SearchWithFiltersProps {
   searchQuery: string
+  sortBy?: SearchSortOption
+  onSortChange?: (sort: SearchSortOption) => void
   children: (props: {
     products: ExtendedProduct[]
     loading: boolean
@@ -45,13 +51,22 @@ export interface SearchWithFiltersProps {
   }) => React.ReactNode
 }
 
-export function SearchWithFilters({ searchQuery, children }: SearchWithFiltersProps) {
+export function SearchWithFilters({ searchQuery, sortBy = 'relevance', onSortChange, children }: SearchWithFiltersProps) {
   const [selectedCategoriesPills, setSelectedCategoriesPills] = useState<string[]>([])
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([])
   const [freeShippingOnly, setFreeShippingOnly] = useState(false)
+
+  const mapSortToApi = (s: SearchSortOption) => {
+    switch (s) {
+      case 'price-asc': return { sortBy: 'price' as const, sortOrder: 'asc' as const }
+      case 'price-desc': return { sortBy: 'price' as const, sortOrder: 'desc' as const }
+      case 'name': return { sortBy: 'name' as const, sortOrder: 'asc' as const }
+      default: return { sortBy: 'created_at' as const, sortOrder: 'desc' as const }
+    }
+  }
 
   const {
     products,
@@ -66,17 +81,17 @@ export function SearchWithFilters({ searchQuery, children }: SearchWithFiltersPr
       search: searchQuery.trim() || undefined,
       limit: 50,
       page: 1,
-      sortBy: 'price',
-      sortOrder: 'asc',
+      ...mapSortToApi(sortBy),
     },
     autoFetch: true,
   })
 
   useEffect(() => {
     if (searchQuery.trim()) {
-      updateFilters({ search: searchQuery.trim(), page: 1 })
+      updateFilters({ search: searchQuery.trim(), page: 1, ...mapSortToApi(sortBy) })
     }
-  }, [searchQuery])
+  }, [searchQuery, sortBy])
+
 
   const { categories: dynamicCategories, loading: categoriesLoading } = useCategoriesForFilters()
   const categories = categoriesLoading ? [] : dynamicCategories
@@ -168,7 +183,13 @@ export function SearchWithFilters({ searchQuery, children }: SearchWithFiltersPr
   }, [products, selectedSizes, selectedColors, selectedBrands, brandsList])
 
   const filtersBar = (
-    <div className='mb-4'>
+    <Collapsible defaultOpen={true} className='mb-4'>
+      <CollapsibleTrigger className='flex w-full items-center justify-between py-3 px-3 -mx-3 rounded-lg hover:bg-white/5 transition-colors group'>
+        <span className='font-medium text-base text-white'>Filtros</span>
+        <ChevronDown className='w-5 h-5 text-white/80 transition-transform duration-200 group-data-[state=open]:rotate-180' />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className='pt-1'>
       <ImprovedFilters
         variant='horizontal'
         selectedCategories={selectedCategoriesPills}
@@ -202,7 +223,9 @@ export function SearchWithFilters({ searchQuery, children }: SearchWithFiltersPr
         }}
         onClearAll={clearAll}
       />
-    </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   )
 
   return (

@@ -24,7 +24,7 @@ import { executeWithRLS, withRLS, createRLSFilters } from '@/lib/auth/enterprise
 import { withRateLimit, RATE_LIMIT_CONFIGS } from '@/lib/rate-limiting/rate-limiter'
 import { API_TIMEOUTS, withDatabaseTimeout, getEndpointTimeouts } from '@/lib/config/api-timeouts'
 import { createSecurityLogger } from '@/lib/logging/security-logger'
-import { expandQueryIntents, expandQueryIntentsByWords, mapSearchToCategory, stripDiacritics } from '@/lib/search/intents'
+import { expandQueryIntents, expandQueryIntentsByWords, mapSearchToCategory, normalizeSearchQuery, stripDiacritics } from '@/lib/search/intents'
 import { normalizeProductTitle } from '@/lib/core/utils'
 
 // ===================================
@@ -388,7 +388,7 @@ export async function GET(request: NextRequest) {
           // ================================
           // BÚSQUEDA MEJORADA: FTS + ILIKE COMBINADOS + REORDENAMIENTO INTELIGENTE
           // ================================
-          const raw = String(filters.search).trim()
+          const raw = normalizeSearchQuery(String(filters.search).trim()) || String(filters.search).trim()
 
           // Expandir intención: frase completa + por palabras (OR para "metales y maderas")
           const candidates = new Set<string>([
@@ -734,7 +734,8 @@ export async function GET(request: NextRequest) {
             // Fallback: si hay < 11 resultados y la búsqueda mapea a una categoría, incluir productos de esa categoría
             const MIN_SEARCH_RESULTS = 11
             if (sortedProducts.length < MIN_SEARCH_RESULTS) {
-              const categorySlug = mapSearchToCategory(filters.search)
+              const searchForCategory = normalizeSearchQuery(String(filters.search || '').trim()) || String(filters.search || '').trim()
+              const categorySlug = mapSearchToCategory(searchForCategory)
               if (categorySlug) {
                 try {
                   const { data: catData } = await supabase

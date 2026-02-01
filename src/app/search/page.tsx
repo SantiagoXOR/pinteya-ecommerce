@@ -34,13 +34,29 @@ export default function SearchPage() {
   const whatsappMessage = `Hola, busqué "${query}" y no encontré lo que necesito. ¿Me pueden ayudar?`
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
 
+  /** Obtiene el precio efectivo (considerando descuento y variantes) para ordenar */
+  const getEffectivePrice = (p: ExtendedProduct) => {
+    const hasDiscount =
+      typeof (p as any).discounted_price === 'number' &&
+      (p as any).discounted_price > 0 &&
+      (p as any).discounted_price < (p.price || 0)
+    if (hasDiscount) return (p as any).discounted_price as number
+    if (p.variants?.length) {
+      const prices = (p.variants as any[]).map(
+        (v: any) => Number(v.price_sale) || Number(v.price_list) || p.price || 0
+      ).filter(Boolean)
+      if (prices.length) return Math.min(...prices)
+    }
+    return p.price || 0
+  }
+
   const sortProductsFn = (items: ExtendedProduct[], sort: string) => {
     const sorted = [...items]
     switch (sort) {
       case 'price-asc':
-        return sorted.sort((a, b) => (a.price || 0) - (b.price || 0))
+        return sorted.sort((a, b) => getEffectivePrice(a) - getEffectivePrice(b))
       case 'price-desc':
-        return sorted.sort((a, b) => (b.price || 0) - (a.price || 0))
+        return sorted.sort((a, b) => getEffectivePrice(b) - getEffectivePrice(a))
       case 'name':
         return sorted.sort((a, b) => (a.name || a.title || '').localeCompare(b.name || b.title || ''))
       default:
@@ -66,12 +82,19 @@ export default function SearchPage() {
   }
 
   return (
-    <SearchWithFilters searchQuery={query}>
+    <SearchWithFilters
+      searchQuery={query}
+      sortBy={sortBy}
+      onSortChange={setSortBy}
+    >
       {({ products, loading, error, totalResults, filtersBar }) => {
         const sortedProducts = sortProductsFn(products, sortBy)
         return (
     <div className='min-h-screen pt-6 pb-8 overflow-x-hidden scroll-mt-20'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+        {/* Carrusel "Lo que vas a necesitar" PRIMERO */}
+        <SearchSuggestionsCarousel searchQuery={query} maxProducts={12} className='mb-6' />
+
         {/* Filtros */}
         {filtersBar}
 
@@ -191,7 +214,6 @@ export default function SearchPage() {
                 Ver todos los productos
               </a>
             </div>
-            <SearchSuggestionsCarousel searchQuery={query} maxProducts={12} className='mt-8' />
           </div>
         ) : (
           <div className='grid grid-cols-1 xsm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 w-full'>
@@ -297,10 +319,6 @@ export default function SearchPage() {
               )
             })}
           </div>
-        )}
-
-        {sortedProducts.length > 0 && (
-          <SearchSuggestionsCarousel searchQuery={query} maxProducts={12} className='mt-8' />
         )}
 
         {!loading && !error && sortedProducts.length > 0 && totalResults > 50 && (
