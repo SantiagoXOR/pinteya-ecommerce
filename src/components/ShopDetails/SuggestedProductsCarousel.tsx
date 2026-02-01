@@ -112,7 +112,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
   // Mostrar productos del modal en cuanto lleguen (mismo render), sin esperar al efecto async
   const displayProducts = useMemo(() => {
     if (relatedProducts.length > 0) return relatedProducts
-    if (productGroupFromParent?.products && productGroupFromParent.products.length > 1) {
+    if (productGroupFromParent?.products && productGroupFromParent.products.length > 0) {
       return relatedProductsToDisplay(productGroupFromParent.products, productId, limit)
     }
     return []
@@ -138,7 +138,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
       const minProducts = 4 // Mínimo de productos a mostrar
 
       // Inmediato: si el modal ya trajo productos relacionados, usarlos ya (evita pantalla vacía y carreras con Strict Mode)
-      if (productGroupFromParent?.products && productGroupFromParent.products.length > 1) {
+      if (productGroupFromParent?.products && productGroupFromParent.products.length > 0) {
         const fromParent = relatedProductsToDisplay(
           productGroupFromParent.products,
           productId,
@@ -150,8 +150,8 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
       }
       
       try {
-        // Prioridad 0: intentar productos completos vía API search (imágenes, slug real, etc.)
-        if (productGroupFromParent?.products && productGroupFromParent.products.length > 1 && productGroupFromParent.baseName) {
+        // Prioridad 0: búsqueda por baseName (funciona con 1 o más relacionados; obtiene más sugeridos por nombre)
+        if (productGroupFromParent?.baseName) {
           const bySearch = await fetchFullProductsByBaseName(
             productGroupFromParent.baseName,
             productId,
@@ -159,7 +159,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
           )
           if (bySearch.length > 0) {
             loadedProducts = bySearch
-          } else if (loadedProducts.length === 0) {
+          } else if (loadedProducts.length === 0 && productGroupFromParent.products?.length) {
             const enriched = await enrichProductGroupToFull(productGroupFromParent, productId, limit)
             if (enriched.length > 0) loadedProducts = enriched
           }
@@ -173,7 +173,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
             })
             const result = await response.json()
             
-            if (result.success && result.data?.products && result.data.products.length > 1) {
+            if (result.success && result.data?.products && result.data.products.length > 0) {
               const productGroup = result.data
               const productsWithFullData = await Promise.all(
                 productGroup.products
@@ -257,7 +257,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
 
         // Estrategia 4: Usar productos del modal (productGroupFromParent) cuando la API devuelve 0
         // Útil en local o cuando el tenant no devuelve datos por API pero el modal sí tiene relacionados
-        if (loadedProducts.length < minProducts && productGroupFromParent?.products && productGroupFromParent.products.length > 1) {
+        if (loadedProducts.length < minProducts && productGroupFromParent?.products && productGroupFromParent.products.length > 0) {
           const fromParent = relatedProductsToDisplay(
             productGroupFromParent.products,
             productId,
