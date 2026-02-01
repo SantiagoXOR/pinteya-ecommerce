@@ -204,7 +204,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
           }
         }
         
-        // Estrategia 2: Misma categoría usando slug (la API acepta category=slug)
+        // Estrategia 2: Misma categoría usando slug (la API devuelve { data: T[] })
         if (loadedProducts.length < minProducts && categorySlug) {
           try {
             const needed = Math.max(minProducts, limit) - loadedProducts.length
@@ -212,8 +212,9 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
               headers: getApiTenantHeaders(),
             })
             const result = await response.json()
-            if (result.success && result.data && result.data.data) {
-              const categoryProducts = result.data.data
+            const categoryList = Array.isArray(result.data) ? result.data : result.data?.data
+            if (result.success && categoryList?.length) {
+              const categoryProducts = categoryList
                 .filter((p: ProductWithCategory) => 
                   p.id !== productId && 
                   !loadedProducts.some(loaded => loaded.id === p.id)
@@ -228,8 +229,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
           }
         }
         
-        // Estrategia 3: Si aún no hay suficientes, agregar productos populares
-        // Ejecutar siempre como último recurso
+        // Estrategia 3: Si aún no hay suficientes, agregar productos populares (la API devuelve { data: T[] })
         if (loadedProducts.length < minProducts) {
           try {
             const needed = Math.max(minProducts, limit) - loadedProducts.length
@@ -237,8 +237,9 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
               headers: getApiTenantHeaders(),
             })
             const result = await response.json()
-            if (result.success && result.data && result.data.data) {
-              const popularProducts = result.data.data
+            const popularList = Array.isArray(result.data) ? result.data : result.data?.data
+            if (result.success && popularList?.length) {
+              const popularProducts = popularList
                 .filter((p: ProductWithCategory) => 
                   p.id !== productId && 
                   !loadedProducts.some(loaded => loaded.id === p.id)
