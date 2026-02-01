@@ -9,7 +9,7 @@ import 'swiper/css/navigation'
 import ProductItem from '@/components/Common/ProductItem'
 import { ProductWithCategory } from '@/types/api'
 import { getProductById, getApiTenantHeaders } from '@/lib/api/products'
-import type { ProductGroup, RelatedProduct } from '@/lib/api/related-products'
+import { extractBaseName, type ProductGroup, type RelatedProduct } from '@/lib/api/related-products'
 
 interface SuggestedProductsCarouselProps {
   productId: number
@@ -18,6 +18,8 @@ interface SuggestedProductsCarouselProps {
   limit?: number
   /** Productos relacionados ya cargados por el modal; prioridad sobre la API (útil en local cuando /api/products/related no devuelve datos) */
   productGroupFromParent?: ProductGroup | null
+  /** Nombre del producto actual; se usa para búsqueda cuando no hay productGroupFromParent o baseName */
+  productName?: string | null
 }
 
 /** Obtiene productos completos desde la API por búsqueda (respeta tenant); evita N getProductById que pueden fallar en local. */
@@ -102,6 +104,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
   categorySlug,
   limit = 8,
   productGroupFromParent,
+  productName,
 }) => {
   const router = useRouter()
   const [relatedProducts, setRelatedProducts] = useState<ProductWithCategory[]>([])
@@ -150,16 +153,17 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
       }
       
       try {
-        // Prioridad 0: búsqueda por baseName (funciona con 1 o más relacionados; obtiene más sugeridos por nombre)
-        if (productGroupFromParent?.baseName) {
+        // Prioridad 0: búsqueda por baseName o por nombre del producto (si no hay grupo del padre)
+        const searchTerm = productGroupFromParent?.baseName ?? (productName?.trim() ? extractBaseName(productName.trim()) || productName.trim() : '')
+        if (searchTerm) {
           const bySearch = await fetchFullProductsByBaseName(
-            productGroupFromParent.baseName,
+            searchTerm,
             productId,
             limit
           )
           if (bySearch.length > 0) {
             loadedProducts = bySearch
-          } else if (loadedProducts.length === 0 && productGroupFromParent.products?.length) {
+          } else if (loadedProducts.length === 0 && productGroupFromParent?.products?.length) {
             const enriched = await enrichProductGroupToFull(productGroupFromParent, productId, limit)
             if (enriched.length > 0) loadedProducts = enriched
           }
@@ -293,7 +297,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
     if (productId) {
       loadRelatedProducts()
     }
-  }, [productId, categoryId, categorySlug, limit, productGroupFromParent])
+  }, [productId, categoryId, categorySlug, limit, productGroupFromParent, productName])
 
   const handlePrev = useCallback(() => {
     if (sliderRef.current?.swiper) {

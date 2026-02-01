@@ -15,6 +15,8 @@ interface RelatedProductsProps {
   limit?: number
   /** Productos relacionados ya cargados por el modal (getRelatedProducts en cliente); se usan cuando la API /related no devuelve datos (p. ej. en local) */
   productGroupFromParent?: ProductGroup | null
+  /** Nombre del producto actual; se usa para búsqueda por nombre cuando no hay productGroupFromParent */
+  productName?: string | null
 }
 
 // Componente lazy para evitar dependencia circular
@@ -24,6 +26,7 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
   categorySlug,
   limit = 8,
   productGroupFromParent,
+  productName,
 }) => {
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -86,6 +89,7 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
       categorySlug={categorySlug}
       limit={limit}
       productGroupFromParent={productGroupFromParent}
+      productName={productName}
     />
   )
 }
@@ -99,6 +103,7 @@ export const RelatedProducts = React.memo<RelatedProductsProps>(({
   categorySlug,
   limit = 8,
   productGroupFromParent,
+  productName,
 }) => {
   if (!productId) return null
 
@@ -109,6 +114,7 @@ export const RelatedProducts = React.memo<RelatedProductsProps>(({
       categorySlug={categorySlug}
       limit={limit}
       productGroupFromParent={productGroupFromParent}
+      productName={productName}
     />
   )
 })
