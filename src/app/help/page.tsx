@@ -13,7 +13,7 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
-  MessageCircle,
+  BrandWhatsapp,
   Phone,
   Mail,
   FileText,
@@ -169,8 +169,8 @@ const HelpPage = () => {
         </div>
       </section>
 
-      {/* Categorías */}
-      <section className='py-8'>
+      {/* Categorías - fondo claro para legibilidad */}
+      <section className='py-8 bg-white'>
         <div className='container mx-auto px-4'>
           <div className='flex flex-wrap justify-center gap-4'>
             {categories.map((category, index) => (
@@ -194,8 +194,8 @@ const HelpPage = () => {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className='py-12'>
+      {/* FAQ - fondo claro para legibilidad */}
+      <section className='py-12 bg-white'>
         <div className='container mx-auto px-4'>
           <div className='max-w-4xl mx-auto'>
             <motion.h2
@@ -282,7 +282,7 @@ const HelpPage = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className='text-center p-6 bg-white rounded-lg shadow-sm'
             >
-              <MessageCircle className='w-12 h-12 text-blaze-orange-600 mx-auto mb-4' />
+              <BrandWhatsapp className='w-12 h-12 text-green-600 mx-auto mb-4' />
               <h3 className='text-xl font-semibold text-gray-900 mb-2'>Chat en Vivo</h3>
               <p className='text-gray-700 mb-4'>Chatea con nuestro equipo de soporte</p>
               <button

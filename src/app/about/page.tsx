@@ -26,7 +26,7 @@ const AboutPage = () => {
   return (
     <div className='min-h-screen'>
       {/* Hero Section */}
-      <section className='bg-gradient-to-r from-blaze-orange-600 to-blaze-orange-500 text-white py-20'>
+      <section className='bg-gradient-to-r from-blaze-orange-600 to-blaze-orange-500 text-white py-20' style={tenant?.headerBgColor ? { background: `linear-gradient(to right, ${tenant.primaryColor}, ${tenant.primaryDark})` } : undefined}>
         <div className='container mx-auto px-4'>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -42,8 +42,8 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Nuestra Historia */}
-      <section className='py-16'>
+      {/* Nuestra Historia - fondo claro para que el texto se lea siempre */}
+      <section className='py-16 bg-white'>
         <div className='container mx-auto px-4'>
           <div className='grid md:grid-cols-2 gap-12 items-center'>
             <motion.div
@@ -142,8 +142,8 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Contacto */}
-      <section className='py-16'>
+      {/* Contacto - fondo claro para que el texto y los iconos se lean siempre */}
+      <section className='py-16 bg-white'>
         <div className='container mx-auto px-4'>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -162,7 +162,7 @@ const AboutPage = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className='text-center'
             >
-              <MapPin className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
+              <MapPin className='w-8 h-8 text-gray-800 mx-auto mb-2' strokeWidth={1.5} />
               <h4 className='font-semibold text-gray-900 mb-1'>Ubicación</h4>
               <p className='text-gray-700 text-sm'>{contactAddress}</p>
             </motion.div>
@@ -173,7 +173,7 @@ const AboutPage = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className='text-center'
             >
-              <Phone className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
+              <Phone className='w-8 h-8 text-gray-800 mx-auto mb-2' strokeWidth={1.5} />
               <h4 className='font-semibold text-gray-900 mb-1'>Teléfono</h4>
               <p className='text-gray-700 text-sm'>{displayPhone}</p>
             </motion.div>
@@ -184,7 +184,7 @@ const AboutPage = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className='text-center'
             >
-              <Mail className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
+              <Mail className='w-8 h-8 text-gray-800 mx-auto mb-2' strokeWidth={1.5} />
               <h4 className='font-semibold text-gray-900 mb-1'>Email</h4>
               <p className='text-gray-700 text-sm'>{supportEmail}</p>
             </motion.div>
@@ -195,7 +195,7 @@ const AboutPage = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
               className='text-center'
             >
-              <Clock className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
+              <Clock className='w-8 h-8 text-gray-800 mx-auto mb-2' strokeWidth={1.5} />
               <h4 className='font-semibold text-gray-900 mb-1'>Horarios</h4>
               <p className='text-gray-700 text-sm'>{businessHoursText}</p>
             </motion.div>

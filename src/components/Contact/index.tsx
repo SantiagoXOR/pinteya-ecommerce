@@ -37,27 +37,27 @@ const Contact: React.FC = () => {
   const contactAddress = tenant?.contactAddress || `${tenant?.contactCity || 'Córdoba Capital'}, Argentina`
   const businessHoursText = formatBusinessHours(tenant?.businessHours)
 
-  // Información de contacto (dinámica por tenant)
+  // Información de contacto (dinámica por tenant) - iconos Tabler al lado del dato
   const contactInfo: ContactInfo[] = [
     {
-      icon: <Phone className='w-6 h-6' />,
+      icon: <Phone className='w-5 h-5 shrink-0 text-gray-800' strokeWidth={1.5} />,
       title: 'Teléfono',
       content: displayPhone,
       link: `tel:+${contactPhone}`,
     },
     {
-      icon: <Mail className='w-6 h-6' />,
+      icon: <Mail className='w-5 h-5 shrink-0 text-gray-800' strokeWidth={1.5} />,
       title: 'Email',
       content: supportEmail,
       link: `mailto:${supportEmail}`,
     },
     {
-      icon: <MapPin className='w-6 h-6' />,
+      icon: <MapPin className='w-5 h-5 shrink-0 text-gray-800' strokeWidth={1.5} />,
       title: 'Dirección',
       content: contactAddress,
     },
     {
-      icon: <Clock className='w-6 h-6' />,
+      icon: <Clock className='w-5 h-5 shrink-0 text-gray-800' strokeWidth={1.5} />,
       title: 'Horarios',
       content: businessHoursText,
     },
@@ -85,23 +85,23 @@ const Contact: React.FC = () => {
                 {contactInfo.map((info, index) => (
                   <Card key={index} className='hover:shadow-md transition-shadow'>
                     <CardContent className='p-6'>
-                      <div className='flex items-start space-x-4'>
-                        <div className='flex-shrink-0 w-12 h-12 bg-blaze-orange-100 rounded-lg flex items-center justify-center text-blaze-orange-600'>
-                          {info.icon}
+                      <div className='flex flex-col gap-2'>
+                        <div className='flex items-center gap-2'>
+                          <span className='flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-800'>
+                            {info.icon}
+                          </span>
+                          <h3 className='font-semibold text-gray-900'>{info.title}</h3>
                         </div>
-                        <div className='flex-1'>
-                          <h3 className='font-semibold text-gray-900 mb-1'>{info.title}</h3>
-                          {info.link ? (
-                            <a
-                              href={info.link}
-                              className='text-blaze-orange-600 hover:text-blaze-orange-700 transition-colors whitespace-pre-line'
-                            >
-                              {info.content}
-                            </a>
-                          ) : (
-                            <p className='text-gray-700 whitespace-pre-line'>{info.content}</p>
-                          )}
-                        </div>
+                        {info.link ? (
+                          <a
+                            href={info.link}
+                            className='text-gray-800 hover:text-gray-900 font-medium underline underline-offset-2 transition-colors whitespace-pre-line'
+                          >
+                            {info.content}
+                          </a>
+                        ) : (
+                          <p className='text-gray-700 whitespace-pre-line'>{info.content}</p>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
