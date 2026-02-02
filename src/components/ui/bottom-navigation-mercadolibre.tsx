@@ -157,7 +157,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         <nav
           ref={ref}
           className={cn(
-            'fixed left-0 right-0 z-bottom-nav border-t shadow-lg lg:hidden',
+            'fixed left-0 right-0 z-bottom-nav border-t shadow-lg lg:hidden overflow-visible',
             'safe-area-bottom',
             className
           )}
@@ -174,41 +174,38 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
           }}
           {...props}
         >
-          <div className='flex items-center justify-around max-w-md mx-auto w-full h-14 sm:h-16'>
+          <div className='flex items-end justify-around max-w-md mx-auto w-full h-14 sm:h-16 overflow-visible'>
           {navItems.map((item) => {
             const Icon = item.icon
             const isItemActive = item.active
             const hasBadge = item.id === 'cart' && item.badge !== undefined && item.badge > 0
             const showBadge = item.id === 'cart' && item.badge !== undefined
+            const iconSlotHeight = 'h-6 sm:h-7'
 
             return (
-              <div key={item.id} className='flex-1 flex flex-col items-center justify-center relative'>
+              <div key={item.id} className='flex-1 flex flex-col items-center justify-end relative overflow-visible'>
                 {/* Link o botón según el tipo */}
                 {item.id === 'cart' || item.id === 'back' || item.id === 'whatsapp' || item.id === 'search' ? (
                   <button
                     onClick={item.onClick}
                     className={cn(
-                      'flex flex-col items-center justify-center w-full py-1 transition-all duration-200',
+                      'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200 overflow-visible',
                       isItemActive ? 'text-blaze-orange-600' : 'text-gray-600',
                       'hover:text-blaze-orange-600 active:scale-95'
                     )}
                     aria-label={item.label}
                   >
-                    {/* Botón de carrito con estilo similar al ProductCard */}
+                    {/* Slot de icono fijo: círculos iguales (carrito y WhatsApp) sobresalen hacia arriba, títulos alineados abajo */}
                     {item.id === 'cart' ? (
-                      <div className='relative mb-1 flex items-center justify-center'>
-                        <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
-                          {/* Fondo amarillo circular como ProductCard */}
+                      <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                        <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
                           <div 
                             className={cn(
                               'absolute inset-0 rounded-full transition-all duration-300 shadow-md',
                               isAnimating && 'animate-pulse scale-110'
                             )}
-                            style={{
-                              backgroundColor: accentColor,
-                            }}
+                            style={{ backgroundColor: accentColor }}
                           />
-                          {/* Icono del carrito */}
                           <div
                             className={cn(
                               'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
@@ -216,14 +213,11 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               isAnimating && 'scale-110'
                             )}
                           >
-                            <Icon 
-                              className={cn(
-                                'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
-                              )}
+                            <Icon
+                              className='w-5 h-5 transition-colors duration-200'
                               style={{ color: primaryColor }}
                             />
                           </div>
-                          {/* Badge del carrito */}
                           {showBadge && (
                             <span
                               className={cn(
@@ -232,10 +226,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                 'text-[10px] sm:text-xs font-bold px-1',
                                 isAnimating && 'animate-bounce'
                               )}
-                              style={{ 
-                                backgroundColor: primaryColor,
-                                color: accentColor
-                              }}
+                              style={{ backgroundColor: primaryColor, color: accentColor }}
                             >
                               {item.badge && item.badge > 99 ? '99+' : item.badge}
                             </span>
@@ -243,8 +234,8 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                         </div>
                       </div>
                     ) : item.id === 'whatsapp' ? (
-                      <div className='relative mb-1 flex items-center justify-center'>
-                        <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
+                      <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                        <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
                           <div
                             className='absolute inset-0 rounded-full transition-all duration-300 shadow-md'
                             style={{ backgroundColor: '#25D366' }}
@@ -256,20 +247,20 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                             )}
                           >
                             <Icon
-                              className='w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 text-white'
+                              className='w-5 h-5 transition-colors duration-200 text-white'
                               style={{ color: 'white' }}
                             />
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className='relative'>
+                      <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
                         <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
                       </div>
                     )}
                     <span
                       className={cn(
-                        'text-[10px] sm:text-xs mt-0.5 font-medium',
+                        'text-[10px] sm:text-xs mt-0.5 font-medium shrink-0',
                         item.id === 'whatsapp' ? 'text-green-600' : isItemActive && 'text-blaze-orange-600'
                       )}
                     >
@@ -280,13 +271,13 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex flex-col items-center justify-center w-full py-1 transition-all duration-200',
+                      'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200',
                       isItemActive ? 'text-blaze-orange-600' : 'text-gray-600',
                       'hover:text-blaze-orange-600 active:scale-95'
                     )}
                     aria-label={item.label}
                   >
-                    <div className='relative'>
+                    <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
                       <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
                       {showBadge && (
                         <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center'>
@@ -294,7 +285,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                         </span>
                       )}
                     </div>
-                    <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium', isItemActive && 'text-blaze-orange-600')}>
+                    <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium shrink-0', isItemActive && 'text-blaze-orange-600')}>
                       {item.label}
                     </span>
                   </Link>
@@ -304,57 +295,44 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
           })}
         </div>
         
-        {/* Desktop: con márgenes */}
-        <div className='hidden lg:flex items-center justify-around max-w-[1170px] mx-auto w-full h-14 lg:px-8 xl:px-8'>
+        {/* Desktop: con márgenes - mismos títulos alineados y círculos sobresaliendo */}
+        <div className='hidden lg:flex items-end justify-around max-w-[1170px] mx-auto w-full h-14 lg:px-8 xl:px-8 overflow-visible'>
           {navItems.map((item) => {
             const Icon = item.icon
             const isItemActive = item.active
             const hasBadge = item.id === 'cart' && item.badge !== undefined && item.badge > 0
             const showBadge = item.id === 'cart' && item.badge !== undefined
+            const iconSlotHeight = 'h-6 sm:h-7'
 
             return (
-              <div key={item.id} className='flex-1 flex flex-col items-center justify-center relative'>
-                {/* Link o botón según el tipo */}
+              <div key={item.id} className='flex-1 flex flex-col items-center justify-end relative overflow-visible'>
                 {item.id === 'cart' || item.id === 'back' || item.id === 'whatsapp' || item.id === 'search' ? (
                   <button
-                      onClick={(e) => {
-                      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
-// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
-                      item.onClick?.(e);
-                    }}
-                    onPointerDown={(e) => {
-                      // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
-// Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
-                      if (item.id === 'cart') setIsCartPressed(true);
-                    }}
+                    onClick={(e) => item.onClick?.(e)}
+                    onPointerDown={(e) => { if (item.id === 'cart') setIsCartPressed(true) }}
                     onMouseDown={() => item.id === 'cart' && setIsCartPressed(true)}
                     onMouseUp={() => item.id === 'cart' && setTimeout(() => setIsCartPressed(false), 200)}
                     onMouseLeave={() => item.id === 'cart' && setIsCartPressed(false)}
                     onTouchStart={() => item.id === 'cart' && setIsCartPressed(true)}
                     onTouchEnd={() => item.id === 'cart' && setTimeout(() => setIsCartPressed(false), 200)}
                     className={cn(
-                      'flex flex-col items-center justify-center w-full py-1.5 sm:py-2 transition-all duration-200',
+                      'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200 overflow-visible',
                       'focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:ring-offset-2 rounded-lg',
                       'active:scale-95'
                     )}
                     aria-label={item.label}
                   >
-                    {/* Contenedor del icono con fondo circular estilo ProductCard */}
                     {item.id === 'cart' && (
-                      <div className='relative mb-1 h-6 sm:h-7 flex items-center justify-center'>
-                        <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
-                          {/* Fondo amarillo circular como ProductCard */}
-                          <div 
+                      <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                        <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
+                          <div
                             className={cn(
                               'absolute inset-0 rounded-full transition-all duration-300 shadow-md',
                               isAnimating && 'animate-pulse scale-110',
                               isCartPressed && 'scale-95'
                             )}
-                            style={{
-                              background: 'var(--tenant-accent)e6',
-                            }}
+                            style={{ backgroundColor: 'var(--tenant-accent, #ffd549)' }}
                           />
-                          {/* Icono del carrito */}
                           <div
                             className={cn(
                               'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
@@ -362,26 +340,12 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               isAnimating && 'scale-110'
                             )}
                           >
-                            <Icon
-                              className={cn(
-                                'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
-                              )}
-                              style={{ color: 'var(--tenant-primary, #EA5A17)' }}
-                            />
+                            <Icon className='w-5 h-5 transition-colors duration-200' style={{ color: 'var(--tenant-primary, #EA5A17)' }} />
                           </div>
-                          {/* Badge del carrito */}
                           {showBadge && (
                             <span
-                              className={cn(
-                                'absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
-                                'flex items-center justify-center shadow-lg ring-2 ring-white z-10',
-                                'text-[10px] sm:text-xs font-bold px-1',
-                                isAnimating && 'animate-bounce'
-                              )}
-                              style={{ 
-                                backgroundColor: 'var(--tenant-primary, #EA5A17)',
-                                color: 'var(--tenant-accent, #facc15)'
-                              }}
+                              className={cn('absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px] flex items-center justify-center shadow-lg ring-2 ring-white z-10 text-[10px] sm:text-xs font-bold px-1', isAnimating && 'animate-bounce')}
+                              style={{ backgroundColor: 'var(--tenant-primary, #EA5A17)', color: 'var(--tenant-accent, #facc15)' }}
                             >
                               {item.badge && item.badge > 99 ? '99+' : item.badge}
                             </span>
@@ -389,110 +353,55 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                         </div>
                       </div>
                     )}
-
-                    {/* Icono para botón de buscar */}
                     {item.id === 'search' && (
-                      <div className='mb-1 h-6 sm:h-7 flex items-center justify-center'>
-                        <Icon
-                          className={cn(
-                            'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
-                            'text-gray-600 hover:text-blaze-orange-600'
-                          )}
-                          strokeWidth={1.5}
-                        />
+                      <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
+                        <Icon className='w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200 text-gray-600 hover:text-blaze-orange-600' strokeWidth={1.5} />
                       </div>
                     )}
-
-                    {/* Icono para botón de volver */}
                     {item.id === 'back' && (
-                      <div className='mb-1 h-6 sm:h-7 flex items-center justify-center'>
-                        <Icon
-                          className={cn(
-                            'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
-                            'text-gray-600 hover:text-blaze-orange-600'
-                          )}
-                          strokeWidth={1.5}
-                        />
+                      <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
+                        <Icon className='w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200 text-gray-600 hover:text-blaze-orange-600' strokeWidth={1.5} />
                       </div>
                     )}
-
-                    {/* Icono para WhatsApp: círculo verde + BrandWhatsapp */}
                     {item.id === 'whatsapp' && (
-                      <div className='relative mb-1 h-6 sm:h-7 flex items-center justify-center'>
-                        <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
-                          <div
-                            className='absolute inset-0 rounded-full transition-all duration-300 shadow-md'
-                            style={{ backgroundColor: '#25D366' }}
-                          />
-                          <div
-                            className={cn(
-                              'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
-                              'hover:scale-110 active:scale-95 transform-gpu will-change-transform'
-                            )}
-                          >
-                            <Icon
-                              className='w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 text-white'
-                              style={{ color: 'white' }}
-                              strokeWidth={1.5}
-                            />
+                      <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                        <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
+                          <div className='absolute inset-0 rounded-full transition-all duration-300 shadow-md' style={{ backgroundColor: '#25D366' }} />
+                          <div className={cn('relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300', 'hover:scale-110 active:scale-95 transform-gpu will-change-transform')}>
+                            <Icon className='w-5 h-5 transition-colors duration-200 text-white' style={{ color: 'white' }} strokeWidth={1.5} />
                           </div>
                         </div>
                       </div>
                     )}
-
-                    {/* Label */}
                     <span
                       className={cn(
-                        'text-[10px] sm:text-xs font-medium transition-colors duration-200',
-                        item.id === 'cart' && (hasBadge || isCartPressed)
-                          ? 'text-blaze-orange-600'
-                          : item.id === 'whatsapp'
-                          ? 'text-green-600'
-                          : 'text-gray-600'
+                        'text-[10px] sm:text-xs font-medium mt-0.5 shrink-0',
+                        item.id === 'cart' && (hasBadge || isCartPressed) ? 'text-blaze-orange-600' : item.id === 'whatsapp' ? 'text-green-600' : 'text-gray-600'
                       )}
                     >
-                      {item.id === 'cart' && cartItemCount > 0 
-                        ? `${item.label} (${cartItemCount})` 
-                        : item.label}
+                      {item.id === 'cart' && cartItemCount > 0 ? `${item.label} (${cartItemCount})` : item.label}
                     </span>
                   </button>
                 ) : (
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex flex-col items-center justify-center w-full py-1.5 sm:py-2 transition-all duration-200',
+                      'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200',
                       'focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:ring-offset-2 rounded-lg'
                     )}
                     aria-label={item.label}
                   >
-                    {/* Línea naranja arriba cuando está activo (colores Pinteya) */}
                     {isItemActive && (
                       <div className='absolute top-0 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-blaze-orange-600 rounded-full' />
                     )}
-
-                    {/* Icono */}
-                    <div className='mb-1 h-6 sm:h-7 flex items-center justify-center'>
+                    <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
                       <Icon
-                        className={cn(
-                          'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
-                          isItemActive
-                            ? 'text-blaze-orange-600 fill-blaze-orange-600'
-                            : 'text-gray-600'
-                        )}
+                        className={cn('w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200', isItemActive ? 'text-blaze-orange-600 fill-blaze-orange-600' : 'text-gray-600')}
                         strokeWidth={isItemActive ? 2 : 1.5}
                         fill={isItemActive && item.id === 'home' ? 'currentColor' : 'none'}
                       />
                     </div>
-
-                    {/* Label */}
-                    <span
-                      className={cn(
-                        'text-[10px] sm:text-xs font-medium transition-colors duration-200',
-                        isItemActive
-                          ? 'text-blaze-orange-600 font-semibold'
-                          : 'text-gray-600'
-                      )}
-                    >
+                    <span className={cn('text-[10px] sm:text-xs font-medium mt-0.5 shrink-0', isItemActive ? 'text-blaze-orange-600 font-semibold' : 'text-gray-600')}>
                       {item.label}
                     </span>
                   </Link>
@@ -507,7 +416,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         <nav
           ref={ref}
           className={cn(
-            'fixed left-0 right-0 z-bottom-nav hidden lg:block',
+            'fixed left-0 right-0 z-bottom-nav hidden lg:block overflow-visible',
             'safe-area-bottom',
             className
           )}
@@ -516,9 +425,9 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
           }}
           {...props}
         >
-          <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8'>
+          <div className='max-w-[1170px] mx-auto lg:px-8 xl:px-8 overflow-visible'>
             <div
-              className='border-t shadow-lg'
+              className='border-t shadow-lg overflow-visible'
               style={{
                 borderRadius: '24px 24px 0px 0px',
                 backgroundColor: 'white',
@@ -530,68 +439,42 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                 opacity: '1',
               }}
             >
-              <div className='flex items-center justify-around w-full h-14'>
+              <div className='flex items-end justify-around w-full h-14 overflow-visible'>
                 {navItems.map((item) => {
                   const Icon = item.icon
                   const isItemActive = item.active
                   const hasBadge = item.id === 'cart' && item.badge !== undefined && item.badge > 0
                   const showBadge = item.id === 'cart' && item.badge !== undefined
+                  const iconSlotHeight = 'h-6 sm:h-7'
 
                   return (
-                    <div key={item.id} className='flex-1 flex flex-col items-center justify-center relative'>
-                      {/* Desktop navigation items - mismo código que mobile pero sin max-w-md */}
+                    <div key={item.id} className='flex-1 flex flex-col items-center justify-end relative overflow-visible'>
                       {item.id === 'cart' || item.id === 'back' || item.id === 'whatsapp' || item.id === 'search' ? (
                         <button
                           onClick={item.onClick}
                           className={cn(
-                            'flex flex-col items-center justify-center w-full py-1 transition-all duration-200',
+                            'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200 overflow-visible',
                             isItemActive ? 'text-blaze-orange-600' : 'text-gray-600',
                             'hover:text-blaze-orange-600 active:scale-95'
                           )}
                           aria-label={item.label}
                         >
-                          {/* Botón de carrito con estilo similar al ProductCard */}
                           {item.id === 'cart' ? (
-                            <div className='relative mb-1 flex items-center justify-center'>
-                              <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
-                                {/* Fondo amarillo circular como ProductCard */}
-                                <div 
-                                  className={cn(
-                                    'absolute inset-0 rounded-full transition-all duration-300 shadow-md',
-                                    isAnimating && 'animate-pulse scale-110'
-                                  )}
-                                  style={{
-                                    background: 'var(--tenant-accent)e6',
-                                  }}
-                                />
-                                {/* Icono del carrito */}
+                            <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                              <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
                                 <div
-                                  className={cn(
-                                    'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
-                                    'hover:scale-110 active:scale-95 transform-gpu will-change-transform',
-                                    isAnimating && 'scale-110'
-                                  )}
+                                  className={cn('absolute inset-0 rounded-full transition-all duration-300 shadow-md', isAnimating && 'animate-pulse scale-110')}
+                                  style={{ backgroundColor: 'var(--tenant-accent, #ffd549)' }}
+                                />
+                                <div
+                                  className={cn('relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300', 'hover:scale-110 active:scale-95 transform-gpu will-change-transform', isAnimating && 'scale-110')}
                                 >
-                                  <Icon 
-                                    className={cn(
-                                      'w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200'
-                                    )}
-                                    style={{ color: 'var(--tenant-primary, #EA5A17)' }}
-                                  />
+                                  <Icon className='w-5 h-5 transition-colors duration-200' style={{ color: 'var(--tenant-primary, #EA5A17)' }} />
                                 </div>
-                                {/* Badge del carrito */}
                                 {showBadge && (
                                   <span
-                                    className={cn(
-                                      'absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px]',
-                                      'flex items-center justify-center shadow-lg ring-2 ring-white z-10',
-                                      'text-[10px] sm:text-xs font-bold px-1',
-                                      isAnimating && 'animate-bounce'
-                                    )}
-                                    style={{ 
-                                      backgroundColor: 'var(--tenant-primary, #EA5A17)',
-                                      color: 'var(--tenant-accent, #facc15)'
-                                    }}
+                                    className={cn('absolute -top-1 -right-1 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-[20px] flex items-center justify-center shadow-lg ring-2 ring-white z-10 text-[10px] sm:text-xs font-bold px-1', isAnimating && 'animate-bounce')}
+                                    style={{ backgroundColor: 'var(--tenant-primary, #EA5A17)', color: 'var(--tenant-accent, #facc15)' }}
                                   >
                                     {item.badge && item.badge > 99 ? '99+' : item.badge}
                                   </span>
@@ -599,35 +482,21 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               </div>
                             </div>
                           ) : item.id === 'whatsapp' ? (
-                            <div className='relative mb-1 flex items-center justify-center'>
-                              <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
-                                <div
-                                  className='absolute inset-0 rounded-full transition-all duration-300 shadow-md'
-                                  style={{ backgroundColor: '#25D366' }}
-                                />
-                                <div
-                                  className={cn(
-                                    'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
-                                    'hover:scale-110 active:scale-95 transform-gpu will-change-transform'
-                                  )}
-                                >
-                                  <Icon
-                                    className='w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 text-white'
-                                    style={{ color: 'white' }}
-                                  />
+                            <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                              <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
+                                <div className='absolute inset-0 rounded-full transition-all duration-300 shadow-md' style={{ backgroundColor: '#25D366' }} />
+                                <div className={cn('relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300', 'hover:scale-110 active:scale-95 transform-gpu will-change-transform')}>
+                                  <Icon className='w-5 h-5 transition-colors duration-200 text-white' style={{ color: 'white' }} />
                                 </div>
                               </div>
                             </div>
                           ) : (
-                            <div className='relative'>
+                            <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
                               <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
                             </div>
                           )}
                           <span
-                            className={cn(
-                              'text-[10px] sm:text-xs mt-0.5 font-medium',
-                              item.id === 'whatsapp' ? 'text-green-600' : isItemActive && 'text-blaze-orange-600'
-                            )}
+                            className={cn('text-[10px] sm:text-xs mt-0.5 font-medium shrink-0', item.id === 'whatsapp' ? 'text-green-600' : isItemActive && 'text-blaze-orange-600')}
                           >
                             {item.label}
                           </span>
@@ -636,13 +505,13 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                         <Link
                           href={item.href}
                           className={cn(
-                            'flex flex-col items-center justify-center w-full py-1 transition-all duration-200',
+                            'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200',
                             isItemActive ? 'text-blaze-orange-600' : 'text-gray-600',
                             'hover:text-blaze-orange-600 active:scale-95'
                           )}
                           aria-label={item.label}
                         >
-                          <div className='relative'>
+                          <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
                             <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
                             {showBadge && (
                               <span className='absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center'>
@@ -650,7 +519,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                               </span>
                             )}
                           </div>
-                          <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium', isItemActive && 'text-blaze-orange-600')}>
+                          <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium shrink-0', isItemActive && 'text-blaze-orange-600')}>
                             {item.label}
                           </span>
                         </Link>

@@ -101,6 +101,8 @@ const MercadoLibreBottomNav = dynamic(() => import('@/components/ui/bottom-navig
   ssr: false,
   loading: () => null,
 })
+// AI Chat: oculto en frontend hasta desarrollar correctamente. Reactivar cuando esté listo.
+const AI_CHAT_ENABLED = false
 const AIChatTab = dynamic(() => import('@/components/Common/AIChatTab').then(m => ({ default: m.AIChatTab })), {
   ssr: false,
   loading: () => null,
@@ -197,7 +199,7 @@ const BottomNavWrapper = ({
 
   return (
     <>
-      <AIChatTab />
+      {AI_CHAT_ENABLED && <AIChatTab />}
       <MercadoLibreBottomNav />
     </>
   )
@@ -314,7 +316,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
                       {/* Ocultar el modal del carrito en checkout para no bloquear inputs */}
                       {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <CartSidebarModal />}
-                      {!isAdminRoute && !isCheckoutRoute && !isAuthRoute && <AIChatPopup />}
+                      {AI_CHAT_ENABLED && !isAdminRoute && !isCheckoutRoute && !isAuthRoute && <AIChatPopup />}
                       <PreviewSliderModal />
                       
                       {/* ⚡ FASE 4: Componentes diferidos después del LCP */}
