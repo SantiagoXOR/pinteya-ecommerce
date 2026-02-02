@@ -761,11 +761,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="dns-prefetch" href="https://images.clerk.dev" />
         <link rel="preconnect" href="https://images.clerk.dev" crossOrigin="anonymous" />
         
-        {/* Google Merchant Center Verification */}
-        {/* TODO MULTITENANT: Este valor debería venir del tenant.googleSiteVerification */}
+        {/* Google Site Verification (Merchant Center / Search Console) por tenant; fallback Pinteya */}
         <meta
           name="google-site-verification"
-          content="YoGAj7X-fCg9Xclet5ZnoNgCpzkuLd74sEzyfDI9WXs"
+          content={tenant.googleSiteVerification ?? 'YoGAj7X-fCg9Xclet5ZnoNgCpzkuLd74sEzyfDI9WXs'}
         />
         
         {/* ⚡ MULTITENANT: Structured data dinámico basado en tenant */}

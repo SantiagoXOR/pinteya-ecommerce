@@ -145,6 +145,9 @@ export interface TenantPublicConfig {
   ga4MeasurementId: string | null
   metaPixelId: string | null
   
+  // Verificación de sitio (Google Merchant / Search Console)
+  googleSiteVerification: string | null
+  
   // WhatsApp
   whatsappNumber: string | null
   whatsappMessageTemplate: string | null

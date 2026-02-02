@@ -138,6 +138,7 @@ function extractPublicConfig(config: TenantConfig): TenantPublicConfig {
     themeConfig: config.themeConfig,
     ga4MeasurementId: config.ga4MeasurementId,
     metaPixelId: config.metaPixelId,
+    googleSiteVerification: config.googleSiteVerification,
     whatsappNumber: config.whatsappNumber,
     whatsappMessageTemplate: config.whatsappMessageTemplate,
     siteTitle: config.siteTitle,
