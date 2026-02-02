@@ -43,11 +43,6 @@ export function DeferredCSS() {
         priority: 'high', // Cambiado a high porque se necesita inmediatamente en checkout
         routes: ['/checkout', '/checkout/*'], // Solo en checkout
       },
-      {
-        path: '/styles/checkout-animations.css', // Nuevo: animaciones del checkout
-        priority: 'low',
-        routes: ['/checkout', '/checkout/*'], // Solo en checkout
-      },
       
       // ⚡ OPTIMIZACIÓN: CSS del hero-carousel (solo en homepage) - Prioridad ALTA porque está above-the-fold
       {

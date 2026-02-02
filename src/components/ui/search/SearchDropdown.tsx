@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
 import { SearchSuggestionItem } from './SearchSuggestionItem'
@@ -79,8 +79,29 @@ export const SearchDropdown = React.memo<SearchDropdownProps>(
     const internalDropdownRef = useRef<HTMLDivElement>(null)
     const dropdownRef = externalDropdownRef || internalDropdownRef
 
+    // Contenedor estable para el portal: evita removeChild(null) al desmontar
+    const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null)
+    useEffect(() => {
+      const container = document.createElement('div')
+      container.setAttribute('id', 'search-dropdown-portal')
+      container.setAttribute('data-portal', 'search-dropdown')
+      document.body.appendChild(container)
+      setPortalContainer(container)
+      return () => {
+        // FIX: No remover el contenedor aquí. React aún puede estar desmontando el portal;
+        // si quitamos el contenedor antes, parentNode del nodo que React intenta eliminar es null.
+        // Dejamos el contenedor en el DOM (vacío) para evitar removeChild(null).
+        setPortalContainer(null)
+      }
+    }, [])
+
     // No renderizar si no está abierto, no hay posición, o la posición es inválida
     if (!isOpen || !position || position.width <= 0 || position.top <= 0) {
+      return null
+    }
+
+    // SSR o antes del efecto: no renderizar portal para evitar hidratación inconsistente
+    if (!portalContainer) {
       return null
     }
 
@@ -266,7 +287,7 @@ export const SearchDropdown = React.memo<SearchDropdownProps>(
           </div>
         )}
       </div>,
-      document.body
+      portalContainer
     )
   }
 )

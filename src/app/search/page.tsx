@@ -67,7 +67,7 @@ export default function SearchPage() {
   // Sin query de búsqueda
   if (!query.trim()) {
     return (
-      <div className='min-h-screen pt-6 pb-8 scroll-mt-20'>
+      <div className='min-h-screen pt-6 pb-24 scroll-mt-24'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center py-12'>
             <Search className='w-16 h-16 text-gray-400 mx-auto mb-4' />
@@ -90,7 +90,7 @@ export default function SearchPage() {
       {({ products, loading, error, totalResults, filtersBar }) => {
         const sortedProducts = sortProductsFn(products, sortBy)
         return (
-    <div className='min-h-screen pt-6 pb-8 overflow-x-hidden scroll-mt-20'>
+    <div className='min-h-screen pt-6 pb-24 overflow-x-hidden scroll-mt-24'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Carrusel "Lo que vas a necesitar" PRIMERO */}
         <SearchSuggestionsCarousel searchQuery={query} maxProducts={12} className='mb-6' />
@@ -107,10 +107,10 @@ export default function SearchPage() {
 
           <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
             <div>
-              <p className='text-lg text-white/90'>
+              <div className='text-lg text-white/90'>
                 {loading ? (
                   <span className='flex items-center gap-2'>
-                    <div className='animate-spin w-4 h-4 border-2 border-blaze-orange-400 border-t-transparent rounded-full' />
+                    <span className='animate-spin inline-block w-4 h-4 border-2 border-blaze-orange-400 border-t-transparent rounded-full' aria-hidden />
                     Buscando productos...
                   </span>
                 ) : (
@@ -118,7 +118,7 @@ export default function SearchPage() {
                     Búsqueda: <span className='font-semibold text-white'>"{query}"</span>
                   </>
                 )}
-              </p>
+              </div>
               {category && (
                 <p className='text-sm text-white/80'>
                   Categoría: <span className='font-medium'>{category}</span>

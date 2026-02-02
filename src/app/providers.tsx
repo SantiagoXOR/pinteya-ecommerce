@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useLayoutEffect } from 'react'
 import dynamic from 'next/dynamic'
 // ⚡ PERFORMANCE: BrowserCacheUtils se carga dinámicamente en useEffect
 // Esto reduce Script Evaluation inicial (no se carga hasta que se necesita)
@@ -272,6 +272,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     const isCheckoutRoute = pathname?.startsWith('/checkout')
     // Detectar si estamos en rutas de autenticación
     const isAuthRoute = pathname?.startsWith('/auth/') || pathname === '/auth'
+
+    // Clase en body para checkout: quita padding-top del body (el wizard tiene su propio header)
+    useLayoutEffect(() => {
+      if (typeof document === 'undefined') return
+      if (isCheckoutRoute) {
+        document.body.classList.add('route-checkout')
+      } else {
+        document.body.classList.remove('route-checkout')
+      }
+      return () => document.body.classList.remove('route-checkout')
+    }, [isCheckoutRoute])
 
     // DEBUG: Logs para verificar la detección de rutas admin (DESHABILITADO)
     // console.log('🔧 PROVIDERS DEBUG:', {

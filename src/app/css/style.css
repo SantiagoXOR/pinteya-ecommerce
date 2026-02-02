@@ -233,9 +233,8 @@
     background-position: center !important;
     background-repeat: no-repeat !important;
     color: #ffffff !important;
-    /* Header height unificado: ScrollingBanner (~28px) + Main (~60px) = ~88px, usando 92px para spacing óptimo */
-    /* Agregar safe area superior para iOS Safari cuando se oculta la interfaz */
-    padding-top: calc(92px + env(safe-area-inset-top, 0px)); /* Ajustado para header más alto en mobile + safe area iOS */
+    /* Header height unificado: usa --header-height (92px mobile, 105px desktop) + safe area iOS */
+    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
     /* Emoji font fallbacks to ensure color emoji rendering across platforms */
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif,
@@ -277,20 +276,26 @@
 
   /* Mobile pequeño - Reducir padding para aprovechar mejor el espacio */
   @media (max-width: 375px) {
-    body {
-      /* Menos padding en pantallas muy pequeñas + safe area iOS */
-      padding-top: calc(88px + env(safe-area-inset-top, 0px));
+    :root {
+      --header-height: 88px;
     }
   }
 
   /* Ajuste específico para desktop */
   @media (min-width: 1024px) {
-    body {
-      /* Ajustado para mejor spacing con header más alto + safe area iOS */
-      padding-top: calc(105px + env(safe-area-inset-top, 0px));
+    :root {
+      --header-height: 105px;
     }
   }
+
+  /* Checkout: sin header del sitio; el wizard tiene su propio header, quitar padding-top del body */
+  body.route-checkout {
+    padding-top: 0 !important;
+  }
   :root {
+    /* Alturas para padding body (header fijo y bottom nav) */
+    --header-height: 92px;
+    --bottom-nav-height: 64px;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -652,7 +657,7 @@
 @media (max-width: 768px) {
   body {
     /* Altura del bottom nav + safe area inferior para iOS Safari */
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   }
   
   /* Safe area para dispositivos con notch - Bottom navigation */

@@ -144,6 +144,8 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
       medida={(productData as any)?.medida}
       // ✅ CORREGIDO: Pasar color para que se muestre cuando no hay variantes
       color={(productData as any)?.color}
+      // Por defecto: primera medida con envío gratis (precio >= umbral)
+      preferLowestPrice={false}
     />
   )
 }, (prevProps, nextProps) => {

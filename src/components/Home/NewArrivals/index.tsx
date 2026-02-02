@@ -19,9 +19,13 @@ const NewArrival: React.FC = () => {
   
   const { filters } = useProductFilters({ syncWithUrl: true })
 
+  // Sin categoría: 12 productos; con categoría: 24 para desplegar más de esa categoría
+  const hasCategoryFilter = filters.categories.length > 0
+  const limit = hasCategoryFilter ? 24 : 12
+
   const { data, isLoading, error } = useFilteredProducts({
-    ...(filters.categories.length > 0 && { categories: filters.categories }),
-    limit: 8,
+    ...(hasCategoryFilter && { categories: filters.categories }),
+    limit,
     sortBy: 'created_at',
     sortOrder: 'desc',
   })
@@ -51,7 +55,7 @@ const NewArrival: React.FC = () => {
         </div>
 
         {isLoading ? (
-          <ProductGridSkeleton count={8} />
+          <ProductGridSkeleton count={limit} />
         ) : error ? (
           <Card variant='outlined' className='border-red-200 bg-red-50'>
             <CardContent className='p-8 text-center'>

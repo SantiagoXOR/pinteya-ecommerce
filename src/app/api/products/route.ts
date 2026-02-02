@@ -399,7 +399,7 @@ export async function GET(request: NextRequest) {
           // Obtener más resultados de la RPC mejorada (hasta 50) para poder reordenar
           // La función RPC ya combina FTS e ILIKE, así que obtenemos todos los resultados relevantes
           const page = filters.page || 1
-          const limit = filters.limit || 10
+          const limit = filters.limit || 12
           const from = (page - 1) * limit
           let ftsUsed = false
           let orderedIds: number[] = []
@@ -485,7 +485,7 @@ export async function GET(request: NextRequest) {
 
         // Para búsquedas, obtener más productos para poder reordenar correctamente
         const page = filters.page || 1
-        const limit = filters.limit || 10
+        const limit = filters.limit || 12
         const from = (page - 1) * limit
         const to = from + limit - 1
         
@@ -858,7 +858,7 @@ export async function GET(request: NextRequest) {
           
           // Aplicar paginación después del reordenamiento
           const page = filters.page || 1
-          const limit = filters.limit || 10
+          const limit = filters.limit || 12
           const from = (page - 1) * limit
           const to = from + limit
           enrichedProducts = sortedProducts.slice(from, to)
@@ -874,7 +874,7 @@ export async function GET(request: NextRequest) {
 
       // Calcular información de paginación
       const page = filters.page || 1
-      const limit = filters.limit || 10
+      const limit = filters.limit || 12
 
       // ✅ CORREGIDO: Ajustar conteo total considerando el filtro de stock
       let totalForPagination = count || 0

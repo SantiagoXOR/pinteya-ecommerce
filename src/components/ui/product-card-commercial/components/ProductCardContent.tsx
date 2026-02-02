@@ -46,7 +46,22 @@ export const ProductCardContent = React.memo(function ProductCardContent({
     }
     return title
   }, [title, isIncoloro])
-  
+
+  // Badge de descuento: usar prop discount o calcular desde precios de variante (displayOriginalPrice > displayPrice)
+  const effectiveDiscount = React.useMemo(() => {
+    if (discount) return discount
+    if (
+      displayOriginalPrice != null &&
+      displayPrice != null &&
+      displayOriginalPrice > displayPrice &&
+      displayOriginalPrice > 0
+    ) {
+      const pct = Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100)
+      return pct > 0 ? `${pct}%` : undefined
+    }
+    return undefined
+  }, [discount, displayOriginalPrice, displayPrice])
+
   return (
     <div className='relative z-20 text-left pt-0 pb-0 flex-shrink-0'>
       {/* Marca del producto */}
@@ -71,12 +86,12 @@ export const ProductCardContent = React.memo(function ProductCardContent({
                 {formatCurrency(displayOriginalPrice, 'ARS', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </span>
               {/* Badge de descuento - al lado del precio tachado - ⚡ MULTITENANT: usar primaryColor */}
-              {discount && (
+              {effectiveDiscount && (
                 <span
                   className='inline-flex items-center justify-center px-1 py-0.5 rounded-full text-[6px] sm:text-[7px] md:text-[8px] font-bold leading-none tracking-wide whitespace-nowrap'
                   style={{ backgroundColor: primaryColor, color: '#ffffff' }}
                 >
-                  {discount} OFF
+                  {effectiveDiscount} OFF
                 </span>
               )}
             </div>

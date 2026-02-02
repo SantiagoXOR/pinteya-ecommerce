@@ -19,6 +19,7 @@ import {
   isSinteticoConverluxProduct
 } from '../utils/attribute-extractors'
 import type { ProductVariant, ColorData } from '../types'
+import { useDesignSystemConfig } from '@/lib/design-system-config'
 
 export interface UseProductVariantSelectionOptions {
   variants?: ProductVariant[]
@@ -167,6 +168,9 @@ export function useProductVariantSelection({
   originalPrice,
   preferLowestPrice = true
 }: UseProductVariantSelectionOptions): UseProductVariantSelectionResult {
+  const config = useDesignSystemConfig()
+  const freeShippingThreshold = config.ecommerce.shippingInfo.freeShippingThreshold
+
   // Estados de selección
   const [selectedColor, setSelectedColor] = React.useState<string | undefined>(undefined)
   const [selectedMeasure, setSelectedMeasure] = React.useState<string | undefined>(undefined)
@@ -206,7 +210,7 @@ export function useProductVariantSelection({
         return {
           measure,
           price: minPrice !== Infinity ? minPrice : Infinity,
-          hasFreeShipping: minPrice !== Infinity && minPrice >= 50000
+          hasFreeShipping: minPrice !== Infinity && minPrice >= freeShippingThreshold
         }
       })
       if (preferLowestPrice) {
@@ -215,7 +219,7 @@ export function useProductVariantSelection({
       return measurePrices.sort((a, b) => (a.hasFreeShipping === b.hasFreeShipping ? 0 : a.hasFreeShipping ? -1 : 1)).map(m => m.measure)
     }
     return measures
-  }, [variants, medida, preferLowestPrice])
+  }, [variants, medida, preferLowestPrice, freeShippingThreshold])
 
   // Extraer finishes únicos
   const allUniqueFinishes = React.useMemo(() => {
@@ -283,7 +287,7 @@ export function useProductVariantSelection({
             if (measureVariants.length > 0) {
               const prices = measureVariants.map(v => v.price_sale || v.price_list || Infinity)
               const minPrice = Math.min(...prices.filter(p => p !== Infinity))
-              if (minPrice !== Infinity && minPrice >= 50000) {
+              if (minPrice !== Infinity && minPrice >= freeShippingThreshold) {
                 defaultMeasure = measure
                 break
               }
@@ -295,7 +299,7 @@ export function useProductVariantSelection({
     } else if (selectedMeasure) {
       setSelectedMeasure(undefined)
     }
-  }, [selectedMeasure, uniqueMeasures, variants, preferLowestPrice])
+  }, [selectedMeasure, uniqueMeasures, variants, preferLowestPrice, freeShippingThreshold])
 
   // Calcular variante activa
   const currentVariant = React.useMemo(() => {

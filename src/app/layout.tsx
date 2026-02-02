@@ -202,9 +202,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       
                       // Función para actualizar favicon - PRIORIZAR SVG
                       function updateFavicon() {
-                        // Eliminar TODOS los links de icon existentes
-                        const existingIcons = document.querySelectorAll('link[rel*="icon"], link[rel*="shortcut"]');
-                        existingIcons.forEach(link => link.remove());
+                        // FIX removeChild(null): Solo eliminar links que NOSOTROS añadimos (data-tenant-favicon).
+                        // Eliminar todos hace que React/Next intenten removeChild sobre nodos ya quitados.
+                        const ourIcons = document.querySelectorAll('link[data-tenant-favicon="1"]');
+                        ourIcons.forEach(function(link) { if (link.parentNode) link.parentNode.removeChild(link); });
                         
                         // Crear nuevos links con cache-busting adicional
                         const timestamp = Date.now();
@@ -212,20 +213,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         const baseUrl = faviconUrl.split('?')[0];
                         const newFaviconSvgUrl = baseUrl + '?v=' + tenantSlug + '&t=' + timestamp + '&cb=' + random + '&r=' + Math.random();
                         
-                        // PRIORIZAR SVG para mejor calidad vectorial
+                        // PRIORIZAR SVG para mejor calidad vectorial; marcar para no tocar links de React/Next
                         const formats = [
                           { rel: 'icon', type: 'image/svg+xml', href: newFaviconSvgUrl },
                           { rel: 'shortcut icon', type: 'image/svg+xml', href: newFaviconSvgUrl }
                         ];
                         
-                        formats.forEach(format => {
+                        formats.forEach(function(format) {
                           const link = document.createElement('link');
+                          link.setAttribute('data-tenant-favicon', '1');
                           Object.assign(link, format);
                           document.head.appendChild(link);
                         });
                         
                         // Forzar recarga del favicon en algunos navegadores
-                        const iconLink = document.querySelector('link[rel="icon"]');
+                        const iconLink = document.querySelector('link[rel="icon"][data-tenant-favicon="1"]');
                         if (iconLink) {
                           iconLink.href = newFaviconSvgUrl + '&force=' + Date.now();
                         }
@@ -642,13 +644,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           
           /* Reset y base styles - Con variables CSS tenant y fallbacks */
           *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+          :root{--header-height:92px;--bottom-nav-height:64px}
           html{line-height:1.15;-webkit-text-size-adjust:100%;font-size:100%;scroll-behavior:smooth;overflow-x:hidden!important;overflow-y:auto!important;max-width:100vw;width:100%;height:100%}
-          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,var(--tenant-gradient-start) 0%,var(--tenant-gradient-start) 40%,var(--tenant-gradient-end) 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(92px + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
+          body{margin:0;font-family:var(--font-plus-jakarta-sans),'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;background:linear-gradient(to bottom,var(--tenant-gradient-start) 0%,var(--tenant-gradient-start) 40%,var(--tenant-gradient-end) 100%);background-attachment:fixed;background-size:cover;background-position:center;background-repeat:no-repeat;color:#ffffff;height:auto;padding-top:calc(var(--header-height) + env(safe-area-inset-top, 0px));overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;position:relative}
           #__next{overflow-x:hidden!important;overflow-y:hidden!important;max-width:100vw;width:100%;height:auto;position:relative}
           main{overflow-x:hidden!important;overflow-y:hidden!important;position:relative}
           header[class*="fixed"],nav[class*="fixed"]{position:fixed!important;z-index:1100!important}
-          @media(min-width:1024px){body{padding-top:calc(105px + env(safe-area-inset-top, 0px))}}
-          @media(max-width:768px){body{padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px))}}
+          @media(min-width:1024px){:root{--header-height:105px}body{padding-top:calc(var(--header-height) + env(safe-area-inset-top, 0px))}}
+          @media(max-width:768px){body{padding-bottom:calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))}}
           img,picture,video{max-width:100%;height:auto;display:block}
           button,input,select,textarea{font:inherit}
           h1,h2,h3,h4,h5,h6{font-weight:bold;line-height:1.2}
