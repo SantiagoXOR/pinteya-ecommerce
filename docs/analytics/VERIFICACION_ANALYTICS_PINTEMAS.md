@@ -1,0 +1,92 @@
+# Verificación de Analytics para Pintemas
+
+**Objetivo**: Comprobar que el sistema de analytics registra eventos por tenant y que el dashboard de admin muestra solo métricas de Pintemas cuando se accede desde www.pintemas.com.
+
+---
+
+## 1. RPC y tenant_id
+
+Tras aplicar la migración `20260202100000_add_tenant_id_to_analytics_rpc.sql`, la función `insert_analytics_event_optimized` acepta `p_tenant_id` y persiste `tenant_id` en `analytics_events_optimized`.
+
+**Comprobar en Supabase (SQL)**:
+
+```sql
+-- Ver firma de la función (debe incluir p_tenant_id)
+SELECT pg_get_function_arguments(oid) AS args
+FROM pg_proc
+WHERE proname = 'insert_analytics_event_optimized';
+```
+
+---
+
+## 2. Flujo E2E desde www.pintemas.com
+
+### Pasos manuales
+
+1. Abrir **https://www.pintemas.com** (o en local con `NEXT_PUBLIC_DEV_TENANT_SLUG=pintemas`).
+2. Navegar por la home (dispara `page_view`).
+3. Abrir un producto (dispara `view_item` / `product_view`).
+4. Agregar al carrito (dispara `add_to_cart`).
+
+### Comprobar eventos en BD
+
+Ejecutar en Supabase SQL o con el script de verificación:
+
+```sql
+SELECT id, event_type, tenant_id, created_at, product_id, product_name
+FROM analytics_events_optimized
+WHERE tenant_id = (SELECT id FROM tenants WHERE slug = 'pintemas')
+ORDER BY created_at DESC
+LIMIT 10;
+```
+
+Los eventos recientes deben tener `tenant_id` = UUID de Pintemas (no NULL).
+
+**Script automático**:
+
+```bash
+node docs/analytics/verify-analytics-pintemas.js
+```
+
+Requiere `.env.local` con `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`. Si no se usa el script, ejecutar las consultas SQL de esta sección en Supabase (SQL Editor).
+
+---
+
+## 3. Dashboard admin
+
+1. Iniciar sesión como usuario con rol admin (tenant Pintemas si aplica).
+2. Entrar en **https://www.pintemas.com/admin/analytics** (o equivalente en local).
+3. Comprobar que las métricas (vistas, carritos, checkouts, compras) corresponden solo al tráfico de Pintemas.
+
+La API `/api/analytics/metrics` usa `getTenantConfig()` y filtra por `tenant_id`, por lo que cada dominio ve solo sus datos.
+
+---
+
+## 4. GA4 / Meta Pixel (opcional)
+
+Si Pintemas debe tener Google Analytics 4 y/o Meta Pixel:
+
+1. En Supabase, ejecutar:
+
+```sql
+UPDATE tenants
+SET
+  ga4_measurement_id = 'G-XXXXXXXX',  -- ID de medición GA4 de Pintemas
+  meta_pixel_id = 'XXXXXXXX'         -- ID del Pixel de Meta de Pintemas
+WHERE slug = 'pintemas';
+```
+
+2. Recargar www.pintemas.com y en DevTools (Network) comprobar que se cargan requests a `googletagmanager.com` y/o `facebook.net`.
+
+Sin este UPDATE, el analytics interno (Supabase) sigue funcionando; solo no se cargan los scripts de GA4/Meta en el sitio de Pintemas.
+
+---
+
+## Resumen
+
+| Verificación              | Cómo                                                                 |
+|---------------------------|----------------------------------------------------------------------|
+| RPC con p_tenant_id       | Migración aplicada + `pg_get_function_arguments` en Supabase       |
+| Eventos con tenant_id     | `SELECT ... FROM analytics_events_optimized WHERE tenant_id = ...`   |
+| Dashboard por tenant       | Login en pintemas.com → /admin/analytics → métricas solo Pintemas  |
+| GA4/Meta (opcional)        | UPDATE tenants SET ga4_measurement_id, meta_pixel_id WHERE slug    |
