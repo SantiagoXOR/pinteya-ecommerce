@@ -166,6 +166,7 @@ export interface TenantPublicConfig {
   
   // Contacto
   contactPhone: string | null
+  supportEmail: string | null
   contactAddress: string | null
   contactCity: string | null
   contactProvince: string | null

@@ -11,6 +11,7 @@ import { motion } from '@/lib/framer-motion-lazy'
 import { Building2, Users, Target, Award, MapPin, Phone, Mail, Clock } from '@/lib/optimized-imports'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
+import { formatBusinessHours } from '@/lib/tenant/format-business-hours'
 
 const AboutPage = () => {
   // ⚡ MULTITENANT: Obtener datos del tenant
@@ -21,6 +22,7 @@ const AboutPage = () => {
   const supportEmail = tenant?.supportEmail || `info@${tenant?.slug || 'pinteya'}.com`
   const contactAddress = tenant?.contactAddress || 'Córdoba, Argentina'
   const contactCity = tenant?.contactCity || 'Córdoba'
+  const businessHoursText = formatBusinessHours(tenant?.businessHours)
   return (
     <div className='min-h-screen'>
       {/* Hero Section */}
@@ -50,12 +52,12 @@ const AboutPage = () => {
               transition={{ duration: 0.6 }}
             >
               <h2 className='text-3xl font-bold text-gray-900 mb-6'>Nuestra Historia</h2>
-              <p className='text-gray-600 mb-4'>
+              <p className='text-gray-700 mb-4'>
                 {tenantName} nace de la pasión por brindar soluciones completas en pinturería y
                 ferretería. Con años de experiencia en el sector, nos hemos consolidado como una
                 empresa líder en la distribución de productos de calidad.
               </p>
-              <p className='text-gray-600'>
+              <p className='text-gray-700'>
                 Nuestro compromiso es ofrecer productos de las mejores marcas, asesoramiento
                 especializado y un servicio excepcional que supere las expectativas de nuestros
                 clientes.
@@ -69,8 +71,8 @@ const AboutPage = () => {
               className='bg-gray-50 p-8 rounded-lg'
             >
               <Building2 className='w-16 h-16 text-blaze-orange-600 mb-4' />
-              <h3 className='text-xl font-semibold mb-2'>Empresa Establecida</h3>
-              <p className='text-gray-600'>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>Empresa Establecida</h3>
+              <p className='text-gray-700'>
                 Con presencia sólida en el mercado argentino, ofreciendo productos de calidad y
                 servicio personalizado.
               </p>
@@ -89,7 +91,7 @@ const AboutPage = () => {
             className='text-center mb-12'
           >
             <h2 className='text-3xl font-bold text-gray-900 mb-4'>Nuestros Valores</h2>
-            <p className='text-gray-600 max-w-2xl mx-auto'>
+            <p className='text-gray-700 max-w-2xl mx-auto'>
               Los principios que guían nuestro trabajo diario y nuestra relación con los clientes
             </p>
           </motion.div>
@@ -102,8 +104,8 @@ const AboutPage = () => {
               className='text-center'
             >
               <Target className='w-12 h-12 text-blaze-orange-600 mx-auto mb-4' />
-              <h3 className='text-xl font-semibold mb-2'>Calidad</h3>
-              <p className='text-gray-600'>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>Calidad</h3>
+              <p className='text-gray-700'>
                 Seleccionamos cuidadosamente productos de las mejores marcas para garantizar
                 resultados excepcionales.
               </p>
@@ -116,8 +118,8 @@ const AboutPage = () => {
               className='text-center'
             >
               <Users className='w-12 h-12 text-blaze-orange-600 mx-auto mb-4' />
-              <h3 className='text-xl font-semibold mb-2'>Servicio</h3>
-              <p className='text-gray-600'>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>Servicio</h3>
+              <p className='text-gray-700'>
                 Nuestro equipo especializado brinda asesoramiento personalizado para cada proyecto y
                 necesidad.
               </p>
@@ -130,8 +132,8 @@ const AboutPage = () => {
               className='text-center'
             >
               <Award className='w-12 h-12 text-blaze-orange-600 mx-auto mb-4' />
-              <h3 className='text-xl font-semibold mb-2'>Confianza</h3>
-              <p className='text-gray-600'>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>Confianza</h3>
+              <p className='text-gray-700'>
                 Construimos relaciones duraderas basadas en la transparencia, honestidad y
                 cumplimiento de compromisos.
               </p>
@@ -150,7 +152,7 @@ const AboutPage = () => {
             className='text-center mb-12'
           >
             <h2 className='text-3xl font-bold text-gray-900 mb-4'>Contáctanos</h2>
-            <p className='text-gray-600'>Estamos aquí para ayudarte con tus proyectos</p>
+            <p className='text-gray-700'>Estamos aquí para ayudarte con tus proyectos</p>
           </motion.div>
 
           <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-8'>
@@ -161,8 +163,8 @@ const AboutPage = () => {
               className='text-center'
             >
               <MapPin className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
-              <h4 className='font-semibold mb-1'>Ubicación</h4>
-              <p className='text-gray-600 text-sm'>{contactAddress}</p>
+              <h4 className='font-semibold text-gray-900 mb-1'>Ubicación</h4>
+              <p className='text-gray-700 text-sm'>{contactAddress}</p>
             </motion.div>
 
             <motion.div
@@ -172,8 +174,8 @@ const AboutPage = () => {
               className='text-center'
             >
               <Phone className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
-              <h4 className='font-semibold mb-1'>Teléfono</h4>
-              <p className='text-gray-600 text-sm'>+54 351 XXX-XXXX</p>
+              <h4 className='font-semibold text-gray-900 mb-1'>Teléfono</h4>
+              <p className='text-gray-700 text-sm'>{displayPhone}</p>
             </motion.div>
 
             <motion.div
@@ -183,8 +185,8 @@ const AboutPage = () => {
               className='text-center'
             >
               <Mail className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
-              <h4 className='font-semibold mb-1'>Email</h4>
-              <p className='text-gray-600 text-sm'>{supportEmail}</p>
+              <h4 className='font-semibold text-gray-900 mb-1'>Email</h4>
+              <p className='text-gray-700 text-sm'>{supportEmail}</p>
             </motion.div>
 
             <motion.div
@@ -194,8 +196,8 @@ const AboutPage = () => {
               className='text-center'
             >
               <Clock className='w-8 h-8 text-blaze-orange-600 mx-auto mb-2' />
-              <h4 className='font-semibold mb-1'>Horarios</h4>
-              <p className='text-gray-600 text-sm'>Lun-Vie: 8:00-18:00</p>
+              <h4 className='font-semibold text-gray-900 mb-1'>Horarios</h4>
+              <p className='text-gray-700 text-sm'>{businessHoursText}</p>
             </motion.div>
           </div>
         </div>

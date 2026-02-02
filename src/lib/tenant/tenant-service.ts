@@ -146,6 +146,7 @@ function extractPublicConfig(config: TenantConfig): TenantPublicConfig {
     ogImageUrl: config.ogImageUrl,
     socialLinks: config.socialLinks,
     contactPhone: config.contactPhone,
+    supportEmail: config.supportEmail,
     contactAddress: config.contactAddress,
     contactCity: config.contactCity,
     contactProvince: config.contactProvince,

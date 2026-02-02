@@ -141,6 +141,7 @@ export function useTenantContact() {
     whatsappNumber: tenant.whatsappNumber,
     whatsappMessageTemplate: tenant.whatsappMessageTemplate,
     phone: tenant.contactPhone,
+    supportEmail: tenant.supportEmail,
     address: tenant.contactAddress,
     city: tenant.contactCity,
     province: tenant.contactProvince,

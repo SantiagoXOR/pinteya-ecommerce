@@ -20,3 +20,6 @@ export {
   getTenantBaseUrl,
   isAdminRequest,
 } from './tenant-service'
+
+export { formatBusinessHours } from './format-business-hours'
+export type { BusinessHoursInput } from './format-business-hours'

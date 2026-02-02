@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 // ⚡ PERFORMANCE: Lazy load de Framer Motion para reducir bundle inicial
 import { motion } from '@/lib/framer-motion-lazy'
 import {
@@ -28,13 +28,6 @@ import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
 // Forzar renderizado dinámico para evitar problemas con prerendering
 export const dynamic = 'force-dynamic'
-
-interface PublicSettings {
-  contact_email: string
-  support_phone: string
-  site_name: string
-  site_url: string
-}
 
 interface FAQItem {
   id: string
@@ -101,37 +94,12 @@ const HelpPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('todos')
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null)
   
-  // Obtener datos del tenant
+  // Obtener datos del tenant (priorizar tenant para contacto)
   const tenant = useTenantSafe()
   const whatsappNumber = getTenantWhatsAppNumber(tenant)
   const tenantName = tenant?.name || 'Pinteya'
-  
-  const [publicSettings, setPublicSettings] = useState<PublicSettings>({
-    contact_email: `soporte@${tenant?.slug || 'pinteya'}.com`,
-    support_phone: tenant?.contactPhone || '+54 351 XXX-XXXX',
-    site_name: tenantName,
-    site_url: `https://${tenant?.slug || 'pinteya'}.com`,
-  })
-
-  // Cargar configuraciones públicas
-  useEffect(() => {
-    const loadPublicSettings = async () => {
-      try {
-        const response = await fetch('/api/settings/public')
-        if (response.ok) {
-          const result = await response.json()
-          if (result.success && result.data) {
-            setPublicSettings(result.data)
-          }
-        }
-      } catch (error) {
-        console.error('Error cargando configuraciones públicas:', error)
-        // Mantener valores por defecto en caso de error
-      }
-    }
-
-    loadPublicSettings()
-  }, [])
+  const contactPhone = tenant?.contactPhone || '+54 351 XXX-XXXX'
+  const contactEmail = tenant?.supportEmail || `soporte@${tenant?.slug || 'pinteya'}.com`
 
   // Función para formatear el teléfono para el href tel:
   const formatPhoneForTel = (phone: string) => {
@@ -234,7 +202,7 @@ const HelpPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className='text-3xl font-bold text-center mb-12'
+              className='text-3xl font-bold text-gray-900 text-center mb-12'
             >
               Preguntas Frecuentes
             </motion.h2>
@@ -281,8 +249,8 @@ const HelpPage = () => {
                 animate={{ opacity: 1 }}
                 className='text-center py-12'
               >
-                <p className='text-gray-500 text-lg'>
-                  No se encontraron preguntas que coincidan con tu búsqueda.
+<p className='text-gray-700 text-lg'>
+                No se encontraron preguntas que coincidan con tu búsqueda.
                 </p>
               </motion.div>
             )}
@@ -302,7 +270,7 @@ const HelpPage = () => {
             <h2 className='text-3xl font-bold text-gray-900 mb-4'>
               ¿No encontraste lo que buscabas?
             </h2>
-            <p className='text-gray-600 max-w-2xl mx-auto'>
+            <p className='text-gray-700 max-w-2xl mx-auto'>
               Nuestro equipo de soporte está aquí para ayudarte
             </p>
           </motion.div>
@@ -315,8 +283,8 @@ const HelpPage = () => {
               className='text-center p-6 bg-white rounded-lg shadow-sm'
             >
               <MessageCircle className='w-12 h-12 text-blaze-orange-600 mx-auto mb-4' />
-              <h3 className='text-xl font-semibold mb-2'>Chat en Vivo</h3>
-              <p className='text-gray-600 mb-4'>Chatea con nuestro equipo de soporte</p>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>Chat en Vivo</h3>
+              <p className='text-gray-700 mb-4'>Chatea con nuestro equipo de soporte</p>
               <button
                 onClick={handleChatClick}
                 className='bg-blaze-orange-600 text-white px-6 py-2 rounded-lg hover:bg-blaze-orange-700 transition-colors'
@@ -332,13 +300,13 @@ const HelpPage = () => {
               className='text-center p-6 bg-white rounded-lg shadow-sm'
             >
               <Phone className='w-12 h-12 text-blaze-orange-600 mx-auto mb-4' />
-              <h3 className='text-xl font-semibold mb-2'>Teléfono</h3>
-              <p className='text-gray-600 mb-4'>Llámanos para soporte inmediato</p>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>Teléfono</h3>
+              <p className='text-gray-700 mb-4'>Llámanos para soporte inmediato</p>
               <a
-                href={`tel:${formatPhoneForTel(publicSettings.support_phone)}`}
+                href={`tel:${formatPhoneForTel(contactPhone)}`}
                 className='bg-blaze-orange-600 text-white px-6 py-2 rounded-lg hover:bg-blaze-orange-700 transition-colors inline-block'
               >
-                {publicSettings.support_phone}
+                {contactPhone.replace(/^549(\d{3})(\d{3})(\d{4})$/, '+54 9 $1 $2-$3')}
               </a>
             </motion.div>
 
@@ -349,10 +317,10 @@ const HelpPage = () => {
               className='text-center p-6 bg-white rounded-lg shadow-sm'
             >
               <Mail className='w-12 h-12 text-blaze-orange-600 mx-auto mb-4' />
-              <h3 className='text-xl font-semibold mb-2'>Email</h3>
-              <p className='text-gray-600 mb-4'>Envíanos un mensaje detallado</p>
+              <h3 className='text-xl font-semibold text-gray-900 mb-2'>Email</h3>
+              <p className='text-gray-700 mb-4'>Envíanos un mensaje detallado</p>
               <a
-                href={`mailto:${publicSettings.contact_email}`}
+                href={`mailto:${contactEmail}`}
                 className='bg-blaze-orange-600 text-white px-6 py-2 rounded-lg hover:bg-blaze-orange-700 transition-colors inline-block'
               >
                 Enviar Email
