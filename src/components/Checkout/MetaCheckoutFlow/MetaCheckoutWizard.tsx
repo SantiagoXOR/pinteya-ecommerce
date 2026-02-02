@@ -444,7 +444,7 @@ export const MetaCheckoutWizard: React.FC = () => {
             </>
           ) : (
             <>
-              <Card className='mb-6 shadow-xl border-0'>
+              <Card className='mt-10 mb-6 shadow-xl border-0'>
                 <CardContent>
                   {renderStepContent()}
                 </CardContent>
