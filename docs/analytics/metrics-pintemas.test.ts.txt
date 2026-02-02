@@ -1,0 +1,165 @@
+/**
+ * Tests de integración: APIs de analytics con tenant Pintemas
+ * Verifica que GET /api/analytics/metrics (y summary) devuelven 200
+ * y estructura correcta cuando el tenant es Pintemas (vía __TENANT_TEST_GET_CONFIG__).
+ *
+ * Copiar a: src/__tests__/api/analytics/metrics-pintemas.test.ts
+ */
+
+import { NextRequest } from 'next/server'
+
+const minimalMetrics = {
+  ecommerce: {
+    cartAdditions: 0,
+    cartRemovals: 0,
+    checkoutStarts: 0,
+    checkoutCompletions: 0,
+    productViews: 0,
+    categoryViews: 0,
+    searchQueries: 0,
+    conversionRate: 0,
+    cartAbandonmentRate: 0,
+    productToCartRate: 0,
+    averageOrderValue: 0,
+    totalRevenue: 0,
+  },
+  engagement: {
+    uniqueSessions: 0,
+    uniqueUsers: 0,
+    averageEventsPerSession: 0,
+    averageSessionDuration: 0,
+    topPages: [],
+    topProducts: [],
+  },
+  trends: { dailyEvents: [], hourlyEvents: [] },
+  orders: { totalOrders: 0, totalRevenue: 0, averageOrderValue: 0 },
+}
+
+jest.mock('@/lib/analytics/metrics-calculator', () => ({
+  metricsCalculator: {
+    calculateMetrics: jest.fn().mockResolvedValue({
+      ecommerce: { cartAdditions: 0, cartRemovals: 0, checkoutStarts: 0, checkoutCompletions: 0, productViews: 0, categoryViews: 0, searchQueries: 0, conversionRate: 0, cartAbandonmentRate: 0, productToCartRate: 0, averageOrderValue: 0, totalRevenue: 0 },
+      engagement: { uniqueSessions: 0, uniqueUsers: 0, averageEventsPerSession: 0, averageSessionDuration: 0, topPages: [], topProducts: [] },
+      trends: { dailyEvents: [], hourlyEvents: [] },
+      orders: { totalOrders: 0, totalRevenue: 0, averageOrderValue: 0 },
+    }),
+    calculateAdvancedMetrics: jest.fn().mockResolvedValue({
+      ecommerce: { cartAdditions: 0, cartRemovals: 0, checkoutStarts: 0, checkoutCompletions: 0, productViews: 0, categoryViews: 0, searchQueries: 0, conversionRate: 0, cartAbandonmentRate: 0, productToCartRate: 0, averageOrderValue: 0, totalRevenue: 0 },
+      engagement: { uniqueSessions: 0, uniqueUsers: 0, averageEventsPerSession: 0, averageSessionDuration: 0, topPages: [], topProducts: [] },
+      trends: { dailyEvents: [], hourlyEvents: [] },
+      orders: { totalOrders: 0, totalRevenue: 0, averageOrderValue: 0 },
+    }),
+  },
+}))
+
+jest.mock('@/lib/analytics/metrics-cache', () => ({
+  metricsCache: {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue(undefined),
+    invalidate: jest.fn().mockResolvedValue(undefined),
+    invalidatePattern: jest.fn().mockResolvedValue(undefined),
+    getTTL: jest.fn().mockReturnValue(60),
+    generateKey: jest.fn().mockReturnValue('test-key'),
+  },
+}))
+
+jest.mock('@supabase/supabase-js', () => {
+  const chain = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    gte: jest.fn().mockReturnThis(),
+    lte: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    not: jest.fn().mockReturnThis(),
+    order: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({ data: null, error: null }),
+    then: jest.fn((resolve: (v: any) => void) => {
+      resolve({ data: [], count: 0 })
+      return Promise.resolve({ data: [], count: 0 })
+    }),
+  }
+  return {
+    createClient: jest.fn(() => ({
+      from: jest.fn().mockReturnValue(chain),
+    })),
+  }
+})
+
+import { GET as getMetrics } from '@/app/api/analytics/metrics/route'
+import { GET as getSummary } from '@/app/api/analytics/summary/route'
+
+const pintemasConfig = {
+  id: '00000000-0000-0000-0000-000000000002',
+  slug: 'pintemas',
+  name: 'Pintemas',
+} as { id: string; slug: string; name: string }
+
+describe('Analytics APIs - tenant Pintemas', () => {
+  const originalEnv = process.env.NODE_ENV
+
+  beforeAll(() => {
+    process.env.NODE_ENV = 'test'
+  })
+
+  afterAll(() => {
+    process.env.NODE_ENV = originalEnv
+  })
+
+  beforeEach(() => {
+    (globalThis as any).__TENANT_TEST_GET_CONFIG__ = async () => pintemasConfig
+  })
+
+  afterEach(() => {
+    delete (globalThis as any).__TENANT_TEST_GET_CONFIG__
+  })
+
+  describe('GET /api/analytics/metrics', () => {
+    it('returns 200 and body with ecommerce, engagement, orders when tenant is Pintemas', async () => {
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const endDate = new Date().toISOString()
+      const url = `http://localhost:3000/api/analytics/metrics?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
+      const request = new NextRequest(url)
+
+      const response = await getMetrics(request)
+
+      expect(response.status).toBe(200)
+      const data = await response.json()
+      expect(data).toHaveProperty('ecommerce')
+      expect(data).toHaveProperty('engagement')
+      expect(data).toHaveProperty('orders')
+      expect(data).toHaveProperty('period')
+      expect(data.period).toMatchObject({ startDate, endDate })
+    })
+
+    it('returns 200 with advanced=true when tenant is Pintemas', async () => {
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const endDate = new Date().toISOString()
+      const url = `http://localhost:3000/api/analytics/metrics?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&advanced=true`
+      const request = new NextRequest(url)
+
+      const response = await getMetrics(request)
+
+      expect(response.status).toBe(200)
+      const data = await response.json()
+      expect(data).toHaveProperty('ecommerce')
+      expect(data).toHaveProperty('engagement')
+      expect(data).toHaveProperty('orders')
+    })
+  })
+
+  describe('GET /api/analytics/summary', () => {
+    it('returns 200 and summary structure when tenant is Pintemas', async () => {
+      const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const endDate = new Date().toISOString()
+      const url = `http://localhost:3000/api/analytics/summary?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
+      const request = new NextRequest(url)
+
+      const response = await getSummary(request)
+
+      expect(response.status).toBe(200)
+      const data = await response.json()
+      expect(data).toBeDefined()
+      expect(typeof data === 'object').toBe(true)
+    })
+  })
+})

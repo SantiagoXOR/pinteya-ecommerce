@@ -82,6 +82,61 @@ Sin este UPDATE, el analytics interno (Supabase) sigue funcionando; solo no se c
 
 ---
 
+## 5. Testing automatizado
+
+### Tests de integración (Jest)
+
+Verifican que las APIs de analytics devuelven 200 y la estructura esperada cuando el tenant es Pintemas (vía `__TENANT_TEST_GET_CONFIG__`).
+
+```bash
+npm run test:multitenant:integration
+```
+
+Para ejecutar solo los tests de analytics Pintemas:
+
+```bash
+npm run test:multitenant:integration -- --testPathPattern=metrics-pintemas
+```
+
+### Tests E2E (Playwright) – panel /admin/analytics como Pintemas
+
+Verifican que el panel `/admin/analytics` carga y muestra contenido cuando se accede como tenant Pintemas, y que `/api/analytics/metrics` responde 200.
+
+**Opción A – Variable de entorno (recomendado en CI/local):**
+
+1. Arrancar el servidor con tenant Pintemas y bypass de auth:
+
+   ```bash
+   set NEXT_PUBLIC_DEV_TENANT_SLUG=pintemas
+   set BYPASS_AUTH=true
+   npm run dev
+   ```
+
+2. En otra terminal, ejecutar los E2E multitenant (incluye `tenant-analytics.spec.ts`):
+
+   ```bash
+   npm run test:multitenant:e2e
+   ```
+
+   Solo el spec de analytics:
+
+   ```bash
+   npx playwright test --config=playwright.multitenant.config.ts tenant-analytics.spec.ts
+   ```
+
+**Opción B – Host alternativo:**
+
+- Añadir `127.0.0.1 pintemas.localhost` al archivo `hosts`.
+- Usar `PLAYWRIGHT_BASE_URL=http://pintemas.localhost:3000` al ejecutar Playwright (y levantar el servidor en el puerto 3000).
+
+### Comprobación manual opcional
+
+1. Levantar la app con `NEXT_PUBLIC_DEV_TENANT_SLUG=pintemas` y `BYPASS_AUTH=true`.
+2. Abrir **http://localhost:3000/admin/analytics**.
+3. Comprobar que el dashboard carga (pestañas Dashboard/Funnel/Heatmap o botón Actualizar) y que las métricas corresponden al tenant Pintemas.
+
+---
+
 ## Resumen
 
 | Verificación              | Cómo                                                                 |
@@ -90,3 +145,4 @@ Sin este UPDATE, el analytics interno (Supabase) sigue funcionando; solo no se c
 | Eventos con tenant_id     | `SELECT ... FROM analytics_events_optimized WHERE tenant_id = ...`   |
 | Dashboard por tenant       | Login en pintemas.com → /admin/analytics → métricas solo Pintemas  |
 | GA4/Meta (opcional)        | UPDATE tenants SET ga4_measurement_id, meta_pixel_id WHERE slug    |
+| Testing automatizado       | Jest: `test:multitenant:integration`; E2E: `test:multitenant:e2e` con Pintemas (env o pintemas.localhost); ver sección 5 |
