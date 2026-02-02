@@ -947,9 +947,9 @@ export async function POST(request: NextRequest) {
       const shippingPortion = itemsTotal > 0 ? (itemSubtotal / itemsTotal) * shippingCost : 0
       const adjustedPrice = finalPrice + (shippingPortion / orderItem.quantity)
 
-      // 🔧 Construir título y descripción con información de variante
+      // 🔧 Construir título y descripción con información de variante (nombre del tenant para multitenant)
       let productTitle = product.name
-      let productDescription = `Pinteya - ${product.name}`
+      let productDescription = `${tenant.name} - ${product.name}`
       
       if (variantDetails.length > 0) {
         productTitle += ` (${variantDetails.join(', ')})`
