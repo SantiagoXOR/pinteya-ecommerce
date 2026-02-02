@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { CheckCircle, MessageCircle, ShoppingBag, FileText, Clock } from '@/lib/optimized-imports'
+import { CheckCircle, BrandWhatsapp, ShoppingBag, FileText, Clock } from '@/lib/optimized-imports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -385,7 +385,7 @@ export default function MercadoPagoSuccessPage() {
           <Card className="mb-6 border-green-200 bg-green-50">
             <CardContent className="pt-6">
               <div className="text-center">
-                <MessageCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
+                <BrandWhatsapp className="w-12 h-12 text-green-600 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-green-800 mb-2">
                   Confirma tu pedido por WhatsApp
                 </h3>
@@ -407,7 +407,7 @@ export default function MercadoPagoSuccessPage() {
                   className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
                   size="lg"
                 >
-                  <MessageCircle className="w-5 h-5 mr-2" />
+                  <BrandWhatsapp className="w-5 h-5 mr-2" />
                   Ir a WhatsApp Ahora
                 </Button>
               </div>

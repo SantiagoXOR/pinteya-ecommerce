@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart } from '@/lib/optimized-imports'
+import { ShoppingCartPlus } from '@/lib/optimized-imports'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
@@ -69,7 +69,7 @@ export const StickyAddToCart: React.FC<StickyAddToCartProps> = ({
             </span>
           ) : (
             <span className="flex items-center justify-center gap-2">
-              <ShoppingCart className="w-5 h-5" />
+              <ShoppingCartPlus className="w-5 h-5" />
               Agregar al Carrito
             </span>
           )}

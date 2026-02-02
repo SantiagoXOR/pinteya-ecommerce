@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/utils'
-import { MessageCircle } from '@/lib/optimized-imports'
+import { BrandWhatsapp } from '@/lib/optimized-imports'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
 
@@ -55,8 +55,8 @@ const FloatingWhatsAppButton: React.FC<FloatingWhatsAppButtonProps> = ({
         )}
       >
         {/* Icono de WhatsApp - tamaño proporcional */}
-        <MessageCircle 
-          className='w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg' 
+        <BrandWhatsapp 
+          className='w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-200 group-hover:scale-110 drop-shadow-lg text-white' 
           strokeWidth={2.5}
         />
         

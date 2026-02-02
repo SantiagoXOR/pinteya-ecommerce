@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { MessageCircle, X, Sparkles } from '@/lib/optimized-imports'
+import { BrandWhatsapp, X, Sparkles } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
@@ -64,7 +64,7 @@ const BuyPageWhatsAppPopup = () => {
           {/* Icono y título */}
           <div className='flex items-center gap-3 mb-4'>
             <div className='w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg'>
-              <MessageCircle className='w-6 h-6 text-white' />
+              <BrandWhatsapp className='w-6 h-6 text-white' />
             </div>
             <div>
               <h3 className='text-xl font-bold text-gray-900'>
@@ -89,7 +89,7 @@ const BuyPageWhatsAppPopup = () => {
             onClick={handleWhatsAppClick}
             className='w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 group'
           >
-            <MessageCircle className='w-5 h-5 group-hover:scale-110 transition-transform' />
+            <BrandWhatsapp className='w-5 h-5 group-hover:scale-110 transition-transform' />
             <span>Chatear por WhatsApp</span>
             <Sparkles className='w-4 h-4 group-hover:rotate-12 transition-transform' />
           </button>

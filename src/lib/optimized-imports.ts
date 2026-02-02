@@ -49,6 +49,7 @@ import {
 
   // E-commerce específicos
   IconShoppingBag,
+  IconShoppingCartPlus,
   IconPackage,
   IconTruck,
   IconCreditCard,
@@ -62,6 +63,7 @@ import {
   IconPhone,
   IconMail,
   IconMessageCircle,
+  IconBrandWhatsapp,
 
   // Acciones de producto
   IconTrash,
@@ -214,6 +216,7 @@ export {
 
   // E-commerce específicos
   IconShoppingBag as ShoppingBag,
+  IconShoppingCartPlus as ShoppingCartPlus,
   IconPackage as Package,
   IconTruck as Truck,
   IconCreditCard as CreditCard,
@@ -227,6 +230,7 @@ export {
   IconPhone as Phone,
   IconMail as Mail,
   IconMessageCircle as MessageCircle,
+  IconBrandWhatsapp as BrandWhatsapp,
 
   // Acciones de producto
   IconTrash as Trash2,

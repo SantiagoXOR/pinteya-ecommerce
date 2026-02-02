@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { MessageCircle, Package, Truck, MapPin, Edit } from '@/lib/optimized-imports'
+import { BrandWhatsapp, Package, Truck, MapPin, Edit } from '@/lib/optimized-imports'
 
 // ===================================
 // TYPES
@@ -117,7 +117,7 @@ export function WhatsAppQuickActions({
           className='h-6 w-6 p-0 hover:bg-green-100 hover:text-green-600 transition-colors'
           title='Enviar mensaje por WhatsApp'
         >
-          <MessageCircle className='h-3.5 w-3.5 text-green-600' />
+          <BrandWhatsapp className='h-3.5 w-3.5 text-green-600' />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='start' className='w-56'>

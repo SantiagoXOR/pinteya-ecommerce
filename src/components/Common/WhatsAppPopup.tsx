@@ -30,7 +30,7 @@ export default WhatsAppPopup
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { X, Phone, MessageCircle, CheckCircle, Gift, Sparkles } from '@/lib/optimized-imports'
+import { X, Phone, BrandWhatsapp, CheckCircle, Gift, Sparkles } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 
 // ===================================
@@ -384,7 +384,7 @@ Saludos! 🎨✨`
                 disabled={isSubmitting}
                 className='group w-full inline-flex items-center justify-center gap-2 py-3 px-6 text-white bg-gradient-to-r from-[#00ca53] to-[#009e44] hover:from-[#009e44] hover:to-[#007638] font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed'
               >
-                <MessageCircle className='w-5 h-5' />
+                <BrandWhatsapp className='w-5 h-5' />
                 <span>{isSubmitting ? 'Registrando...' : 'Participar por WhatsApp'}</span>
               </button>
 
@@ -412,7 +412,7 @@ Saludos! 🎨✨`
               </p>
 
               <div className='flex items-center gap-2 text-[#00ca53]'>
-                <MessageCircle className='w-5 h-5' />
+                <BrandWhatsapp className='w-5 h-5' />
                 <span className='font-medium'>Revisá tu WhatsApp</span>
               </div>
             </div>
@@ -518,7 +518,7 @@ Saludos! 🎨✨`
                   disabled={isSubmitting}
                   className='group w-full inline-flex items-center justify-center gap-2 py-4 px-6 text-white bg-gradient-to-r from-[#00ca53] to-[#009e44] hover:from-[#009e44] hover:to-[#007638] font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <MessageCircle className='w-5 h-5' />
+                  <BrandWhatsapp className='w-5 h-5' />
                   <span>{isSubmitting ? 'Registrando...' : 'Participar por WhatsApp'}</span>
                 </button>
 
@@ -551,7 +551,7 @@ Saludos! 🎨✨`
               </p>
 
               <div className='flex items-center gap-2 text-[#00ca53] text-lg'>
-                <MessageCircle className='w-6 h-6' />
+                <BrandWhatsapp className='w-6 h-6' />
                 <span className='font-bold'>Revisá tu WhatsApp</span>
               </div>
             </div>

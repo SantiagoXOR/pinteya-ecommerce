@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { MessageCircle, X } from '@/lib/optimized-imports'
+import { BrandWhatsapp, X } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
 import { useTenantSafe } from '@/contexts/TenantContext'
 import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
@@ -52,7 +52,7 @@ const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ showImmediately = f
           <div className='flex items-start justify-between mb-2'>
             <div className='flex items-center gap-2'>
               <div className='w-10 h-10 bg-green-500 rounded-full flex items-center justify-center'>
-                <MessageCircle className='w-6 h-6 text-white' />
+                <BrandWhatsapp className='w-6 h-6 text-white' />
               </div>
               <div>
                 <p className='font-bold text-gray-900'>¿Necesitás ayuda?</p>
@@ -76,7 +76,7 @@ const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ showImmediately = f
             onClick={handleClick}
             className='w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2'
           >
-            <MessageCircle className='w-4 h-4' />
+            <BrandWhatsapp className='w-4 h-4' />
             Chatear ahora
           </button>
         </div>
@@ -93,7 +93,7 @@ const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ showImmediately = f
         {/* Pulse ring */}
         <span className='absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75'></span>
 
-        <MessageCircle className='w-7 h-7 relative z-10' />
+        <BrandWhatsapp className='w-7 h-7 relative z-10 text-white' />
 
         {/* Badge de notificación */}
         <span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white'>

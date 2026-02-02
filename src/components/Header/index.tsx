@@ -16,7 +16,7 @@ import { cn } from '@/lib/core/utils'
 // ⚡ PERFORMANCE: Memoizar SearchAutocomplete para evitar re-renders innecesarios
 const MemoizedSearchAutocomplete = React.memo(SearchAutocompleteIntegrated)
 import { useCartAnimation } from '@/hooks/useCartAnimation'
-import { MapPin, Loader2, ShoppingCart, MessageCircle, Search, X } from '@/lib/optimized-imports'
+import { MapPin, Loader2, ShoppingCart, Search, X } from '@/lib/optimized-imports'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { HeaderLogo } from '@/components/ui/OptimizedLogo'
 import ScrollingBanner from './ScrollingBanner'

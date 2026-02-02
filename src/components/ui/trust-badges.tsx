@@ -15,7 +15,7 @@ import {
   Phone,
   MapPin,
   Zap,
-  MessageCircle,
+  BrandWhatsapp,
 } from '@/lib/optimized-imports'
 
 const trustBadgeVariants = cva(
@@ -171,7 +171,7 @@ const SupportBadge = React.forwardRef<HTMLDivElement, SupportBadgeProps>(
         case 'phone':
           return <Phone className='w-4 h-4' />
         case 'chat':
-          return <MessageCircle className='w-4 h-4' />
+          return <BrandWhatsapp className='w-4 h-4' />
         case 'email':
           return <Clock className='w-4 h-4' />
         default:

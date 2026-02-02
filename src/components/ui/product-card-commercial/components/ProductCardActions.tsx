@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
-import { ShoppingCart } from '@/lib/optimized-imports'
+import { ShoppingCartPlus } from '@/lib/optimized-imports'
 import type { ProductCardActionsProps } from '../types'
 import { useTenantSafe } from '@/contexts/TenantContext'
 
@@ -67,7 +67,7 @@ export const ProductCardActions = React.memo(function ProductCardActions({
             +{cartAddCount}
           </span>
         ) : (
-          <ShoppingCart 
+          <ShoppingCartPlus 
             className='w-4 h-4 md:w-5 md:h-5'
             style={{ color: primaryColor }}
           />

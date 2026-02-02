@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { MessageCircle } from "@/lib/optimized-imports"
+import { BrandWhatsapp } from "@/lib/optimized-imports"
 import { cn } from "@/lib/utils"
 import { useTenantSafe } from "@/contexts/TenantContext"
 import { getTenantPromoAssetWithFallback } from "@/lib/tenant/tenant-assets"
@@ -71,7 +71,7 @@ const HelpCard: React.FC<HelpCardProps> = ({ categoryName, className }) => {
           isHovered ? "scale-110" : "",
         )}
       >
-        <MessageCircle className="w-7 h-7" strokeWidth={3} />
+        <BrandWhatsapp className="w-7 h-7" strokeWidth={3} />
       </div>
     </div>
   )

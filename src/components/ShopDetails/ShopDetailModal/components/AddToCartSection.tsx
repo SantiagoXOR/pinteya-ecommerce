@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, Heart } from '@/lib/optimized-imports'
+import { ShoppingCartPlus, Heart } from '@/lib/optimized-imports'
 import { FreeShippingText } from '@/components/ui/free-shipping-text'
 import { formatPrice } from '../utils/price-utils'
 import { formatCapacity } from '@/utils/product-utils'
@@ -137,7 +137,7 @@ export const AddToCartSection = React.memo<AddToCartSectionProps>(({
           className='w-full bg-yellow-400 hover:bg-yellow-500 text-black text-lg py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
           size='lg'
         >
-          <ShoppingCart className='mr-2 h-5 w-5' />
+          <ShoppingCartPlus className='mr-2 h-5 w-5' />
           {effectiveStock === 0
             ? 'Sin Stock'
             : isLoading || loadingProductData

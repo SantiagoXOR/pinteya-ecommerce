@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { useAIChatPopupContext } from '@/app/context/AIChatPopupContext'
 import { useTenantSafe, useTenantTheme } from '@/contexts/TenantContext'
 import { getTenantWhatsAppNumber } from '@/lib/tenant/tenant-whatsapp'
-import { MessageCircle, ShoppingCart } from '@/lib/optimized-imports'
+import { BrandWhatsapp, ShoppingCart } from '@/lib/optimized-imports'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
 import { useAppSelector } from '@/redux/store'
 import { useAIChatSend } from '@/hooks/useAIChatSend'
@@ -105,7 +105,7 @@ export default function AIChatPopup() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#20BD5A]"
             >
-              <MessageCircle className="h-4 w-4" />
+              <BrandWhatsapp className="h-4 w-4" />
               Ir a WhatsApp
             </a>
           </div>

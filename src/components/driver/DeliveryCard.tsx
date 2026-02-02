@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   MapPin,
   Phone,
-  MessageCircle,
+  BrandWhatsapp,
   Package,
   Clock,
   CheckCircle,
@@ -216,7 +216,7 @@ export function DeliveryCard({
                 Llamar
               </Button>
               <Button size='sm' variant='outline' onClick={handleSendMessage} className='flex-1'>
-                <MessageCircle className='h-4 w-4 mr-1' />
+                <BrandWhatsapp className='h-4 w-4 mr-1' />
                 SMS
               </Button>
             </>

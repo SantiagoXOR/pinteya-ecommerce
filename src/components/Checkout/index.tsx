@@ -33,7 +33,7 @@ import {
   Shield,
   Phone,
   Mail,
-  MessageCircle,
+  BrandWhatsapp,
   Zap,
   Gift,
   Star,
@@ -412,7 +412,7 @@ const Checkout = () => {
                   className='flex items-center gap-2'
                   onClick={() => window.open(`https://wa.me/${getTenantWhatsAppNumber(tenant)}`, '_blank')}
                 >
-                  <MessageCircle className='w-4 h-4' />
+                  <BrandWhatsapp className='w-4 h-4' />
                   <span className='hidden md:inline'>Ayuda</span>
                 </Button>
               </div>

@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, ArrowLeft, ShoppingCart, Search, MessageCircle } from '@/lib/optimized-imports'
+import { Home, ArrowLeft, ShoppingCart, Search, BrandWhatsapp } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { useAppSelector } from '@/redux/store'
 import { useCartModalContext } from '@/app/context/CartSidebarModalContext'
@@ -143,7 +143,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         id: 'whatsapp',
         label: 'WhatsApp',
         href: '#',
-        icon: MessageCircle,
+        icon: BrandWhatsapp,
         active: false,
         onClick: handleWhatsAppClick,
       },
@@ -242,12 +242,37 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                           )}
                         </div>
                       </div>
+                    ) : item.id === 'whatsapp' ? (
+                      <div className='relative mb-1 flex items-center justify-center'>
+                        <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
+                          <div
+                            className='absolute inset-0 rounded-full transition-all duration-300 shadow-md'
+                            style={{ backgroundColor: '#25D366' }}
+                          />
+                          <div
+                            className={cn(
+                              'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
+                              'hover:scale-110 active:scale-95 transform-gpu will-change-transform'
+                            )}
+                          >
+                            <Icon
+                              className='w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 text-white'
+                              style={{ color: 'white' }}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     ) : (
                       <div className='relative'>
                         <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
                       </div>
                     )}
-                    <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium', isItemActive && 'text-blaze-orange-600')}>
+                    <span
+                      className={cn(
+                        'text-[10px] sm:text-xs mt-0.5 font-medium',
+                        item.id === 'whatsapp' ? 'text-green-600' : isItemActive && 'text-blaze-orange-600'
+                      )}
+                    >
                       {item.label}
                     </span>
                   </button>
@@ -391,16 +416,27 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                       </div>
                     )}
 
-                    {/* Icono para WhatsApp */}
+                    {/* Icono para WhatsApp: círculo verde + BrandWhatsapp */}
                     {item.id === 'whatsapp' && (
-                      <div className='mb-1 h-6 sm:h-7 flex items-center justify-center'>
-                        <Icon
-                          className={cn(
-                            'w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200',
-                            'text-green-600 hover:text-green-700'
-                          )}
-                          strokeWidth={1.5}
-                        />
+                      <div className='relative mb-1 h-6 sm:h-7 flex items-center justify-center'>
+                        <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
+                          <div
+                            className='absolute inset-0 rounded-full transition-all duration-300 shadow-md'
+                            style={{ backgroundColor: '#25D366' }}
+                          />
+                          <div
+                            className={cn(
+                              'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
+                              'hover:scale-110 active:scale-95 transform-gpu will-change-transform'
+                            )}
+                          >
+                            <Icon
+                              className='w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 text-white'
+                              style={{ color: 'white' }}
+                              strokeWidth={1.5}
+                            />
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -562,12 +598,37 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                 )}
                               </div>
                             </div>
+                          ) : item.id === 'whatsapp' ? (
+                            <div className='relative mb-1 flex items-center justify-center'>
+                              <div className='relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center'>
+                                <div
+                                  className='absolute inset-0 rounded-full transition-all duration-300 shadow-md'
+                                  style={{ backgroundColor: '#25D366' }}
+                                />
+                                <div
+                                  className={cn(
+                                    'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
+                                    'hover:scale-110 active:scale-95 transform-gpu will-change-transform'
+                                  )}
+                                >
+                                  <Icon
+                                    className='w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 text-white'
+                                    style={{ color: 'white' }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
                           ) : (
                             <div className='relative'>
                               <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
                             </div>
                           )}
-                          <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium', isItemActive && 'text-blaze-orange-600')}>
+                          <span
+                            className={cn(
+                              'text-[10px] sm:text-xs mt-0.5 font-medium',
+                              item.id === 'whatsapp' ? 'text-green-600' : isItemActive && 'text-blaze-orange-600'
+                            )}
+                          >
                             {item.label}
                           </span>
                         </button>
