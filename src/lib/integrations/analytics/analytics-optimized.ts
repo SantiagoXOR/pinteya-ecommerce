@@ -15,6 +15,12 @@ export interface OptimizedAnalyticsEvent {
   page: string
   userAgent?: string
   tenantId?: string // MULTITENANT: ID del tenant
+  /** E-commerce: para que el panel muestre nombre y categoría del producto */
+  productId?: number
+  productName?: string
+  categoryName?: string
+  price?: number
+  quantity?: number
 }
 
 export interface AnalyticsBatch {
@@ -197,6 +203,22 @@ class OptimizedAnalyticsManager {
       page: this.getOptimizedPage(),
       userAgent: this.getOptimizedUserAgent(),
       tenantId, // MULTITENANT: Incluir tenant_id
+    }
+
+    // E-commerce: incluir datos de producto para el panel (nombre, categoría, precio)
+    if (metadata && (event === 'add_to_cart' || event === 'remove_from_cart' || event === 'product_view' || event === 'purchase')) {
+      const rawId = metadata.product_id ?? metadata.item_id
+      if (rawId !== undefined) {
+        const num = typeof rawId === 'number' ? rawId : parseInt(String(rawId), 10)
+        if (!Number.isNaN(num)) optimizedEvent.productId = num
+      }
+      const name = metadata.product_name ?? metadata.productName ?? metadata.item_name
+      if (name != null) optimizedEvent.productName = this.truncateString(String(name), 200)
+      const cat = metadata.category ?? metadata.category_name
+      if (cat != null) optimizedEvent.categoryName = this.truncateString(String(cat), 100)
+      if (metadata.price != null) optimizedEvent.price = Number(metadata.price)
+      if (metadata.value != null && optimizedEvent.price == null) optimizedEvent.price = Number(metadata.value)
+      if (metadata.quantity != null) optimizedEvent.quantity = Math.min(32767, Math.max(0, Number(metadata.quantity)))
     }
 
     // MULTITENANT: Agregar a la cola del tenant correspondiente
@@ -443,7 +465,9 @@ export const trackCartActionOptimized = async (
   action: 'add' | 'remove',
   productId: string
 ): Promise<void> => {
-  await trackEventOptimized(`cart_${action}`, 'ecommerce', action, productId)
+  const eventName = action === 'add' ? 'add_to_cart' : 'remove_from_cart'
+  const actionName = action === 'add' ? 'add_to_cart' : 'remove_from_cart'
+  await trackEventOptimized(eventName, 'ecommerce', actionName, productId)
 }
 
 export const trackPurchaseOptimized = async (orderId: string, value: number): Promise<void> => {

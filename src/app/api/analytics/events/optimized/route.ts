@@ -21,6 +21,11 @@ interface OptimizedAnalyticsEvent {
   page: string
   userAgent?: string
   tenantId?: string // MULTITENANT: ID del tenant
+  productId?: number
+  productName?: string
+  categoryName?: string
+  price?: number
+  quantity?: number
 }
 
 interface AnalyticsBatch {
@@ -188,14 +193,16 @@ async function processTenantBatch(
       p_category: event.category,
       p_action: event.action,
       p_label: event.label || null,
-      p_value: event.value || null,
+      p_value: event.value ?? null,
       p_user_id: event.userId || null,
       p_session_id: event.sessionId,
       p_page: event.page,
       p_user_agent: event.userAgent || null,
-      // MULTITENANT: Incluir tenant_id si la función RPC lo soporta
-      // Nota: Esto requiere que la función RPC acepte p_tenant_id
-      // Si no está disponible, se puede agregar en metadata
+      p_product_id: event.productId ?? null,
+      p_product_name: event.productName ?? null,
+      p_category_name: event.categoryName ?? null,
+      p_price: event.price ?? null,
+      p_quantity: event.quantity ?? null,
       p_tenant_id: tenantId !== 'unknown' ? tenantId : null,
     })
   )

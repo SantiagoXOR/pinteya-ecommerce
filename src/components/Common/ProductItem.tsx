@@ -15,7 +15,7 @@ interface ProductItemProps {
 
 const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) => {
   const { addProduct } = useCartUnified()
-  const { trackEvent } = useAnalytics()
+  const { trackEcommerceEvent } = useAnalytics()
 
   // Usar product o item, con validación
   const productData = product || item
@@ -51,11 +51,13 @@ const ProductItem: React.FC<ProductItemProps> = React.memo(({ product, item }) =
       { quantity: 1, attributes: { color: (productData as any).color, medida: (productData as any).medida } }
     )
 
-    // Track analytics event
-    trackEvent('add_to_cart', {
+    // Track analytics con nombre y categoría para que aparezcan en el panel de productos
+    trackEcommerceEvent('add_to_cart', {
       product_id: productData.id,
-      product_name: productData.title,
+      product_name: (productData as any).name || productData.title,
       price: productData.price,
+      category: (productData as any).category ?? productData.categoryId ?? '',
+      quantity: 1,
     })
   }
 
