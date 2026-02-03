@@ -10,9 +10,14 @@ body:has([data-admin-layout]) [data-admin-layout] header {
   background-color: #ffffff !important;
 }
 
-/* Título de bienvenida del admin usa el color primario del tenant */
-.admin-welcome-title {
-  color: var(--tenant-primary) !important;
+/* Contenedor de bienvenida: fondo del tenant (morado Pintemas, etc.) y tipografía blanca */
+.admin-welcome-banner {
+  background-color: var(--tenant-header-bg) !important;
+  color: #ffffff !important;
+}
+.admin-welcome-banner .admin-welcome-title,
+.admin-welcome-banner .admin-welcome-subtitle {
+  color: #ffffff !important;
 }
 
 /* Prevenir scroll en el body cuando estamos en admin - Mayor especificidad */

@@ -180,46 +180,31 @@ export function AdminPageClient() {
     <AdminLayout title='Dashboard'>
       <AdminContentWrapper>
         <div className='space-y-6'>
-        {/* Welcome Section - fondo blanco con logo del tenant */}
-        <div className='bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6'>
-          <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0'>
-            <div>
-              <div className='flex items-center space-x-3 mb-2'>
-                {tenantLogo ? (
-                  <div className='relative w-24 h-10 sm:w-28 sm:h-12 flex-shrink-0'>
-                    <Image
-                      src={tenantLogo}
-                      alt='Logo'
-                      fill
-                      className='object-contain object-left'
-                      unoptimized
-                    />
-                  </div>
-                ) : (
-                  <BarChart3 className='w-6 h-6 sm:w-8 sm:h-8 text-gray-600' />
-                )}
-                <h1 className='admin-welcome-title text-2xl sm:text-3xl font-bold'>¡Bienvenido al Panel Administrativo!</h1>
-              </div>
-              <p className='text-gray-600 text-sm sm:text-base'>
-                Gestiona y monitorea tu tienda de e-commerce desde aquí
-              </p>
-            </div>
-            <div className='hidden md:block'>
+        {/* Welcome Section - fondo del tenant (morado Pintemas) y tipografía blanca; un solo logo */}
+        <div className='admin-welcome-banner rounded-xl shadow-lg border border-white/20 p-4 sm:p-6'>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6'>
+            <div className='flex items-center space-x-3 mb-0 flex-1'>
               {tenantLogo ? (
-                <div className='relative w-20 h-11 flex-shrink-0'>
+                <div className='relative w-24 h-10 sm:w-28 sm:h-12 flex-shrink-0'>
                   <Image
                     src={tenantLogo}
-                    alt=''
+                    alt='Logo'
                     fill
-                    className='object-contain'
+                    className='object-contain object-left'
                     unoptimized
                   />
                 </div>
               ) : (
-                <div className='w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center'>
-                  <BarChart3 className='w-8 h-8 text-gray-600' />
-                </div>
+                <BarChart3 className='w-6 h-6 sm:w-8 sm:h-8 text-white' />
               )}
+              <div>
+                <h1 className='admin-welcome-title text-2xl sm:text-3xl font-bold text-white'>
+                  ¡Bienvenido al Panel Administrativo!
+                </h1>
+                <p className='admin-welcome-subtitle text-sm sm:text-base text-white/90 mt-1'>
+                  Gestiona y monitorea tu tienda de e-commerce desde aquí
+                </p>
+              </div>
             </div>
           </div>
         </div>
