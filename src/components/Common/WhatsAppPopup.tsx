@@ -70,16 +70,42 @@ const WhatsAppPopup = () => {
 
   // Tracking de scroll
   useEffect(() => {
-    const handleScroll = () => {
+    let lastExecution = 0
+    const throttleMs = 120
+    let frameId: number | null = null
+
+    const updateScrollProgress = () => {
+      frameId = null
       const windowHeight = window.innerHeight
       const documentHeight = document.documentElement.scrollHeight
-      const scrollTop = window.scrollY
-      const scrollPercentage = (scrollTop / (documentHeight - windowHeight)) * 100
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0
+      const maxScrollableHeight = Math.max(documentHeight - windowHeight, 1)
+      const scrollPercentage = (scrollTop / maxScrollableHeight) * 100
       setScrollProgress(scrollPercentage)
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const handleScroll = () => {
+      const now = performance.now()
+      if (now - lastExecution < throttleMs) {
+        return
+      }
+      lastExecution = now
+
+      if (frameId !== null) {
+        return
+      }
+
+      frameId = requestAnimationFrame(updateScrollProgress)
+    }
+
+    updateScrollProgress()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId)
+      }
+    }
   }, [])
 
   // Timer mejorado con scroll tracking y persistencia de 3 días

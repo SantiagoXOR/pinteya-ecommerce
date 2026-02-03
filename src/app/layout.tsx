@@ -100,7 +100,12 @@ export { viewport } from './viewport'
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // ⚡ MULTITENANT: Cargar tenant para inyectar estilos en el head
   const tenant = await getTenantPublicConfig()
-  
+  const heroStorageUrl = getTenantAssetPath(tenant, 'hero/hero1.webp', '/images/hero/hero2/hero1.webp')
+  const heroPreloadUrl =
+    typeof heroStorageUrl === 'string'
+      ? `/_next/image?url=${encodeURIComponent(heroStorageUrl)}&w=1200&q=80`
+      : '/_next/image?url=%2Fimages%2Fhero%2Fhero2%2Fhero1.webp&w=1200&q=80'
+
   // ⚡ DEBUG: Log para verificar tenant cargado
   if (process.env.NODE_ENV === 'development') {
     console.log('[Layout] Tenant cargado:', {
@@ -120,9 +125,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link
           rel="preload"
           as="image"
-          href={getTenantAssetPath(tenant, 'hero/hero1.webp', '/images/hero/hero2/hero1.webp')}
+          href={heroPreloadUrl}
           fetchPriority="high"
         />
+        <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
         {/* ⚡ MULTITENANT: Inyectar variables CSS del tenant ANTES del CSS inline */}
         <TenantThemeStyles tenant={tenant} />
         {/* ⚡ MULTITENANT: Inyectar tenant_id para analytics (Fase 1 - Performance) */}
@@ -684,12 +691,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           .bg-gray-50:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) select,
           .bg-gray-100:not([data-testid*="product-card"]):not([data-testid*="commercial-product-card"]) input{color:#111827!important}
         `}} />
-        
-        {/* ⚡ FASE 7: Preconnect a Supabase - Crítico para imágenes de productos */}
-        {/* Ahorro estimado de LCP: 330 ms según Lighthouse */}
-        {/* Posicionado después del preload de imagen hero para no competir con LCP */}
-        <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://aakzspzfulgftqlgwkpb.supabase.co" />
         
         {/* ⚡ OPTIMIZACIÓN: next/font/google maneja preloads de fuentes automáticamente */}
         

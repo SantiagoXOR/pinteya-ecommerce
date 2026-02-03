@@ -341,26 +341,25 @@ class MetricsCalculator {
       .slice(0, 10)
       .map(([page, views]) => ({ page, views }))
 
-    // Productos más vistos
+    // Productos más vistos (agrupar por productId; usar product_name de metadata cuando exista)
     const productViewEvents = normalized.filter(e => e.action === 'view_item')
     const productViewCounts = productViewEvents.reduce(
       (acc, event) => {
-        const productId = event.label || 'unknown'
-        const productName = event.label || 'Unknown Product'
-        const key = `${productId}:${productName}`
-        acc[key] = (acc[key] || 0) + 1
+        const productId = event.metadata?.productId || event.label || 'unknown'
+        const productName = event.metadata?.productName || event.label || 'Unknown Product'
+        const key = productId
+        if (!acc[key]) acc[key] = { count: 0, productName }
+        acc[key].count += 1
+        if (productName && productName !== 'Unknown Product') acc[key].productName = productName
         return acc
       },
-      {} as Record<string, number>
+      {} as Record<string, { count: number; productName: string }>
     )
 
     const topProducts = Object.entries(productViewCounts)
-      .sort(([, a], [, b]) => b - a)
+      .sort(([, a], [, b]) => b.count - a.count)
       .slice(0, 10)
-      .map(([key, views]) => {
-        const [productId, productName] = key.split(':')
-        return { productId, productName, views }
-      })
+      .map(([productId, { count: views, productName }]) => ({ productId, productName, views }))
 
     return {
       uniqueSessions,

@@ -18,20 +18,38 @@ export const useStickyMenu = (threshold: number = 80): UseStickyMenuReturn => {
   const [isSticky, setIsSticky] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
-      // Obtener posición de scroll con fallback para compatibilidad
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0
+    const throttleMs = 120
+    let lastExecution = 0
+    let frameId: number | null = null
 
-      // Activar sticky si el scroll supera el threshold
+    const updateStickyState = () => {
+      frameId = null
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0
       setIsSticky(scrollY > threshold)
     }
 
-    // Agregar event listener para scroll
-    window.addEventListener('scroll', handleScroll)
+    const handleScroll = () => {
+      const now = performance.now()
+      if (now - lastExecution < throttleMs) {
+        return
+      }
+      lastExecution = now
 
-    // Cleanup: remover event listener al desmontar
+      if (frameId !== null) {
+        return
+      }
+
+      frameId = requestAnimationFrame(updateStickyState)
+    }
+
+    updateStickyState()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
     return () => {
       window.removeEventListener('scroll', handleScroll)
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId)
+      }
     }
   }, [threshold])
 

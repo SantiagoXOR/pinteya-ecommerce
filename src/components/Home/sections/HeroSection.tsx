@@ -94,7 +94,7 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
           quality={80}
           loading="eager"
-          decoding="sync"
+          decoding="async"
           aria-hidden={shouldLoadCarousel ? 'true' : 'false'}
         />
       </div>

@@ -72,6 +72,7 @@ const nextConfig = {
 
   // ⚡ PERFORMANCE: Configuración experimental optimizada
   experimental: {
+    legacyBrowsers: false,
     optimizePackageImports: [
       '@tabler/icons-react',
       '@radix-ui/react-alert-dialog',

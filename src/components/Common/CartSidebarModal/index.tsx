@@ -86,6 +86,37 @@ const CartSidebarModal = () => {
   const dragStartYRef = React.useRef<number | null>(null)
   const dragCurrentYRef = React.useRef<number | null>(null)
   const animationFrameRef = React.useRef<number | null>(null)
+  const [isContentAtTop, setIsContentAtTop] = React.useState(true)
+
+  React.useEffect(() => {
+    const contentArea = contentAreaRef.current
+    if (!contentArea) {
+      return
+    }
+
+    let frameId: number | null = null
+    const updatePosition = () => {
+      frameId = null
+      setIsContentAtTop(contentArea.scrollTop <= 5)
+    }
+
+    const handleScroll = () => {
+      if (frameId !== null) {
+        return
+      }
+      frameId = requestAnimationFrame(updatePosition)
+    }
+
+    handleScroll()
+    contentArea.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      contentArea.removeEventListener('scroll', handleScroll)
+      if (frameId !== null) {
+        cancelAnimationFrame(frameId)
+      }
+    }
+  }, [effectiveCartItems.length])
 
   // Función para actualizar transform usando RAF - sin causar re-renders
   const updateTransform = React.useCallback((deltaY: number) => {
@@ -107,13 +138,10 @@ const CartSidebarModal = () => {
   // Handlers para el drag to dismiss optimizado
   const handleDragStart = (clientY: number, target: HTMLElement) => {
     // Solo permitir drag si el contenido está en la parte superior o si se toca el header
-    const contentArea = contentAreaRef.current
     const isHeader = target.closest('[class*="flex-col flex-shrink-0"]') !== null
     
-    if (!isHeader && contentArea) {
-      // Si el contenido es scrolleable y no está en el top, no permitir drag
-      const isAtTop = contentArea.scrollTop <= 5
-      if (!isAtTop) return
+    if (!isHeader && !isContentAtTop) {
+      return
     }
 
     dragStartYRef.current = clientY

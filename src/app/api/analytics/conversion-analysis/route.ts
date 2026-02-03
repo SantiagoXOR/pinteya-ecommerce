@@ -8,6 +8,7 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getTenantConfig } from '@/lib/tenant'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,16 +29,19 @@ interface Strength {
 
 export async function GET(request: NextRequest) {
   try {
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     const { searchParams } = new URL(request.url)
     const startDate =
       searchParams.get('startDate') || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     const endDate = searchParams.get('endDate') || new Date().toISOString()
 
-    // Obtener eventos de analytics desde tabla optimizada
+    // Obtener eventos de analytics desde tabla optimizada (MULTITENANT: filtrar por tenant)
     const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000)
     const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000)
     
-    const { data: events, error: eventsError } = await supabase
+    let query = supabase
       .from('analytics_events_optimized')
       .select(`
         id,
@@ -53,6 +57,10 @@ export async function GET(request: NextRequest) {
       `)
       .gte('created_at', startTimestamp)
       .lte('created_at', endTimestamp)
+
+    query = query.eq('tenant_id', tenantId)
+
+    const { data: events, error: eventsError } = await query
 
     if (eventsError) {
       console.error('Error obteniendo eventos:', eventsError)

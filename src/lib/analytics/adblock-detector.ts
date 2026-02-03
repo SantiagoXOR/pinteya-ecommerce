@@ -12,6 +12,9 @@ interface AdBlockDetectionResult {
 class AdBlockDetector {
   private detectionCache: Map<string, AdBlockDetectionResult> = new Map()
   private cacheTTL = 5 * 60 * 1000 // 5 minutos
+  private detectionNode: HTMLDivElement | null = null
+  private adblockDetectionResult: boolean | null = null
+  private adblockDetectionScheduled = false
 
   /**
    * Detectar si un endpoint está siendo bloqueado
@@ -124,18 +127,38 @@ class AdBlockDetector {
     ]
 
     // Verificar si hay elementos ocultos que indican bloqueadores
-    const testDiv = document.createElement('div')
-    testDiv.innerHTML = '&nbsp;'
-    testDiv.className = 'adsbox'
-    testDiv.style.position = 'absolute'
-    testDiv.style.left = '-9999px'
-    document.body.appendChild(testDiv)
+    const recordResult = () => {
+      const node = this.ensureDetectionNode()
+      if (!node) {
+        this.adblockDetectionResult = false
+        return
+      }
 
-    const isBlocked = testDiv.offsetHeight === 0
+      const computed = window.getComputedStyle(node)
+      const isHidden =
+        computed.display === 'none' ||
+        computed.visibility === 'hidden' ||
+        node.clientHeight === 0 ||
+        node.offsetParent === null
 
-    document.body.removeChild(testDiv)
+      this.adblockDetectionResult = isHidden
+    }
 
-    return isBlocked
+    if (!this.adblockDetectionScheduled) {
+      this.adblockDetectionScheduled = true
+
+      if (typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(() => {
+          recordResult()
+          this.adblockDetectionScheduled = false
+        })
+      } else {
+        recordResult()
+        this.adblockDetectionScheduled = false
+      }
+    }
+
+    return this.adblockDetectionResult ?? false
   }
 
   /**
@@ -143,6 +166,29 @@ class AdBlockDetector {
    */
   clearCache(): void {
     this.detectionCache.clear()
+    this.adblockDetectionResult = null
+  }
+
+  private ensureDetectionNode(): HTMLDivElement | null {
+    if (typeof document === 'undefined') {
+      return null
+    }
+
+    if (this.detectionNode && document.body.contains(this.detectionNode)) {
+      return this.detectionNode
+    }
+
+    const testDiv = document.createElement('div')
+    testDiv.innerHTML = '&nbsp;'
+    testDiv.className = 'adsbox'
+    testDiv.style.position = 'absolute'
+    testDiv.style.left = '-9999px'
+    testDiv.setAttribute('data-adblock-test', 'true')
+
+    document.body.appendChild(testDiv)
+    this.detectionNode = testDiv
+
+    return testDiv
   }
 }
 

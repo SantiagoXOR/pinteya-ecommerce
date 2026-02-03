@@ -4,6 +4,8 @@ export const runtime = 'nodejs'
 /**
  * API Route para obtener interacciones de usuarios desde la base de datos
  * Usado para el heatmap y análisis de comportamiento
+ * NOTA: La tabla user_interactions no tiene tenant_id; los datos son globales.
+ * Para filtrar por tenant sería necesario añadir la columna y poblarla en el tracking.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
