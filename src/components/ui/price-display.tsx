@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
@@ -194,7 +195,7 @@ const PriceDisplay = React.forwardRef<HTMLDivElement, PriceDisplayProps>(
         {/* Envío Gratis */}
         {showFreeShipping && (
           <div className='flex items-center gap-1 text-sm max-w-full mt-1'>
-            <img src='/images/icons/icon-envio.svg' alt='Envío gratis' className='h-6 w-auto' />
+            <Image src='/images/icons/icon-envio.svg' alt='Envío gratis' width={24} height={24} className='h-6 w-auto' loading="lazy" />
           </div>
         )}
       </div>

@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import type { RelatedProduct } from '@/lib/api/related-products'
 import type { Product } from '@/types/product'
 import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
@@ -132,7 +133,17 @@ export function SuggestedProductsWithCard({
                 <div key={p.id} className={`${cardWrapperClass} rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm`}>
                   <div className="aspect-square bg-gray-100 relative overflow-hidden">
                     {p.image ? (
-                      <img src={p.image} alt={p.name} className="w-full h-full object-contain" loading="lazy" />
+                      <Image
+                        src={p.image}
+                        alt={p.name}
+                        fill
+                        className="object-contain"
+                        sizes="(max-width: 640px) 160px, 200px"
+                        loading="lazy"
+                        fetchPriority="low"
+                        quality={75}
+                        unoptimized={typeof p.image === 'string' && p.image.startsWith('http') && !p.image.includes('supabase.co')}
+                      />
                     ) : (
                       <div className="w-full h-full bg-gray-200" />
                     )}

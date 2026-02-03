@@ -107,7 +107,7 @@ export const ProductCardImage = React.memo(function ProductCardImage({
             loading="lazy" // MULTITENANT: Lazy loading para todas excepto LCP candidate
             decoding="async" // ⚡ OPTIMIZACIÓN: Decodificar imagen de forma asíncrona para no bloquear render
             quality={65} // ⚡ FASE 14: Optimizado para thumbnails (ahorro adicional de ~5-10% tamaño)
-            fetchPriority="auto" // MULTITENANT: Auto para imágenes de productos (no críticas)
+            fetchPriority="low" // Below-fold: no competir con LCP
             onError={handleImageError}
             onLoad={handleLoad}
             // ✅ FIX: Usar unoptimized para URLs que pueden causar problemas con Next.js Image

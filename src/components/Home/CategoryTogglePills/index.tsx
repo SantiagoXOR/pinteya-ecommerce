@@ -358,27 +358,26 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
     }
     
     scheduleAnimation(() => {
-      // ⚡ FASE 5: Agrupar lecturas de geometría en requestAnimationFrame
+      // ⚡ PERFORMANCE: Lecturas en un rAF, escrituras en el siguiente para evitar forced reflow
       requestAnimationFrame(() => {
         if (!carousel) return
-        // Agrupar todas las lecturas de geometría
         const scrollWidth = carousel.scrollWidth
         const clientWidth = carousel.clientWidth
         const hasOverflow = scrollWidth > clientWidth
         const hasEnoughCategories = categories.length > 4
-      
-        if (hasOverflow || hasEnoughCategories) {
-          // Pequeño scroll a la derecha
-          carousel.scrollTo({ left: 100, behavior: 'smooth' })
-          
-          // Volver a la posición inicial después de 800ms
-          setTimeout(() => {
-            carousel.scrollTo({ left: 0, behavior: 'smooth' })
+        const shouldScroll = hasOverflow || hasEnoughCategories
+        requestAnimationFrame(() => {
+          if (!carousel) return
+          if (shouldScroll) {
+            carousel.scrollTo({ left: 100, behavior: 'smooth' })
+            setTimeout(() => {
+              carousel?.scrollTo({ left: 0, behavior: 'smooth' })
+              setHasPlayedScrollHint(true)
+            }, 800)
+          } else {
             setHasPlayedScrollHint(true)
-          }, 800)
-        } else {
-          setHasPlayedScrollHint(true)
-        }
+          }
+        })
       })
     })
   }, [categories.length, hasPlayedScrollHint, variant]) // ⚡ FIX: Solo depende de length, no del array completo
@@ -386,19 +385,18 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   // ⚡ OPTIMIZACIÓN: Manejadores memoizados para drag scroll
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     const carousel = carouselRef.current
-    if (!carousel) {
-      return
-    }
-
-    setIsDragging(true)
-    // ⚡ OPTIMIZACIÓN: Agrupar lecturas de geometría antes de cambios de estilo
-    const offsetLeft = carousel.offsetLeft
-    const scrollLeft = carousel.scrollLeft
-    setStartX(e.pageX - offsetLeft)
-    setScrollLeft(scrollLeft)
-    // Cambiar estilo después de leer geometría
+    if (!carousel) return
+    // ⚡ PERFORMANCE: Lecturas de geometría en rAF, escrituras (setState + style) en el siguiente
     requestAnimationFrame(() => {
-      carousel.style.cursor = 'grabbing'
+      if (!carousel) return
+      const offsetLeft = carousel.offsetLeft
+      const scrollLeftVal = carousel.scrollLeft
+      requestAnimationFrame(() => {
+        setIsDragging(true)
+        setStartX(e.pageX - offsetLeft)
+        setScrollLeft(scrollLeftVal)
+        carousel.style.cursor = 'grabbing'
+      })
     })
   }, [])
 

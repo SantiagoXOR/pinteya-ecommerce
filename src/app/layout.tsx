@@ -116,6 +116,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang='es' className={plusJakartaSans.variable} suppressHydrationWarning>
       <head>
+        {/* ⚡ LCP: Preload de la imagen hero del tenant (misma URL que HeroSection) para mejorar LCP */}
+        <link
+          rel="preload"
+          as="image"
+          href={getTenantAssetPath(tenant, 'hero/hero1.webp', '/images/hero/hero2/hero1.webp')}
+          fetchPriority="high"
+        />
         {/* ⚡ MULTITENANT: Inyectar variables CSS del tenant ANTES del CSS inline */}
         <TenantThemeStyles tenant={tenant} />
         {/* ⚡ MULTITENANT: Inyectar tenant_id para analytics (Fase 1 - Performance) */}

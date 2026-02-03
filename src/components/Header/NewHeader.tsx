@@ -111,7 +111,9 @@ const NewHeader = () => {
                   width={200}
                   height={40}
                   className='h-10 w-auto'
-                  priority
+                  priority={false}
+                  loading="eager"
+                  fetchPriority="low"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
                     if (target.src !== tenantAssets.logoLocal) {

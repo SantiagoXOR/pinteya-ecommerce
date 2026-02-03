@@ -2,6 +2,39 @@
 
 import { useState, useEffect, useCallback, useRef, type RefObject } from 'react'
 
+const THROTTLE_MS = 120
+
+// Throttle para reducir reflows en scroll/resize
+function useThrottledCallback<T extends (...args: unknown[]) => void>(
+  callback: T,
+  delayMs: number
+): T {
+  const lastRun = useRef(0)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const callbackRef = useRef(callback)
+  callbackRef.current = callback
+
+  return useCallback(
+    ((...args: unknown[]) => {
+      const now = Date.now()
+      const elapsed = now - lastRun.current
+      const run = () => {
+        lastRun.current = Date.now()
+        callbackRef.current(...args)
+      }
+      if (elapsed >= delayMs) {
+        run()
+      } else if (timeoutRef.current === null) {
+        timeoutRef.current = setTimeout(() => {
+          timeoutRef.current = null
+          run()
+        }, delayMs - elapsed)
+      }
+    }) as T,
+    [delayMs]
+  )
+}
+
 // ===================================
 // HOOK: useDropdownPosition
 // ===================================
@@ -27,14 +60,13 @@ export function useDropdownPosition({
   const [position, setPosition] = useState<{ top: number; left: number; width: number } | null>(null)
   const rafIdRef = useRef<number | null>(null)
 
-  // Función para calcular y actualizar la posición del dropdown
+  // Función para calcular y actualizar la posición del dropdown (solo getBoundingClientRect en rAF)
   const updatePosition = useCallback(() => {
     if (!inputRef.current) {
       setPosition(null)
       return
     }
 
-    // Usar requestAnimationFrame para evitar forced reflow y sincronizar con el render
     if (rafIdRef.current !== null) {
       cancelAnimationFrame(rafIdRef.current)
     }
@@ -46,22 +78,18 @@ export function useDropdownPosition({
       }
 
       const rect = inputRef.current.getBoundingClientRect()
-      
-      // Validar que el rect tenga dimensiones válidas y esté visible
+
       if (
-        rect.width <= 0 || 
-        rect.height <= 0 || 
-        rect.top < -1000 || 
+        rect.width <= 0 ||
+        rect.height <= 0 ||
+        rect.top < -1000 ||
         rect.left < -1000 ||
-        rect.width > window.innerWidth * 2 // Sanity check: width no puede ser más del doble del viewport
+        rect.width > window.innerWidth * 2
       ) {
         setPosition(null)
         return
       }
-      
-      // ⚡ FIX: Para position: fixed, NO sumar window.scrollY
-      // getBoundingClientRect() ya devuelve coordenadas relativas al viewport
-      // y position: fixed también es relativo al viewport
+
       setPosition({
         top: rect.bottom + offset,
         left: rect.left,
@@ -70,48 +98,33 @@ export function useDropdownPosition({
     })
   }, [inputRef, offset])
 
-  // Actualizar posición cuando se abre el dropdown o cambia el tamaño de la ventana
+  const throttledUpdate = useThrottledCallback(updatePosition, THROTTLE_MS)
+
   useEffect(() => {
     if (!isOpen) {
       setPosition(null)
       return
     }
 
-    // Verificar que el input esté visible antes de calcular posición
-    if (!inputRef.current || inputRef.current.offsetParent === null) {
+    if (!inputRef.current) {
       setPosition(null)
       return
     }
 
-    // Esperar un frame para asegurar que el input esté completamente renderizado
     const timeoutId = setTimeout(() => {
-      // Verificar nuevamente que el input siga visible
-      if (inputRef.current && inputRef.current.offsetParent !== null) {
-        updatePosition()
-      }
+      if (inputRef.current) updatePosition()
     }, 0)
 
-    // Handlers para scroll y resize
     const handleScroll = () => {
-      // Verificar que el input siga visible antes de actualizar
-      if (inputRef.current && inputRef.current.offsetParent !== null) {
-        updatePosition()
-      } else {
-        setPosition(null)
-      }
+      if (inputRef.current) throttledUpdate()
+      else setPosition(null)
     }
 
     const handleResize = () => {
-      // Verificar que el input siga visible antes de actualizar
-      if (inputRef.current && inputRef.current.offsetParent !== null) {
-        updatePosition()
-      } else {
-        setPosition(null)
-      }
+      if (inputRef.current) throttledUpdate()
+      else setPosition(null)
     }
 
-    // ⚡ OPTIMIZACIÓN: Usar passive: true para mejor performance
-    // No necesitamos preventDefault, así que podemos usar passive
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', handleResize, { passive: true })
 
@@ -119,14 +132,12 @@ export function useDropdownPosition({
       clearTimeout(timeoutId)
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleResize)
-      
-      // Limpiar requestAnimationFrame pendiente
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current)
         rafIdRef.current = null
       }
     }
-  }, [isOpen, updatePosition])
+  }, [isOpen, updatePosition, throttledUpdate])
 
   return {
     position,

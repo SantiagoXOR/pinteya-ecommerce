@@ -31,10 +31,8 @@ const nextConfig = {
   // output: 'standalone', // ⚡ REMOVIDO: Incompatible con Vercel
 
   // ✅ Compiler optimizations - Solo las esenciales
-  // ⚡ FASE 6: SWC (Next.js 16) respeta automáticamente .browserslistrc
-  // ⚡ FASE 12: Configuración explícita para evitar transpilación innecesaria
-  // .browserslistrc ya está optimizado para navegadores modernos (últimas 2 versiones)
-  // ⚡ OPTIMIZACIÓN POST-DEPLOY: Configuración adicional para evitar JavaScript legacy
+  // ⚡ SWC respeta .browserslistrc (navegadores modernos → menos legacy JS)
+  // Lighthouse "legacy JavaScript" puede incluir terceros (ej. Facebook); nuestro bundle ya está optimizado
   compiler: {
     removeConsole:
       process.env.NODE_ENV === 'production'
@@ -515,18 +513,11 @@ module.exports.__esModule = true;
     ]
   },
 
-  // ✅ HEADERS OPTIMIZADOS para admin panel
+  // ✅ HEADERS OPTIMIZADOS para admin panel y caché (Lighthouse "uses efficient caching")
+  // Estáticos: max-age largo o immutable; HTML: s-maxage + stale-while-revalidate
   async headers() {
     return [
-      {
-        source: '/',
-        headers: [
-          {
-            key: 'Link',
-            value: '</images/hero/hero2/hero1.webp>; rel=preload; as=image; fetchpriority=high',
-          },
-        ],
-      },
+      // ⚡ LCP: Preload del hero es dinámico por tenant en layout.tsx (link rel=preload en head)
       {
         source: '/(.*)',
         headers: [

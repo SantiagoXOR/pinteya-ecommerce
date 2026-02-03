@@ -68,15 +68,15 @@ const PromoBanners = ({ bannerId }: PromoBannersProps = {}) => {
                   />
                   
                   {/* Background Image optimizada */}
-                  {/* Solo bannerId 1 tiene priority (above-fold), los demás usan lazy loading */}
+                  {/* ⚡ LCP: Sin priority para no competir con la imagen hero (única con fetchPriority high) */}
                   <Image
                     src={banner.bgImage}
                     alt={banner.title}
                     fill
                     className='object-cover object-center z-10'
                     sizes='(max-width: 768px) 100vw, 1200px'
-                    priority={banner.id === 1}
-                    loading={banner.id === 1 ? undefined : 'lazy'}
+                    priority={false}
+                    loading="lazy"
                     quality={65} // ⚡ OPTIMIZACIÓN: Reducido de 75 a 65 para ahorrar 20.9 KiB (Lighthouse)
                     style={{ objectFit: 'cover' }} // ⚡ CLS FIX: objectFit explícito
                     onLoad={() => {

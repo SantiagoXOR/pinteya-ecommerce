@@ -5,6 +5,8 @@
 
 import React from 'react'
 
+const THROTTLE_MS = 100
+
 export interface UseHorizontalScrollResult {
   scrollContainerRef: React.RefObject<HTMLDivElement>
   canScrollLeft: boolean
@@ -20,8 +22,8 @@ export interface UseHorizontalScrollOptions {
 }
 
 /**
- * Hook para manejar scroll horizontal con indicadores de gradiente
- * Optimizado usando requestAnimationFrame para agrupar lecturas de geometría
+ * Hook para manejar scroll horizontal con indicadores de gradiente.
+ * Lecturas de geometría en un rAF, setState en el siguiente; throttle en scroll/resize para evitar forced reflow.
  */
 export function useHorizontalScroll(
   options: UseHorizontalScrollOptions = {}
@@ -31,21 +33,19 @@ export function useHorizontalScroll(
   const scrollContainerRef = React.useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
   const [canScrollRight, setCanScrollRight] = React.useState(false)
+  const lastRunRef = React.useRef(0)
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   React.useEffect(() => {
     const container = scrollContainerRef.current
     if (!container) return
 
-    // Optimizado - agrupar lecturas de geometría en requestAnimationFrame
     const checkScroll = () => {
       requestAnimationFrame(() => {
         if (!container) return
-        // Agrupar todas las lecturas de geometría
         const scrollLeft = container.scrollLeft
         const scrollWidth = container.scrollWidth
         const clientWidth = container.clientWidth
-
-        // Actualizar estado en el siguiente frame
         requestAnimationFrame(() => {
           setCanScrollLeft(scrollLeft > 0)
           setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1)
@@ -53,13 +53,31 @@ export function useHorizontalScroll(
       })
     }
 
+    const throttledCheckScroll = () => {
+      const now = Date.now()
+      if (now - lastRunRef.current >= THROTTLE_MS) {
+        lastRunRef.current = now
+        checkScroll()
+      } else if (timeoutRef.current === null) {
+        timeoutRef.current = setTimeout(() => {
+          timeoutRef.current = null
+          lastRunRef.current = Date.now()
+          checkScroll()
+        }, THROTTLE_MS - (now - lastRunRef.current))
+      }
+    }
+
     checkScroll()
-    container.addEventListener('scroll', checkScroll, { passive: true })
-    window.addEventListener('resize', checkScroll, { passive: true })
+    container.addEventListener('scroll', throttledCheckScroll, { passive: true })
+    window.addEventListener('resize', throttledCheckScroll, { passive: true })
 
     return () => {
-      container.removeEventListener('scroll', checkScroll)
-      window.removeEventListener('resize', checkScroll)
+      container.removeEventListener('scroll', throttledCheckScroll)
+      window.removeEventListener('resize', throttledCheckScroll)
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
     }
   }, deps)
 

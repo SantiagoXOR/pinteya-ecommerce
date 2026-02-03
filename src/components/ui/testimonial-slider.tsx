@@ -53,10 +53,12 @@ const TestimonialSlider = ({
 
     if (!container || !pill) return
 
-    // ⚡ OPTIMIZACIÓN: Usar requestAnimationFrame para agrupar lecturas de geometría y evitar reprocesamiento forzado
+    // ⚡ PERFORMANCE: Lecturas en un rAF, escritura (scrollTo) en el siguiente para evitar forced reflow
     requestAnimationFrame(() => {
       const offset = pill.offsetLeft - container.clientWidth / 2 + pill.clientWidth / 2
-      container.scrollTo({ left: offset, behavior: 'smooth' })
+      requestAnimationFrame(() => {
+        container.scrollTo({ left: offset, behavior: 'smooth' })
+      })
     })
   }, [active])
 
