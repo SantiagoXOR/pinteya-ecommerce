@@ -198,7 +198,7 @@ export function AdminPageClient() {
                 ) : (
                   <BarChart3 className='w-6 h-6 sm:w-8 sm:h-8 text-gray-600' />
                 )}
-                <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>¡Bienvenido al Panel Administrativo!</h1>
+                <h1 className='admin-welcome-title text-2xl sm:text-3xl font-bold'>¡Bienvenido al Panel Administrativo!</h1>
               </div>
               <p className='text-gray-600 text-sm sm:text-base'>
                 Gestiona y monitorea tu tienda de e-commerce desde aquí

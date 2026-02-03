@@ -4,6 +4,17 @@
  * CRÍTICO: Estos estilos deben sobrescribir los estilos inline del layout.tsx
  */
 
+/* Header del admin en blanco (sobrescribe --tenant-header-bg del tenant) */
+[data-admin-layout] header,
+body:has([data-admin-layout]) [data-admin-layout] header {
+  background-color: #ffffff !important;
+}
+
+/* Título de bienvenida del admin usa el color primario del tenant */
+.admin-welcome-title {
+  color: var(--tenant-primary) !important;
+}
+
 /* Prevenir scroll en el body cuando estamos en admin - Mayor especificidad */
 html:has(body [data-admin-layout]),
 body:has([data-admin-layout]) {
