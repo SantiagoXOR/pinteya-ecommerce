@@ -101,7 +101,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // ⚡ MULTITENANT: Cargar tenant para inyectar estilos en el head
   const tenant = await getTenantPublicConfig()
   const heroStorageUrl = getTenantAssetPath(tenant, 'hero/hero1.webp', '/images/hero/hero2/hero1.webp')
-  const heroPreloadUrl =
+  const heroPreloadUrlMobile =
+    typeof heroStorageUrl === 'string'
+      ? `/_next/image?url=${encodeURIComponent(heroStorageUrl)}&w=640&q=80`
+      : '/_next/image?url=%2Fimages%2Fhero%2Fhero2%2Fhero1.webp&w=640&q=80'
+  const heroPreloadUrlDesktop =
     typeof heroStorageUrl === 'string'
       ? `/_next/image?url=${encodeURIComponent(heroStorageUrl)}&w=1200&q=80`
       : '/_next/image?url=%2Fimages%2Fhero%2Fhero2%2Fhero1.webp&w=1200&q=80'
@@ -121,11 +125,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang='es' className={plusJakartaSans.variable} suppressHydrationWarning>
       <head>
-        {/* ⚡ LCP: Preload de la imagen hero del tenant (misma URL que HeroSection) para mejorar LCP */}
+        {/* ⚡ LCP: Preload hero alineado con srcset de HeroSection (sizes: mobile 100vw, desktop 1200px) */}
         <link
           rel="preload"
           as="image"
-          href={heroPreloadUrl}
+          href={heroPreloadUrlMobile}
+          media="(max-width: 768px)"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href={heroPreloadUrlDesktop}
+          media="(min-width: 769px)"
           fetchPriority="high"
         />
         <link rel="preconnect" href="https://aakzspzfulgftqlgwkpb.supabase.co" crossOrigin="anonymous" />
@@ -512,9 +524,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     if (link.media === 'print') link.media = orig;
                   });
                 };
-                if (link.sheet && link.sheet.cssRules && link.sheet.cssRules.length) {
-                  requestAnimationFrame(function() { link.media = orig; });
-                }
+                /* Evitar lectura de cssRules: fuerza reflow síncrono; onload/onerror ya restauran media */
               }
               function processAll() {
                 if (!document.head) return;

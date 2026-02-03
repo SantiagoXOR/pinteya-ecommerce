@@ -71,8 +71,8 @@ const nextConfig = {
   },
 
   // ⚡ PERFORMANCE: Configuración experimental optimizada
+  // Nota: legacyBrowsers removido - Next.js 16 no lo aplica; SWC usa .browserslistrc
   experimental: {
-    legacyBrowsers: false,
     optimizePackageImports: [
       '@tabler/icons-react',
       '@radix-ui/react-alert-dialog',

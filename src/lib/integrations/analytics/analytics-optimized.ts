@@ -220,6 +220,11 @@ class OptimizedAnalyticsManager {
       if (metadata.value != null && optimizedEvent.price == null) optimizedEvent.price = Number(metadata.value)
       if (metadata.quantity != null) optimizedEvent.quantity = Math.min(32767, Math.max(0, Number(metadata.quantity)))
     }
+    // view_category: incluir category_name para el panel de Categorías
+    if (metadata && event === 'view_category') {
+      const catName = metadata.category_name ?? metadata.category_slug ?? label
+      if (catName != null) optimizedEvent.categoryName = this.truncateString(String(catName), 100)
+    }
 
     // MULTITENANT: Agregar a la cola del tenant correspondiente
     const queue = this.getTenantQueue(tenantId)

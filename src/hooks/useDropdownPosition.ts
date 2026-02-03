@@ -125,11 +125,21 @@ export function useDropdownPosition({
       else setPosition(null)
     }
 
+    let resizeObserver: ResizeObserver | null = null
+    if (inputRef.current && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        if (inputRef.current) throttledUpdate()
+        else setPosition(null)
+      })
+      resizeObserver.observe(inputRef.current)
+    }
+
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', handleResize, { passive: true })
 
     return () => {
       clearTimeout(timeoutId)
+      resizeObserver?.disconnect()
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', handleResize)
       if (rafIdRef.current !== null) {

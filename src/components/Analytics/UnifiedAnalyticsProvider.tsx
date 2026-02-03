@@ -130,6 +130,12 @@ export const UnifiedAnalyticsProvider: React.FC<UnifiedAnalyticsProviderProps> =
     }
   }, [pathname, isEnabled, enableCustomAnalytics])
 
+  // Flush batch de analytics al cambiar de ruta (SPA no dispara beforeunload)
+  useEffect(() => {
+    if (!pathname || typeof window === 'undefined' || !enableCustomAnalytics) return
+    optimizedAnalytics.flushAllEvents().catch(() => {})
+  }, [pathname, enableCustomAnalytics])
+
   // Función helper para crear evento base
   const createBaseEvent = useCallback(
     (
