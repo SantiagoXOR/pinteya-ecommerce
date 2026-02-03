@@ -15,7 +15,15 @@ Tras aplicar la migración `20260202100000_add_tenant_id_to_analytics_rpc.sql`, 
 SELECT pg_get_function_arguments(oid) AS args
 FROM pg_proc
 WHERE proname = 'insert_analytics_event_optimized';
+
+-- Eventos recientes por tenant (últimos 7 días): identificar NULL vs Pintemas
+SELECT tenant_id, COUNT(*) AS total
+FROM analytics_events_optimized
+WHERE created_at >= EXTRACT(EPOCH FROM NOW() - INTERVAL '7 days')::INTEGER
+GROUP BY tenant_id;
 ```
+
+Si hay muchos eventos con `tenant_id` NULL y pocos/ninguno con el UUID de Pintemas, el fallo está en la **escritura** (track/optimized). Si hay eventos con tenant Pintemas pero el dashboard sigue en cero, el fallo está en la **lectura** (API métricas o detección de tenant).
 
 ---
 

@@ -100,9 +100,11 @@ export default async function middleware(req: NextRequest) {
   const startTime = Date.now()
   
   // ============================================================================
-  // DETECCIÓN DE TENANT
+  // DETECCIÓN DE TENANT (x-forwarded-host para proxy/Vercel con dominio custom)
   // ============================================================================
-  const hostname = req.headers.get('host') || 'localhost'
+  const rawHost =
+    req.headers.get('x-forwarded-host') || req.headers.get('host') || 'localhost'
+  const hostname = rawHost.includes(',') ? rawHost.split(',')[0].trim() : rawHost
   const tenantInfo = getTenantInfoFromHost(hostname)
 
   // BYPASS AUTH - Solo para desarrollo/testing
@@ -296,14 +298,15 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // Headers optimizados de respuesta
-  const response = NextResponse.next()
+  // Headers optimizados: propagar host/tenant al request para que API routes reciban el host correcto
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set('x-tenant-domain', hostname)
+  const response = NextResponse.next({ request: { headers: requestHeaders } })
   const responseTime = Date.now() - startTime
 
   // ============================================================================
-  // HEADERS DE TENANT
+  // HEADERS DE TENANT (respuesta)
   // ============================================================================
-  // Propagar información del tenant para uso en Server Components
   response.headers.set('x-tenant-domain', hostname)
   if (tenantInfo.subdomain) {
     response.headers.set('x-tenant-subdomain', tenantInfo.subdomain)

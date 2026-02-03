@@ -46,7 +46,13 @@ const AnalyticsPage: React.FC = () => {
   const [interactions, setInteractions] = useState<UserInteraction[]>([])
   const [loadingAnalysis, setLoadingAnalysis] = useState(false)
   const [loadingInteractions, setLoadingInteractions] = useState(false)
-  
+  const [tenantName, setTenantName] = useState<string | null>(null)
+
+  useEffect(() => {
+    const config = typeof window !== 'undefined' ? (window as any).__TENANT_CONFIG__ : null
+    if (config?.name) setTenantName(config.name)
+  }, [])
+
   // ✅ BYPASS: Verificar inmediatamente si NEXT_PUBLIC_BYPASS_AUTH está activo (disponible en cliente)
   const bypassAuthEnv = process.env.NEXT_PUBLIC_BYPASS_AUTH === 'true'
   const [bypassAuth, setBypassAuth] = useState<boolean | null>(bypassAuthEnv ? true : null)
@@ -362,6 +368,11 @@ const AnalyticsPage: React.FC = () => {
   return (
     <AdminLayout title='Analytics Dashboard' breadcrumbs={breadcrumbs} actions={actions}>
       <AdminContentWrapper>
+        {tenantName && (
+          <p className='text-sm text-gray-500 mb-2' aria-label='Tenant actual'>
+            Datos de {tenantName}
+          </p>
+        )}
         <div className='space-y-6'>
           {/* Tabs */}
           <Tabs

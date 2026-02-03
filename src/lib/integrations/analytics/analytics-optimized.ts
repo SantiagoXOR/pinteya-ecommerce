@@ -139,6 +139,24 @@ class OptimizedAnalyticsManager {
   }
 
   /**
+   * MULTITENANT: Reintento corto para obtener tenant_id (evita 'unknown' por timing de hidratación)
+   */
+  private async getTenantIdWithRetry(): Promise<string | null> {
+    let tenantId = this.getTenantId()
+    if (tenantId) return tenantId
+    // Reintentar tras un frame para dar tiempo a __TENANT_CONFIG__ / data-tenant-id
+    await new Promise<void>(resolve => {
+      if (typeof requestAnimationFrame !== 'undefined') {
+        requestAnimationFrame(() => resolve())
+      } else {
+        setTimeout(resolve, 0)
+      }
+    })
+    this.initializeTenantId()
+    return this.getTenantId()
+  }
+
+  /**
    * MULTITENANT: Trackear evento optimizado con soporte multitenant
    */
   public async trackEvent(
@@ -153,8 +171,8 @@ class OptimizedAnalyticsManager {
       return
     }
 
-    // MULTITENANT: Obtener tenant_id
-    const tenantId = this.getTenantId() || 'unknown'
+    // MULTITENANT: Obtener tenant_id (con reintento si aún no está disponible por hidratación)
+    const tenantId = (await this.getTenantIdWithRetry()) || 'unknown'
 
     // MULTITENANT: Debouncing por tipo de evento y tenant
     const debounceKey = `${tenantId}:${event}:${category}:${action}`

@@ -308,11 +308,15 @@ export const getTenantConfig = cache(async (): Promise<TenantConfig> => {
     const config = await getTenantBySlug(process.env.NEXT_PUBLIC_DEV_TENANT_SLUG)
     if (config) return config
   }
-  // Obtener hostname del request
-  const hostname = headersList.get('x-tenant-domain') 
-    || headersList.get('host') 
-    || 'localhost'
-  
+  // Obtener hostname del request (prioridad: header explícito, host, x-forwarded-host para proxy/Vercel)
+  const rawHost =
+    headersList.get('x-tenant-domain') ||
+    headersList.get('host') ||
+    headersList.get('x-forwarded-host') ||
+    'localhost'
+  // x-forwarded-host puede ser "host1, host2" (lista); usar el primero (host original del cliente)
+  const hostname = rawHost.includes(',') ? rawHost.split(',')[0].trim() : rawHost
+
   // Detectar tenant
   const { subdomain, customDomain } = detectTenantFromHost(hostname)
   

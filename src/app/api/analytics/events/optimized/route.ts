@@ -62,7 +62,9 @@ export async function POST(request: NextRequest) {
       tenantId: event.tenantId || tenantId || 'unknown',
     }))
 
-    const supabase = getSupabaseClient()
+    // Usar cliente admin (service_role) para que el RPC pueda insertar con cualquier tenant_id;
+    // con anon, RLS exige get_current_tenant_id() y los inserts en background fallan silenciosamente.
+    const supabase = getSupabaseClient(true)
     if (!supabase) {
       return NextResponse.json(
         { error: 'Servicio de base de datos no disponible' },
@@ -83,7 +85,10 @@ export async function POST(request: NextRequest) {
           await metricsCache.invalidatePattern('analytics:*')
         }
       } catch (error) {
-        console.error('Error procesando batch de analytics (async):', error)
+        console.error('[Analytics Batch] Error en background:', error instanceof Error ? error.message : error)
+        if (error instanceof Error && error.stack) {
+          console.error('[Analytics Batch] Stack:', error.stack)
+        }
       }
     })
 
@@ -201,8 +206,11 @@ async function processTenantBatch(
   const successful = results.filter(r => r.status === 'fulfilled').length
   const failed = results.filter(r => r.status === 'rejected').length
 
-  if (failed > 0 && process.env.NODE_ENV === 'development') {
-    console.warn(`[Analytics Batch] Tenant ${tenantId}: ${successful} successful, ${failed} failed`)
+  if (failed > 0) {
+    const reasons = results
+      .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+      .map(r => r.reason?.message ?? String(r.reason))
+    console.warn(`[Analytics Batch] Tenant ${tenantId}: ${successful} ok, ${failed} failed`, reasons.slice(0, 3))
   }
 
   return { tenantId, successful, failed, total: events.length }
