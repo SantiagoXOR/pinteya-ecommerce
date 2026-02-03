@@ -45,8 +45,9 @@
 
 ---
 
-## Métricas de referencia (antes)
+## Métricas de referencia
 
+### Antes (captura usuario)
 - Performance: 54
 - FCP: 3.0 s
 - TBT: 370 ms
@@ -54,4 +55,26 @@
 - LCP: 9.0 s
 - CLS: 0
 
-Las métricas en **localhost** (p. ej. `lighthouse-report-local.json`) no son comparables directamente con producción por diferencias de red y CDN.
+### Producción post-despliegue (3 feb 2026, lighthouse-report.json)
+- Performance: **42**
+- FCP: **3,31 s**
+- LCP: **12,77 s**
+- TBT: **816 ms**
+- Speed Index: **7,35 s**
+- CLS: **~0,004**
+
+*Lighthouse tiene variación entre ejecuciones (red, carga del servidor). Ejecutar varias veces y promediar para comparar tendencias.*
+
+---
+
+## Test Header.logo (actualización manual)
+
+El archivo `src/components/Header/__tests__/Header.logo.test.tsx` está en .cursorignore. Para que pase tras el cambio de `priority: true` a `priority: false` en los logos:
+
+1. En **src/utils/imageOptimization.ts** ya están `pinteyaMobileLogoProps` y `pinteyaDesktopLogoProps` con `priority: false`.
+2. Edita **src/components/Header/__tests__/Header.logo.test.tsx** y:
+   - En los dos `toEqual(…)` de logo mobile y desktop: usa `priority: false` y los valores actuales (mobile: src `/images/logo/LOGO POSITIVO.svg`, className `rounded-xl object-contain`, sin blur/style; desktop: width 200, height 56).
+   - Cambia el test "ambos logos deben tener priority true…" por "ambos logos deben tener priority false (LCP reservado para hero)" y `expect(…priority).toBe(false)`.
+   - Ajusta "debe usar archivos apropiados" y "debe referenciar archivos que existen" para esperar `LOGO POSITIVO.svg` en ambos.
+   - "debe usar dimensiones apropiadas": desktop 200x56.
+   - "debe usar WebP por defecto" → "debe usar SVG para logo" y `expect.stringContaining('.svg')`.

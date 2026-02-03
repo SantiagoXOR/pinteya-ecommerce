@@ -76,12 +76,13 @@ export const getOptimizedImageProps = (
  * Usa el logo POSITIVO.svg (versión principal) para consistencia con desktop
  * Sin sombras para un diseño más limpio
  */
+/** LCP: priority false para no competir con la imagen hero (única con fetchPriority high). */
 export const pinteyaMobileLogoProps = {
   src: '/images/logo/LOGO POSITIVO.svg',
   alt: 'Pinteya - Tu Pinturería Online',
   width: 64,
   height: 64,
-  priority: true,
+  priority: false,
   className: 'rounded-xl object-contain',
   quality: 90,
 }
@@ -90,12 +91,13 @@ export const pinteyaMobileLogoProps = {
  * Configuración específica para el logo desktop de Pinteya
  * Usa el logo POSITIVO.svg (versión principal) para el header
  */
+/** LCP: priority false para no competir con la imagen hero. */
 export const pinteyaDesktopLogoProps = {
   src: '/images/logo/LOGO POSITIVO.svg',
   alt: 'Pinteya - Tu Pinturería Online',
   width: 200,
   height: 56,
-  priority: true,
+  priority: false,
   className: 'object-contain',
 }
 

@@ -12,18 +12,13 @@ describe('Header Logo Configuration', () => {
   describe('Logo Props Configuration', () => {
     it('debe tener configuración correcta para logo mobile', () => {
       expect(pinteyaMobileLogoProps).toEqual({
-        src: '/images/logo/optimized/LogoPinteYa-mobile.webp',
+        src: '/images/logo/LOGO POSITIVO.svg',
         alt: 'Pinteya - Tu Pinturería Online',
         width: 64,
         height: 64,
-        priority: true,
-        className: 'rounded-xl shadow-lg object-contain',
-        style: {
-          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
-        },
+        priority: false,
+        className: 'rounded-xl object-contain',
         quality: 90,
-        placeholder: 'blur',
-        blurDataURL: expect.any(String),
       })
     })
 
@@ -31,19 +26,15 @@ describe('Header Logo Configuration', () => {
       expect(pinteyaDesktopLogoProps).toEqual({
         src: '/images/logo/LOGO POSITIVO.svg',
         alt: 'Pinteya - Tu Pinturería Online',
-        width: 160,
-        height: 32,
-        priority: true,
+        width: 200,
+        height: 56,
+        priority: false,
         className: 'object-contain',
       })
     })
 
     it('debe usar archivos apropiados para cada versión', () => {
-      // Mobile usa LogoPinteYa optimizado
-      expect(pinteyaMobileLogoProps.src).toContain('LogoPinteYa-mobile')
-      expect(pinteyaMobileLogoProps.src).toContain('/optimized/')
-
-      // Desktop usa LOGO POSITIVO.svg original
+      expect(pinteyaMobileLogoProps.src).toBe('/images/logo/LOGO POSITIVO.svg')
       expect(pinteyaDesktopLogoProps.src).toBe('/images/logo/LOGO POSITIVO.svg')
     })
 
@@ -57,24 +48,18 @@ describe('Header Logo Configuration', () => {
       expect(pinteyaMobileLogoProps.width).toBe(64)
       expect(pinteyaMobileLogoProps.height).toBe(64)
 
-      // Desktop: rectangular 160x32 (SVG original)
-      expect(pinteyaDesktopLogoProps.width).toBe(160)
-      expect(pinteyaDesktopLogoProps.height).toBe(32)
+      // Desktop: rectangular 200x56`r`n      expect(pinteyaDesktopLogoProps.width).toBe(200)`r`n      expect(pinteyaDesktopLogoProps.height).toBe(56)
     })
 
-    it('ambos logos deben tener priority true para optimización', () => {
-      expect(pinteyaMobileLogoProps.priority).toBe(true)
-      expect(pinteyaDesktopLogoProps.priority).toBe(true)
+    it('ambos logos deben tener priority false (LCP reservado para hero)', () => {
+      expect(pinteyaMobileLogoProps.priority).toBe(false)
+      expect(pinteyaDesktopLogoProps.priority).toBe(false)
     })
   })
 
   describe('Logo File Existence', () => {
     it('debe referenciar archivos que existen en el proyecto', () => {
-      // Mobile usa archivo optimizado
-      expect(pinteyaMobileLogoProps.src).toContain('/optimized/LogoPinteYa-mobile')
-      expect(pinteyaMobileLogoProps.src).toContain('.webp')
-
-      // Desktop usa SVG original
+      expect(pinteyaMobileLogoProps.src).toBe('/images/logo/LOGO POSITIVO.svg')
       expect(pinteyaDesktopLogoProps.src).toBe('/images/logo/LOGO POSITIVO.svg')
     })
 
@@ -102,11 +87,11 @@ describe('Header Logo Configuration', () => {
       expect(logo).toHaveAttribute('alt', 'Pinteya - Tu Pinturería Online')
     })
 
-    it('debe usar WebP por defecto y tener fallback PNG', () => {
+    it('debe usar SVG para logo (LCP reservado para hero)', () => {
       render(<OptimizedLogo variant='mobile' data-testid='test-webp-logo' />)
 
       const logo = screen.getByTestId('test-webp-logo')
-      expect(logo).toHaveAttribute('src', expect.stringContaining('.webp'))
+      expect(logo).toHaveAttribute('src', expect.stringContaining('.svg'))
     })
   })
 
