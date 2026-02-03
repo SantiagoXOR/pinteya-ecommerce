@@ -4,6 +4,7 @@ import React, { useMemo, useCallback, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { TrendingUp, Search } from '@/lib/optimized-imports'
 import { trackEvent } from '@/lib/google-analytics'
+import { useAnalytics } from '@/hooks/useAnalytics'
 import { useTrendingSearches } from '@/hooks/useTrendingSearches'
 import { useTenantSafe } from '@/contexts/TenantContext'
 
@@ -50,6 +51,7 @@ const TrendingSearchesBase = () => {
   // ⚡ MULTITENANT: Color del tenant para elementos naranjas
   const tenant = useTenantSafe()
   const accentColor = tenant?.accentColor || '#ffd549' // Amarillo por defecto
+  const { trackSearch } = useAnalytics()
   
   // ⚡ OPTIMIZACIÓN: Deshabilitar refetch automático para evitar re-renders
   // ⚡ FIX: Manejo robusto de errores para evitar recargas
@@ -109,10 +111,11 @@ const TrendingSearchesBase = () => {
     return mappedSearches || defaultTrendingSearches
   }, [mappedSearches, error])
 
-  // ⚡ OPTIMIZACIÓN: Memoizar handleSearchClick
+  // ⚡ OPTIMIZACIÓN: Memoizar handleSearchClick - registrar en GA y en sistema optimizado
   const handleSearchClick = useCallback((term: string) => {
     trackEvent('trending_search_click', 'engagement', term)
-  }, [])
+    trackSearch(term, 0)
+  }, [trackSearch])
 
   // ⚡ DEBUG: Log de re-renders solo en desarrollo
   useEffect(() => {

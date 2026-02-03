@@ -260,7 +260,10 @@ class MetricsCalculator {
       e => e.page?.includes('/product/') || e.page?.includes('/buy/') || e.action === 'view_item'
     ).length
     const categoryViews = normalized.filter(
-      e => e.page?.includes('/category/') || e.action === 'view_category'
+      e =>
+        e.page?.includes('/category/') ||
+        e.action === 'view_category' ||
+        e.eventName === 'view_category'
     ).length
 
     const searchEvents = normalized.filter(

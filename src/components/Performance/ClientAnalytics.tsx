@@ -136,17 +136,58 @@ class ErrorBoundaryVercel extends React.Component<
 }
 
 export default function ClientAnalytics() {
+  const [shouldLoadAnalytics, setShouldLoadAnalytics] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    let idleId: number | ReturnType<typeof setTimeout> | null = null
+    const enable = () => setShouldLoadAnalytics(true)
+
+    const onInteraction = () => {
+      enable()
+    }
+
+    const events: Array<keyof WindowEventMap> = ['pointerdown', 'keydown', 'scroll', 'touchstart']
+    events.forEach((event) => {
+      window.addEventListener(event, onInteraction, { passive: true, once: true })
+    })
+
+    if ('requestIdleCallback' in window) {
+      // @ts-expect-error requestIdleCallback no está tipado en TS DOM estándar
+      idleId = window.requestIdleCallback(enable, { timeout: 2000 })
+    } else {
+      idleId = setTimeout(enable, 2000)
+    }
+
+    return () => {
+      events.forEach((event) => window.removeEventListener(event, onInteraction))
+      if (idleId) {
+        if (typeof idleId === 'number' && 'cancelIdleCallback' in window) {
+          // @ts-expect-error cancelIdleCallback no está tipado en TS DOM estándar
+          window.cancelIdleCallback(idleId)
+        } else {
+          clearTimeout(idleId as ReturnType<typeof setTimeout>)
+        }
+      }
+    }
+  }, [])
+
   return (
     <>
-      <GoogleAnalytics />
-      <MetaPixel />
-      <GoogleAds />
       <ClientErrorSuppression />
-      <PerformanceTracker />
       <NonBlockingCSS />
       <DeferredCSS />
-      {/* ⚡ FIX: Usar wrapper con manejo robusto de errores */}
-      <VercelAnalyticsWrapper />
+      {shouldLoadAnalytics && (
+        <>
+          <GoogleAnalytics />
+          <MetaPixel />
+          <GoogleAds />
+          <PerformanceTracker />
+          {/* ⚡ FIX: Usar wrapper con manejo robusto de errores */}
+          <VercelAnalyticsWrapper />
+        </>
+      )}
     </>
   )
 }

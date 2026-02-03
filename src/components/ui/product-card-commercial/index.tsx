@@ -740,6 +740,23 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                   },
                   { quantity: quantityFromModal, attributes }
                 )
+                // Registrar add_to_cart en analytics (igual que el botón directo de la card)
+                const productName = (productData as any).name || title || 'Producto'
+                const productPrice = discountedParsed !== undefined && Number.isFinite(discountedParsed)
+                  ? discountedParsed
+                  : Number.isFinite(originalParsed) ? originalParsed : 0
+                const productCategory = category || brand || 'Producto'
+                try {
+                  trackCartAction('add', String(parsedId), {
+                    productName,
+                    category: productCategory,
+                    price: productPrice,
+                    quantity: quantityFromModal,
+                    currency: 'ARS',
+                  })
+                } catch (e) {
+                  console.warn('[Analytics] Error tracking add to cart from modal:', e)
+                }
             }}
             />
                 )

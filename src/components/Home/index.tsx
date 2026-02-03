@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { trackScrollDepth } from '@/lib/google-analytics'
 import { CategoryFilterProvider } from '@/contexts/CategoryFilterContext'
@@ -63,6 +63,15 @@ interface HomeProps {
 const Home = ({ categories, bestSellerProducts }: HomeProps) => {
   // ⚡ OPTIMIZACIÓN: Usar contextos compartidos para evitar múltiples llamadas a hooks
   const { isDesktop } = useBreakpoint()
+  const [visibleSections, setVisibleSections] = useState({
+    carousel: false,
+    combos: false,
+    arrivals: false,
+    trending: false,
+    testimonials: false,
+  })
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const observerRef = useRef<IntersectionObserver | null>(null)
 
   // ⚡ OPTIMIZACIÓN TTI: Scroll depth tracking diferido después del LCP
   // Diferir inicialización para no bloquear interactividad inicial
@@ -136,6 +145,52 @@ const Home = ({ categories, bestSellerProducts }: HomeProps) => {
     }
   }, [])
 
+  // ⚡ PERFORMANCE: Montar secciones below-fold solo al entrar en viewport
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    if (!('IntersectionObserver' in window)) {
+      setVisibleSections({
+        carousel: true,
+        combos: true,
+        arrivals: true,
+        trending: true,
+        testimonials: true,
+      })
+      return
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const key = (entry.target as HTMLElement).dataset.section as keyof typeof visibleSections | undefined
+          if (entry.isIntersecting && key) {
+            setVisibleSections((prev) => (prev[key] ? prev : { ...prev, [key]: true }))
+            observerRef.current?.unobserve(entry.target)
+          }
+        })
+      },
+      { rootMargin: '200px 0px', threshold: 0.01 }
+    )
+
+    Object.values(sectionRefs.current).forEach((el) => {
+      if (el) observerRef.current?.observe(el)
+    })
+
+    return () => {
+      observerRef.current?.disconnect()
+      observerRef.current = null
+    }
+  }, [])
+
+  const setSectionRef =
+    (key: keyof typeof visibleSections) => (el: HTMLDivElement | null) => {
+      sectionRefs.current[key] = el
+      if (el && observerRef.current) {
+        observerRef.current.observe(el)
+      }
+    }
+
   return (
     <CategoryFilterProvider>
       <main className='min-h-screen'>
@@ -152,27 +207,54 @@ const Home = ({ categories, bestSellerProducts }: HomeProps) => {
       {/* 2. Ofertas Especiales (BestSeller) - Sin lazy loading, datos pre-fetched */}
       <BestSellerSection products={bestSellerProducts} />
 
-      {/* 5. Carrusel Dinámico - Solo Envío Gratis - Sin lazy loading */}
-      <DynamicProductCarousel freeShippingOnly={true} />
-
-      {/* 4. Productos Destacados (Combos) - Sin lazy loading */}
-      <div className='mt-4 sm:mt-6 product-section'>
-        <CombosOptimized />
+      {/* 5. Carrusel Dinámico - Montar al entrar en viewport */}
+      <div
+        ref={setSectionRef('carousel')}
+        data-section="carousel"
+        className="mt-4 sm:mt-6"
+        style={{ minHeight: '260px' }}
+      >
+        {visibleSections.carousel ? <DynamicProductCarousel freeShippingOnly={true} /> : null}
       </div>
 
-      {/* 7. Nuevos productos - Sin lazy loading */}
-      <div className="mt-4 sm:mt-6 product-section">
-        <NewArrivals />
+      {/* 4. Productos Destacados (Combos) - Montar al entrar en viewport */}
+      <div
+        ref={setSectionRef('combos')}
+        data-section="combos"
+        className='mt-4 sm:mt-6 product-section'
+        style={{ minHeight: '260px' }}
+      >
+        {visibleSections.combos ? <CombosOptimized /> : null}
       </div>
 
-      {/* 9. Búsquedas Populares - Sin lazy loading */}
-      <div className="mt-6 sm:mt-8 below-fold-content">
-        <TrendingSearches />
+      {/* 7. Nuevos productos - Montar al entrar en viewport */}
+      <div
+        ref={setSectionRef('arrivals')}
+        data-section="arrivals"
+        className="mt-4 sm:mt-6 product-section"
+        style={{ minHeight: '260px' }}
+      >
+        {visibleSections.arrivals ? <NewArrivals /> : null}
       </div>
 
-      {/* 10. Trust signals y testimonios - Sin lazy loading */}
-      <div className="mt-6 sm:mt-8 testimonials-section">
-        <Testimonials />
+      {/* 9. Búsquedas Populares - Montar al entrar en viewport */}
+      <div
+        ref={setSectionRef('trending')}
+        data-section="trending"
+        className="mt-6 sm:mt-8 below-fold-content"
+        style={{ minHeight: '200px' }}
+      >
+        {visibleSections.trending ? <TrendingSearches /> : null}
+      </div>
+
+      {/* 10. Trust signals y testimonios - Montar al entrar en viewport */}
+      <div
+        ref={setSectionRef('testimonials')}
+        data-section="testimonials"
+        className="mt-6 sm:mt-8 testimonials-section"
+        style={{ minHeight: '200px' }}
+      >
+        {visibleSections.testimonials ? <Testimonials /> : null}
       </div>
 
       {/* Elementos flotantes de engagement - DESACTIVADOS: Reemplazados por bottom navigation */}

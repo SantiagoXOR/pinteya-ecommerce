@@ -19,6 +19,7 @@ import {
   Search,
   Target,
   Activity,
+  Grid,
 } from '@/lib/optimized-imports'
 import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProvider'
 
@@ -426,13 +427,20 @@ const AnalyticsDashboard: React.FC = () => {
       )}
 
       {/* Métricas principales */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6'>
         <MetricCard
           title='Vistas de productos'
           value={metricsData.ecommerce.productViews}
           change={metricsData.comparison?.changes?.ecommerce?.productViews}
           icon={<Eye className='w-6 h-6 text-white' />}
           color='bg-blue-500'
+        />
+
+        <MetricCard
+          title='Vistas de categoría'
+          value={metricsData.ecommerce.categoryViews}
+          icon={<Grid className='w-6 h-6 text-white' />}
+          color='bg-cyan-500'
         />
 
         <MetricCard

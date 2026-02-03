@@ -286,12 +286,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             `,
           }}
         />
-        {/* ⚡ DIAGNÓSTICO: Script INMEDIATO para capturar recargas desde el inicio */}
-        {/* ⚡ DEBE estar PRIMERO antes de cualquier otro script */}
-        <script
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{
-            __html: `
+        {/* ⚡ DIAGNÓSTICO: Script solo en desarrollo para no afectar TBT/LCP en prod */}
+        {process.env.NODE_ENV === 'development' && (
+          <script
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{
+              __html: `
             (function() {
               // ⚡ DIAGNÓSTICO: Interceptar window.location.reload INMEDIATAMENTE
               // ⚡ EJECUTAR INCLUSO SI window NO ESTÁ DEFINIDO AÚN (IIFE se ejecuta en parse time)
@@ -472,48 +472,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               }
             })();
             `,
-          }}
-        />
+            }}
+          />
+        )}
 
-        {/* ⚡ MULTITENANT: Preload de imagen hero LCP desde bucket (Supabase) o fallback local */}
-        {/* ⚡ DEBE estar PRIMERO para descubrimiento inmediato sin esperar CSS o JS */}
-        <link
-          rel="preload"
-          as="image"
-          href={getTenantAssetPath(tenant, 'hero/hero1.webp', `/tenants/${tenant.slug}/hero/hero1.webp`)}
-          fetchPriority="high"
-          type="image/webp"
-        />
-        {/* ⚡ MULTITENANT: Preload segunda imagen hero (bucket o local) */}
-        <link
-          rel="preload"
-          as="image"
-          href={getTenantAssetPath(tenant, 'hero/hero2.webp', `/tenants/${tenant.slug}/hero/hero2.webp`)}
-          fetchPriority="low"
-          type="image/webp"
-        />
-        {/* ⚡ MULTITENANT: Preload imágenes carrusel combos (promocombo) para descubrimiento temprano y menos fallbacks al refrescar */}
-        <link
-          rel="preload"
-          as="image"
-          href={getTenantAssetPath(tenant, 'combos/combo1.webp', `/tenants/${tenant.slug}/combos/combo1.webp`)}
-          fetchPriority="low"
-          type="image/webp"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href={getTenantAssetPath(tenant, 'combos/combo2.webp', `/tenants/${tenant.slug}/combos/combo2.webp`)}
-          fetchPriority="low"
-          type="image/webp"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href={getTenantAssetPath(tenant, 'combos/combo3.webp', `/tenants/${tenant.slug}/combos/combo3.webp`)}
-          fetchPriority="low"
-          type="image/webp"
-        />
+        {/* ⚡ LCP: Preload del hero ya se inyecta en el head superior (evitar duplicados) */}
         
         {/* ⚡ OPTIMIZACIÓN LCP: Resource Hints para mejorar descubrimiento de recursos */}
         {/* NOTA: Preconnect al dominio propio - En producción, el dominio real viene del tenant */}

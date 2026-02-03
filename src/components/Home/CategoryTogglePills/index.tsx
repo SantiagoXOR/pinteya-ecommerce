@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { CategoryFilterContext } from '@/contexts/CategoryFilterContext'
 import { usePrefetchOnHover, usePrefetchBestSellerOnHover } from '@/hooks/usePrefetchOnHover'
 import { getCategoryImage } from '@/lib/categories/adapters'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 interface CategoryTogglePillsProps {
   onCategoryChange: (selectedCategories: string[]) => void
@@ -210,6 +211,7 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
   // ⚡ FIX: Los hooks deben llamarse siempre, no condicionalmente
   // Usar useContext directamente para evitar error si no hay provider
   const context = useContext(CategoryFilterContext)
+  const { trackCategoryView } = useAnalytics()
   
   // Solo usar el contexto si useDynamicCarousel es true Y el contexto existe
   const selectedCategory = useDynamicCarousel && context ? context.selectedCategory : null
@@ -449,6 +451,9 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
         console.log('[CategoryPills] Toggle category:', categorySlug, '- Actual:', selectedCategory)
       }
       toggleCategory(categorySlug)
+      // Registrar vista de categoría en analytics (home con carrusel dinámico)
+      const categoryName = categories.find((c: { slug: string }) => c.slug === categorySlug)?.name || categorySlug
+      trackCategoryView(categoryName, { category_slug: categorySlug })
       
       // Scroll suave al carrusel dinámico - usar requestAnimationFrame
       requestAnimationFrame(() => {
@@ -469,9 +474,12 @@ const CategoryTogglePills: React.FC<CategoryTogglePillsProps> = ({
       } else {
         // Seleccionar nueva categoría (reemplazar array con solo esta)
         onCategoryChange([categorySlug])
+        // Registrar vista de categoría en analytics
+        const categoryName = categories.find((c: { slug: string }) => c.slug === categorySlug)?.name || categorySlug
+        trackCategoryView(categoryName, { category_slug: categorySlug })
       }
     }
-  }, [isDragging, useDynamicCarousel, toggleCategory, selectedCategory, selectedCategories, onCategoryChange])
+  }, [isDragging, useDynamicCarousel, toggleCategory, selectedCategory, selectedCategories, onCategoryChange, categories, trackCategoryView])
 
   // ⚡ OPTIMIZACIÓN: Handler memoizado para prefetch
   const handleMouseEnterCategory = useCallback((slug: string) => {

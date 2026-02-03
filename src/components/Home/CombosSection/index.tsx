@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from '@/lib/optimized-imports'
 import { useSwipeGestures } from '@/hooks/useSwipeGestures'
 import { useRouter } from 'next/navigation'
 import { useTenantSafe } from '@/contexts/TenantContext'
+import { useAnalytics } from '@/hooks/useAnalytics'
 import { getTenantAssetPaths } from '@/lib/tenant/tenant-assets'
 import { useSlugFromHostname } from '@/hooks/useSlugFromHostname'
 import type { TenantPublicConfig } from '@/lib/tenant/types'
@@ -21,6 +22,7 @@ interface Slide {
 const CombosSection: React.FC = () => {
   const tenant = useTenantSafe()
   const slugFromHost = useSlugFromHostname()
+  const { trackEvent } = useAnalytics()
   const [currentIndex, setCurrentIndex] = useState(1)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
@@ -227,10 +229,11 @@ const CombosSection: React.FC = () => {
    const handleSlideClick = useCallback((productSlug: string, e: React.MouseEvent) => {
      // Prevenir que el click interfiera con los gestos de swipe
      e.stopPropagation()
-     
+     // Registrar click en combo slide (engagement)
+     trackEvent('click', 'engagement', 'combo_slide', productSlug)
      // Navegar a la página del producto que automáticamente abre el modal
      router.push(`/products/${productSlug}`)
-   }, [router])
+   }, [router, trackEvent])
 
   return (
     <div 
