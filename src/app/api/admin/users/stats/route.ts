@@ -4,6 +4,7 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminAuth } from '@/lib/auth/admin-auth'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
+import { getTenantConfig } from '@/lib/tenant'
 
 /**
  * GET /api/admin/users/stats
@@ -18,35 +19,43 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status || 401 })
     }
 
+    // MULTITENANT: filtrar por tenant actual
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Calcular fechas para comparación
     const now = new Date()
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
 
-    // Obtener estadísticas de usuarios desde user_profiles
+    // Obtener estadísticas de usuarios desde user_profiles (filtrado por tenant_id)
     const [totalResult, activeResult, newResult30d, newResultPrevious30d, inactiveResult] = await Promise.all([
       // Total de usuarios
-      supabaseAdmin.from('user_profiles').select('id', { count: 'exact', head: true }),
+      supabaseAdmin.from('user_profiles').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
       // Usuarios activos
       supabaseAdmin
         .from('user_profiles')
         .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .eq('is_active', true),
       // Usuarios nuevos (últimos 30 días)
       supabaseAdmin
         .from('user_profiles')
         .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .gte('created_at', thirtyDaysAgo.toISOString()),
       // Usuarios nuevos en el período anterior (30-60 días atrás) para calcular crecimiento
       supabaseAdmin
         .from('user_profiles')
         .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .gte('created_at', sixtyDaysAgo.toISOString())
         .lt('created_at', thirtyDaysAgo.toISOString()),
       // Usuarios inactivos
       supabaseAdmin
         .from('user_profiles')
         .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
         .eq('is_active', false),
     ])
 

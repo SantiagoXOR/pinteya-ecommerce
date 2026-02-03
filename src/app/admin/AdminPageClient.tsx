@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { AdminCard } from '@/components/admin/ui/AdminCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,10 +25,12 @@ import {
 } from '@/lib/optimized-imports'
 import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 import { useMonitoringStats } from '@/providers/MonitoringProvider'
+import { useTenantAssets } from '@/contexts/TenantContext'
 
 export function AdminPageClient() {
   const { stats, loading, error } = useAdminDashboardStats()
   const { stats: monitoringStats, loading: monitoringLoading } = useMonitoringStats()
+  const { logo: tenantLogo } = useTenantAssets()
   
   const adminSections = [
     {
@@ -44,7 +47,7 @@ export function AdminPageClient() {
       href: '/admin/orders',
       icon: ShoppingCart,
       color: 'bg-green-500',
-      stats: loading ? 'Cargando...' : `${stats?.pendingOrders || 0} pendientes`,
+      stats: loading ? 'Cargando...' : `${stats?.totalOrders || 0} órdenes`,
     },
     {
       title: 'Clientes',
@@ -160,7 +163,7 @@ export function AdminPageClient() {
     {
       title: 'Órdenes Totales',
       value: loading ? 'Cargando...' : (stats?.totalOrders || 0).toString(),
-      change: loading ? '...' : `${stats?.pendingOrders || 0} pendientes`,
+      change: loading ? '...' : `${stats?.totalOrders || 0} órdenes en total`,
       changeType: 'neutral' as const,
       icon: ShoppingCart,
     },
@@ -177,22 +180,46 @@ export function AdminPageClient() {
     <AdminLayout title='Dashboard'>
       <AdminContentWrapper>
         <div className='space-y-6'>
-        {/* Welcome Section */}
-        <div className='bg-gradient-to-r from-blaze-orange-500 to-blaze-orange-600 rounded-xl shadow-lg p-4 sm:p-6 text-white'>
+        {/* Welcome Section - fondo blanco con logo del tenant */}
+        <div className='bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6'>
           <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0'>
             <div>
               <div className='flex items-center space-x-3 mb-2'>
-                <BarChart3 className='w-6 h-6 sm:w-8 sm:h-8' />
-                <h1 className='text-2xl sm:text-3xl font-bold'>¡Bienvenido al Panel Administrativo!</h1>
+                {tenantLogo ? (
+                  <div className='relative w-24 h-10 sm:w-28 sm:h-12 flex-shrink-0'>
+                    <Image
+                      src={tenantLogo}
+                      alt='Logo'
+                      fill
+                      className='object-contain object-left'
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <BarChart3 className='w-6 h-6 sm:w-8 sm:h-8 text-gray-600' />
+                )}
+                <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>¡Bienvenido al Panel Administrativo!</h1>
               </div>
-              <p className='text-blaze-orange-100 text-sm sm:text-base'>
+              <p className='text-gray-600 text-sm sm:text-base'>
                 Gestiona y monitorea tu tienda de e-commerce desde aquí
               </p>
             </div>
             <div className='hidden md:block'>
-              <div className='w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center'>
-                <BarChart3 className='w-8 h-8' />
-              </div>
+              {tenantLogo ? (
+                <div className='relative w-20 h-11 flex-shrink-0'>
+                  <Image
+                    src={tenantLogo}
+                    alt=''
+                    fill
+                    className='object-contain'
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className='w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center'>
+                  <BarChart3 className='w-8 h-8 text-gray-600' />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -311,23 +338,17 @@ export function AdminPageClient() {
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
               {adminSections.map(section => {
                 const IconComponent = section && section.icon ? section.icon : null
+                const isDisabled = 'disabled' in section && section.disabled
 
-                return (
-                  <div
-                    key={section.title}
-                    className={`bg-gray-50 rounded-lg border p-6 transition-all ${
-                      section.disabled
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:shadow-md hover:bg-white cursor-pointer'
-                    }`}
-                  >
+                const cardContent = (
+                  <>
                     <div className='flex items-start justify-between mb-4'>
                       <div
                         className={`w-12 h-12 ${section.color} rounded-lg flex items-center justify-center text-white`}
                       >
                         {IconComponent && <IconComponent className='w-6 h-6' />}
                       </div>
-                      {section.disabled ? (
+                      {isDisabled ? (
                         <span className='bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-medium'>
                           Próximamente
                         </span>
@@ -345,17 +366,31 @@ export function AdminPageClient() {
                     <h3 className='text-lg font-semibold text-gray-900 mb-2'>{section.title}</h3>
                     <p className='text-gray-600 text-sm mb-4'>{section.description}</p>
 
-                    {section.disabled ? (
+                    {isDisabled ? (
                       <div className='text-gray-400 text-sm'>Funcionalidad en desarrollo</div>
                     ) : (
-                      <Link
-                        href={section.href}
-                        className='inline-flex items-center text-blaze-orange-600 hover:text-blaze-orange-800 text-sm font-medium'
-                      >
+                      <span className='inline-flex items-center text-blaze-orange-600 hover:text-blaze-orange-800 text-sm font-medium'>
                         {section.badge ? 'Ver Preview →' : 'Acceder →'}
-                      </Link>
+                      </span>
                     )}
+                  </>
+                )
+
+                return isDisabled ? (
+                  <div
+                    key={section.title}
+                    className='bg-gray-50 rounded-lg border p-6 transition-all opacity-50 cursor-not-allowed'
+                  >
+                    {cardContent}
                   </div>
+                ) : (
+                  <Link
+                    key={section.title}
+                    href={section.href}
+                    className='block bg-gray-50 rounded-lg border p-6 transition-all hover:shadow-md hover:bg-white cursor-pointer'
+                  >
+                    {cardContent}
+                  </Link>
                 )
               })}
             </div>

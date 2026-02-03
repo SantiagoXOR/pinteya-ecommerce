@@ -94,13 +94,14 @@ export function useAdminDashboardStats() {
 
       if (ordersResponse.status === 'fulfilled' && ordersResponse.value.ok) {
         const data = await ordersResponse.value.json()
-        if (data.success && data.stats) {
+        const payload = data.data ?? data.stats
+        if (data.success && payload) {
           orderStats = {
-            totalOrders: data.stats.total_orders || 0,
-            pendingOrders: data.stats.pending_orders || 0,
-            completedOrders: data.stats.completed_orders || 0,
-            totalRevenue: data.stats.total_revenue || 0,
-            todayRevenue: data.stats.today_revenue || 0,
+            totalOrders: payload.total_orders || 0,
+            pendingOrders: payload.pending_orders || 0,
+            completedOrders: payload.completed_orders || 0,
+            totalRevenue: payload.total_revenue || 0,
+            todayRevenue: payload.today_revenue || 0,
           }
         }
       }
@@ -113,10 +114,11 @@ export function useAdminDashboardStats() {
 
       if (usersResponse.status === 'fulfilled' && usersResponse.value.ok) {
         const data = await usersResponse.value.json()
-        if (data.success && data.stats) {
+        const payload = data.data ?? data.stats
+        if (data.success && payload) {
           userStats = {
-            totalUsers: data.stats.total_users || 0,
-            activeUsers: data.stats.active_users || 0,
+            totalUsers: payload.total_users || 0,
+            activeUsers: payload.active_users || 0,
           }
         }
       }

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkAdminAuth } from '@/lib/auth/server-auth-guard'
 import { supabaseAdmin } from '@/lib/integrations/supabase'
+import { getTenantConfig } from '@/lib/tenant'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -64,6 +65,10 @@ export async function GET(request: NextRequest) {
     }
     console.log('[API] supabaseAdmin disponible')
 
+    // MULTITENANT: filtrar por tenant actual
+    const tenant = await getTenantConfig()
+    const tenantId = tenant.id
+
     // Obtener parámetros de query
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
@@ -90,6 +95,7 @@ export async function GET(request: NextRequest) {
       `,
         { count: 'exact' }
       )
+      .eq('tenant_id', tenantId)
     console.log('[API] Query construida')
 
     // Filtro de búsqueda
