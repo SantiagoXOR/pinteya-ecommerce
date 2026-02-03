@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useProducts } from '@/hooks/useProducts'
+import { useAnalytics } from '@/hooks/useAnalytics'
 import { useCategoriesForFilters } from '@/hooks/useCategoriesWithDynamicCounts'
 import ImprovedFilters from '@/components/filters/ImprovedFilters'
 import { buildFilterBadgesFromProducts } from '@/utils/filter-utils'
@@ -58,6 +59,8 @@ export function SearchWithFilters({ searchQuery, sortBy = 'relevance', onSortCha
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([])
   const [freeShippingOnly, setFreeShippingOnly] = useState(false)
+  const searchTrackedRef = useRef<string | null>(null)
+  const { trackSearch } = useAnalytics()
 
   const mapSortToApi = (s: SearchSortOption) => {
     switch (s) {
@@ -91,6 +94,15 @@ export function SearchWithFilters({ searchQuery, sortBy = 'relevance', onSortCha
       updateFilters({ search: searchQuery.trim(), page: 1, ...mapSortToApi(sortBy) })
     }
   }, [searchQuery, sortBy])
+
+  // Registrar evento de búsqueda una vez por query cuando los resultados están listos (p. ej. al llegar a /search?search=X)
+  useEffect(() => {
+    const q = searchQuery.trim()
+    if (!q || loading) return
+    if (searchTrackedRef.current === q) return
+    searchTrackedRef.current = q
+    trackSearch(q, pagination?.total ?? products?.length ?? 0)
+  }, [searchQuery, loading, pagination?.total, products?.length, trackSearch])
 
 
   const { categories: dynamicCategories, loading: categoriesLoading } = useCategoriesForFilters()
