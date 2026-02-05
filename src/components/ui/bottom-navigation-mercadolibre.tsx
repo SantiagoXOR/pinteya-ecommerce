@@ -180,7 +180,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         onClick={handleWhatsAppClick}
         aria-label="Abrir chat de WhatsApp con Santi"
         className={cn(
-          'absolute bottom-full z-10 mb-5 flex flex-col items-stretch',
+          'absolute bottom-full z-10 mb-[25px] flex flex-col items-stretch',
           'min-w-[200px] max-w-[280px] sm:min-w-[240px] sm:max-w-[320px]',
           'left-auto right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2',
           'animate-in fade-in slide-in-from-bottom-3 duration-300'
