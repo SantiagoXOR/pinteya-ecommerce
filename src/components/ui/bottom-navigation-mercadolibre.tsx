@@ -24,7 +24,30 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
     const [isCartPressed, setIsCartPressed] = React.useState(false)
     const [isAnimating, setIsAnimating] = React.useState(false)
     const prevCartCountRef = React.useRef(cartItemCount)
-    
+    // Índice del mensaje actual en la burbuja de WhatsApp (rotación secuencial)
+    const [whatsAppBubbleIndex, setWhatsAppBubbleIndex] = React.useState(0)
+    // Mostrar la burbuja después de 3 segundos
+    const [whatsAppBubbleVisible, setWhatsAppBubbleVisible] = React.useState(false)
+
+    React.useEffect(() => {
+      const timer = setTimeout(() => setWhatsAppBubbleVisible(true), 3000)
+      return () => clearTimeout(timer)
+    }, [])
+
+    const whatsAppBubbleMessages = [
+      'Hola! Soy Santi, te ayudo con tu pedido?',
+      '¿No sabés cuántos litros necesitás? Te ayudo a calcular.',
+      '¿Dudas con el color? Te asesoramos.',
+    ]
+
+    // Rotar el texto de la burbuja cada 10 segundos (3 mensajes en secuencia)
+    React.useEffect(() => {
+      const interval = setInterval(() => {
+        setWhatsAppBubbleIndex(prev => (prev + 1) % 3)
+      }, 10000)
+      return () => clearInterval(interval)
+    }, [])
+
     // Obtener número de WhatsApp del tenant
     const tenant = useTenantSafe()
     const whatsappNumber = getTenantWhatsAppNumber(tenant)
@@ -149,6 +172,36 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
       },
     ]
 
+    // Burbuja de chat (tooltip) clicable para WhatsApp - texto de Santi
+    // En móvil: alineada a la derecha para no cortarse (right-0). En desktop: centrada.
+    const whatsAppBubble = whatsAppBubbleVisible ? (
+      <button
+        type="button"
+        onClick={handleWhatsAppClick}
+        aria-label="Abrir chat de WhatsApp con Santi"
+        className={cn(
+          'absolute bottom-full z-10 mb-5 flex flex-col items-stretch',
+          'min-w-[200px] max-w-[280px] sm:min-w-[240px] sm:max-w-[320px]',
+          'left-auto right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2',
+          'animate-in fade-in slide-in-from-bottom-3 duration-300'
+        )}
+      >
+        <div className="relative w-full bg-[#25D366] text-white rounded-2xl px-4 py-3 shadow-lg text-left text-sm leading-snug border border-[#1da851] min-h-[2.5rem] flex items-center">
+          <p className="line-clamp-2 transition-opacity duration-300" key={whatsAppBubbleIndex}>
+            {whatsAppBubbleMessages[whatsAppBubbleIndex]}
+          </p>
+          {/* Flecha apuntando al círculo de WhatsApp: a la derecha en móvil, centrada en desktop */}
+          <div
+            className={cn(
+              'absolute -bottom-2 w-0 h-0 border-l-[10px] border-r-[10px] border-t-[10px] border-l-transparent border-r-transparent border-t-[#25D366]',
+              'right-5 left-auto -translate-x-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2'
+            )}
+            aria-hidden
+          />
+        </div>
+      </button>
+    ) : null
+
     // ⚡ FASE 11-16: Código de debugging deshabilitado en producción
 // Los requests a 127.0.0.1:7242 estaban causando timeouts y bloqueando la carga
     return (
@@ -186,6 +239,42 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
               <div key={item.id} className='flex-1 flex flex-col items-center justify-end relative overflow-visible'>
                 {/* Link o botón según el tipo */}
                 {item.id === 'cart' || item.id === 'back' || item.id === 'whatsapp' || item.id === 'search' ? (
+                  item.id === 'whatsapp' ? (
+                    <div className='relative overflow-visible w-full flex flex-col items-center justify-end'>
+                      {whatsAppBubble}
+                      <button
+                        onClick={item.onClick}
+                        className={cn(
+                          'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200 overflow-visible',
+                          'text-gray-600 hover:text-blaze-orange-600 active:scale-95'
+                        )}
+                        aria-label={item.label}
+                      >
+                        <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                          <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
+                            <div
+                              className='absolute inset-0 rounded-full transition-all duration-300 shadow-md'
+                              style={{ backgroundColor: '#25D366' }}
+                            />
+                            <div
+                              className={cn(
+                                'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
+                                'hover:scale-110 active:scale-95 transform-gpu will-change-transform'
+                              )}
+                            >
+                              <Icon
+                                className='w-5 h-5 transition-colors duration-200 text-white'
+                                style={{ color: 'white' }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium shrink-0', 'text-green-600')}>
+                          {item.label}
+                        </span>
+                      </button>
+                    </div>
+                  ) : (
                   <button
                     onClick={item.onClick}
                     className={cn(
@@ -233,26 +322,6 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                           )}
                         </div>
                       </div>
-                    ) : item.id === 'whatsapp' ? (
-                      <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
-                        <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
-                          <div
-                            className='absolute inset-0 rounded-full transition-all duration-300 shadow-md'
-                            style={{ backgroundColor: '#25D366' }}
-                          />
-                          <div
-                            className={cn(
-                              'relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300',
-                              'hover:scale-110 active:scale-95 transform-gpu will-change-transform'
-                            )}
-                          >
-                            <Icon
-                              className='w-5 h-5 transition-colors duration-200 text-white'
-                              style={{ color: 'white' }}
-                            />
-                          </div>
-                        </div>
-                      </div>
                     ) : (
                       <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
                         <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
@@ -261,12 +330,13 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                     <span
                       className={cn(
                         'text-[10px] sm:text-xs mt-0.5 font-medium shrink-0',
-                        item.id === 'whatsapp' ? 'text-green-600' : isItemActive && 'text-blaze-orange-600'
+                        isItemActive && 'text-blaze-orange-600'
                       )}
                     >
                       {item.label}
                     </span>
                   </button>
+                  )
                 ) : (
                   <Link
                     href={item.href}
@@ -307,6 +377,32 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
             return (
               <div key={item.id} className='flex-1 flex flex-col items-center justify-end relative overflow-visible'>
                 {item.id === 'cart' || item.id === 'back' || item.id === 'whatsapp' || item.id === 'search' ? (
+                  item.id === 'whatsapp' ? (
+                    <div className='relative overflow-visible w-full flex flex-col items-center justify-end'>
+                      {whatsAppBubble}
+                      <button
+                        onClick={(e) => item.onClick?.(e)}
+                        className={cn(
+                          'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200 overflow-visible',
+                          'focus:outline-none focus:ring-2 focus:ring-blaze-orange-500 focus:ring-offset-2 rounded-lg',
+                          'active:scale-95'
+                        )}
+                        aria-label={item.label}
+                      >
+                        <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                          <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
+                            <div className='absolute inset-0 rounded-full transition-all duration-300 shadow-md' style={{ backgroundColor: '#25D366' }} />
+                            <div className={cn('relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300', 'hover:scale-110 active:scale-95 transform-gpu will-change-transform')}>
+                              <Icon className='w-5 h-5 transition-colors duration-200 text-white' style={{ color: 'white' }} strokeWidth={1.5} />
+                            </div>
+                          </div>
+                        </div>
+                        <span className={cn('text-[10px] sm:text-xs font-medium mt-0.5 shrink-0', 'text-green-600')}>
+                          {item.label}
+                        </span>
+                      </button>
+                    </div>
+                  ) : (
                   <button
                     onClick={(e) => item.onClick?.(e)}
                     onPointerDown={(e) => { if (item.id === 'cart') setIsCartPressed(true) }}
@@ -363,25 +459,16 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                         <Icon className='w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-200 text-gray-600 hover:text-blaze-orange-600' strokeWidth={1.5} />
                       </div>
                     )}
-                    {item.id === 'whatsapp' && (
-                      <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
-                        <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
-                          <div className='absolute inset-0 rounded-full transition-all duration-300 shadow-md' style={{ backgroundColor: '#25D366' }} />
-                          <div className={cn('relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300', 'hover:scale-110 active:scale-95 transform-gpu will-change-transform')}>
-                            <Icon className='w-5 h-5 transition-colors duration-200 text-white' style={{ color: 'white' }} strokeWidth={1.5} />
-                          </div>
-                        </div>
-                      </div>
-                    )}
                     <span
                       className={cn(
                         'text-[10px] sm:text-xs font-medium mt-0.5 shrink-0',
-                        item.id === 'cart' && (hasBadge || isCartPressed) ? 'text-blaze-orange-600' : item.id === 'whatsapp' ? 'text-green-600' : 'text-gray-600'
+                        item.id === 'cart' && (hasBadge || isCartPressed) ? 'text-blaze-orange-600' : 'text-gray-600'
                       )}
                     >
                       {item.id === 'cart' && cartItemCount > 0 ? `${item.label} (${cartItemCount})` : item.label}
                     </span>
                   </button>
+                  )
                 ) : (
                   <Link
                     href={item.href}
@@ -450,6 +537,31 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                   return (
                     <div key={item.id} className='flex-1 flex flex-col items-center justify-end relative overflow-visible'>
                       {item.id === 'cart' || item.id === 'back' || item.id === 'whatsapp' || item.id === 'search' ? (
+                        item.id === 'whatsapp' ? (
+                          <div className='relative overflow-visible w-full flex flex-col items-center justify-end'>
+                            {whatsAppBubble}
+                            <button
+                              onClick={item.onClick}
+                              className={cn(
+                                'flex flex-col items-center justify-end w-full min-h-0 py-0 pb-1.5 pt-0 transition-all duration-200 overflow-visible',
+                                'text-gray-600 hover:text-blaze-orange-600 active:scale-95'
+                              )}
+                              aria-label={item.label}
+                            >
+                              <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
+                                <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
+                                  <div className='absolute inset-0 rounded-full transition-all duration-300 shadow-md' style={{ backgroundColor: '#25D366' }} />
+                                  <div className={cn('relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300', 'hover:scale-110 active:scale-95 transform-gpu will-change-transform')}>
+                                    <Icon className='w-5 h-5 transition-colors duration-200 text-white' style={{ color: 'white' }} />
+                                  </div>
+                                </div>
+                              </div>
+                              <span className={cn('text-[10px] sm:text-xs mt-0.5 font-medium shrink-0', 'text-green-600')}>
+                                {item.label}
+                              </span>
+                            </button>
+                          </div>
+                        ) : (
                         <button
                           onClick={item.onClick}
                           className={cn(
@@ -481,26 +593,18 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
                                 )}
                               </div>
                             </div>
-                          ) : item.id === 'whatsapp' ? (
-                            <div className={cn('relative flex items-center justify-center overflow-visible', iconSlotHeight, 'w-full')}>
-                              <div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 flex items-center justify-center'>
-                                <div className='absolute inset-0 rounded-full transition-all duration-300 shadow-md' style={{ backgroundColor: '#25D366' }} />
-                                <div className={cn('relative w-full h-full rounded-full flex items-center justify-center transition-all duration-300', 'hover:scale-110 active:scale-95 transform-gpu will-change-transform')}>
-                                  <Icon className='w-5 h-5 transition-colors duration-200 text-white' style={{ color: 'white' }} />
-                                </div>
-                              </div>
-                            </div>
                           ) : (
                             <div className={cn('flex items-center justify-center', iconSlotHeight, 'w-full')}>
                               <Icon className={cn('w-5 h-5 sm:w-6 sm:h-6', isItemActive && 'text-blaze-orange-600')} />
                             </div>
                           )}
                           <span
-                            className={cn('text-[10px] sm:text-xs mt-0.5 font-medium shrink-0', item.id === 'whatsapp' ? 'text-green-600' : isItemActive && 'text-blaze-orange-600')}
+                            className={cn('text-[10px] sm:text-xs mt-0.5 font-medium shrink-0', isItemActive && 'text-blaze-orange-600')}
                           >
                             {item.label}
                           </span>
                         </button>
+                        )
                       ) : (
                         <Link
                           href={item.href}
