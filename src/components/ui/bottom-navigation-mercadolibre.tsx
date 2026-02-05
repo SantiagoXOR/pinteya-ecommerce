@@ -182,7 +182,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         className={cn(
           'absolute bottom-full z-10 mb-[25px] flex flex-col items-stretch',
           'min-w-[200px] max-w-[280px] sm:min-w-[240px] sm:max-w-[320px]',
-          'left-auto right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2',
+          'left-auto right-[10px] sm:right-auto sm:left-[calc(50%-10px)] sm:-translate-x-1/2',
           'animate-in fade-in slide-in-from-bottom-3 duration-300'
         )}
       >
