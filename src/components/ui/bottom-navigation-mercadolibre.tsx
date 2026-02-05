@@ -111,10 +111,11 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
       }
     }
 
-    // Función para abrir WhatsApp
+    // Función para abrir WhatsApp con mensaje inicial (tooltip o botón)
+    const defaultWhatsAppMessage = tenant?.whatsappMessageTemplate || 'Hola! Necesito ayuda con mi pedido'
     const handleWhatsAppClick = (e: React.MouseEvent) => {
       e.preventDefault()
-      const whatsappUrl = `https://wa.me/${whatsappNumber}`
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(defaultWhatsAppMessage)}`
       window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
     }
 
@@ -182,7 +183,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
         className={cn(
           'absolute bottom-full z-10 mb-[25px] flex flex-col items-stretch',
           'min-w-[200px] max-w-[280px] sm:min-w-[240px] sm:max-w-[320px]',
-          'left-auto right-[10px] sm:right-auto sm:left-1/2 sm:-translate-x-1/2',
+          'left-auto right-[5px] sm:right-auto sm:left-1/2 sm:-translate-x-1/2',
           'animate-in fade-in slide-in-from-bottom-3 duration-300'
         )}
       >
