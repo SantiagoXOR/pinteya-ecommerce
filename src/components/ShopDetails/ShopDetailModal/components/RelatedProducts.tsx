@@ -1,11 +1,14 @@
 /**
  * Componente de productos relacionados
- * 
+ *
  * NOTA: Usa import dinámico para evitar dependencia circular con product-card-commercial
  * El ciclo era: product-card-commercial -> ShopDetailModal -> SuggestedProductsCarousel -> ProductItem -> product-card-commercial
+ *
+ * ⚡ PERFORMANCE: Carga SuggestedProductsCarousel (y Swiper) solo cuando la sección
+ * entra en viewport (IntersectionObserver), reduciendo TBT al abrir el modal.
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import type { ProductGroup } from '@/lib/api/related-products'
 
 interface RelatedProductsProps {
@@ -19,7 +22,7 @@ interface RelatedProductsProps {
   productName?: string | null
 }
 
-// Componente lazy para evitar dependencia circular
+// Componente lazy para evitar dependencia circular + carga solo cuando está visible
 const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
   productId,
   categoryId,
@@ -31,11 +34,30 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const [shouldLoad, setShouldLoad] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // ⚡ PERFORMANCE: Cargar el chunk de Swiper solo cuando la sección está visible o cerca
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setShouldLoad(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) setShouldLoad(true)
+      },
+      { rootMargin: '120px', threshold: 0 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
+    if (!shouldLoad) return
     let mounted = true
 
-    // Import dinámico para evitar el ciclo de dependencias
     import('../../SuggestedProductsCarousel')
       .then((mod) => {
         if (mounted) {
@@ -54,11 +76,11 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
     return () => {
       mounted = false
     }
-  }, [])
+  }, [shouldLoad])
 
   if (loading) {
     return (
-      <div className="py-6 border-t border-gray-200 mt-6">
+      <div ref={containerRef} className="py-6 border-t border-gray-200 mt-6">
         <div className="mb-4">
           <div className="h-6 w-48 bg-gray-200 rounded animate-pulse" />
           <div className="h-4 w-64 bg-gray-100 rounded animate-pulse mt-2" />
@@ -73,24 +95,24 @@ const LazySuggestedProducts: React.FC<RelatedProductsProps> = ({
   }
 
   if (error || !Component) {
-    // Silenciosamente no mostrar nada si hay error
     return null
   }
 
-  // Debug: confirmar que pasamos productGroupFromParent al carrusel
-  if (typeof window !== 'undefined' && productGroupFromParent?.products?.length) {
+  if (process.env.NODE_ENV === 'development' && productGroupFromParent?.products?.length) {
     console.log('[RelatedProducts] pasando al carrusel productGroupFromParent con', productGroupFromParent.products.length, 'productos')
   }
 
   return (
-    <Component
-      productId={productId}
-      categoryId={categoryId}
-      categorySlug={categorySlug}
-      limit={limit}
-      productGroupFromParent={productGroupFromParent}
-      productName={productName}
-    />
+    <div ref={containerRef}>
+      <Component
+        productId={productId}
+        categoryId={categoryId}
+        categorySlug={categorySlug}
+        limit={limit}
+        productGroupFromParent={productGroupFromParent}
+        productName={productName}
+      />
+    </div>
   )
 }
 

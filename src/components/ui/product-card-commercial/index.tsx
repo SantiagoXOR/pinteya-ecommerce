@@ -45,26 +45,25 @@ import {
 const ShopDetailModal = React.lazy(async () => {
   const startTime = Date.now()
   try {
-    console.log('🔄 [ProductCard] Iniciando carga del módulo ShopDetailModal...', {
-      timestamp: new Date().toISOString()
-    })
-    
-    // Import directo para evitar problemas con caché de Turbopack
-    // Usar ruta absoluta para asegurar resolución correcta
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [ProductCard] Iniciando carga del módulo ShopDetailModal...', { timestamp: new Date().toISOString() })
+    }
+
     const mod = await import('@/components/ShopDetails/ShopDetailModal/index')
-    
     const loadTime = Date.now() - startTime
-    console.log(`📦 [ProductCard] Módulo cargado en ${loadTime}ms:`, {
-      hasShopDetailModal: !!mod.ShopDetailModal,
-      hasDefault: !!mod.default,
-      keys: Object.keys(mod),
-      modType: typeof mod,
-      modConstructor: mod?.constructor?.name
-    })
-    
-    // El módulo exporta tanto ShopDetailModal como default
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📦 [ProductCard] Módulo cargado en ${loadTime}ms:`, {
+        hasShopDetailModal: !!mod.ShopDetailModal,
+        hasDefault: !!mod.default,
+        keys: Object.keys(mod),
+        modType: typeof mod,
+        modConstructor: mod?.constructor?.name
+      })
+    }
+
     const Component = mod.ShopDetailModal || mod.default
-    
+
     if (!Component) {
       const error = new Error('ShopDetailModal no encontrado en el módulo')
       console.error('❌ [ProductCard] ShopDetailModal no encontrado:', {
@@ -75,14 +74,16 @@ const ShopDetailModal = React.lazy(async () => {
       })
       throw error
     }
-    
-    console.log('✅ [ProductCard] Componente encontrado:', {
-      componentType: typeof Component,
-      componentName: Component?.name || Component?.displayName || 'Sin nombre',
-      isFunction: typeof Component === 'function',
-      isReactComponent: Component?.prototype?.isReactComponent !== undefined
-    })
-    
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ [ProductCard] Componente encontrado:', {
+        componentType: typeof Component,
+        componentName: Component?.name || Component?.displayName || 'Sin nombre',
+        isFunction: typeof Component === 'function',
+        isReactComponent: Component?.prototype?.isReactComponent !== undefined
+      })
+    }
+
     return { default: Component }
   } catch (error) {
     const loadTime = Date.now() - startTime
@@ -226,13 +227,17 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       // Precargar el módulo del modal en background
       const preloadModal = async () => {
         try {
-          console.log('📦 [ProductCard] Precargando módulo del modal...')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📦 [ProductCard] Precargando módulo del modal...')
+          }
           const module = await import('@/components/ShopDetails/ShopDetailModal')
-          console.log('✅ [ProductCard] Módulo del modal precargado exitosamente:', {
-            hasShopDetailModal: !!module.ShopDetailModal,
-            hasDefault: !!module.default,
-            keys: Object.keys(module)
-          })
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ [ProductCard] Módulo del modal precargado exitosamente:', {
+              hasShopDetailModal: !!module.ShopDetailModal,
+              hasDefault: !!module.default,
+              keys: Object.keys(module)
+            })
+          }
           setIsModalPreloaded(true)
           setPreloadError(null)
         } catch (error) {
@@ -245,15 +250,16 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
       preloadModal()
     }, [])
 
-    // Debug: Rastrear cambios en isModalPreloaded y showShopDetailModal
     React.useEffect(() => {
-      const shouldRender = isModalPreloaded || state.showShopDetailModal
-      console.log('📊 [ProductCard] Estado del modal:', {
-        isModalPreloaded,
-        showShopDetailModal: state.showShopDetailModal,
-        shouldRender,
-        productTitle: title
-      })
+      if (process.env.NODE_ENV === 'development') {
+        const shouldRender = isModalPreloaded || state.showShopDetailModal
+        console.log('📊 [ProductCard] Estado del modal:', {
+          isModalPreloaded,
+          showShopDetailModal: state.showShopDetailModal,
+          shouldRender,
+          productTitle: title
+        })
+      }
     }, [isModalPreloaded, state.showShopDetailModal, title])
 
     // Cantidad actual en el carrito
@@ -381,27 +387,27 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
     // Handler para clic en el card
     const handleCardClick = React.useCallback(
       (e: React.MouseEvent) => {
-        console.log('🟢 [ProductCard] handleCardClick llamado', {
-          target: e.target,
-          currentTarget: e.currentTarget,
-          ignoreClicksUntil: state.ignoreClicksUntilRef.current,
-          now: Date.now()
-        })
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🟢 [ProductCard] handleCardClick llamado', {
+            target: e.target,
+            currentTarget: e.currentTarget,
+            ignoreClicksUntil: state.ignoreClicksUntilRef.current,
+            now: Date.now()
+          })
+        }
         if (Date.now() < state.ignoreClicksUntilRef.current) {
-          console.log('⏸️ [ProductCard] Click ignorado (dentro del período de guardia)')
+          if (process.env.NODE_ENV === 'development') console.log('⏸️ [ProductCard] Click ignorado (dentro del período de guardia)')
           e.preventDefault()
           e.stopPropagation()
           return
         }
         if ((e.target as HTMLElement).closest('[data-testid="add-to-cart"]')) {
-          console.log('⏸️ [ProductCard] Click ignorado (botón add-to-cart)')
+          if (process.env.NODE_ENV === 'development') console.log('⏸️ [ProductCard] Click ignorado (botón add-to-cart)')
           return
         }
         e.preventDefault()
         e.stopPropagation()
-        console.log('🚀 [ProductCard] Llamando state.handleOpenModal()')
         state.handleOpenModal()
-        console.log('✅ [ProductCard] state.handleOpenModal() llamado, showShopDetailModal:', state.showShopDetailModal)
       },
       [state]
     )
@@ -628,13 +634,11 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
             }}
             showDetails={true}
           >
-            <React.Suspense fallback={
-              <div style={{ display: 'none' }}>
-                {console.log('⏳ [ProductCard] Suspense fallback activo - cargando ShopDetailModal...')}
-              </div>
-            }>
+            <React.Suspense fallback={<div style={{ display: 'none' }} aria-hidden="true" />}>
               {(() => {
-                console.log('🔍 [ProductCard] Intentando renderizar ShopDetailModal, open:', state.showShopDetailModal)
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('🔍 [ProductCard] Intentando renderizar ShopDetailModal, open:', state.showShopDetailModal)
+                }
                 return (
                   <ShopDetailModal
               open={state.showShopDetailModal}
@@ -664,16 +668,18 @@ const CommercialProductCardBase = React.forwardRef<HTMLDivElement, CommercialPro
                   capacities: variantSelection.uniqueMeasures.length > 0 ? variantSelection.uniqueMeasures : [],
                   ...(variants && variants.length > 0 ? { variants } : {}),
                 } as any
-                
-                console.log('🎯 [ProductCard] Renderizando ShopDetailModal con:', {
-                  open: state.showShopDetailModal,
-                  productId: modalProduct.id,
-                  productName: modalProduct.name,
-                  hasValidId: modalProduct.id > 0,
-                  hasBrand: !!modalProduct.brand,
-                  hasImage: !!modalProduct.image
-                })
-                
+
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('🎯 [ProductCard] Renderizando ShopDetailModal con:', {
+                    open: state.showShopDetailModal,
+                    productId: modalProduct.id,
+                    productName: modalProduct.name,
+                    hasValidId: modalProduct.id > 0,
+                    hasBrand: !!modalProduct.brand,
+                    hasImage: !!modalProduct.image
+                  })
+                }
+
                 return modalProduct
               } catch (error) {
                 console.error('❌ [ProductCard] Error construyendo objeto product:', error)

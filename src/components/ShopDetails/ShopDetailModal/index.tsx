@@ -84,12 +84,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   onAddToCart,
   onAddToWishlist,
 }) => {
-  console.log('🎯 [ShopDetailModal] Componente renderizado con:', {
-    open,
-    productId: product?.id,
-    productName: product?.name
-  })
-  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🎯 [ShopDetailModal] Componente renderizado con:', { open, productId: product?.id, productName: product?.name })
+  }
+
   const router = useRouter()
   const { trackCartAction } = useUnifiedAnalytics()
   
@@ -872,26 +870,18 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   }, [onAddToWishlist, product, onOpenChange])
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
-    console.log('🔄 [ShopDetailModal] handleOpenChange llamado:', {
-      newOpen,
-      currentOpen: open,
-      productId: product?.id
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 [ShopDetailModal] handleOpenChange llamado:', { newOpen, currentOpen: open, productId: product?.id })
+    }
     onOpenChange(newOpen)
   }, [onOpenChange, open, product?.id])
 
-  console.log('🎯 [ShopDetailModal] Renderizando Dialog con open:', open)
-  
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} modal={true}>
       <DialogContent
         className="!w-[calc(100vw-1rem)] sm:!w-[calc(100vw-2rem)] !max-w-4xl !max-h-[80vh] sm:!max-h-[85vh] !p-0 !gap-0 flex flex-col"
         showCloseButton={true}
-        onInteractOutside={(e) => {
-          console.log('🖱️ [ShopDetailModal] onInteractOutside llamado:', {
-            target: e.target,
-            currentTarget: e.currentTarget
-          })
+        onInteractOutside={() => {
           handleOpenChange(false)
         }}
       >

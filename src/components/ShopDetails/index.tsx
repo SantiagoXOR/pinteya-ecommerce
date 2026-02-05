@@ -1,9 +1,24 @@
 'use client'
 import React, { use, useEffect, useState, useMemo, useCallback, lazy, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import Breadcrumb from '../Common/Breadcrumb'
 import Image from 'next/image'
 import Newsletter from '../Common/Newsletter'
-import RecentlyViewdItems from './RecentlyViewd'
+
+// ⚡ PERFORMANCE: Lazy load RecentlyViewd (incluye Swiper) - reduce JS inicial y TBT
+const RecentlyViewdItems = dynamic(() => import('./RecentlyViewd').then((m) => ({ default: m.default })), {
+  ssr: false,
+  loading: () => (
+    <section className="py-8 border-t border-gray-100">
+      <div className="h-8 w-48 bg-gray-100 rounded animate-pulse mb-4" />
+      <div className="flex gap-4 overflow-hidden">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="w-[160px] h-[220px] bg-gray-50 rounded-lg animate-pulse flex-shrink-0" />
+        ))}
+      </div>
+    </section>
+  ),
+})
 import { usePreviewSlider } from '@/app/context/PreviewSliderContext'
 import { useAppSelector } from '@/redux/store'
 import { Button } from '@/components/ui/button'

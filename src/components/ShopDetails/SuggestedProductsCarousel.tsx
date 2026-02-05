@@ -121,8 +121,7 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
     return []
   }, [relatedProducts, productGroupFromParent, productId, limit])
 
-  // Debug: ver qué recibe el carrusel y qué se muestra
-  if (typeof window !== 'undefined') {
+  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
     console.log('[SuggestedProductsCarousel] render:', {
       productId,
       fromParent: productGroupFromParent?.products?.length ?? 0,
@@ -280,7 +279,9 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
               
               if (popularProducts.length > 0) {
                 loadedProducts = [...loadedProducts, ...popularProducts]
-                console.log('✅ Productos populares agregados:', popularProducts.length)
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('✅ Productos populares agregados:', popularProducts.length)
+                }
               }
             }
           } catch (error) {
@@ -298,16 +299,20 @@ const SuggestedProductsCarousel: React.FC<SuggestedProductsCarouselProps> = ({
           )
           if (fromParent.length > 0) {
             loadedProducts = [...loadedProducts, ...fromParent].slice(0, limit)
-            console.log('✅ Productos sugeridos desde modal (fallback):', fromParent.length)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ Productos sugeridos desde modal (fallback):', fromParent.length)
+            }
           }
         }
-        
-        console.log('📦 Productos sugeridos cargados:', {
-          productId,
-          categoryId,
-          total: loadedProducts.length,
-          products: loadedProducts.map(p => ({ id: p.id, name: p.name }))
-        })
+
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📦 Productos sugeridos cargados:', {
+            productId,
+            categoryId,
+            total: loadedProducts.length,
+            products: loadedProducts.map(p => ({ id: p.id, name: p.name }))
+          })
+        }
         
         // Ignorar resultado si el efecto se re-ejecutó (evita que Strict Mode o re-renders sobrescriban con [])
         if (runId !== effectRunRef.current) return
