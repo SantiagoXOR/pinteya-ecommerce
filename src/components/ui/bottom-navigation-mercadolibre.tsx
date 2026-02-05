@@ -227,7 +227,7 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
           }}
           {...props}
         >
-          <div className='flex items-end justify-around max-w-sm mx-auto w-full h-14 sm:h-16 sm:max-w-md overflow-visible'>
+          <div className='flex items-end justify-around max-w-[300px] mx-auto w-full h-14 sm:h-16 sm:max-w-md overflow-visible'>
           {navItems.map((item) => {
             const Icon = item.icon
             const isItemActive = item.active
