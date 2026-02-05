@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import {
   Search,
   Filter,
-  Grid3X3,
+  Grid,
   List,
   ChevronDown,
   Star,
@@ -276,7 +276,7 @@ const ShopWithSidebarSkeleton = () => {
                         onClick={() => setViewMode('grid')}
                         className='rounded-r-none'
                       >
-                        <Grid3X3 className='w-4 h-4' />
+                        <Grid className='w-4 h-4' />
                       </Button>
                       <Button
                         variant={viewMode === 'list' ? 'default' : 'ghost'}
