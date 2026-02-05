@@ -7,11 +7,11 @@
 
 ## 1. Análisis inicial (métricas actuales)
 
-### Lighthouse móvil — www.pintemas.com
+### Lighthouse móvil — www.pintemas.com (post-deploy hero en servidor)
 
 | Categoría | Score | Estado |
 |-----------|--------|--------|
-| Performance | 66/100 | 🟡 |
+| Performance | 67/100 | 🟡 |
 | Accessibility | 82/100 | 🟡 |
 | Best Practices | 96/100 | 🟢 |
 | SEO | 100/100 | 🟢 |
@@ -20,18 +20,19 @@
 
 | Métrica | Valor | Score | Objetivo | Estado |
 |---------|--------|--------|----------|--------|
-| LCP | 7.18 s | 5/100 | < 2.5 s | 🔴 Crítico |
-| FCP | 1.63 s | 93/100 | < 1.8 s | 🟢 |
+| LCP | 7.48 s | 4/100 | < 2.5 s | 🔴 Crítico |
+| FCP | 1.26 s | 98/100 | < 1.8 s | 🟢 |
 | CLS | 0.000 | 100/100 | < 0.1 | 🟢 |
-| TBT | 243.5 ms | 85/100 | < 300 ms | 🟢 |
-| SI | 5.74 s | 51/100 | < 3.4 s | 🟡 |
+| TBT | 297 ms | 79/100 | < 300 ms | 🟡 |
+| SI | 4.18 s | 78/100 | < 3.4 s | 🟡 |
+
+*Mejora tras hero en servidor: FCP 1.63s → 1.26s, SI 5.74s → 4.18s.*
 
 ### Oportunidades principales (Lighthouse)
 
 1. **Reduce unused CSS** — ~150 ms de ahorro  
-2. **Reduce unused JavaScript** — ~150 ms de ahorro  
-3. **Avoid serving legacy JavaScript** — ~150 ms de ahorro  
-4. **Initial server response time** — ~44 ms de ahorro  
+2. **Initial server response time** — ~43 ms de ahorro  
+3. Minimize main-thread work / Reduce JavaScript execution time  
 
 ### Problemas críticos reportados
 
@@ -45,7 +46,7 @@
 
 ## 2. Estado de optimizaciones ya aplicadas
 
-- **Hero LCP:** Preload en `layout.tsx` (mobile/desktop), `priority` y `fetchPriority="high"` en `HeroSection`, imagen estática inicial y carousel diferido 3 s.  
+- **Hero LCP:** Hero en servidor (`HeroImageServer`) en HTML inicial; preload en `layout.tsx`; carousel diferido 3 s. FCP y SI mejoraron (1.26 s, 4.18 s).  
 - **JS inicial:** RecentlyViewd con `dynamic()`, SuggestedProductsCarousel con IntersectionObserver, `console.log` solo en desarrollo.  
 - **Imágenes:** `loading="lazy"`, `sizes`, `fetchPriority="low"` en ProductCardImage y galerías.  
 - **Bundle:** splitChunks y `optimizePackageImports` en `next.config.js`, Recharts/Framer/Swiper en chunks async.
@@ -117,4 +118,24 @@
 
 ---
 
-*Generado por proceso Performance Optimizer post-deploy. Auditoría base: www.pintemas.com (móvil).*
+## 6. Mejoras aplicadas (05/02/2026 — continuación)
+
+### 6.1 Página de productos con carga diferida
+
+- **Archivos:** `src/app/products/page.tsx`, `src/components/ShopWithSidebar/LazyShopWithSidebar.tsx`
+- **Cambio:** La ruta `/products` usa `dynamic()` para cargar `LazyShopWithSidebar` en lugar de `ShopWithSidebar` directo. El chunk de la tienda (filtros, grid, hooks) se descarga solo al entrar en la ruta; mientras tanto se muestra un spinner de carga.
+- **Impacto:** Menor JS inicial en la navegación a /products; el bundle pesado de filtros y productos no bloquea el first load de otras rutas.
+
+### 6.2 Skeleton de LazyShopWithSidebar
+
+- **Archivo:** `src/components/ShopWithSidebar/LazyShopWithSidebar.tsx`
+- **Cambio:** Corregido uso de ícono `Grid` → `Grid3X3` (coherente con los imports existentes) para evitar errores de build.
+
+### 6.3 CSS no utilizado
+
+- **Hallazgo:** `PriceDropdown.tsx` importa `react-range-slider-input/dist/style.css` pero el componente **no está importado en ningún otro archivo** (la UI de filtros usa `ImprovedFilters` + pills). Ese CSS es actualmente código muerto.
+- **Recomendación:** Si se vuelve a usar `PriceDropdown`, cargarlo (y su CSS) de forma dinámica; o eliminar el import de CSS si el componente se deja de usar.
+
+---
+
+*Generado por proceso Performance Optimizer post-deploy. Auditoría base: www.pintemas.com (móvil). Última actualización: 05/02/2026.*

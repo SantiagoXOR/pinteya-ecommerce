@@ -14,7 +14,7 @@ const TIMESTAMP = new Date().toISOString().replace(/[:.]/g, '-')
 
 // URLs a analizar
 const URLS = {
-  production: 'https://www.pinteya.com',
+  production: 'https://www.pintemas.com',
   local: 'http://localhost:3000',
 }
 

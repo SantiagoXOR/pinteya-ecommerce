@@ -89,16 +89,16 @@ npm run lighthouse:diagnostic:local
 
 ### Current Performance
 
-**Mobile** (05/02/2026, post-deploy). URL de auditoría: **https://www.pintemas.com**
-- Performance: 66/100 🟡
-- LCP: 7.18s 🔴
-- FCP: 1.63s 🟢
-- TBT: 243.5ms 🟢
-- SI: 5.74s 🟡
+**Mobile** (05/02/2026, post-deploy; tras hero en servidor). URL: **https://www.pintemas.com**
+- Performance: 67/100 🟡
+- LCP: 7.48s 🔴
+- FCP: 1.26s 🟢
+- TBT: 297ms 🟡
+- SI: 4.18s 🟡
 - CLS: 0 ✅
 - Accessibility: 82/100 | Best Practices: 96/100 🟢 | SEO: 100/100 🟢
 
-**Mobile baseline anterior** (23/01/2026): Performance 38, LCP 17.3s, FCP 3.2s, TBT 1,210ms, SI 7.9s. Mejora post-optimizaciones (lazy Swiper, IntersectionObserver, console condicional): +20 Performance (pinteya), en pintemas.com: Performance 66, TBT 243.5ms.
+**Mobile baseline** (23/01/2026): Performance 38, LCP 17.3s, FCP 3.2s, TBT 1,210ms, SI 7.9s. Mejoras: lazy Swiper, IntersectionObserver, hero en servidor (HeroImageServer) → FCP 1.26s, SI 4.18s.
 
 **Desktop**:
 - Performance: 93/100 🟢

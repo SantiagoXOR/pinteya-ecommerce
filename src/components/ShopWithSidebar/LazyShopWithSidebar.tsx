@@ -276,7 +276,7 @@ const ShopWithSidebarSkeleton = () => {
                         onClick={() => setViewMode('grid')}
                         className='rounded-r-none'
                       >
-                        <Grid className='w-4 h-4' />
+                        <Grid3X3 className='w-4 h-4' />
                       </Button>
                       <Button
                         variant={viewMode === 'list' ? 'default' : 'ghost'}
