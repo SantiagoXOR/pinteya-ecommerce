@@ -68,8 +68,8 @@ export default function CombosOptimized() {
   // Esto evita el doble render completo del componente
   // ⚡ FIX: Contenedor con márgenes solo en desktop para consistencia con otros componentes
   return (
-    <div className="relative w-full pt-1 sm:pt-2">
-      {/* Mobile: sin contenedor, full width */}
+    <div className="relative w-full pt-0 sm:pt-2">
+      {/* Mobile: sin contenedor, full width. Sin padding-top en mobile para reducir espacio. */}
       <div className="lg:hidden relative w-full overflow-hidden" style={{ aspectRatio: '2.77', width: '100%', maxWidth: '100%' }}>
         {/* ⚡ CRITICAL: Imagen estática en HTML inicial para descubrimiento temprano y LCP */}
         <div className={`absolute inset-0 z-10 transition-opacity duration-500 ${showCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>

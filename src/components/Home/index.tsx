@@ -207,22 +207,20 @@ const Home = ({ categories, bestSellerProducts }: HomeProps) => {
       {/* 2. Ofertas Especiales (BestSeller) - Sin lazy loading, datos pre-fetched */}
       <BestSellerSection products={bestSellerProducts} />
 
-      {/* 5. Carrusel Dinámico - Montar al entrar en viewport */}
+      {/* 5. Carrusel Dinámico - Montar al entrar en viewport. Menos espacio en mobile. */}
       <div
         ref={setSectionRef('carousel')}
         data-section="carousel"
-        className="mt-4 sm:mt-6"
-        style={{ minHeight: '260px' }}
+        className="mt-2 sm:mt-6 min-h-[200px] sm:min-h-[260px]"
       >
         {visibleSections.carousel ? <DynamicProductCarousel freeShippingOnly={true} /> : null}
       </div>
 
-      {/* 4. Productos Destacados (Combos) - Montar al entrar en viewport */}
+      {/* 4. Productos Destacados (Combos) - Montar al entrar en viewport. Menos espacio en mobile. */}
       <div
         ref={setSectionRef('combos')}
         data-section="combos"
-        className='mt-4 sm:mt-6 product-section'
-        style={{ minHeight: '260px' }}
+        className='mt-2 sm:mt-6 product-section min-h-[200px] sm:min-h-[260px]'
       >
         {visibleSections.combos ? <CombosOptimized /> : null}
       </div>
@@ -231,8 +229,7 @@ const Home = ({ categories, bestSellerProducts }: HomeProps) => {
       <div
         ref={setSectionRef('arrivals')}
         data-section="arrivals"
-        className="mt-4 sm:mt-6 product-section"
-        style={{ minHeight: '260px' }}
+        className="mt-2 sm:mt-6 product-section min-h-[200px] sm:min-h-[260px]"
       >
         {visibleSections.arrivals ? <NewArrivals /> : null}
       </div>
