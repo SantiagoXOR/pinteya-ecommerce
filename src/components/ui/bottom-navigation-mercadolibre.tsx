@@ -28,6 +28,18 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
     const [whatsAppBubbleIndex, setWhatsAppBubbleIndex] = React.useState(0)
     // Mostrar la burbuja después de 3 segundos
     const [whatsAppBubbleVisible, setWhatsAppBubbleVisible] = React.useState(false)
+    // Cerrar al deslizar izquierda o derecha
+    const [whatsAppBubbleDismissed, setWhatsAppBubbleDismissed] = React.useState(false)
+    const swipeStartX = React.useRef<number>(0)
+
+    const handleBubbleTouchStart = (e: React.TouchEvent) => {
+      swipeStartX.current = e.touches[0].clientX
+    }
+    const handleBubbleTouchEnd = (e: React.TouchEvent) => {
+      const endX = e.changedTouches[0].clientX
+      const delta = Math.abs(endX - swipeStartX.current)
+      if (delta > 50) setWhatsAppBubbleDismissed(true)
+    }
 
     React.useEffect(() => {
       const timer = setTimeout(() => setWhatsAppBubbleVisible(true), 3000)
@@ -173,13 +185,15 @@ const MercadoLibreBottomNav = React.forwardRef<HTMLDivElement, MercadoLibreBotto
       },
     ]
 
-    // Burbuja de chat (tooltip) clicable para WhatsApp - texto de Santi
+    // Burbuja de chat (tooltip) clicable para WhatsApp - texto de Santi. Deslizar izquierda/derecha para cerrar.
     // En móvil: alineada a la derecha para no cortarse (right-0). En desktop: centrada.
-    const whatsAppBubble = whatsAppBubbleVisible ? (
+    const whatsAppBubble = whatsAppBubbleVisible && !whatsAppBubbleDismissed ? (
       <button
         type="button"
         onClick={handleWhatsAppClick}
-        aria-label="Abrir chat de WhatsApp con Santi"
+        onTouchStart={handleBubbleTouchStart}
+        onTouchEnd={handleBubbleTouchEnd}
+        aria-label="Abrir chat de WhatsApp con Santi. Deslizá para cerrar."
         className={cn(
           'absolute bottom-full z-10 mb-[25px] flex flex-col items-stretch',
           'min-w-[200px] max-w-[280px] sm:min-w-[240px] sm:max-w-[320px]',
