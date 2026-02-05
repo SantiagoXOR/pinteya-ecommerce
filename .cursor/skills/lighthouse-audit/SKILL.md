@@ -87,15 +87,18 @@ npm run lighthouse:diagnostic:local
 | **TBT** | < 300ms | < 300ms | 300ms - 600ms | > 600ms |
 | **SI** | < 3.4s | < 3.4s | 3.4s - 5.8s | > 5.8s |
 
-### Current Performance (Baseline)
+### Current Performance
 
-**Mobile** (23/01/2026):
-- Performance: 38/100 🔴
-- LCP: 17.3s 🔴
-- FCP: 3.2s 🔴
-- TBT: 1,210ms 🔴
-- SI: 7.9s 🔴
+**Mobile** (05/02/2026, post-deploy). URL de auditoría: **https://www.pintemas.com**
+- Performance: 66/100 🟡
+- LCP: 7.18s 🔴
+- FCP: 1.63s 🟢
+- TBT: 243.5ms 🟢
+- SI: 5.74s 🟡
 - CLS: 0 ✅
+- Accessibility: 82/100 | Best Practices: 96/100 🟢 | SEO: 100/100 🟢
+
+**Mobile baseline anterior** (23/01/2026): Performance 38, LCP 17.3s, FCP 3.2s, TBT 1,210ms, SI 7.9s. Mejora post-optimizaciones (lazy Swiper, IntersectionObserver, console condicional): +20 Performance (pinteya), en pintemas.com: Performance 66, TBT 243.5ms.
 
 **Desktop**:
 - Performance: 93/100 🟢
@@ -140,35 +143,40 @@ npm run lighthouse:diagnostic
 
 ## Optimization Opportunities
 
+*Última auditoría: 05/02/2026 (móvil, producción).*
+
 ### High Priority
 
-1. **Reduce Unused JavaScript** (890ms potential)
+1. **Reduce Unused JavaScript** (~170ms potential)
    - Lazy load heavy components
    - Use dynamic imports
    - Remove unused dependencies
    - Optimize code splitting
 
-2. **Defer Offscreen Images** (220ms potential)
-   - Add `loading="lazy"` to offscreen images
-   - Use `fetchPriority="low"` for below-fold images
-   - Optimize image sizes
-
-3. **Reduce Unused CSS** (170ms potential)
+2. **Reduce Unused CSS** (~170ms potential)
    - Verify Tailwind purge configuration
    - Remove unused CSS rules
    - Use CSS chunking
 
+3. **LCP** (7.27s — objetivo &lt; 2.5s)
+   - Optimize hero image (preload, size, quality)
+   - Reduce main-thread work and JS execution time
+   - Defer offscreen images: `loading="lazy"`, `fetchPriority="low"`
+
 ### Medium Priority
 
-4. **Avoid Legacy JavaScript** (170ms potential)
+4. **Avoid Legacy JavaScript**
    - Verify `.browserslistrc` configuration
    - Ensure modern browser support
    - Remove unnecessary polyfills
 
-5. **Server Response Time** (43ms potential)
+5. **Server Response Time** (~45ms potential)
    - Optimize database queries
    - Add database indexes
    - Implement caching
+
+6. **Best Practices** (57/100 — deprecated APIs, third-party cookies)
+   - Review report for specific audits and fix accordingly
 
 ## Performance Score Breakdown
 

@@ -1,13 +1,14 @@
 import { Metadata } from 'next'
-import Image from 'next/image'
 // ⚡ FASE 1: CSS glassmorphism movido a carga diferida via DeferredCSS (solo en desktop)
 import { QueryClient, dehydrate, Hydrate } from '@tanstack/react-query'
 import { productQueryKeys } from '@/hooks/queries/productQueryKeys'
 import { getCategoriesServer, getBestSellerProductsServer } from '@/lib/server/data-server'
 import Home from '@/components/Home'
+import { HeroImageServer } from '@/components/Home/sections/HeroImageServer'
 import type { Category } from '@/lib/categories/types'
 import type { Product } from '@/types/product'
 import { getTenantPublicConfig } from '@/lib/tenant/tenant-service'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 
 // ⚡ Metadata dinámica basada en el tenant
 export async function generateMetadata(): Promise<Metadata> {
@@ -90,9 +91,14 @@ export default async function HomePage() {
     bestSellerProducts
   )
 
+  // ⚡ LCP: Hero imagen en servidor para que esté en el HTML inicial (no espera hidratación)
+  const tenant = await getTenantPublicConfig()
+  const heroUrl = getTenantAssetPath(tenant, 'hero/hero1.webp', '/images/hero/hero2/hero1.webp')
+  const heroAlt = `${tenant?.name || 'PinteYa'} - Pintá rápido, fácil y cotiza al instante`
+
   return (
     <Hydrate state={dehydrate(queryClient)}>
-      <Home categories={categories} bestSellerProducts={bestSellerProducts} />
+      <Home categories={categories} bestSellerProducts={bestSellerProducts} heroImageServer={<HeroImageServer heroUrl={heroUrl} alt={heroAlt} />} />
     </Hydrate>
   )
 }

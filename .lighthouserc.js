@@ -1,7 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      url: ['https://www.pinteya.com'],
+      url: ['https://www.pintemas.com'],
       numberOfRuns: 3,
       settings: {
         throttlingMethod: 'simulate',

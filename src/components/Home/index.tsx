@@ -58,9 +58,11 @@ const WhatsAppPopup = dynamic(() => import('@/components/Common/WhatsAppPopup'),
 interface HomeProps {
   categories: Category[]
   bestSellerProducts: Product[]
+  /** Imagen hero renderizada en servidor para LCP en HTML inicial (opcional). */
+  heroImageServer?: React.ReactNode
 }
 
-const Home = ({ categories, bestSellerProducts }: HomeProps) => {
+const Home = ({ categories, bestSellerProducts, heroImageServer }: HomeProps) => {
   // ⚡ OPTIMIZACIÓN: Usar contextos compartidos para evitar múltiples llamadas a hooks
   const { isDesktop } = useBreakpoint()
   const [visibleSections, setVisibleSections] = useState({
@@ -198,8 +200,8 @@ const Home = ({ categories, bestSellerProducts }: HomeProps) => {
 
       {/* NUEVO ORDEN OPTIMIZADO CON GLASSMORPHISM */}
 
-      {/* 0. Hero Section - Renderizado inmediato sin lazy loading */}
-      <HeroSection isDesktop={isDesktop} />
+      {/* 0. Hero Section - Con imagen en servidor para LCP en HTML inicial */}
+      <HeroSection isDesktop={isDesktop} serverHeroSlot={heroImageServer} />
 
       {/* 1. Navegación rápida por categorías - Sin lazy loading, datos pre-fetched */}
       <CategorySection categories={categories} />

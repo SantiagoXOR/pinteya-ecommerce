@@ -14,6 +14,8 @@ const SimpleHeroCarousel = dynamic(() => import('@/components/Home/Hero/SimpleHe
 
 interface HeroSectionProps {
   isDesktop?: boolean
+  /** Cuando viene del servidor (HeroImageServer), solo se renderiza el overlay del carousel. */
+  serverHeroSlot?: React.ReactNode
 }
 
 /**
@@ -23,13 +25,14 @@ interface HeroSectionProps {
  * 2. Carga el carousel después del LCP (3s) para mejor UX
  * 3. Reduce JavaScript inicial y mejora métricas de Lighthouse
  */
-export function HeroSection({ isDesktop = false }: HeroSectionProps) {
+export function HeroSection({ isDesktop = false, serverHeroSlot }: HeroSectionProps) {
   const tenant = useTenantSafe()
   const { heroImage } = useTenantAssets()
   const [shouldLoadCarousel, setShouldLoadCarousel] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const hasServerHero = Boolean(serverHeroSlot)
 
-  // ⚡ OPTIMIZACIÓN: URL hero desde bucket (Supabase) o fallback local
+  // ⚡ OPTIMIZACIÓN: URL hero desde bucket (Supabase) o fallback local (solo si no hay imagen en servidor)
   const heroImageUrl = useMemo(() => (tenant?.slug ? heroImage(1) : '/images/hero/hero2/hero1.webp'), [tenant?.slug, heroImage])
 
   const heroAlt = useMemo(() => {
@@ -73,31 +76,33 @@ export function HeroSection({ isDesktop = false }: HeroSectionProps) {
     position: 'relative' as const,
   }
 
-  // Contenido del hero (imagen estática + carousel)
+  // Contenido del hero: imagen (servidor o cliente) + carousel overlay
   const heroContent = (
     <>
-      {/* ⚡ OPTIMIZACIÓN LCP: Imagen estática inicial (sin JavaScript) */}
-      {/* Se oculta cuando el carousel se carga para evitar superposición */}
-      {/* ⚡ OPTIMIZACIÓN PAGESPEED: Contenedor con dimensiones explícitas para prevenir layout shifts */}
-      <div 
-        className={`absolute inset-0 z-10 transition-opacity duration-500 ${
-          shouldLoadCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
-        }`}
-      >
-        <Image
-          src={heroImageUrl}
-          alt={heroAlt}
-          fill
-          priority
-          fetchPriority="high"
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-          quality={80}
-          loading="eager"
-          decoding="async"
-          aria-hidden={shouldLoadCarousel ? 'true' : 'false'}
-        />
-      </div>
+      {hasServerHero ? (
+        serverHeroSlot
+      ) : (
+        /* ⚡ OPTIMIZACIÓN LCP: Imagen estática inicial (cliente) cuando no hay server hero */
+        <div 
+          className={`absolute inset-0 z-10 transition-opacity duration-500 ${
+            shouldLoadCarousel ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <Image
+            src={heroImageUrl}
+            alt={heroAlt}
+            fill
+            priority
+            fetchPriority="high"
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+            quality={80}
+            loading="eager"
+            decoding="async"
+            aria-hidden={shouldLoadCarousel ? 'true' : 'false'}
+          />
+        </div>
+      )}
 
       {/* ⚡ OPTIMIZACIÓN: Carousel carga después del LCP */}
       {isMounted && shouldLoadCarousel && (
