@@ -16,7 +16,6 @@ import { toast } from 'react-hot-toast'
 import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
 import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProvider'
-import { Droplets } from '@/lib/optimized-imports'
 // import { useShopDetailsReducer } from '@/hooks/optimization/useShopDetailsReducer' // No se usa actualmente
 import { useRouter } from 'next/navigation'
 import { ProductModalSkeleton } from '@/components/ui/product-modal-skeleton'
@@ -54,6 +53,7 @@ import { ProductImageGallery } from './components/ProductImageGallery'
 import { ProductInfo } from './components/ProductInfo'
 import { ProductDescription } from './components/ProductDescription'
 import { ProductSpecifications } from './components/ProductSpecifications'
+import { FreeShippingText } from '@/components/ui/free-shipping-text'
 import { AddToCartSection } from './components/AddToCartSection'
 import { RelatedProducts } from './components/RelatedProducts'
 import { SuggestedProductsWithCard } from './components/SuggestedProductsWithCard'
@@ -887,9 +887,16 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
         }}
       >
         <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
-          <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900 pr-10">
-            {productData?.name || product?.name}
-          </DialogTitle>
+          <div className="pr-10">
+            <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900">
+              {productData?.name || product?.name}
+            </DialogTitle>
+            {(productData as any)?.brand || (product as any)?.brand ? (
+              <p className="text-sm text-gray-500 uppercase font-medium tracking-wide mt-0.5">
+                {(productData as any)?.brand || (product as any)?.brand}
+              </p>
+            ) : null}
+          </div>
           <DialogDescription className="sr-only">
             Detalle del producto {productData?.name || product?.name}. Precio, variantes, agregar al carrito y productos sugeridos.
           </DialogDescription>
@@ -926,15 +933,10 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                 <div className='space-y-4'>
                   {/* Selectores de variantes */}
                   <div className='space-y-4'>
-                    {/* Selector de colores - con ícono gota */}
+                    {/* Selector de colores (AdvancedColorPicker ya incluye ícono paleta y "Color") */}
                     {productType.hasColorSelector && ((smartColors && smartColors.length > 0) || (availableColors && availableColors.length > 0)) && (
-                      <div className='space-y-2'>
-                        <h4 className='text-sm font-medium text-gray-900 flex items-center gap-2'>
-                          <Droplets className='w-4 h-4 text-blaze-orange-600' />
-                          Color
-                        </h4>
-                        <React.Suspense fallback={<div className="h-32 animate-pulse bg-gray-100 rounded-lg" />}>
-                          <AdvancedColorPicker
+                      <React.Suspense fallback={<div className="h-32 animate-pulse bg-gray-100 rounded-lg" />}>
+                        <AdvancedColorPicker
                             colors={(smartColors && smartColors.length > 0) ? smartColors : availableColors}
                             selectedColor={selectedColor}
                             onColorChange={setSelectedColor}
@@ -945,8 +947,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                             productType={productType}
                             selectedFinish={selectedFinish}
                           />
-                        </React.Suspense>
-                      </div>
+                      </React.Suspense>
                     )}
 
                     {/* Selector de acabado */}
@@ -985,14 +986,23 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                         />
                       )}
 
-                    {/* Selector de cantidad */}
-                    <QuantitySelector
-                      quantity={quantity}
-                      onQuantityChange={setQuantity}
-                      onIncrement={() => setQuantity(prev => prev + 1)}
-                      onDecrement={() => setQuantity(prev => Math.max(1, prev - 1))}
-                      stock={effectiveStock}
-                    />
+                    {/* Selector de cantidad + beneficios al lado derecho */}
+                    <div className='flex flex-col sm:flex-row gap-4 sm:gap-6'>
+                      <div className='flex-1 min-w-0'>
+                        <QuantitySelector
+                          quantity={quantity}
+                          onQuantityChange={setQuantity}
+                          onIncrement={() => setQuantity(prev => prev + 1)}
+                          onDecrement={() => setQuantity(prev => Math.max(1, prev - 1))}
+                          stock={effectiveStock}
+                        />
+                      </div>
+                      <div className='flex-1 text-sm text-gray-600 space-y-1 sm:pt-9'>
+                        <FreeShippingText />
+                        <p>• Garantía de calidad en todos nuestros productos</p>
+                        <p>• Asesoramiento técnico especializado</p>
+                      </div>
+                    </div>
 
                     {/* Selector de grano */}
                     {productType.hasGrainSelector && (

@@ -51,13 +51,7 @@ export const ProductInfo = React.memo<ProductInfoProps>(({
 }) => {
   return (
     <div className='space-y-2'>
-      <p className='text-sm text-gray-500 uppercase font-medium'>
-        {fullProductData?.brand || product?.brand}
-      </p>
-      <h2 className='text-2xl font-bold text-gray-900'>
-        {fullProductData?.name || product?.name}
-      </h2>
-
+      {/* Nombre y marca se muestran en el header del modal */}
       <div className='flex items-center gap-3'>
         {hasVariantDiscount && originalPrice ? (
           <>
