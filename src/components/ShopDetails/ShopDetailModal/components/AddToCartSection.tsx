@@ -5,6 +5,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { ShoppingCartPlus, Heart } from '@/lib/optimized-imports'
+import { useTenantSafe } from '@/contexts/TenantContext'
 import { FreeShippingText } from '@/components/ui/free-shipping-text'
 import { formatPrice } from '../utils/price-utils'
 import { formatCapacity } from '@/utils/product-utils'
@@ -54,6 +55,10 @@ export const AddToCartSection = React.memo<AddToCartSectionProps>(({
   selectedSize,
   selectedWidth,
 }) => {
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor || '#ffd549'
+  const primaryColor = tenant?.primaryColor || '#f27a1d'
+
   return (
     <div className='space-y-3'>
       {/* Precio total */}
@@ -134,7 +139,11 @@ export const AddToCartSection = React.memo<AddToCartSectionProps>(({
             loadingProductData ||
             quantity > effectiveStock
           }
-          className='w-full bg-yellow-400 hover:bg-yellow-500 text-black text-lg py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed'
+          className='w-full text-lg py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed'
+          style={{
+            backgroundColor: accentColor,
+            color: primaryColor,
+          }}
           size='lg'
         >
           <ShoppingCartPlus className='mr-2 h-5 w-5' />

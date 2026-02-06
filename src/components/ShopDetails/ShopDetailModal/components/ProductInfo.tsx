@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { Package } from '@/lib/optimized-imports'
-import { Badge } from '@/components/ui/badge'
+import { useTenantSafe } from '@/contexts/TenantContext'
 import { formatPrice } from '../utils/price-utils'
 
 interface Product {
@@ -49,6 +49,10 @@ export const ProductInfo = React.memo<ProductInfoProps>(({
   effectiveStock,
   hasVariantDiscount,
 }) => {
+  const tenant = useTenantSafe()
+  const accentColor = tenant?.accentColor || '#ffd549'
+  const primaryColor = tenant?.primaryColor || '#f27a1d'
+
   return (
     <div className='space-y-2'>
       {/* Nombre y marca se muestran en el header del modal */}
@@ -61,9 +65,12 @@ export const ProductInfo = React.memo<ProductInfoProps>(({
             <span className='text-xl text-gray-500 line-through'>
               {formatPrice(originalPrice)}
             </span>
-            <Badge variant='destructive' className='text-sm'>
+            <span
+              className='inline-flex items-center px-2 py-0.5 rounded-md text-sm font-semibold uppercase'
+              style={{ backgroundColor: accentColor, color: primaryColor }}
+            >
               {Math.round(((originalPrice - currentPrice) / originalPrice) * 100)}% OFF
-            </Badge>
+            </span>
           </>
         ) : (
           <span className='text-3xl font-bold text-blaze-orange-600'>
