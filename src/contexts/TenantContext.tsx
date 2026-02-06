@@ -106,6 +106,10 @@ export function useTenantAssets() {
   return {
     logo: tenant.logoUrl || getTenantAssetPath(tenant, 'logo.svg', `/tenants/${tenant.slug}/logo.svg`),
     logoDark: tenant.logoDarkUrl || getTenantAssetPath(tenant, 'logo-dark.svg', `/tenants/${tenant.slug}/logo-dark.svg`),
+    /** Logo para header (mejor proporción de altura). Ruta local se usa tal cual. */
+    logoHeader: tenant.logoSizeUrl
+      ? (tenant.logoSizeUrl.startsWith('/') ? tenant.logoSizeUrl : getTenantAssetPath(tenant, 'logosize.svg', tenant.logoSizeUrl))
+      : null,
     favicon: tenant.faviconUrl || getTenantAssetPath(tenant, 'favicon.svg', `/tenants/${tenant.slug}/favicon.svg`),
     ogImage: tenant.ogImageUrl || getTenantAssetPath(tenant, 'og-image.png', `/tenants/${tenant.slug}/og-image.png`),
     heroImage: (index: number) => getTenantAssetPath(tenant, `hero/hero${index}.webp`, `/tenants/${tenant.slug}/hero/hero${index}.webp`),

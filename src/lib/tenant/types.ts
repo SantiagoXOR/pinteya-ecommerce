@@ -19,6 +19,7 @@ export interface TenantConfig {
   // Branding
   logoUrl: string | null
   logoDarkUrl: string | null
+  logoSizeUrl: string | null
   faviconUrl: string | null
   
   // Colores
@@ -116,6 +117,8 @@ export interface TenantPublicConfig {
   // Branding
   logoUrl: string | null
   logoDarkUrl: string | null
+  /** Logo para header con mejor proporción de altura (ej. logosize.svg) */
+  logoSizeUrl: string | null
   faviconUrl: string | null
   
   // Colores
@@ -195,6 +198,7 @@ export interface TenantDBRow {
   custom_domain: string | null
   logo_url: string | null
   logo_dark_url: string | null
+  logo_size_url: string | null
   favicon_url: string | null
   primary_color: string
   primary_dark: string

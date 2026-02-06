@@ -47,6 +47,7 @@ function mapDBRowToTenantConfig(row: TenantDBRow): TenantConfig {
     
     logoUrl: row.logo_url,
     logoDarkUrl: row.logo_dark_url,
+    logoSizeUrl: row.logo_size_url ?? null,
     faviconUrl: row.favicon_url,
     
     primaryColor: row.primary_color || DEFAULT_COLORS.primaryColor,
@@ -122,6 +123,7 @@ function extractPublicConfig(config: TenantConfig): TenantPublicConfig {
     customDomain: config.customDomain,
     logoUrl: config.logoUrl,
     logoDarkUrl: config.logoDarkUrl,
+    logoSizeUrl: config.logoSizeUrl ?? null,
     faviconUrl: config.faviconUrl,
     primaryColor: config.primaryColor,
     primaryDark: config.primaryDark,
@@ -436,6 +438,7 @@ function getHardcodedDefaultTenant(): TenantConfig {
     customDomain: 'www.pinteya.com',
     logoUrl: '/images/logo/LOGO POSITIVO.svg',
     logoDarkUrl: '/images/logo/LOGO NEGATIVO.svg',
+    logoSizeUrl: null,
     faviconUrl: '/favicon.svg',
     ...DEFAULT_COLORS,
     themeConfig: { borderRadius: '0.5rem', fontFamily: 'Plus Jakarta Sans' },

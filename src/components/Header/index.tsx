@@ -294,34 +294,27 @@ const Header = () => {
           <ScrollingBanner />
         </div>
         <div className='max-w-md mx-auto px-3 sm:px-4 py-1.5 sm:py-2'>
-          <div className='flex items-center justify-between gap-1 sm:gap-2 min-h-[48px] sm:min-h-[52px]'>
+          <div className='flex items-center justify-between gap-1 sm:gap-2 h-12 sm:h-[52px]'>
             {/* Mobile header content - mismo que desktop pero sin md: clases */}
             <Link 
               href='/' 
               className={cn(
                 'flex-shrink-0 transition-all duration-300',
                 isSearchExpanded ? 'hidden' : 'flex',
-                'p-0 m-0 inline-flex items-center justify-center',
-                'relative z-10'
+                'p-0 m-0 inline-flex items-center justify-center self-stretch',
+                'relative z-10 min-w-[70px] sm:min-w-[85px]'
               )}
-              style={{
-                // Forzar ocultamiento cuando isSearchExpanded es true
-                display: isSearchExpanded ? 'none' : 'flex'
-              }}
+              style={{ display: isSearchExpanded ? 'none' : 'flex' }}
             >
               <HeaderLogo
-                isMobile={false}
+                isMobile={true}
                 className={cn(
-                  'h-16 sm:h-20 w-auto transition-all duration-300 ease-out',
-                  'hover:scale-110 cursor-pointer',
+                  'h-full max-h-[24px] sm:max-h-[28px] w-auto max-w-[70px] sm:max-w-[85px] transition-all duration-300 ease-out',
+                  'hover:scale-105 cursor-pointer',
                   isSticky ? 'logo-sticky-scale scale-95' : 'scale-100',
-                  'object-contain block',
-                  'opacity-100 visible'
+                  'object-contain object-center block opacity-100 visible'
                 )}
-                style={{
-                  minHeight: '64px',
-                  minWidth: '160px',
-                }}
+                style={{ minHeight: '20px', minWidth: '40px', maxHeight: '100%' }}
               />
             </Link>
             
@@ -364,7 +357,7 @@ const Header = () => {
                   <div className='flex items-center transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] search-focus-ring glass-search-bar rounded-full'>
                     <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:lg:py-2 [&>div>div>input]:lg:text-base [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
                       style={{
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}
@@ -407,48 +400,32 @@ const Header = () => {
               backgroundColor: tenant?.headerBgColor || 'var(--tenant-header-bg)',
             }}
           >
-              <div className='flex items-center justify-start gap-1 sm:gap-2 md:gap-12 min-h-[48px] sm:min-h-[52px] lg:min-h-[7rem]'>
-                {/* 1. Logo - Ocultar cuando search está expandido */}
-            {/* ⚡ FIX: Remover contenedor innecesario que causa el div rectangular */}
+              <div className='flex items-center justify-start gap-2 sm:gap-3 md:gap-4 h-12 sm:h-[52px] overflow-hidden'>
+                {/* 1. Logo - Contenido dentro del header, sin desbordes */}
             <Link 
               href='/' 
               className={cn(
                 'flex-shrink-0 transition-all duration-300',
-                // Ocultar logo cuando search está expandido (mobile y desktop)
                 isSearchExpanded ? 'hidden' : 'flex',
-                // ⚡ FIX: En desktop, sin margen izquierdo extra ya que usamos justify-start
-                'ml-0 sm:ml-0 md:ml-0',
-                // ⚡ FIX: Asegurar que el link no tenga padding/margin que cause el div rectangular
-                'p-0 m-0 inline-flex items-center justify-center',
-                // ⚡ FIX: Asegurar visibilidad del logo
-                'relative z-10'
+                'ml-0 p-0 m-0 inline-flex items-center justify-center',
+                'relative z-10 h-full overflow-hidden',
+                // Espacio reservado para el logo
+                'min-w-[80px] sm:min-w-[90px] md:min-w-[110px]'
               )}
-              style={{ 
-                // ⚡ FIX: Asegurar que el contenedor se ajuste al contenido del logo
-                width: 'auto',
-                height: 'auto',
-                minWidth: 'auto',
-                minHeight: 'auto',
-                // Forzar ocultamiento cuando isSearchExpanded es true
-                display: isSearchExpanded ? 'none' : 'flex'
-              }}
+              style={{ display: isSearchExpanded ? 'none' : 'flex' }}
             >
               <HeaderLogo
                 isMobile={false}
                 className={cn(
-                  // ⚡ FIX: Logo al doble en desktop para mejor visibilidad
-                  'h-16 sm:h-20 md:h-24 lg:h-56 w-auto transition-all duration-300 ease-out',
-                  'hover:scale-110 cursor-pointer',
+                  'h-full max-h-full w-auto transition-all duration-300 ease-out',
+                  'hover:scale-105 cursor-pointer',
                   isSticky ? 'logo-sticky-scale scale-95' : 'scale-100',
-                  // ⚡ FIX: Asegurar que el logo sea visible y se ajuste correctamente
-                  'object-contain block',
-                  // ⚡ FIX: Asegurar visibilidad explícita
-                  'opacity-100 visible'
+                  'object-contain object-center block opacity-100 visible'
                 )}
                 style={{
-                  // ⚡ FIX: Dimensiones mínimas proporcionales al logo duplicado en desktop
-                  minHeight: '128px',
-                  minWidth: '320px',
+                  minHeight: '32px',
+                  minWidth: '80px',
+                  maxHeight: '100%',
                 }}
               />
             </Link>
@@ -463,7 +440,7 @@ const Header = () => {
                     <MemoizedSearchAutocomplete
                       ref={expandedSearchRef}
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:lg:py-2 [&>div>div>input]:lg:text-base [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
                       style={{
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}
@@ -497,10 +474,10 @@ const Header = () => {
               </div>
             )}
             
-            {/* 3. Search Normal - Cuando NO está expandido */}
+            {/* 3. Search Normal - Se comprime para dar espacio al logo (min-w-0 permite shrink) */}
             {!isSearchExpanded && (
               <div 
-                className='flex-1 max-w-xl sm:max-w-2xl md:max-w-none md:flex-1 mx-2 sm:mx-4 md:mx-0 cursor-pointer'
+                className='flex-1 min-w-0 ml-2 sm:ml-3 mr-0 cursor-pointer'
                 onClick={handleSearchClick}
               >
                 <div className='relative w-full'>
@@ -509,7 +486,7 @@ const Header = () => {
                   >
                     <MemoizedSearchAutocomplete
                       placeholder='Buscar productos...'
-                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:lg:py-2 [&>div>div>input]:lg:text-base [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
+                      className='[&>div>div>input]:w-full [&>div>div>input]:border [&>div>div>input]:border-white/35 [&>div>div>input]:rounded-full [&>div>div>input]:pl-4 [&>div>div>input]:sm:pl-4 [&>div>div>input]:pr-10 [&>div>div>input]:py-0.5 [&>div>div>input]:sm:py-1 [&>div>div>input]:text-gray-600 [&>div>div>input]:dark:!text-gray-300 [&>div>div>input]:text-sm [&>div>div>input]:font-normal [&>div>div>input]:shadow-sm [&>div>div>input]:placeholder-gray-600 [&>div>div>input]:placeholder:text-xs [&>div>div>input]:placeholder:font-normal [&>div>div>input]:dark:placeholder-gray-300 [&>div>div>input]:dark:placeholder:text-xs [&>div>div>input]:dark:placeholder:font-normal [&>div>div>input]:focus:border-bright-sun-300/50 [&>div>div>input]:dark:focus:border-blaze-orange-500/50 [&>div>div>input]:focus:ring-1 [&>div>div>input]:focus:ring-bright-sun-200/30 [&>div>div>input]:dark:focus:ring-blaze-orange-500/30 [&>div>div>input]:transition-all [&>div>div>input]:duration-200 [&>div>div>input]:hover:border-bright-sun-300/40 [&>div>div>input]:dark:hover:border-blaze-orange-600/40'
                       style={{
                         '--input-bg': 'rgba(255, 255, 255, 0.3)',
                       } as React.CSSProperties & { '--input-bg'?: string }}

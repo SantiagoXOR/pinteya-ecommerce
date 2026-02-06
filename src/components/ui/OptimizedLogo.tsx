@@ -17,6 +17,7 @@ import {
   pinteyaDesktopLogoPngProps,
   getTenantLogoProps,
 } from '@/utils/imageOptimization'
+import { getTenantAssetPath } from '@/lib/tenant/tenant-assets'
 import { useTenantSafe } from '@/contexts/TenantContext'
 
 export type LogoVariant = 'mobile' | 'desktop' | 'hero'
@@ -75,9 +76,24 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
     ? getTenantLogoProps(tenant.slug, tenant.name, variant)
     : getDefaultLogoProps(variant, format)
   
-  // Override con props explícitas si se proporcionan
-  const finalLogoSrc = logoSrc || logoProps.src
+  // Logo para header (mejor proporción de altura): usar logosize.svg cuando el tenant lo tenga.
+  // Si logoSizeUrl es ruta local (empieza con /), usarla tal cual para servir desde public/.
+  const headerLogoSrc = tenant?.logoSizeUrl
+    ? (tenant.logoSizeUrl.startsWith('/')
+        ? tenant.logoSizeUrl
+        : getTenantAssetPath(tenant, 'logosize.svg', tenant.logoSizeUrl))
+    : null
+  const useHeaderLogo = (variant === 'desktop' || variant === 'mobile') && !!headerLogoSrc && !logoSrc
+
+  // Override con props explícitas si se proporcionan; usar logo header (logosize) en desktop y mobile
+  const initialLogoSrc = logoSrc || (useHeaderLogo ? headerLogoSrc! : logoProps.src)
+  const [currentLogoSrc, setCurrentLogoSrc] = React.useState(initialLogoSrc)
+  React.useEffect(() => {
+    setCurrentLogoSrc(initialLogoSrc)
+  }, [initialLogoSrc])
+  const finalLogoSrc = currentLogoSrc
   const finalLogoAlt = logoAlt || logoProps.alt
+  const fallbackLogoSrc = logoSrc || logoProps.src
 
   // Clases base según la variante
   const baseClasses = {
@@ -92,12 +108,16 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
   // Next.js Image puede recargar SVGs en cada re-render incluso con unoptimized
   const isSVG = finalLogoSrc.endsWith('.svg')
   const memoizedLogoSrc = React.useMemo(() => finalLogoSrc, [finalLogoSrc])
-  
+  const handleLogoError = React.useCallback(() => {
+    setCurrentLogoSrc(fallbackLogoSrc)
+  }, [fallbackLogoSrc])
+
   if (isSVG) {
     // ⚡ FASE 3: Dimensiones explícitas para evitar CLS - calcular width basado en height y aspect ratio
+    // Para logo de header (logosize) usamos proporciones más altas en desktop y mobile
     const logoDimensions = {
-      desktop: { width: 160, height: 40 }, // Aspect ratio aproximado del logo
-      mobile: { width: 48, height: 48 },
+      desktop: useHeaderLogo ? { width: 80, height: 34 } : { width: 160, height: 40 },
+      mobile: useHeaderLogo ? { width: 70, height: 24 } : { width: 48, height: 48 },
       hero: { width: 200, height: 80 },
     }
     const dimensions = logoDimensions[variant]
@@ -109,6 +129,7 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
         className={combinedClassName}
         onClick={onClick}
         data-testid={testId}
+        onError={useHeaderLogo ? handleLogoError : undefined}
         // ⚡ FASE 3: Atributos HTML width y height explícitos para evitar CLS
         width={dimensions.width}
         height={dimensions.height}
@@ -117,15 +138,14 @@ export const OptimizedLogo: React.FC<OptimizedLogoProps> = React.memo(({
         style={{
           willChange: 'transform',
           backfaceVisibility: 'hidden',
-          // ⚡ FIX: Asegurar que el logo sea visible con dimensiones apropiadas
-          // Usar height específico según la variante para garantizar visibilidad
-          height: variant === 'desktop' ? '40px' : variant === 'mobile' ? '48px' : '80px',
-          width: variant === 'desktop' ? 'auto' : variant === 'mobile' ? '48px' : 'auto',
-          maxHeight: logoProps.height ? `${logoProps.height}px` : 'none',
-          maxWidth: logoProps.width ? `${logoProps.width}px` : 'none',
-          display: 'block', // ⚡ FIX: Evitar espacio extra debajo de la imagen
-          objectFit: 'contain', // ⚡ FIX: Asegurar que el logo se ajuste correctamente
-          // ⚡ FIX: Asegurar visibilidad explícita
+          // Logo header (logosize): contenido dentro del header, sin desbordes
+          height: variant === 'desktop' ? (useHeaderLogo ? '100%' : '40px') : variant === 'mobile' ? (useHeaderLogo ? '24px' : '48px') : '80px',
+          width: variant === 'desktop' ? 'auto' : variant === 'mobile' ? (useHeaderLogo ? 'auto' : '48px') : 'auto',
+          maxHeight: (variant === 'desktop' && useHeaderLogo) ? '36px' : (variant === 'mobile' && useHeaderLogo) ? '24px' : (logoProps.height ? `${logoProps.height}px` : 'none'),
+          maxWidth: useHeaderLogo ? (variant === 'mobile' ? '70px' : 'none') : (logoProps.width ? `${logoProps.width}px` : 'none'),
+          display: 'block',
+          objectFit: 'contain',
+          objectPosition: 'center',
           visibility: 'visible',
           opacity: 1,
         }}
