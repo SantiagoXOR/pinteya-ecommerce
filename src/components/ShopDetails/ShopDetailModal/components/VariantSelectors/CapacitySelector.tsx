@@ -4,11 +4,14 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
+import { Package } from '@/lib/optimized-imports'
 
 interface CapacitySelectorProps {
   capacities: string[]
   selectedCapacity: string
   onCapacityChange: (capacity: string) => void
+  /** Etiqueta dinámica según unidad (Capacidad, Peso, Longitud, Tamaño) */
+  label?: string
 }
 
 /**
@@ -18,10 +21,14 @@ export const CapacitySelector = React.memo<CapacitySelectorProps>(({
   capacities,
   selectedCapacity,
   onCapacityChange,
+  label = 'Capacidad',
 }) => {
   return (
     <div className='space-y-3'>
-      <h4 className='text-sm font-medium text-gray-900'>Capacidad</h4>
+      <h4 className='text-sm font-medium text-gray-900 flex items-center gap-2'>
+        <Package className='w-4 h-4 text-blaze-orange-600' />
+        {label}
+      </h4>
       <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
         {capacities.map(capacity => (
           <button

@@ -16,7 +16,7 @@ import { toast } from 'react-hot-toast'
 import { trackAddToCart as trackGA4AddToCart } from '@/lib/google-analytics'
 import { trackAddToCart as trackMetaAddToCart } from '@/lib/meta-pixel'
 import { useUnifiedAnalytics } from '@/components/Analytics/UnifiedAnalyticsProvider'
-import { Ruler } from '@/lib/optimized-imports'
+import { Droplets } from '@/lib/optimized-imports'
 // import { useShopDetailsReducer } from '@/hooks/optimization/useShopDetailsReducer' // No se usa actualmente
 import { useRouter } from 'next/navigation'
 import { ProductModalSkeleton } from '@/components/ui/product-modal-skeleton'
@@ -52,6 +52,7 @@ import { calculateEffectivePrice, calculateOriginalPrice, hasDiscount as hasDisc
 import { findVariantBySelection, normalizeMeasure } from './utils/variant-utils'
 import { ProductImageGallery } from './components/ProductImageGallery'
 import { ProductInfo } from './components/ProductInfo'
+import { ProductDescription } from './components/ProductDescription'
 import { ProductSpecifications } from './components/ProductSpecifications'
 import { AddToCartSection } from './components/AddToCartSection'
 import { RelatedProducts } from './components/RelatedProducts'
@@ -879,7 +880,7 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} modal={true}>
       <DialogContent
-        className="!w-[calc(100vw-1rem)] sm:!w-[calc(100vw-2rem)] !max-w-4xl !max-h-[80vh] sm:!max-h-[85vh] !p-0 !gap-0 flex flex-col"
+        className="!w-[calc(100vw-1rem)] sm:!w-[calc(100vw-2rem)] !max-w-5xl !max-h-[85vh] sm:!max-h-[90vh] !p-0 !gap-0 flex flex-col"
         showCloseButton={true}
         onInteractOutside={() => {
           handleOpenChange(false)
@@ -899,16 +900,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
             {loadingProductData ? (
               <ProductModalSkeleton />
             ) : (
-              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8'>
-                {/* Imagen del producto */}
-                <ProductImageGallery
-                  mainImageUrl={mainImageUrl}
-                  productName={productData?.name || product?.name || 'Producto'}
-                  galleryImages={(productData as any)?.images?.gallery}
-                />
-
-                {/* Información del producto */}
-                <div className='space-y-6'>
+              <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6'>
+                {/* Columna izquierda: Imagen + Precio + Descripción (vista un solo golpe) */}
+                <div className='space-y-4'>
+                  <ProductImageGallery
+                    mainImageUrl={mainImageUrl}
+                    productName={productData?.name || product?.name || 'Producto'}
+                    galleryImages={(productData as any)?.images?.gallery}
+                  />
                   <ProductInfo
                     product={product}
                     fullProductData={productData}
@@ -917,36 +916,40 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                     effectiveStock={effectiveStock}
                     hasVariantDiscount={hasVariantDiscount}
                   />
-
-                  {/* Descripción y especificaciones */}
-                  <ProductSpecifications
+                  <ProductDescription
                     fullProductData={productData}
                     product={product}
-                    technicalSheetUrl={(productData as any)?.technical_sheet_url || (productData as any)?.technical_sheet?.url}
                   />
+                </div>
 
-                  <Separator />
-
+                {/* Columna derecha: Selectores + Total + Agregar al carrito */}
+                <div className='space-y-4'>
                   {/* Selectores de variantes */}
-                  <div className='space-y-6'>
-                    {/* Selector de colores */}
+                  <div className='space-y-4'>
+                    {/* Selector de colores - con ícono gota */}
                     {productType.hasColorSelector && ((smartColors && smartColors.length > 0) || (availableColors && availableColors.length > 0)) && (
-                      <React.Suspense fallback={<div className="h-32 animate-pulse bg-gray-100 rounded-lg" />}>
-                        <AdvancedColorPicker
-                          colors={(smartColors && smartColors.length > 0) ? smartColors : availableColors}
-                          selectedColor={selectedColor}
-                          onColorChange={setSelectedColor}
-                          showSearch={false}
-                          showCategories={false}
-                          maxDisplayColors={(smartColors && smartColors.length > 0) ? smartColors.length : (availableColors?.length || 0)}
-                          className='bg-white'
-                          productType={productType}
-                          selectedFinish={selectedFinish}
-                        />
-                      </React.Suspense>
+                      <div className='space-y-2'>
+                        <h4 className='text-sm font-medium text-gray-900 flex items-center gap-2'>
+                          <Droplets className='w-4 h-4 text-blaze-orange-600' />
+                          Color
+                        </h4>
+                        <React.Suspense fallback={<div className="h-32 animate-pulse bg-gray-100 rounded-lg" />}>
+                          <AdvancedColorPicker
+                            colors={(smartColors && smartColors.length > 0) ? smartColors : availableColors}
+                            selectedColor={selectedColor}
+                            onColorChange={setSelectedColor}
+                            showSearch={false}
+                            showCategories={false}
+                            maxDisplayColors={(smartColors && smartColors.length > 0) ? smartColors.length : (availableColors?.length || 0)}
+                            className='bg-white'
+                            productType={productType}
+                            selectedFinish={selectedFinish}
+                          />
+                        </React.Suspense>
+                      </div>
                     )}
 
-                    {/* Selector de acabado - mostrar siempre que haya finishes, pero deshabilitar opciones no disponibles */}
+                    {/* Selector de acabado */}
                     {allFinishes.length > 0 && (
                       <FinishSelector
                         finishes={allFinishes}
@@ -957,7 +960,6 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                     )}
 
                     {/* Selector de capacidad */}
-                    {/* ✅ Mostrar si hay capacidades: cuando hay variantes con measure siempre mostrar; si no hay variantes, ocultar solo si son exactamente las defaultCapacities del tipo (placeholder). */}
                     {availableCapacities.length > 0 &&
                       !(availableCapacities.length === 1 && availableCapacities[0] === 'Sin especificar') &&
                       !productType.hasWidthSelector &&
@@ -967,25 +969,20 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                       ((Array.isArray(variants) && variants.length > 0) ||
                         !(availableCapacities.length === productType.defaultCapacities.length &&
                           availableCapacities.every((cap, idx) => cap === productType.defaultCapacities[idx]))) && (
-                        <div className='space-y-4'>
-                          <div className='flex items-center gap-2'>
-                            <Ruler className='w-5 h-5 text-blaze-orange-600' />
-                            <span className='text-base font-semibold text-gray-900'>
-                              {capacityUnit === 'litros'
-                                ? 'Capacidad'
-                                : capacityUnit === 'kg'
-                                  ? 'Peso'
-                                  : capacityUnit === 'metros'
-                                    ? 'Longitud'
-                                    : 'Tamaño'}
-                            </span>
-                          </div>
-                          <CapacitySelector
-                            capacities={availableCapacities}
-                            selectedCapacity={selectedCapacity}
-                            onCapacityChange={setSelectedCapacity}
-                          />
-                        </div>
+                        <CapacitySelector
+                          capacities={availableCapacities}
+                          selectedCapacity={selectedCapacity}
+                          onCapacityChange={setSelectedCapacity}
+                          label={
+                            capacityUnit === 'litros'
+                              ? 'Capacidad'
+                              : capacityUnit === 'kg'
+                                ? 'Peso'
+                                : capacityUnit === 'metros'
+                                  ? 'Longitud'
+                                  : 'Tamaño'
+                          }
+                        />
                       )}
 
                     {/* Selector de cantidad */}
@@ -1025,8 +1022,6 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                     )}
                   </div>
 
-                  <Separator />
-
                   {/* Sección de agregar al carrito */}
                   <AddToCartSection
                     currentPrice={finalCurrentPrice}
@@ -1044,6 +1039,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                     selectedGrain={selectedGrain}
                     selectedSize={selectedSize}
                     selectedWidth={selectedWidth}
+                  />
+
+                  {/* Especificaciones técnicas (sin descripción, ya en columna izquierda) */}
+                  <ProductSpecifications
+                    fullProductData={productData}
+                    product={product}
+                    technicalSheetUrl={(productData as any)?.technical_sheet_url || (productData as any)?.technical_sheet?.url}
+                    hideDescription
                   />
                 </div>
               </div>

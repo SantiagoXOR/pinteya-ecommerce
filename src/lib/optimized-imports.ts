@@ -76,6 +76,7 @@ import {
 
   // Herramientas (para productos de pintura)
   IconPalette,
+  IconDroplet,
   IconSparkles,
   IconBrush,
   IconTool,
@@ -243,6 +244,7 @@ export {
 
   // Herramientas (para productos de pintura)
   IconPalette as Palette,
+  IconDroplet as Droplets,
   IconSparkles as Sparkles,
   IconBrush as Brush,
   IconTool as Wrench,

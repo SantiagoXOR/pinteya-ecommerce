@@ -23,6 +23,8 @@ interface ProductSpecificationsProps {
   fullProductData: ProductWithCategory | null
   product: Product | null
   technicalSheetUrl?: string | null
+  /** Cuando true, oculta la descripción (usada cuando ProductDescription está en otra columna) */
+  hideDescription?: boolean
 }
 
 // Número máximo de caracteres antes de truncar
@@ -35,6 +37,7 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
   fullProductData,
   product,
   technicalSheetUrl,
+  hideDescription = false,
 }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   
@@ -47,7 +50,8 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
   // Technical sheet URL can come from prop or fullProductData
   const sheetUrl = technicalSheetUrl || fullProductData?.technical_sheet_url
 
-  if (!hasSpecs && !hasFeatures && !hasDescription && !fullProductData?.weight && !fullProductData?.dimensions && !fullProductData?.sku && !sheetUrl) {
+  const hasContent = hasSpecs || hasFeatures || (!hideDescription && hasDescription) || !!fullProductData?.weight || !!fullProductData?.dimensions || !!fullProductData?.sku || !!sheetUrl
+  if (!hasContent) {
     return null
   }
 
@@ -61,8 +65,8 @@ export const ProductSpecifications = React.memo<ProductSpecificationsProps>(({
 
   return (
     <div className='space-y-4'>
-      {/* Descripción */}
-      {hasDescription && (
+      {/* Descripción - oculta cuando hideDescription (se muestra en columna izquierda) */}
+      {!hideDescription && hasDescription && (
         <div>
           <p className='text-gray-600 leading-relaxed text-sm'>
             {getDisplayDescription()}

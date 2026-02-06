@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/core/utils'
-import { Layers } from '@/lib/optimized-imports'
+import { Palette } from '@/lib/optimized-imports'
 
 interface FinishSelectorProps {
   finishes: string[]
@@ -27,7 +27,7 @@ export const FinishSelector = React.memo<FinishSelectorProps>(({
   return (
     <div className='space-y-3'>
       <h4 className='text-sm font-medium text-gray-900 flex items-center gap-2'>
-        <Layers className='w-4 h-4 text-blaze-orange-600' />
+        <Palette className='w-4 h-4 text-blaze-orange-600' />
         Acabado
       </h4>
       <div className='grid grid-cols-2 gap-2'>
