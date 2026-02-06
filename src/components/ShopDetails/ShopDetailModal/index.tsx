@@ -53,7 +53,6 @@ import { ProductImageGallery } from './components/ProductImageGallery'
 import { ProductInfo } from './components/ProductInfo'
 import { ProductDescription } from './components/ProductDescription'
 import { ProductSpecifications } from './components/ProductSpecifications'
-import { FreeShippingText } from '@/components/ui/free-shipping-text'
 import { AddToCartSection } from './components/AddToCartSection'
 import { RelatedProducts } from './components/RelatedProducts'
 import { SuggestedProductsWithCard } from './components/SuggestedProductsWithCard'
@@ -888,14 +887,12 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
       >
         <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b shrink-0">
           <div className="pr-10">
-            <DialogTitle className="text-lg sm:text-xl font-semibold text-gray-900">
-              {productData?.name || product?.name}
+            <DialogTitle className="text-lg sm:text-xl text-gray-900">
+              <span className="font-bold">{productData?.name || product?.name}</span>
+              {(productData as any)?.brand || (product as any)?.brand ? (
+                <span className="font-normal text-gray-600 ml-2">| {(productData as any)?.brand || (product as any)?.brand}</span>
+              ) : null}
             </DialogTitle>
-            {(productData as any)?.brand || (product as any)?.brand ? (
-              <p className="text-sm text-gray-500 uppercase font-medium tracking-wide mt-0.5">
-                {(productData as any)?.brand || (product as any)?.brand}
-              </p>
-            ) : null}
           </div>
           <DialogDescription className="sr-only">
             Detalle del producto {productData?.name || product?.name}. Precio, variantes, agregar al carrito y productos sugeridos.
@@ -986,23 +983,14 @@ export const ShopDetailModal: React.FC<ShopDetailModalProps> = ({
                         />
                       )}
 
-                    {/* Selector de cantidad + beneficios al lado derecho */}
-                    <div className='flex flex-col sm:flex-row gap-4 sm:gap-6'>
-                      <div className='flex-1 min-w-0'>
-                        <QuantitySelector
-                          quantity={quantity}
-                          onQuantityChange={setQuantity}
-                          onIncrement={() => setQuantity(prev => prev + 1)}
-                          onDecrement={() => setQuantity(prev => Math.max(1, prev - 1))}
-                          stock={effectiveStock}
-                        />
-                      </div>
-                      <div className='flex-1 text-sm text-gray-600 space-y-1 sm:pt-9'>
-                        <FreeShippingText />
-                        <p>• Garantía de calidad en todos nuestros productos</p>
-                        <p>• Asesoramiento técnico especializado</p>
-                      </div>
-                    </div>
+                    {/* Selector de cantidad */}
+                    <QuantitySelector
+                      quantity={quantity}
+                      onQuantityChange={setQuantity}
+                      onIncrement={() => setQuantity(prev => prev + 1)}
+                      onDecrement={() => setQuantity(prev => Math.max(1, prev - 1))}
+                      stock={effectiveStock}
+                    />
 
                     {/* Selector de grano */}
                     {productType.hasGrainSelector && (

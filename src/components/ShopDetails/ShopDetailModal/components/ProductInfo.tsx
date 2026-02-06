@@ -72,17 +72,18 @@ export const ProductInfo = React.memo<ProductInfoProps>(({
         )}
       </div>
 
-      {/* Mostrar categoría si está disponible */}
-      {fullProductData?.category && (
-        <p className='text-sm text-gray-600'>
-          Categoría: <span className='font-medium'>{fullProductData.category.name}</span>
-        </p>
-      )}
-
-      {/* Mostrar stock */}
-      <div className='flex items-center gap-2'>
-        <Package className='w-4 h-4 text-gray-500' />
-        <span className='text-sm text-gray-600'>
+      {/* Categoría y stock en una sola línea */}
+      <div className='flex items-center gap-2 text-sm text-gray-600'>
+        {fullProductData?.category && (
+          <span>
+            Categoría: <span className='font-medium'>{fullProductData.category.name}</span>
+          </span>
+        )}
+        {fullProductData?.category && (
+          <span className='text-gray-400'>·</span>
+        )}
+        <span className='flex items-center gap-1.5'>
+          <Package className='w-4 h-4 text-gray-500 flex-shrink-0' />
           Stock: <span className='font-medium'>{effectiveStock}</span>
         </span>
       </div>

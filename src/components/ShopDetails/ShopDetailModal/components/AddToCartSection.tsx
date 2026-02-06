@@ -5,6 +5,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { ShoppingCartPlus, Heart } from '@/lib/optimized-imports'
+import { FreeShippingText } from '@/components/ui/free-shipping-text'
 import { formatPrice } from '../utils/price-utils'
 import { formatCapacity } from '@/utils/product-utils'
 import { PAINT_COLORS } from '@/components/ui/advanced-color-picker'
@@ -175,6 +176,13 @@ export const AddToCartSection = React.memo<AddToCartSectionProps>(({
             </p>
           )}
         </div>
+      </div>
+
+      {/* Información adicional: envío, garantía, asesoramiento */}
+      <div className='text-sm text-gray-600 space-y-1'>
+        <FreeShippingText />
+        <p>• Garantía de calidad en todos nuestros productos</p>
+        <p>• Asesoramiento técnico especializado</p>
       </div>
     </div>
   )
