@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseClient } from '@/lib/integrations/supabase'
 import { ApiResponse } from '@/types/api'
 import { metricsCache } from '@/lib/analytics/metrics-cache'
+import { getTenantConfig } from '@/lib/tenant/tenant-service'
 
 // ===================================
 // MEJORAS DE SEGURIDAD - ALTA PRIORIDAD
@@ -417,6 +418,15 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabaseClient()
 
     if (supabase) {
+      // MULTITENANT: Obtener tenant_id para asignar el evento al tenant correcto
+      let tenantId: string | null = null
+      try {
+        const tenant = await getTenantConfig()
+        tenantId = tenant.id
+      } catch {
+        // Si falla obtener tenant, el evento se guardará sin tenant
+      }
+
       // Registrar la búsqueda en analytics usando función optimizada
       const { error } = await supabase.rpc('insert_analytics_event_optimized', {
         p_event_name: 'search',
@@ -427,6 +437,8 @@ export async function POST(request: NextRequest) {
         p_session_id: sessionId || 'anonymous',
         p_page: '/search',
         p_user_agent: null,
+        // MULTITENANT: Incluir tenant_id para aislamiento por tienda
+        p_tenant_id: tenantId,
       })
 
       if (error) {
