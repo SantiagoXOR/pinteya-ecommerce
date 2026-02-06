@@ -65,6 +65,28 @@ async function main() {
   let ok = 0
   let err = 0
 
+  // 0. Logos SVG (logo, logo-dark, logosize)
+  const logos = ['logo.svg', 'logo-dark.svg', 'logosize.svg']
+  for (const name of logos) {
+    const logoPath = path.join(BASE, name)
+    if (fs.existsSync(logoPath)) {
+      try {
+        const raw = fs.readFileSync(logoPath)
+        const out = minifySvg(raw)
+        const storagePath = `tenants/${SLUG}/${name}`
+        await upload(storagePath, out, 'image/svg+xml')
+        console.log(`✅ ${storagePath}  ${(raw.length / 1024).toFixed(1)} KB → ${(out.length / 1024).toFixed(1)} KB`)
+        ok++
+      } catch (e) {
+        console.error(`❌ ${name}: ${e.message}`)
+        err++
+      }
+      await new Promise((r) => setTimeout(r, 150))
+    } else {
+      console.warn(`⚠️ No existe: ${logoPath}`)
+    }
+  }
+
   // 1. Favicon SVG
   const faviconPath = path.join(BASE, 'favicon.svg')
   if (fs.existsSync(faviconPath)) {
