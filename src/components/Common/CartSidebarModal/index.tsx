@@ -21,10 +21,14 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { formatCurrency } from '@/lib/utils/consolidated-utils'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const CartSidebarModal = () => {
   const { isCartModalOpen, closeCartModal } = useCartModalContext()
+  const tenant = useTenantSafe()
   const cartItems = useAppSelector(state => state.cartReducer.items)
+  const accentColor = tenant?.accentColor || '#ffd549'
+  const primaryColor = tenant?.primaryColor || '#ea5a17'
   const [mounted, setMounted] = useState(false)
   const [dragStartY, setDragStartY] = useState<number | null>(null)
   const [dragCurrentY, setDragCurrentY] = useState<number | null>(null)
@@ -389,19 +393,19 @@ const CartSidebarModal = () => {
               </div>
             )}
 
-            {/* Subtotal */}
+            {/* Subtotal - jerarquía secundaria */}
             <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-0.5' : 'mb-1'}`}>
-              <p className={isLargeText ? 'text-[11px] text-gray-600 font-light' : 'text-xs text-gray-600 font-light'}>Subtotal</p>
-              <p className={`${isLargeText ? 'text-[11px] font-semibold' : 'text-xs font-semibold'} text-tenant-price`}>
+              <p className={isLargeText ? 'text-[11px] text-gray-600 font-medium' : 'text-xs text-gray-600 font-medium'}>Subtotal</p>
+              <p className={`${isLargeText ? 'text-[11px] font-medium' : 'text-xs font-medium'} text-tenant-price`}>
                 {mounted ? formatCurrency(effectiveTotalPrice) : formatCurrency(0)}
               </p>
             </div>
 
-            {/* Envío */}
+            {/* Envío - jerarquía secundaria */}
             {hasItems && (
               <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-0.5' : 'mb-1'}`}>
-                <p className={isLargeText ? 'text-[11px] text-gray-600' : 'text-xs text-gray-600'}>Envío</p>
-                <p className={isLargeText ? 'text-[11px] font-semibold' : 'text-xs font-semibold'}>
+                <p className={isLargeText ? 'text-[11px] text-gray-600 font-medium' : 'text-xs text-gray-600 font-medium'}>Envío</p>
+                <p className={isLargeText ? 'text-[11px] font-medium' : 'text-xs font-medium'}>
                   {estimatedShippingCost === 0 ? (
                     <span className='text-tenant-success'>Gratis</span>
                   ) : (
@@ -411,28 +415,29 @@ const CartSidebarModal = () => {
               </div>
             )}
 
-            {/* Total */}
+            {/* Total - jerarquía principal, mayor peso visual */}
             {hasItems && (
-              <div className={`flex items-center justify-between gap-3 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
-                <p className={isLargeText ? 'font-semibold text-xs text-gray-900' : 'font-semibold text-sm text-gray-900'}>Total</p>
-                <p className={`${isLargeText ? 'font-semibold text-xs' : 'font-semibold text-sm'} text-tenant-price`}>
+              <div className={`flex items-center justify-between gap-3 pt-2 border-t border-gray-200 ${isLargeText ? 'mb-1' : 'mb-1.5'}`}>
+                <p className={isLargeText ? 'font-bold text-xs text-gray-900' : 'font-bold text-sm text-gray-900'}>Total</p>
+                <p className={`${isLargeText ? 'font-bold text-xs' : 'font-bold text-base'} text-tenant-price`}>
                   {mounted ? formatCurrency(effectiveTotalPrice + estimatedShippingCost) : formatCurrency(0)}
                 </p>
               </div>
             )}
 
-            {/* Botón "Comprar ahora" - Estilo verde del checkout - Sticky */}
+            {/* Botón "Comprar ahora" - Colores tenant, full rounded */}
             {mounted && hasItems && (
               <div style={{ marginTop: '6px', marginBottom: '0px', paddingBottom: '0px' }}>
                 <button
                   onClick={startTransition}
                   disabled={isButtonDisabled || cartLoading}
                   data-testid='checkout-btn-bottom'
-                  className={`w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold ${isLargeText ? 'py-1.5 px-3 text-xs' : 'py-1.5 px-4 text-sm'} rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 ${
+                  className={`w-full rounded-full font-bold py-1.5 px-4 transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 ${isLargeText ? 'text-xs px-3' : 'text-sm'} ${
                     isButtonDisabled || cartLoading
                       ? 'opacity-50 cursor-not-allowed'
                       : ''
                   }`}
+                  style={{ backgroundColor: accentColor, color: primaryColor }}
                 >
                   {cartLoading
                     ? 'Cargando carrito...'

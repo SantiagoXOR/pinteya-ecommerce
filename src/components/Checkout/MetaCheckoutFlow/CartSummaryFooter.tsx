@@ -40,19 +40,19 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
         </div>
       )}
 
-      {/* Subtotal */}
-      <div className='flex items-center justify-between gap-3 mb-3'>
-        <p className='font-medium text-lg text-gray-900'>Subtotal:</p>
-        <p className='font-medium text-lg text-tenant-price'>
+      {/* Subtotal - jerarquía secundaria */}
+      <div className='flex items-center justify-between gap-3 mb-2'>
+        <p className='text-sm font-medium text-gray-600'>Subtotal</p>
+        <p className='text-sm font-medium text-tenant-price'>
           {formatCurrency(subtotal)}
         </p>
       </div>
 
-      {/* Envío - color tenant para mejor contraste */}
+      {/* Envío - jerarquía secundaria */}
       {subtotal > 0 && (
         <div className='flex items-center justify-between gap-3 mb-2'>
-          <p className='text-gray-700'>Envío</p>
-          <p className='font-semibold'>
+          <p className='text-sm font-medium text-gray-600'>Envío</p>
+          <p className='text-sm font-medium'>
             {estimatedShippingCost === 0 ? (
               <span className='text-tenant-success'>Gratis</span>
             ) : (
@@ -62,11 +62,11 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
         </div>
       )}
 
-      {/* Total */}
+      {/* Total - jerarquía principal, mayor peso visual */}
       {subtotal > 0 && (
-        <div className='flex items-center justify-between gap-3 mb-0'>
-          <p className='font-bold text-lg text-gray-900'>Total:</p>
-          <p className='font-bold text-lg text-tenant-price'>
+        <div className='flex items-center justify-between gap-3 pt-2 border-t border-gray-200'>
+          <p className='text-lg font-bold text-gray-900'>Total</p>
+          <p className='text-xl font-bold text-tenant-price'>
             {formatCurrency(total)}
           </p>
         </div>
