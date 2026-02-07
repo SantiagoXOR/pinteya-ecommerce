@@ -174,33 +174,34 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       <div className='flex items-center justify-between mb-2'>
         {labels && labels.length === totalSteps ? (
           <>
-            {/* Ocultar labels en móviles <375px para evitar compresión de texto */}
+            {/* Ocultar labels en móviles <375px para evitar compresión de texto - colores por tenant */}
             {labels.map((label, index) => (
               <span
                 key={index}
-                className={cn(
-                  'text-xs font-medium hidden xsm:inline',
-                  index + 1 <= currentStep ? 'text-green-600' : 'text-gray-400'
-                )}
+                className={cn('text-xs font-medium hidden xsm:inline', index + 1 <= currentStep ? '' : 'text-gray-400')}
+                style={index + 1 <= currentStep ? { color: 'var(--tenant-primary, #ea5a17)' } : undefined}
               >
                 {label}
               </span>
             ))}
             {/* Mostrar solo números en móviles pequeños */}
-            <span className='text-xs font-medium text-gray-700 xsm:hidden'>
+            <span className='text-xs font-medium xsm:hidden' style={{ color: 'var(--tenant-primary, #ea5a17)' }}>
               Paso {currentStep} de {totalSteps}
             </span>
           </>
         ) : (
-          <span className='text-sm font-medium text-gray-700'>
+          <span className='text-sm font-medium' style={{ color: 'var(--tenant-primary, #ea5a17)' }}>
             Paso {currentStep} de {totalSteps}
           </span>
         )}
       </div>
-      <div className='w-full bg-gray-200 rounded-full h-2'>
+      <div className='w-full rounded-full h-2 overflow-hidden' style={{ backgroundColor: '#e5e7eb' }}>
         <div
-          className='bg-green-600 h-2 rounded-full transition-all duration-300'
-          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          className='h-2 rounded-full transition-all duration-300'
+          style={{
+            width: `${(currentStep / totalSteps) * 100}%`,
+            backgroundColor: 'var(--tenant-primary, #ea5a17)',
+          }}
         />
       </div>
     </div>

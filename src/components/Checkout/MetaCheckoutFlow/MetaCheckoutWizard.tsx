@@ -37,6 +37,7 @@ import { trackGoogleAdsBeginCheckout } from '@/lib/google-ads'
 import Image from 'next/image'
 import { validateDNI, formatCurrency } from '@/lib/utils/consolidated-utils'
 import { AddressMapSelectorAdvanced } from '@/components/ui/AddressMapSelectorAdvanced'
+import { useTenantSafe } from '@/contexts/TenantContext'
 
 const STEP_LABELS: Record<MetaCheckoutStep, string> = {
   summary: 'Resumen',
@@ -50,7 +51,10 @@ const STEP_ORDER: MetaCheckoutStep[] = ['summary', 'contact', 'shipping', 'payme
 
 export const MetaCheckoutWizard: React.FC = () => {
   const router = useRouter()
+  const tenant = useTenantSafe()
   const { trackEcommerceEvent } = useAnalytics()
+  const accentColor = tenant?.accentColor || '#ffd549'
+  const primaryColor = tenant?.primaryColor || '#ea5a17'
   // ✅ AGREGAR: Estado para controlar la pantalla de loading durante redirección
   const [isRedirecting, setIsRedirecting] = useState(false)
   
@@ -410,7 +414,11 @@ export const MetaCheckoutWizard: React.FC = () => {
                   <ArrowLeft className='w-4 h-4' />
                   {currentStepIndex > 0 ? 'Atrás' : 'Carrito'}
                 </Button>
-                <Badge variant='secondary' className='bg-blue-600 text-white font-semibold shadow-sm'>
+                <Badge
+                  variant='secondary'
+                  className='font-semibold shadow-sm border-0'
+                  style={{ backgroundColor: accentColor, color: primaryColor }}
+                >
                   Paso {currentStepIndex + 1} de {STEP_ORDER.length}
                 </Badge>
               </div>
@@ -456,7 +464,7 @@ export const MetaCheckoutWizard: React.FC = () => {
           )}
         </div>
 
-        {/* Botón fixed "Comprar ahora" - Para paso summary - Fijo abajo */}
+        {/* Botón fixed "Comprar ahora" - Para paso summary - Fijo abajo - Colores por tenant */}
         {state.currentStep === 'summary' && (
           <div className='fixed bottom-0 left-0 right-0 z-50 shadow-lg'>
             <div className='max-w-4xl mx-auto px-4 py-4'>
@@ -465,9 +473,13 @@ export const MetaCheckoutWizard: React.FC = () => {
                 onClick={handleStepComplete}
                 disabled={!canProceed || isLoading}
                 className={cn(
-                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold shadow-lg',
+                  'w-full rounded-full font-bold shadow-lg border-0',
                   (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
                 )}
+                style={{
+                  backgroundColor: accentColor,
+                  color: primaryColor,
+                }}
               >
                 {isLoading ? (
                   <>
@@ -485,7 +497,7 @@ export const MetaCheckoutWizard: React.FC = () => {
           </div>
         )}
 
-        {/* Botón fixed "Continuar" - Para pasos intermedios - Fijo abajo */}
+        {/* Botón fixed "Continuar" - Para pasos intermedios - Fijo abajo - Colores por tenant */}
         {state.currentStep !== 'confirmation' && state.currentStep !== 'summary' && (
           <div className='fixed bottom-0 left-0 right-0 z-50 shadow-lg'>
             <div className='max-w-4xl mx-auto px-4 py-4'>
@@ -494,9 +506,13 @@ export const MetaCheckoutWizard: React.FC = () => {
                 onClick={handleStepComplete}
                 disabled={!canProceed || isLoading}
                 className={cn(
-                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold shadow-lg',
+                  'w-full rounded-full font-bold shadow-lg border-0',
                   (!canProceed || isLoading) && 'opacity-50 cursor-not-allowed'
                 )}
+                style={{
+                  backgroundColor: accentColor,
+                  color: primaryColor,
+                }}
               >
                 {isLoading ? (
                   <>
@@ -514,7 +530,7 @@ export const MetaCheckoutWizard: React.FC = () => {
           </div>
         )}
 
-        {/* Botón fixed "Confirmar Pedido" - Solo en etapa de confirmación - Fijo abajo */}
+        {/* Botón fixed "Confirmar Pedido" - Solo en etapa de confirmación - Fijo abajo - Colores por tenant */}
         {state.currentStep === 'confirmation' && (
           <div className='fixed bottom-0 left-0 right-0 z-50 shadow-lg'>
             <div className='max-w-4xl mx-auto px-4 py-4'>
@@ -523,9 +539,13 @@ export const MetaCheckoutWizard: React.FC = () => {
                 onClick={handleStepComplete}
                 disabled={isLoading}
                 className={cn(
-                  'w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 py-3 xsm:py-4 sm:py-6',
+                  'w-full rounded-full shadow-lg hover:shadow-xl transition-all duration-200 py-3 xsm:py-4 sm:py-6 border-0',
                   isLoading && 'opacity-50 cursor-not-allowed'
                 )}
+                style={{
+                  backgroundColor: accentColor,
+                  color: primaryColor,
+                }}
               >
               {isLoading ? (
                   <div className='flex items-center gap-2 xsm:gap-3'>

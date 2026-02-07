@@ -78,20 +78,20 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
 
         {/* Columna derecha: Texto, barra y labels */}
         <div className='flex-1'>
-          {/* Texto principal */}
+          {/* Texto principal - colores por tenant (primary) */}
           <div className={cn(isCompact ? 'mb-1.5' : 'mb-3')}>
             {hasReachedTarget ? (
-              <p className={cn('text-tenant-success font-bold', isCompact ? 'text-sm' : 'text-base')}>
+              <p className={cn('font-bold', isCompact ? 'text-sm' : 'text-base')} style={{ color: 'var(--tenant-primary, #ea5a17)' }}>
                 ¡Felicitaciones! Tienes envío gratis
               </p>
             ) : (
-              <p className={cn('text-gray-700 font-semibold', isCompact ? 'text-sm' : 'text-base')}>
+              <p className={cn('font-semibold', isCompact ? 'text-sm' : 'text-base')} style={{ color: 'var(--tenant-primary, #ea5a17)' }}>
                 Te faltan ${remainingAmount.toLocaleString()} para envío gratis
               </p>
             )}
           </div>
 
-          {/* Barra de progreso - inline styles para garantizar visibilidad del fill */}
+          {/* Barra de progreso - colores por tenant (primary) */}
           <div
             className={cn('w-full rounded-full overflow-hidden', isCompact ? 'h-2' : 'h-3')}
             style={{ backgroundColor: '#e5e7eb' }}
@@ -101,39 +101,35 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
               style={{
                 width: `${Math.max(progress, 0)}%`,
                 minWidth: progress > 0 ? 4 : 0,
-                background: hasReachedTarget
-                  ? 'var(--tenant-success-color, #22c55e)'
-                  : 'linear-gradient(to right, #facc15, #f97316)',
+                backgroundColor: 'var(--tenant-primary, #ea5a17)',
               }}
             ></div>
           </div>
 
-          {/* Labels de progreso */}
+          {/* Labels de progreso - colores por tenant (primary) */}
           <div
-            className={cn(
-              'flex justify-between text-gray-600',
-              isCompact ? 'mt-1 text-2xs' : 'mt-2 text-xs'
-            )}
+            className={cn('flex justify-between font-semibold', isCompact ? 'mt-1 text-2xs' : 'mt-2 text-xs')}
+            style={{ color: 'var(--tenant-primary, #ea5a17)' }}
           >
             <span>$0</span>
-            <span className='font-semibold'>${resolvedTarget.toLocaleString()}</span>
+            <span>${resolvedTarget.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      {/* Información detallada (solo en variant detailed) */}
+      {/* Información detallada (solo en variant detailed) - colores por tenant */}
       {isDetailed && (
-        <div className='mt-3 pt-3 border-t border-yellow-200'>
+        <div className='mt-3 pt-3 border-t border-gray-200'>
           <div className='flex justify-between items-center text-xs'>
-            <span className='text-gray-600'>Progreso actual:</span>
-            <span className='font-semibold text-gray-900'>
+            <span style={{ color: 'var(--tenant-primary, #ea5a17)' }}>Progreso actual:</span>
+            <span className='font-semibold' style={{ color: 'var(--tenant-primary, #ea5a17)' }}>
               ${safeCurrentAmount.toLocaleString()} ({progress.toFixed(1)}%)
             </span>
           </div>
 
           {!hasReachedTarget && (
-            <div className='mt-2 p-2 bg-yellow-100 rounded-lg'>
-              <p className='text-xs text-yellow-800'>
+            <div className='mt-2 p-2 rounded-lg' style={{ backgroundColor: 'var(--tenant-primary, #ea5a17)1a' }}>
+              <p className='text-xs' style={{ color: 'var(--tenant-primary, #ea5a17)' }}>
                 💡 Agrega ${remainingAmount.toLocaleString()} más para obtener envío gratis
               </p>
             </div>
