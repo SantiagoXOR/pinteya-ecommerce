@@ -405,7 +405,7 @@ const CartSidebarModal = () => {
                   {estimatedShippingCost === 0 ? (
                     <span className='text-tenant-success'>Gratis</span>
                   ) : (
-                    <span className='text-yellow-600'>{formatCurrency(estimatedShippingCost)}</span>
+                    <span className='text-tenant-price'>{formatCurrency(estimatedShippingCost)}</span>
                   )}
                 </p>
               </div>

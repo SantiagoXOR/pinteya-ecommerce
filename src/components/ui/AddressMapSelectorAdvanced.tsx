@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { MapPin, CheckCircle, AlertCircle, Loader2, X, Search } from '@/lib/optimized-imports'
+import { MapPin, CheckCircle, AlertCircle, Loader2, X } from '@/lib/optimized-imports'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useTenantSafe } from '@/contexts/TenantContext'
@@ -52,6 +52,8 @@ export function AddressMapSelectorAdvanced({
   const checkLoadedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const initMapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const listenerRefs = useRef<google.maps.MapsEventListener[]>([])
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastSearchedAddressRef = useRef<string>('')
 
   useEffect(() => {
     isMountedRef.current = true
@@ -391,15 +393,16 @@ export function AddressMapSelectorAdvanced({
     )
   }
 
-  // Buscar dirección escrita (geocodificación directa)
-  const handleSearch = async () => {
-    if (!selectedAddress.trim() || !geocoderRef.current) return
+  // Buscar dirección escrita (geocodificación directa) - acepta dirección opcional para búsqueda automática
+  const handleSearch = (addressToSearch?: string) => {
+    const searchAddress = (addressToSearch ?? selectedAddress).trim()
+    if (!searchAddress || !geocoderRef.current) return
 
     setIsSearching(true)
     setErrorMessage(undefined)
 
     geocoderRef.current.geocode(
-      { address: `${selectedAddress}, ${cityName}, Córdoba, Argentina` },
+      { address: `${searchAddress}, ${cityName}, Córdoba, Argentina` },
       (results, status) => {
         if (!isMountedRef.current) return
         setIsSearching(false)
@@ -416,6 +419,7 @@ export function AddressMapSelectorAdvanced({
           
           setSelectedCoordinates({ lat, lng })
           setSelectedAddress(result.formatted_address)
+          lastSearchedAddressRef.current = result.formatted_address
           
           // Validar ubicación
           validateLocation(lat, lng, result.address_components || [], result.formatted_address)
@@ -430,8 +434,31 @@ export function AddressMapSelectorAdvanced({
 
   // NO obtener sugerencias - eliminado para evitar errores de Places API
 
+  // Búsqueda automática con debounce - sin necesidad de presionar botón
+  useEffect(() => {
+    const trimmed = selectedAddress.trim()
+    if (trimmed.length < 5) return
+    if (trimmed === lastSearchedAddressRef.current) return
+
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current)
+    }
+
+    searchDebounceRef.current = setTimeout(() => {
+      searchDebounceRef.current = null
+      lastSearchedAddressRef.current = trimmed
+      handleSearch(trimmed)
+    }, 600)
+
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current)
+      }
+    }
+  }, [selectedAddress])
 
   const handleClear = () => {
+    lastSearchedAddressRef.current = ''
     setSelectedAddress('')
     setSelectedCoordinates(null)
     setIsValid(null)
@@ -473,73 +500,55 @@ export function AddressMapSelectorAdvanced({
         </label>
       )}
 
-      {/* Input de dirección con botón buscar */}
+      {/* Input de dirección - búsqueda automática al escribir (sin botón lupa) */}
       <div className="relative">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <input
-              ref={inputRef}
-              type="text"
-              value={selectedAddress}
-              onChange={handleInputChange}
-              onKeyDown={(e) => {
-                // Permitir búsqueda con Enter
-                if (e.key === 'Enter' && selectedAddress.trim()) {
-                  e.preventDefault()
-                  handleSearch()
-                }
-              }}
-              placeholder="Dirección (calle y número) o lugar de entrega"
-              disabled={disabled}
-              className={cn(
-                'w-full px-4 py-3 pr-12 text-base border rounded-lg transition-all duration-200',
-                'focus:outline-none focus:ring-2 focus:ring-blue-500/20',
-                {
-                  'border-red-500 focus:border-red-500': errorMessage || error,
-                  'border-green-500 focus:border-green-600': isValid,
-                  'border-gray-300 focus:border-blue-500': !errorMessage && !isValid,
-                  'bg-gray-50 cursor-not-allowed': disabled,
-                },
-                className
-              )}
-            />
-            
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-              {isLoading && (
-                <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-              )}
-              {!isLoading && isValid && (
-                <CheckCircle className="w-5 h-5 text-green-500" />
-              )}
-              {!isLoading && errorMessage && (
-                <AlertCircle className="w-5 h-5 text-red-500" />
-              )}
-              {selectedAddress && !disabled && !isLoading && (
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  className="p-1 text-gray-400 hover:text-gray-600"
-                  aria-label="Limpiar"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </div>
-          
-          <Button
-            type="button"
-            onClick={handleSearch}
-            disabled={disabled || !selectedAddress.trim() || isSearching}
-            className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-12 h-12 p-0 flex items-center justify-center flex-shrink-0"
-            aria-label="Buscar dirección"
-          >
-            {isSearching ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Search className="w-5 h-5" />
-            )}
-          </Button>
+        <input
+          ref={inputRef}
+          type="text"
+          value={selectedAddress}
+          onChange={handleInputChange}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && selectedAddress.trim().length >= 5) {
+              e.preventDefault()
+              if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+              handleSearch()
+            }
+          }}
+          placeholder="Dirección (calle y número) o lugar de entrega"
+          disabled={disabled}
+          className={cn(
+            'w-full px-4 py-3 pr-12 text-base border rounded-lg transition-all duration-200',
+            'focus:outline-none focus:ring-2 focus:ring-blue-500/20',
+            {
+              'border-red-500 focus:border-red-500': errorMessage || error,
+              'border-green-500 focus:border-green-600': isValid,
+              'border-gray-300 focus:border-blue-500': !errorMessage && !isValid,
+              'bg-gray-50 cursor-not-allowed': disabled,
+            },
+            className
+          )}
+        />
+        
+        <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+          {isSearching && (
+            <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+          )}
+          {!isSearching && isValid && (
+            <CheckCircle className="w-5 h-5 text-green-500" />
+          )}
+          {!isSearching && errorMessage && (
+            <AlertCircle className="w-5 h-5 text-red-500" />
+          )}
+          {selectedAddress && !disabled && !isSearching && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="p-1 text-gray-400 hover:text-gray-600"
+              aria-label="Limpiar"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 

@@ -48,7 +48,7 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
         </p>
       </div>
 
-      {/* Envío */}
+      {/* Envío - color tenant para mejor contraste */}
       {subtotal > 0 && (
         <div className='flex items-center justify-between gap-3 mb-2'>
           <p className='text-gray-700'>Envío</p>
@@ -56,7 +56,7 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
             {estimatedShippingCost === 0 ? (
               <span className='text-tenant-success'>Gratis</span>
             ) : (
-              formatCurrency(estimatedShippingCost)
+              <span className='text-tenant-price'>{formatCurrency(estimatedShippingCost)}</span>
             )}
           </p>
         </div>
