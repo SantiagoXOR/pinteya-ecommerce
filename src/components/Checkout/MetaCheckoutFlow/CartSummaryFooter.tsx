@@ -33,6 +33,7 @@ export const CartSummaryFooter: React.FC<CartSummaryFooterProps> = ({
         <div className='mb-3'>
           <ShippingProgressBar 
             currentAmount={subtotal} 
+            targetAmount={freeShippingThreshold}
             variant='compact' 
             showIcon={true}
           />

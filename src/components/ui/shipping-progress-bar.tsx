@@ -13,6 +13,12 @@ interface ShippingProgressBarProps {
   variant?: 'default' | 'compact' | 'detailed'
 }
 
+const toNumber = (v: unknown, fallback = 0): number => {
+  if (v == null) return fallback
+  const n = typeof v === 'string' ? parseFloat(v) : Number(v)
+  return Number.isFinite(n) && n >= 0 ? n : fallback
+}
+
 const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
   currentAmount,
   targetAmount,
@@ -21,10 +27,11 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
   variant = 'default',
 }) => {
   const config = useDesignSystemConfig()
-  const resolvedTarget = targetAmount ?? config.ecommerce.shippingInfo.freeShippingThreshold
-  const progress = Math.min((currentAmount / resolvedTarget) * 100, 100)
-  const remainingAmount = Math.max(resolvedTarget - currentAmount, 0)
-  const hasReachedTarget = currentAmount >= resolvedTarget
+  const resolvedTarget = Math.max(toNumber(targetAmount ?? config.ecommerce.shippingInfo.freeShippingThreshold, 50000), 1)
+  const safeCurrentAmount = toNumber(currentAmount, 0)
+  const progress = resolvedTarget > 0 ? Math.min((safeCurrentAmount / resolvedTarget) * 100, 100) : 0
+  const remainingAmount = Math.max(resolvedTarget - safeCurrentAmount, 0)
+  const hasReachedTarget = safeCurrentAmount >= resolvedTarget
 
   const isCompact = variant === 'compact'
   const isDetailed = variant === 'detailed'
@@ -103,7 +110,7 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
           <div className='flex justify-between items-center text-xs'>
             <span className='text-gray-600'>Progreso actual:</span>
             <span className='font-semibold text-gray-900'>
-              ${currentAmount.toLocaleString()} ({progress.toFixed(1)}%)
+              ${safeCurrentAmount.toLocaleString()} ({progress.toFixed(1)}%)
             </span>
           </div>
 

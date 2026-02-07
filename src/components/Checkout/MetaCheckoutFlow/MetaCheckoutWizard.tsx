@@ -396,8 +396,8 @@ export const MetaCheckoutWizard: React.FC = () => {
       )}
 
       <div className='min-h-screen'>
-        {/* Header con progreso - Fixed arriba */}
-        <div className='fixed top-0 left-0 right-0 z-50 shadow-md'>
+        {/* Header con progreso - Fixed arriba, respeta safe-area (notch iPhone) */}
+        <div className='fixed left-0 right-0 z-50 shadow-md' style={{ top: 'env(safe-area-inset-top, 0px)' }}>
           <div className='max-w-4xl mx-auto px-4 pt-3 pb-0'>
             <div className='bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-gray-200/50'>
               <div className='flex items-center justify-between mb-4'>
@@ -423,8 +423,8 @@ export const MetaCheckoutWizard: React.FC = () => {
           </div>
         </div>
 
-        {/* Contenido scrollable: padding-top reserva espacio para header fixed; mt-10 separa barra de pasos de la lista */}
-        <div className='max-w-4xl mx-auto px-4 pt-28 pb-32 w-full'>
+        {/* Contenido scrollable: padding-top reserva espacio para header fixed + safe-area; mt-10 separa barra de pasos de la lista */}
+        <div className='max-w-4xl mx-auto px-4 pt-40 pb-32 w-full'>
 
           {/* Contenido del paso */}
           {state.currentStep === 'summary' ? (
