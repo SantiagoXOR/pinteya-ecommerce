@@ -13,9 +13,24 @@ interface ShippingProgressBarProps {
   variant?: 'default' | 'compact' | 'detailed'
 }
 
+/**
+ * Parsea números soportando formato argentino (48.189,40) y estándar (48189.40).
+ * En Argentina: punto = miles, coma = decimal.
+ */
 const toNumber = (v: unknown, fallback = 0): number => {
   if (v == null) return fallback
-  const n = typeof v === 'string' ? parseFloat(v) : Number(v)
+  if (typeof v === 'number') return Number.isFinite(v) && v >= 0 ? v : fallback
+  if (typeof v === 'string') {
+    const cleaned = String(v).replace(/\s/g, '')
+    if (cleaned.includes(',')) {
+      const normalized = cleaned.replace(/\./g, '').replace(',', '.')
+      const n = parseFloat(normalized)
+      return Number.isFinite(n) && n >= 0 ? n : fallback
+    }
+    const n = parseFloat(cleaned)
+    return Number.isFinite(n) && n >= 0 ? n : fallback
+  }
+  const n = Number(v)
   return Number.isFinite(n) && n >= 0 ? n : fallback
 }
 
@@ -76,18 +91,20 @@ const ShippingProgressBar: React.FC<ShippingProgressBarProps> = ({
             )}
           </div>
 
-          {/* Barra de progreso */}
+          {/* Barra de progreso - inline styles para garantizar visibilidad del fill */}
           <div
-            className={cn('w-full bg-gray-200 rounded-full overflow-hidden', isCompact ? 'h-2' : 'h-3')}
+            className={cn('w-full rounded-full overflow-hidden', isCompact ? 'h-2' : 'h-3')}
+            style={{ backgroundColor: '#e5e7eb' }}
           >
             <div
-              className={cn(
-                'h-full rounded-full transition-all duration-500 ease-out',
-                hasReachedTarget
-                  ? 'bg-tenant-success-bar'
-                  : 'bg-gradient-to-r from-yellow-400 to-orange-500'
-              )}
-              style={{ width: `${progress}%` }}
+              className='h-full rounded-full transition-all duration-500 ease-out'
+              style={{
+                width: `${Math.max(progress, 0)}%`,
+                minWidth: progress > 0 ? 4 : 0,
+                background: hasReachedTarget
+                  ? 'var(--tenant-success-color, #22c55e)'
+                  : 'linear-gradient(to right, #facc15, #f97316)',
+              }}
             ></div>
           </div>
 

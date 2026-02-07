@@ -125,8 +125,10 @@ export const cart = createSlice({
 export const selectCartItems = (state: RootState) => state.cartReducer.items
 
 export const selectTotalPrice = createSelector([selectCartItems], items => {
-  return items.reduce((total: number, item: CartItem) => {
-    return total + item.discountedPrice * item.quantity
+  return items.reduce((total: number, item: CartItem & { discounted_price?: number }) => {
+    const price = item.discountedPrice ?? item.discounted_price ?? item.price ?? 0
+    const qty = item.quantity ?? 1
+    return total + Number(price) * Number(qty)
   }, 0)
 })
 

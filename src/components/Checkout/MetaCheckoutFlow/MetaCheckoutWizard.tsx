@@ -423,13 +423,13 @@ export const MetaCheckoutWizard: React.FC = () => {
           </div>
         </div>
 
-        {/* Contenido scrollable: padding-top reserva espacio para header fixed + safe-area; mt-10 separa barra de pasos de la lista */}
-        <div className='max-w-4xl mx-auto px-4 pt-40 pb-32 w-full'>
+        {/* Contenido scrollable: padding-top reserva espacio para header fixed + safe-area */}
+        <div className='max-w-4xl mx-auto px-4 pt-32 pb-32 w-full'>
 
           {/* Contenido del paso */}
           {state.currentStep === 'summary' ? (
             <>
-              <div className='mt-10 mb-4'>
+              <div className='mt-4 mb-4'>
                 {renderStepContent()}
               </div>
               {/* Footer con resumen - Solo en paso summary */}
@@ -444,7 +444,7 @@ export const MetaCheckoutWizard: React.FC = () => {
             </>
           ) : (
             <>
-              <Card className='mt-10 mb-6 shadow-xl border-0'>
+              <Card className='mt-4 mb-6 shadow-xl border-0'>
                 <CardContent>
                   {renderStepContent()}
                 </CardContent>
